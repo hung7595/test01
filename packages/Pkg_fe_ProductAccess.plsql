@@ -9,6 +9,7 @@ CREATE GLOBAL TEMPORARY table temp_product_int_table
 ON COMMIT PRESERVE ROWS
 /
 
+
 DROP TABLE temp_getMostTalked CASCADE CONSTRAINTS
 /
 
