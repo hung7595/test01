@@ -1,0 +1,26 @@
+CREATE OR REPLACE FUNCTION Fn_GetRatingID (iSKU IN NUMBER)
+RETURN NUMBER DETERMINISTIC
+IS
+  iRating_ID        NUMBER:=0;
+BEGIN
+  SELECT pr.rating_id INTO iRating_ID
+  FROM ya_product_rating pr,
+  ya_prod_rating_lang rl,
+  ya_review r
+  WHERE 1=1
+  AND pr.rating_id = rl.rating_id
+  AND rl.us_review_id = r.review_id
+  AND r.review is not null
+  AND ROWNUM = 1
+  AND pr.sku = iSKU
+  AND pr.shopper_id = 'EDITORIAL';
+
+  RETURN iRating_ID ;
+
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    RETURN -1 ;
+
+END Fn_GetRatingID;
+/
+
