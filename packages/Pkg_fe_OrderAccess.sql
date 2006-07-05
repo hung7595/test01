@@ -1,4 +1,5 @@
-CREATE OR REPLACE PACKAGE Pkg_fe_OrderAccess
+CREATE OR REPLACE
+PACKAGE Pkg_fe_OrderAccess
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -14,6 +15,18 @@ AS
     deciPdebit_amount IN DECIMAL,
     iPorder_num IN INT,
     cPcurrency IN CHAR DEFAULT 'USD',
+    iPreturn OUT INT,
+    cPtransaction_id IN VARCHAR2 DEFAULT NULL,
+    cPcommit IN CHAR DEFAULT 'Y'
+  );
+
+  /* sp_debit_credit */
+  PROCEDURE DebitCreditBySite (
+    cPshopper_id IN CHAR,
+    deciPdebit_amount IN DECIMAL,
+    iPorder_num IN INT,
+    cPcurrency IN CHAR DEFAULT 'USD',
+    iPsite_id IN INT,
     iPreturn OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL,
     cPcommit IN CHAR DEFAULT 'Y'
@@ -262,8 +275,8 @@ AS
   );
 END Pkg_fe_OrderAccess;
 /
-
-CREATE OR REPLACE PACKAGE BODY Pkg_fe_OrderAccess
+CREATE OR REPLACE
+PACKAGE BODY Pkg_fe_OrderAccess
 AS
   PROCEDURE InsertSaleCode (
     iPorder_num IN INT,
@@ -295,11 +308,12 @@ AS
     RETURN;
   END InsertSaleCode;
 
-  PROCEDURE DebitCredit (
+  PROCEDURE DebitCreditBySite (
     cPshopper_id IN CHAR,
     deciPdebit_amount IN DECIMAL,
     iPorder_num IN INT,
     cPcurrency IN CHAR DEFAULT 'USD',
+    iPsite_id IN INT,
     iPreturn OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL,
     cPcommit IN CHAR DEFAULT 'Y'
@@ -313,7 +327,6 @@ AS
     iLtemp DECIMAL(18,2);
     curLdeduct_cursor refCur;
     deciLdebit_amount DECIMAL(18, 2);
-    iLsite_id INT;
   BEGIN
     -- This stored PROCEDURE is also used BY backend system for debit customer credit account.
     -- should be returned IF the debit_amount is more than customer credit balance.
@@ -328,17 +341,15 @@ AS
         SELECT cPtransaction_id INTO cLtransaction_id FROM DUAL;
       END;
     END IF;
-
---    SELECT originid INTO iLsite_id FROM orderinfo WHERE originorderid = TO_CHAR(iPorder_num);
-
+    
     -- Make sure there's enough credit
     SELECT NVL(SUM(current_balance), 0)
     INTO iLtemp
     FROM ya_frontend_credit_system
     WHERE
       shopper_id = cPshopper_id
-      AND currency = cPcurrency;
---      AND ((site_id = iLsite_id and site_id not in (1,7)) or (site_id in (1,7) and (iLsite_id = 1 or iLsite_id = 7)));
+      AND currency = cPcurrency
+      AND ((site_id = iPsite_id and site_id not in (1,7)) or (site_id in (1,7) and (iPsite_id = 1 or iPsite_id = 7)));
 
     deciLdebit_amount := deciPdebit_amount;
     IF (iLtemp < deciPdebit_amount) THEN
@@ -359,7 +370,139 @@ AS
           fcs.current_balance > 0
           AND fcs.shopper_id = cPshopper_id
           AND fcs.currency = cPcurrency
---          AND ((fcs.site_id = iLsite_id and fcs.site_id not in (1,7)) or (fcs.site_id in (1,7) and (iLsite_id = 1 or iLsite_id = 7)))
+          AND ((fcs.site_id = iPsite_id and fcs.site_id not in (1,7)) or (fcs.site_id in (1,7) and (iPsite_id = 1 or iPsite_id = 7)))
+        ORDER BY fcs.transaction_datetime ASC;
+
+
+        FETCH curLdeduct_cursor INTO iLcredit_id, decilcurrent_balance;
+        WHILE (curLdeduct_cursor%FOUND) AND (deciLdebit_amount > 0) LOOP
+          BEGIN
+            -- Calculate deduct amount for each line
+            -- Find deducted amount for the account (cert)
+            IF deciLdebit_amount >= deciLcurrent_balance THEN
+              BEGIN
+                deciLdeduct_amount := deciLcurrent_balance;
+              END;
+            ELSE
+              BEGIN
+                deciLdeduct_amount := deciLdebit_amount;
+              END;
+            END IF;
+
+            -- Decrement debit amount (until < 0)
+            deciLdebit_amount := deciLdebit_amount - deciLcurrent_balance;
+
+            -- Record transaction
+            INSERT INTO YA_FRONTEND_CREDIT_SYSTEM_TXN
+              (
+                credit_id,
+                debit_amount,
+                debit_ordernum,
+                transaction_id,
+                transaction_datetime,
+                snapshot_balance,
+                action_id
+              )
+            VALUES
+              (
+                iLcredit_id,
+                deciLdeduct_amount,
+                iPorder_num,
+                cLtransaction_id,
+                dtLcurrent_datetime,
+                deciLcurrent_balance - deciLdeduct_amount,
+                2 -- 2 = accrediting ORDER(ref ya_lookup type='credit_action'
+              );
+
+            -- UPDATE current balance AS well
+            UPDATE ya_frontend_credit_system
+            SET current_balance = deciLcurrent_balance - deciLdeduct_amount
+            WHERE credit_id = iLcredit_id;
+
+            FETCH curLdeduct_cursor INTO iLcredit_id, deciLcurrent_balance;
+          END;
+        END LOOP;
+        CLOSE curLdeduct_cursor;
+        IF (cPcommit = 'Y') THEN
+          begin
+            COMMIT;
+          END;
+        END IF;
+        iPreturn := 1;
+      END;
+    END IF;
+    RETURN;
+  EXCEPTION WHEN others THEN
+    BEGIN
+      IF (cPcommit = 'Y') THEN
+        begin
+          ROLLBACK;
+        END;
+      END IF;
+      iPreturn := -1;
+    END;
+  END DebitCreditBySite;
+
+  PROCEDURE DebitCredit (
+    cPshopper_id IN CHAR,
+    deciPdebit_amount IN DECIMAL,
+    iPorder_num IN INT,
+    cPcurrency IN CHAR DEFAULT 'USD',
+    iPreturn OUT INT,
+    cPtransaction_id IN VARCHAR2 DEFAULT NULL,
+    cPcommit IN CHAR DEFAULT 'Y'
+  )
+  AS
+    dtLcurrent_datetime DATE;
+    cLtransaction_id CHAR(32);
+    iLcredit_id INT;
+    deciLcurrent_balance DECIMAL(18, 2);
+    deciLdeduct_amount DECIMAL(18,2);
+    iLtemp DECIMAL(18,2);
+    curLdeduct_cursor refCur;
+    deciLdebit_amount DECIMAL(18, 2);
+  BEGIN
+    -- This stored PROCEDURE is also used BY backend system for debit customer credit account.
+    -- should be returned IF the debit_amount is more than customer credit balance.
+
+    dtLcurrent_datetime := SYSDATE;
+    IF (cPtransaction_id IS NULL) THEN
+      BEGIN
+        cLtransaction_id := SYS_GUID();
+      END;
+    ELSE
+      BEGIN
+        SELECT cPtransaction_id INTO cLtransaction_id FROM DUAL;
+      END;
+    END IF;
+    
+    -- Make sure there's enough credit
+    SELECT NVL(SUM(current_balance), 0)
+    INTO iLtemp
+    FROM ya_frontend_credit_system
+    WHERE
+      shopper_id = cPshopper_id
+      AND currency = cPcurrency;
+
+    deciLdebit_amount := deciPdebit_amount;
+    IF (iLtemp < deciPdebit_amount) THEN
+      BEGIN
+        -- Raiseerror otherwise
+        iPreturn := -1;
+      END;
+    ELSE
+      BEGIN
+        -- Declare cursor to deduct credit chronologically FROM accounts (certs)
+        OPEN curLdeduct_cursor FOR
+        SELECT
+          fcs.credit_id,
+          fcs.current_balance
+        FROM
+          ya_frontend_credit_system fcs
+        WHERE
+          fcs.current_balance > 0
+          AND fcs.shopper_id = cPshopper_id
+          AND fcs.currency = cPcurrency
         ORDER BY fcs.transaction_datetime ASC;
 
 
@@ -897,7 +1040,7 @@ AS
 
     IF (nPcredit_amount > 0) THEN
       BEGIN
-        Pkg_fe_OrderAccess.DebitCredit(cPshopper_id, nPcredit_amount, iPorder_num, cPcurrency, iLdebit_credit_return, cPtransaction_id);
+        Pkg_fe_OrderAccess.DebitCreditBySite(cPshopper_id, nPcredit_amount, iPorder_num, cPcurrency, iPsite_id, iLdebit_credit_return, cPtransaction_id);
       END;
     END IF;
 
@@ -1135,7 +1278,7 @@ AS
 
         IF nPcredit_amount > 0 THEN
           BEGIN
-            Pkg_fe_OrderAccess.DebitCredit(cPshopper_id, nPcredit_amount, iPorder_num, 'USD', iLdebit_credit_return, cPtransaction_id);
+            Pkg_fe_OrderAccess.DebitCreditBySite(cPshopper_id, nPcredit_amount, iPorder_num, 'USD', iPsite_id, iLdebit_credit_return, cPtransaction_id, iPsite_id);
           END;
         END IF;
 
@@ -1614,12 +1757,13 @@ AS
           sa.preferred_ship = 'Y'
           AND sa.shopper_id = cPshopper_id
           AND sa.country_id IN (38,226)
+          AND sa.country_id IN (SELECT c1.country_id from ya_country c1 WHERE us_canship = 'Y')
           AND lang_id = iPlang_id
           AND ROWNUM = 1;
         EXCEPTION WHEN NO_DATA_FOUND THEN
           iLship_profile := NULL;
       END;
-    ELSE
+    ELSIF iPsite_id = 7 THEN
       BEGIN
         SELECT sa.address_id
         INTO iLship_profile
@@ -1628,11 +1772,30 @@ AS
           sa.preferred_ship = 'Y'
           AND sa.shopper_id = cPshopper_id
           AND sa.country_id NOT IN (38, 226)
+          AND sa.country_id IN (SELECT c1.country_id from ya_country c1 WHERE tw_canship = 'Y')
           AND lang_id = iPlang_id
           AND ROWNUM = 1;
         EXCEPTION WHEN NO_DATA_FOUND THEN
           iLship_profile := NULL;
       END;
+    ELSIF iPsite_id = 10 THEN
+      BEGIN
+        SELECT sa.address_id
+        INTO iLship_profile
+        FROM ya_address sa
+        WHERE
+          sa.preferred_ship = 'Y'
+          AND sa.shopper_id = cPshopper_id
+          AND sa.country_id IN (SELECT c1.country_id from ya_country c1 WHERE ys_canship = 'Y')
+          AND lang_id = iPlang_id
+          AND ROWNUM = 1;
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+          iLship_profile := NULL;
+      END;
+    ELSE
+      BEGIN
+        iLship_profile := NULL;
+      END;    
     END IF;
 
     BEGIN
@@ -1661,7 +1824,7 @@ AS
       EXCEPTION WHEN NO_DATA_FOUND THEN
         iLcc_profile := NULL;
       END;
-    ELSE
+    ELSIF iPsite_id = 7 THEN
       BEGIN
         SELECT cc.profile_id
         INTO iLcc_profile
@@ -1672,6 +1835,10 @@ AS
           AND cc.card_type_id IN (1,2,3,6)
           AND ROWNUM = 1;
       EXCEPTION WHEN NO_DATA_FOUND THEN
+        iLcc_profile := NULL;
+      END;
+    ELSE
+      BEGIN
         iLcc_profile := NULL;
       END;
     END IF;
@@ -1793,16 +1960,21 @@ AS
       ELSIF iPship_to_country_id = 38 THEN -- Canada
         iLship_method := 11; -- Canadian
       END IF;
-    ELSE
+    ELSIF iPsite_id = 7 THEN
       -- Global Site
       IF iPship_to_country_id = 98 THEN -- Hong Kong
-          iLship_method := 15; -- Express
+        iLship_method := 15; -- Express
       ELSE
         iLship_method := 12; -- Standard
       END IF;
+    ELSIF iPsite_id = 10 THEN
+      -- YesStyle Site
+      iLship_method := 49; -- Standard
+    ELSE
+      iLship_method := -1;
     END IF;
 
-    Pkg_FE_CreditAccess.GetCurrentBalance(deciLcredit_amount, cPshopper_id, 'USD');
+    Pkg_FE_CreditAccess.GetCurrentBalanceBySite(deciLcredit_amount, cPshopper_id, iPsite_id, 'USD');
 
     DELETE FROM ya_checkout_data
     WHERE
@@ -2764,4 +2936,3 @@ AS
   END UpdateApplicationCredit;
 END Pkg_fe_OrderAccess;
 /
-
