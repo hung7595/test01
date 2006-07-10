@@ -1,3 +1,4 @@
+
 CREATE OR REPLACE package Pkg_bo_FilterDalc
 AS
   TYPE refCur IS ref CURSOR;
