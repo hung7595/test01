@@ -2224,6 +2224,12 @@ AS
                 AND site_id = iPsite_id;
             END IF;
           END IF;
+        ELSIF (iPsite_id = 10) THEN
+          UPDATE ya_checkout_data
+          SET shipping_method_id = 49 -- SET shipping method to Express
+          WHERE
+            shopper_id = cPshopper_id
+            AND site_id = iPsite_id;
         END IF;
 
         UPDATE ya_checkout_data
@@ -2247,15 +2253,19 @@ AS
       END;
     ELSE
       BEGIN
-        CASE iPship_to_country_id
-          WHEN 226 THEN -- US
-            iLshipping_method_id := 16; -- Standard
-          WHEN 38 THEN -- Canada
-            iLshipping_method_id := 11; -- Canadian
-          WHEN 98 THEN -- Hong Kong
-            iLshipping_method_id := 15; -- Express
-          ELSE iLshipping_method_id := 12;
-        END CASE;
+        IF (iPsite_id = 10) THEN
+          iLshipping_method_id := 49; -- Standard
+        ELSE
+          CASE iPship_to_country_id
+            WHEN 226 THEN -- US
+              iLshipping_method_id := 16; -- Standard
+            WHEN 38 THEN -- Canada
+              iLshipping_method_id := 11; -- Canadian
+            WHEN 98 THEN -- Hong Kong
+              iLshipping_method_id := 15; -- Express
+            ELSE iLshipping_method_id := 12;
+          END CASE;
+        END IF;
 
         INSERT INTO ya_checkout_data
           (
