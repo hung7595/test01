@@ -1,28 +1,4 @@
-DROP TABLE temp_product_int_table CASCADE CONSTRAINTS
-/
-
-CREATE GLOBAL TEMPORARY table temp_product_int_table
-(
-  COLUMN1 int NOT NULL,
-  COLUMN2 int
-)
-ON COMMIT PRESERVE ROWS
-/
-
-DROP TABLE temp_getMostTalked CASCADE CONSTRAINTS
-/
-
-CREATE GLOBAL TEMPORARY table Temp_Getmosttalked
-(
-  sku int,
-  last_count int,
-  total_count int
-)
-ON COMMIT PRESERVE ROWS
-/
-
-/************************************************************************/
-CREATE OR REPLACE package Pkg_fe_ProductAccess_Katie
+create or replace PACKAGE Pkg_Fe_Productaccess
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -230,11 +206,18 @@ AS
     iPlangId IN INT,
     iPcount OUT INT
   );
-END Pkg_fe_ProductAccess_Katie;
+
+  -- YesStyle
+  PROCEDURE GetPublisherProductGroup (
+    iPpublisherId IN INT,
+    iPlangId IN INT,
+    curPgetProductGroup OUT refCur
+  );
+END Pkg_Fe_Productaccess;
 /
 
-
-CREATE OR REPLACE package body Pkg_fe_ProductAccess_Katie
+CREATE OR REPLACE
+PACKAGE BODY Pkg_Fe_Productaccess
 IS
   PROCEDURE GetPublisherGroupName (
     iPgroup_id    IN  INT,
@@ -245,7 +228,7 @@ IS
   BEGIN
     BEGIN
       SELECT publisher_name INTO cPpublisherName
-      FROM ya_publisher_group_lang
+      FROM YA_PUBLISHER_GROUP_LANG
       WHERE publisher_group_id = iPgroup_id
       AND lang_id = iPlang_id;
       EXCEPTION WHEN NO_DATA_FOUND THEN
@@ -265,8 +248,8 @@ IS
     OPEN curPgetAttri1 FOR
       SELECT
         al.attribute_name,
-        CAST(al.lang_id as int)
-      FROM ya_attribute_lang al
+        CAST(al.lang_id AS INT)
+      FROM YA_ATTRIBUTE_LANG al
       WHERE al.attribute_id = iPattrId
       AND al.lang_id <= 4
       ORDER BY al.lang_id;
@@ -274,11 +257,11 @@ IS
     OPEN curPgetAttri2 FOR
       SELECT
         a.attribute_id,
-        CAST(a.attribute_type_id as int),
+        CAST(a.attribute_type_id AS INT),
         a.img_loc,
         NVL(a.img_height,0),
         NVL(a.img_width,0)
-      FROM ya_attribute a
+      FROM YA_ATTRIBUTE a
       WHERE a.attribute_id = iPattrId;
   RETURN;
   END GetAttributeInfo;
@@ -294,10 +277,10 @@ IS
   BEGIN
     BEGIN
       SELECT supplier_name INTO cPsupplierName
-      FROM ya_supplier_lang
+      FROM YA_SUPPLIER_LANG
       WHERE supplier_id = iPsupplier_id
       AND lang_id = iPlang_id;
-      EXCEPTION when NO_DATA_FOUND THEN
+      EXCEPTION WHEN NO_DATA_FOUND THEN
         cPsupplierName := '';
     END;
   END GetSupplierName;
@@ -321,15 +304,15 @@ IS
         SELECT
           DISTINCT p.sku,
           p.is_parent,
-          pa.availability as availability,
-          pr.displayPriority as priority,
+          pa.availability AS availability,
+          pr.displayPriority AS priority,
           p.release_date,
-          CASE WHEN pa.availability <  60 THEN 10 ELSE pa.availability END as avail_order
+          CASE WHEN pa.availability <  60 THEN 10 ELSE pa.availability END AS avail_order
         FROM
-          ya_product p,
-          ya_campaign c,
-          ya_prod_dept pd,
-          ya_adult_product ap,
+          YA_PRODUCT p,
+          YA_CAMPAIGN c,
+          YA_PROD_DEPT pd,
+          YA_ADULT_PRODUCT ap,
 			    productregion pr,
           productavailability pa
         WHERE c.sku = p.sku
@@ -341,8 +324,8 @@ IS
           AND p.sku=pd.sku
           AND pd.dept_id = iPdept_id
           AND ap.sku (+) = p.sku
-          AND pr.enable = 'Y'
-          AND NVL(ap.sku, 0) <= (CASE cPfilter_adult when 'Y'
+          AND pr.ENABLE = 'Y'
+          AND NVL(ap.sku, 0) <= (CASE cPfilter_adult WHEN 'Y'
                                   THEN 1 ELSE NVL(ap.sku, 2139999999)
                                   END
                                   )
@@ -352,7 +335,7 @@ IS
               CASE WHEN
                 SYSDATE BETWEEN pr.salepricestart AND pr.salepriceend
                 THEN pr.saleprice
-                ELSE null END
+                ELSE NULL END
               ),
               pr.listprice
             )
@@ -371,13 +354,13 @@ IS
                 )
               ) /
               (
-                CASE WHEN pr.listprice is null
+                CASE WHEN pr.listprice IS NULL
                 THEN 1 WHEN pr.listprice = 0
-                THEN 1 ELSE pr.listprice end
+                THEN 1 ELSE pr.listprice END
               ) * 100
             )
-            BETWEEN iPpercent_off_from and iPpercent_off_to)
-            ORDER BY avail_order, p.is_parent desc, priority desc, p.release_date desc, p.sku desc;
+            BETWEEN iPpercent_off_from AND iPpercent_off_to)
+            ORDER BY avail_order, p.is_parent DESC, priority DESC, p.release_date DESC, p.sku DESC;
 
       END;
     ELSE
@@ -387,14 +370,14 @@ IS
             DISTINCT p.sku,
             p.is_parent,
             pa.availability,
-            pr.displayPriority as priority,
+            pr.displayPriority AS priority,
             p.release_date,
-            CASE WHEN pa.availability < 60 THEN 10 ELSE pa.availability END as avail_order
+            CASE WHEN pa.availability < 60 THEN 10 ELSE pa.availability END AS avail_order
           FROM
-            ya_product p,
-            ya_campaign c,
-            ya_prod_dept pd,
-            ya_adult_product ap,
+            YA_PRODUCT p,
+            YA_CAMPAIGN c,
+            YA_PROD_DEPT pd,
+            YA_ADULT_PRODUCT ap,
 				    productregion pr,
             productavailability pa
           WHERE c.sku = p.sku
@@ -406,7 +389,7 @@ IS
             AND p.sku = pd.sku
             AND pd.dept_id = iPdept_id
             AND ap.sku (+) = p.sku
-            AND pr.enable = 'Y'
+            AND pr.ENABLE = 'Y'
             AND NVL(ap.sku, 0) <= (CASE cPfilter_adult WHEN 'Y' THEN 1 ELSE NVL(ap.sku, 2139999999) END)
             AND
             (
@@ -435,7 +418,7 @@ IS
                   )*100
               ) BETWEEN iPpercent_off_from AND iPpercent_off_to
             )
-            ORDER BY avail_order, p.is_parent desc, priority desc, p.release_date desc, p.sku desc;
+            ORDER BY avail_order, p.is_parent DESC, priority DESC, p.release_date DESC, p.sku DESC;
       END;
     END IF;
   RETURN;
@@ -494,16 +477,16 @@ IS
       cp.sku AS cp_sku,
     CASE WHEN avail.availability < 60
       THEN 10
-    ELSE avail.availability END as avail_order,
+    ELSE avail.availability END AS avail_order,
       NVL(p.country_release_id, -1) AS availability_id
     FROM
-      ya_product p,
-      ya_campaign c,
-      ya_prod_dept pd,
-      ya_cross_selling_type3 cs,
-      ya_product cp,
-      ya_adult_product ap,
-      ya_limited_quantity lq,
+      YA_PRODUCT p,
+      YA_CAMPAIGN c,
+      YA_PROD_DEPT pd,
+      YA_CROSS_SELLING_TYPE3 cs,
+      YA_PRODUCT cp,
+      YA_ADULT_PRODUCT ap,
+      YA_LIMITED_QUANTITY lq,
       ProductAvailability avail,
       productregion pr,
       productregion pr1
@@ -519,14 +502,14 @@ IS
       AND p.sku = cs.sku (+)
 --      AND cs.type_id = 3
       AND cs.related_sku = cp.sku (+)
-      AND pr1.enable = 'Y'
+      AND pr1.ENABLE = 'Y'
       AND ap.sku (+) = p.sku
       AND lq.sku (+) = p.sku
       AND (lq.site_id = iPsite_id OR lq.site_id = 99)
       AND lq.frontend_quantity >= 0
       /* new availability */
       AND avail.ProductId = p.sku
-      AND pr.enable = 'Y'
+      AND pr.ENABLE = 'Y'
       AND
         (
           NVL(lq.frontend_quantity, 0) >=
@@ -537,23 +520,23 @@ IS
               (
                 lq.frontend_quantity, 0
               )
-            end
-          ) or
+            END
+          ) OR
           (
             c.campaign_code = iLcampaign_code_a
           )
         )
-      AND NVL(ap.sku, 0) <= (CASE cPfilter_adult when 'Y' then 1 else NVL(ap.sku, 2139999999) end)
-      AND p.is_parent = case cPget_group when 'B' then p.is_parent when 'G' then 'Y' else 'N' end
-      AND pr.preorder = case cPgetPreorder when 'B' then pr.preorder else cPgetPreorder end
+      AND NVL(ap.sku, 0) <= (CASE cPfilter_adult WHEN 'Y' THEN 1 ELSE NVL(ap.sku, 2139999999) END)
+      AND p.is_parent = CASE cPget_group WHEN 'B' THEN p.is_parent WHEN 'G' THEN 'Y' ELSE 'N' END
+      AND pr.preorder = CASE cPgetPreorder WHEN 'B' THEN pr.preorder ELSE cPgetPreorder END
       /* new availability */
       AND avail.availability < 60
       AND avail.regionId = iPsite_id
-      ORDER BY p.is_parent desc, avail_order, priority desc, p.release_date desc, p.sku desc
+      ORDER BY p.is_parent DESC, avail_order, priority DESC, p.release_date DESC, p.sku DESC
   ) r
   WHERE
-    ROWNUM <= case WHEN iLrowcnt = 0 THEN (ROWNUM + 1) ELSE iLrowcnt END;
-    return;
+    ROWNUM <= CASE WHEN iLrowcnt = 0 THEN (ROWNUM + 1) ELSE iLrowcnt END;
+    RETURN;
   END GetProductsByDeptCampaign;
 
 
@@ -608,35 +591,35 @@ IS
       pr.displayPriority priority,
       p.release_date,
       cs.related_sku,
-      case
+      CASE
         WHEN avail.availability IS NULL THEN 90
-        when avail.availability < 60 then 10
-        else avail.availability
-      end avail_order,
+        WHEN avail.availability < 60 THEN 10
+        ELSE avail.availability
+      END avail_order,
         NVL(p.country_release_id, -1)
       FROM
-        ya_product p,
-      ya_campaign c,
-      ya_prod_dept pd,
-      ya_prod_attr pa,
+        YA_PRODUCT p,
+      YA_CAMPAIGN c,
+      YA_PROD_DEPT pd,
+      YA_PROD_ATTR pa,
       (
         SELECT
           cs.sku,
           cs.related_sku
         FROM
-          ya_cross_selling_type3 cs,
+          YA_CROSS_SELLING_TYPE3 cs,
           productregion pr
         WHERE 1=1 --cs.type_id = 3
         AND cs.sku = pr.productId
 	      AND pr.regionId=iPsite_id
-        AND pr.enable = 'Y'
+        AND pr.ENABLE = 'Y'
       ) cs,
-      ya_adult_product ap,
-      ya_limited_quantity lq,
+      YA_ADULT_PRODUCT ap,
+      YA_LIMITED_QUANTITY lq,
       productAvailability avail,
 		  productregion pr
       WHERE c.sku=p.sku
-      AND (c.campaign_code = iPcampaign_code or c.campaign_code = iLcampaign_code_a)
+      AND (c.campaign_code = iPcampaign_code OR c.campaign_code = iLcampaign_code_a)
       AND p.sku = pd.sku
       AND pd.dept_id = iPdept_id
       AND pa.sku = p.sku
@@ -646,11 +629,11 @@ IS
       AND cs.sku (+) = p.sku /* Get related (VCD) products */
       AND ap.sku (+) = p.sku
       AND lq.sku (+) = p.sku
-      AND (lq.site_id = iPsite_id or lq.site_id = 99)
+      AND (lq.site_id = iPsite_id OR lq.site_id = 99)
       AND lq.frontend_quantity >= 0
       /* new availability */
       AND avail.productId = p.sku
-      AND pr.enable = 'Y'
+      AND pr.ENABLE = 'Y'
       AND
       (
         NVL
@@ -658,27 +641,27 @@ IS
           lq.frontend_quantity, 0
         ) >=
         (
-          case cLis_limited_qty when 'Y'
-          then 1 else NVL
+          CASE cLis_limited_qty WHEN 'Y'
+          THEN 1 ELSE NVL
           (
             lq.frontend_quantity, 0
           )
-          end
-        ) or
+          END
+        ) OR
         (
           c.campaign_code = iLcampaign_code_a
         )
       )
-      AND NVL(ap.sku, 0) <= (case cPfilter_adult when 'Y' then 1 else NVL(ap.sku, 2139999999) end)
-      AND p.is_parent = case cPget_group when 'B' then p.is_parent when 'G' then 'Y' else 'N' end
-      AND pr.preorder = case cPgetPreorder when 'B' then pr.preorder else cPgetPreorder end
+      AND NVL(ap.sku, 0) <= (CASE cPfilter_adult WHEN 'Y' THEN 1 ELSE NVL(ap.sku, 2139999999) END)
+      AND p.is_parent = CASE cPget_group WHEN 'B' THEN p.is_parent WHEN 'G' THEN 'Y' ELSE 'N' END
+      AND pr.preorder = CASE cPgetPreorder WHEN 'B' THEN pr.preorder ELSE cPgetPreorder END
       /* new availability */
-      AND avail.availability < 60  and avail.regionId = iPsite_id
-      ORDER BY is_parent desc, avail_order, priority desc nulls last, p.release_date desc nulls last, p.sku desc
+      AND avail.availability < 60  AND avail.regionId = iPsite_id
+      ORDER BY is_parent DESC, avail_order, priority DESC nulls last, p.release_date DESC nulls last, p.sku DESC
     ) r
     WHERE
-      ROWNUM <= case WHEN iLrowcnt = 0 THEN (ROWNUM + 1) ELSE iLrowcnt END;
-    return;
+      ROWNUM <= CASE WHEN iLrowcnt = 0 THEN (ROWNUM + 1) ELSE iLrowcnt END;
+    RETURN;
   END GetProductsByDeptCampaignAttr;
 
 
@@ -711,11 +694,11 @@ IS
 
     BEGIN
       SELECT 1 INTO iLtemp
-      FROM ya_dept_attr
+      FROM YA_DEPT_ATTR
       WHERE dept_id = iPdept_id
       AND attribute_id = 125;
 
-      EXCEPTION when NO_DATA_FOUND THEN
+      EXCEPTION WHEN NO_DATA_FOUND THEN
         iLtemp := 0;
     END;
 
@@ -732,17 +715,17 @@ IS
             pr.displayPriority priority,
             p.release_date,
             pr1.productId AS cp_sku,
-            case
+            CASE
               WHEN pa.availability IS NULL THEN 90
-              when pa.availability < 60 then 10
-              else pa.availability
-            end avail_order,
+              WHEN pa.availability < 60 THEN 10
+              ELSE pa.availability
+            END avail_order,
             NVL(p.country_release_id, -1)
           FROM
-            ya_product p,
-            ya_prod_dept pd,
-            ya_cross_selling_type3 cs,
-            ya_adult_product ap,
+            YA_PRODUCT p,
+            YA_PROD_DEPT pd,
+            YA_CROSS_SELLING_TYPE3 cs,
+            YA_ADULT_PRODUCT ap,
 	    ProductAvailability pa,
 		productregion pr,
 		productregion pr1
@@ -755,25 +738,25 @@ IS
 			    AND pr.regionId=iPsite_id
 			    AND p.sku=pa.productId
 			    AND pa.regionId=iPsite_id
-		    
+
           --AND cs.type_id = 3
           AND cs.related_sku = pr1.productId (+)
-          AND pr.enable = 'Y'
+          AND pr.ENABLE = 'Y'
           AND ap.sku (+) = p.sku
-          AND pr1.enable = 'Y'
-          AND NVL(ap.sku, 0) <= (case cPfilter_adult when 'Y' then 1 else NVL(ap.sku, 2139999999) end)
-          AND p.is_parent = case cPget_group when 'B' then p.is_parent when 'G' then 'Y' else 'N' end
-          AND pr.preorder = case when cPgetPreorder = 'B'then pr.preorder
-                                when cPgetPreorder = 'N'
-                                and p.release_date <= SYSDATE
-                                and not (pr.preorder = 'Y' and SYSDATE
-                                between pr.preorderstart and pr.preorderend)
-                                then pr.preorder
-                                else cPgetPreorder end
-          ORDER BY p.is_parent desc, avail_order, priority desc, p.release_date desc NULLS first, p.sku desc
+          AND pr1.ENABLE = 'Y'
+          AND NVL(ap.sku, 0) <= (CASE cPfilter_adult WHEN 'Y' THEN 1 ELSE NVL(ap.sku, 2139999999) END)
+          AND p.is_parent = CASE cPget_group WHEN 'B' THEN p.is_parent WHEN 'G' THEN 'Y' ELSE 'N' END
+          AND pr.preorder = CASE WHEN cPgetPreorder = 'B'THEN pr.preorder
+                                WHEN cPgetPreorder = 'N'
+                                AND p.release_date <= SYSDATE
+                                AND NOT (pr.preorder = 'Y' AND SYSDATE
+                                BETWEEN pr.preorderstart AND pr.preorderend)
+                                THEN pr.preorder
+                                ELSE cPgetPreorder END
+          ORDER BY p.is_parent DESC, avail_order, priority DESC, p.release_date DESC NULLS first, p.sku DESC
         ) r
         WHERE
-          ROWNUM <= case WHEN iLrowcnt = 0 THEN (ROWNUM + 1) ELSE iLrowcnt END;
+          ROWNUM <= CASE WHEN iLrowcnt = 0 THEN (ROWNUM + 1) ELSE iLrowcnt END;
 
       END;
     ELSE
@@ -787,17 +770,17 @@ IS
             p.is_parent,
             pa.availability,
             pr.displayPriority priority,
-            p.release_date, null,
-            case
+            p.release_date, NULL,
+            CASE
               WHEN pa.availability IS NULL THEN 90
-              when pa.availability < 60 then 10
-              else pa.availability
-            end avail_order,
+              WHEN pa.availability < 60 THEN 10
+              ELSE pa.availability
+            END avail_order,
             NVL(p.country_release_id, -1)
           FROM
-            ya_product p,
-            ya_prod_dept pd,
-            ya_adult_product ap,
+            YA_PRODUCT p,
+            YA_PROD_DEPT pd,
+            YA_ADULT_PRODUCT ap,
 	    ProductAvailability pa,
 	    productregion pr
           WHERE p.sku = pd.sku
@@ -807,22 +790,22 @@ IS
 			    AND pa.regionId=iPsite_id
           AND pd.dept_id = iPdept_id
           AND ap.sku (+) = p.sku
-          AND pr.enable = 'Y'
-          AND NVL(ap.sku, 0)<=(case cPfilter_adult when 'Y' then 1 else NVL(ap.sku, 2139999999) end)
-          AND p.is_parent=case cPget_group when 'B' then p.is_parent when 'G' then 'Y' else 'N' end
-          AND pr.preorder = case when cPgetPreorder = 'B' then pr.preorder
-                                    when cPgetPreorder = 'N'
-                                    and p.release_date <= SYSDATE
-                                    and not (pr.preorder = 'Y' and SYSDATE
-                                    between pr.preorderstart and pr.preorderend
+          AND pr.ENABLE = 'Y'
+          AND NVL(ap.sku, 0)<=(CASE cPfilter_adult WHEN 'Y' THEN 1 ELSE NVL(ap.sku, 2139999999) END)
+          AND p.is_parent=CASE cPget_group WHEN 'B' THEN p.is_parent WHEN 'G' THEN 'Y' ELSE 'N' END
+          AND pr.preorder = CASE WHEN cPgetPreorder = 'B' THEN pr.preorder
+                                    WHEN cPgetPreorder = 'N'
+                                    AND p.release_date <= SYSDATE
+                                    AND NOT (pr.preorder = 'Y' AND SYSDATE
+                                    BETWEEN pr.preorderstart AND pr.preorderend
                                             )
-                                            then pr.preorder
-                                            else cPgetPreorder
-                              end
-          ORDER BY p.is_parent desc, avail_order, priority desc nulls last, p.release_date desc nulls last, p.sku desc
+                                            THEN pr.preorder
+                                            ELSE cPgetPreorder
+                              END
+          ORDER BY p.is_parent DESC, avail_order, priority DESC nulls last, p.release_date DESC nulls last, p.sku DESC
         ) r
         WHERE
-          ROWNUM <= case WHEN iLrowcnt = 0 THEN (ROWNUM + 1) ELSE iLrowcnt END;
+          ROWNUM <= CASE WHEN iLrowcnt = 0 THEN (ROWNUM + 1) ELSE iLrowcnt END;
       END;
     END IF;
   RETURN;
@@ -875,9 +858,9 @@ IS
         END avail_order,
         NVL(p.country_release_id, -1)
       FROM
-        ya_product p,
-        ya_cross_selling_type3 cs,
-        ya_adult_product ap,
+        YA_PRODUCT p,
+        YA_CROSS_SELLING_TYPE3 cs,
+        YA_ADULT_PRODUCT ap,
 		productregion pr,
 		productavailability pa
       WHERE 1=1
@@ -885,15 +868,15 @@ IS
 	  AND pa.regionId=iPsite_id
 	  AND pr.productId=p.sku
 	  AND pr.regionId=iPsite_id
-      AND p.SKU IN (SELECT SKU FROM ya_prod_dept where dept_id = iPdept_id)
-      AND p.SKU IN (SELECT SKU FROM ya_prod_attr where attribute_id = iPattr_id)
+      AND p.SKU IN (SELECT SKU FROM YA_PROD_DEPT WHERE dept_id = iPdept_id)
+      AND p.SKU IN (SELECT SKU FROM YA_PROD_ATTR WHERE attribute_id = iPattr_id)
       AND ap.sku (+) = p.sku
       AND cs.sku (+) = p.sku /* Get related (VCD) products */
-      AND pr.enable = 'Y'
-      AND NVL(ap.sku, 0) <= (case cPfilter_adult when 'Y' then 1 else NVL(ap.sku, 2139999999) end)
-      AND p.is_parent = case cPget_group when 'B' then p.is_parent when 'G' then 'Y' else 'N' end
-      AND pr.preorder = case cPgetPreorder when 'B' then pr.preorder else cPgetPreorder end
-      ORDER BY p.is_parent desc, avail_order, priority desc nulls last, p.release_date desc nulls last, p.sku desc
+      AND pr.ENABLE = 'Y'
+      AND NVL(ap.sku, 0) <= (CASE cPfilter_adult WHEN 'Y' THEN 1 ELSE NVL(ap.sku, 2139999999) END)
+      AND p.is_parent = CASE cPget_group WHEN 'B' THEN p.is_parent WHEN 'G' THEN 'Y' ELSE 'N' END
+      AND pr.preorder = CASE cPgetPreorder WHEN 'B' THEN pr.preorder ELSE cPgetPreorder END
+      ORDER BY p.is_parent DESC, avail_order, priority DESC nulls last, p.release_date DESC nulls last, p.sku DESC
     ) r
     WHERE
       ROWNUM <= CASE WHEN iLrowcnt = 0 THEN (ROWNUM+1) ELSE iLrowcnt END;
@@ -931,9 +914,9 @@ IS
       --NVL(SUM(rs.actual_count), 0)
       NVL(rs.actual_count,0)
     FROM
-      ya_prod_lang pl,
-      ya_review_summary rs,
-      ya_description d
+      YA_PROD_LANG pl,
+      YA_REVIEW_SUMMARY rs,
+      YA_DESCRIPTION d
     WHERE rs.sku (+) = pl.sku
     AND site_id (+) = iPsite_id
     AND d.description_id (+) =
@@ -941,7 +924,7 @@ IS
         CASE
           WHEN iPsite_id = 1 OR iPsite_id = 2 THEN pl.us_description_id
           WHEN iPsite_id = 7 OR iPsite_id = 8 THEN pl.tw_description_id
-          WHEN iPsite_id = 5 OR iPsite_id = 6 THEN pl.hk_description_id
+--          WHEN iPsite_id = 5 OR iPsite_id = 6 THEN pl.hk_description_id
           WHEN iPsite_id = 3 OR iPsite_id = 4 THEN pl.jp_description_id
         END
       )
@@ -959,7 +942,7 @@ IS
     )
   AS
   BEGIN
-    INSERT INTO ya_track_it_down (
+    INSERT INTO YA_TRACK_IT_DOWN (
       site_id,
       sku,
       email
@@ -972,14 +955,14 @@ IS
     WHERE NOT EXISTS
       (
         SELECT 1
-        FROM ya_track_it_down
+        FROM YA_TRACK_IT_DOWN
         WHERE sku = iPsku
         AND site_id = iPsite_id
         AND email = cPemail
         AND ROWNUM = 1
       );
 
-    IF sqlcode <> 0 THEN
+    IF SQLCODE <> 0 THEN
       ROLLBACK;
     ELSE
       COMMIT;
@@ -996,7 +979,7 @@ IS
     )
   AS
   BEGIN
-    INSERT INTO ya_future_release (
+    INSERT INTO YA_FUTURE_RELEASE (
       site_id,
       sku,
       customer_email,
@@ -1011,7 +994,7 @@ IS
     WHERE NOT EXISTS
       (
         SELECT 1
-        FROM ya_future_release
+        FROM YA_FUTURE_RELEASE
         WHERE
           sku = iPsku
           AND site_id = iPsite_id
@@ -1046,7 +1029,7 @@ IS
           sku,
           last_count,
           total_count
-        FROM ya_most_talked_about
+        FROM YA_MOST_TALKED_ABOUT
         WHERE
           dept_id = iPdeptId
           AND site_id = iPsiteId
@@ -1073,26 +1056,26 @@ BEGIN
         pl.lot_location,
         pll.description,
         pl.dept_id,
-        pli.desc_img_loc,
-        NVL(pli.desc_img_width,0),
-        NVL(pli.desc_img_height,0),
+        PLI.desc_img_loc,
+        NVL(PLI.desc_img_width,0),
+        NVL(PLI.desc_img_height,0),
         NULL, --dl.dept_name,
         -1, --NVL(ps.dept_id, -1),
         pll.remark
       FROM
-        ya_product_lot pl
-        LEFT OUTER JOIN ya_prod_lot_lang pll ON
+        YA_PRODUCT_LOT pl
+        LEFT OUTER JOIN YA_PROD_LOT_LANG pll ON
           pl.prod_lot_id = pll.prod_lot_id
           AND pll.lang_id = iPlangId
-        LEFT OUTER JOIN ya_prod_lot_lang pli ON
-          pli.prod_lot_id = pl.prod_lot_id
-          AND pli.preferred_flag = 'Y'
+        LEFT OUTER JOIN YA_PROD_LOT_LANG PLI ON
+          PLI.prod_lot_id = pl.prod_lot_id
+          AND PLI.preferred_flag = 'Y'
         INNER JOIN productregion pr ON
           pl.sku = pr.productId
 		  AND pr.regionId=iPsiteId
       WHERE
         pl.file_id = iPfileId
-        AND pr.enable = 'Y'
+        AND pr.ENABLE = 'Y'
       ORDER BY pl.lot_location, pl.priority;
 RETURN;
 END;
@@ -1113,9 +1096,9 @@ BEGIN
         pl.lot_location,
         pll.description,
         pl.dept_id,
-        pli.desc_img_loc,
-        NVL(pli.desc_img_width,0),
-        NVL(pli.desc_img_height,0),
+        PLI.desc_img_loc,
+        NVL(PLI.desc_img_width,0),
+        NVL(PLI.desc_img_height,0),
         NULL, --dl.dept_name,
         -1, --NVL(ps.dept_id, -1),
         pll.remark
@@ -1124,15 +1107,15 @@ BEGIN
         LEFT OUTER JOIN ya_mirror_prod_lot_lang pll ON
           pl.prod_lot_id = pll.prod_lot_id
           AND pll.lang_id = iPlangId
-        LEFT OUTER JOIN ya_mirror_prod_lot_lang pli ON
-          pli.prod_lot_id = pl.prod_lot_id
-          AND pli.preferred_flag = 'Y'
+        LEFT OUTER JOIN ya_mirror_prod_lot_lang PLI ON
+          PLI.prod_lot_id = pl.prod_lot_id
+          AND PLI.preferred_flag = 'Y'
         INNER JOIN productregion pr ON
           pl.sku = pr.productId
 		  AND pr.regionId=iPsiteId
       WHERE
         pl.file_id = iPfileId
-        AND pr.enable = 'Y'
+        AND pr.ENABLE = 'Y'
       ORDER BY pl.lot_location, pl.priority;
 RETURN;
 END;
@@ -1145,7 +1128,7 @@ END;
   AS
   BEGIN
     OPEN curPgetProduct FOR
-    SELECT sample_loc FROM ya_prod_video WHERE sku = iPsku;
+    SELECT sample_loc FROM YA_PROD_VIDEO WHERE sku = iPsku;
   RETURN;
   END;
 
@@ -1175,8 +1158,8 @@ BEGIN
       WHILE  iLendpos  >  0
       LOOP
         BEGIN
-          INSERT INTO temp_product_int_table (column1, column2)
-          VALUES (CAST(substr(cLskuCsv,1,iLendpos-1) AS INT), iCounter);
+          INSERT INTO TEMP_PRODUCT_INT_TABLE (column1, column2)
+          VALUES (CAST(SUBSTR(cLskuCsv,1,iLendpos-1) AS INT), iCounter);
 
           cLskuCsv := SUBSTR(cLskuCsv, iLendpos+1);
           iLendpos := INSTR(cLskuCsv, ',');
@@ -1184,7 +1167,7 @@ BEGIN
         END;
       END LOOP;
 
-      INSERT INTO temp_product_int_table (column1, column2)
+      INSERT INTO TEMP_PRODUCT_INT_TABLE (column1, column2)
       VALUES (CAST(cLskuCsv AS INT), iCounter);
     END;
   END IF;
@@ -1192,39 +1175,39 @@ BEGIN
 
   OPEN curPgetProduct1 FOR
   SELECT
-    pp.isbn as isbn,
+    pp.isbn AS isbn,
     pp.pages,
-    lp.meaning as format,
-    le.meaning as edition,
-    pp.edition_number as edition_number,
-    pp.volume_number as volume_number,
+    lp.meaning AS format,
+    le.meaning AS edition,
+    pp.edition_number AS edition_number,
+    pp.volume_number AS volume_number,
     pp.sku,
     pp.grade_from,
     pp.grade_to
   FROM
-    ya_prod_printed pp
-    LEFT OUTER JOIN ya_lookup lp ON
+    YA_PROD_PRINTED pp
+    LEFT OUTER JOIN YA_LOOKUP lp ON
       pp.format = lp.code_id
       AND lp.type_id = 100 /* Western book format */
-    LEFT OUTER JOIN ya_lookup le ON
+    LEFT OUTER JOIN YA_LOOKUP le ON
       pp.edition = le.code_id
       AND le.type_id = 101 /* Western book edition */
-    INNER JOIN temp_product_int_table p ON
+    INNER JOIN TEMP_PRODUCT_INT_TABLE p ON
       pp.sku = p.column1
   ORDER BY p.column2;
 
   OPEN curPgetProduct2 FOR
   SELECT
     award_id,
-    a.award_name as award_name,
-    a.award_category as award_category,
-    NVL(a.award_year, -1) as award_year,
-    l.meaning as award_status,
+    a.award_name AS award_name,
+    a.award_category AS award_category,
+    NVL(a.award_year, -1) AS award_year,
+    l.meaning AS award_status,
     a.sku
   FROM
-    ya_awards a,
-    ya_lookup l,
-    temp_product_int_table p
+    YA_AWARDS a,
+    YA_LOOKUP l,
+    TEMP_PRODUCT_INT_TABLE p
   WHERE a.award_status_type = l.code_id
   AND l.type_id = 103
   AND a.sku = p.column1
@@ -1233,92 +1216,92 @@ BEGIN
   OPEN curPgetProduct3 FOR
   SELECT
     tn.note_id,
-    lt.meaning as type,
-    NVL(tn.partial_text, 0) as partial_text,
-    tn.text_from_other as text_from_other,
-    lm.meaning as medium,
-    source_date_string as source_date_string,
-    source_volume as source_volume,
-    note_text as note_text,
+    lt.meaning AS TYPE,
+    NVL(tn.partial_text, 0) AS partial_text,
+    tn.text_from_other AS text_from_other,
+    lm.meaning AS medium,
+    source_date_string AS source_date_string,
+    source_volume AS source_volume,
+    note_text AS note_text,
     a.artist_id,
-    al.firstname_u as artist_firstname,
-    al.lastname_u as artist_lastname,
-    al.akaname_u as artist_akaname,
-    al2.firstname_u as artist_firstname,
-    al2.lastname_u as artist_lastname,
-    al2.akaname_u as artist_akaname,
-    al3.name_img_loc as name_img_loc,
-    NVL(al3.name_img_width, -1) as name_img_width,
-    NVL(al3.name_img_height, -1) as name_img_height,
-    NVL(a.origin_country_id, 0) as origin_country_id,
-    NVL(al3.lang_id, 0) as lang_id,
-    al.prefix as prefix,
-    al.suffix as suffix,
-    al2.prefix as prefix2,
-    al2.suffix as suffix2,
-    tn.note_type as type_id,
+    al.firstname_u AS artist_firstname,
+    al.lastname_u AS artist_lastname,
+    al.akaname_u AS artist_akaname,
+    al2.firstname_u AS artist_firstname,
+    al2.lastname_u AS artist_lastname,
+    al2.akaname_u AS artist_akaname,
+    al3.name_img_loc AS name_img_loc,
+    NVL(al3.name_img_width, -1) AS name_img_width,
+    NVL(al3.name_img_height, -1) AS name_img_height,
+    NVL(a.origin_country_id, 0) AS origin_country_id,
+    NVL(al3.lang_id, 0) AS lang_id,
+    al.prefix AS prefix,
+    al.suffix AS suffix,
+    al2.prefix AS prefix2,
+    al2.suffix AS suffix2,
+    tn.note_type AS type_id,
     pt.sku,
-    NVL(pt.refer_sku, -1) as refer_sku,
-    ypl.prod_name as prod_name,
-    yatl.attribute_name as attr_name
+    NVL(pt.refer_sku, -1) AS refer_sku,
+    ypl.prod_name AS prod_name,
+    yatl.attribute_name AS attr_name
   FROM
-    ya_prod_text_note pt
+    YA_PROD_TEXT_NOTE pt
     INNER JOIN
     (
       SELECT
-        case
-          when account_id = 100 then 1
-          else iPlangId
-        end as lang_id,
+        CASE
+          WHEN account_id = 100 THEN 1
+          ELSE iPlangId
+        END AS lang_id,
         sku
-      FROM ya_product
-      where sku in (select column1 from temp_product_int_table)
+      FROM YA_PRODUCT
+      WHERE sku IN (SELECT column1 FROM TEMP_PRODUCT_INT_TABLE)
     ) pd ON
       pt.sku = pd.sku
-    INNER JOIN ya_text_note tn ON
+    INNER JOIN YA_TEXT_NOTE tn ON
       pt.note_id = tn.note_id
       AND tn.lang_id = pd.lang_id
-    INNER JOIN ya_lookup lt ON
+    INNER JOIN YA_LOOKUP lt ON
       tn.note_type = lt.code_id
       AND lt.type_id = 105
-    LEFT OUTER JOIN ya_lookup lm ON
+    LEFT OUTER JOIN YA_LOOKUP lm ON
       tn.medium_id = lm.code_id
       AND lm.type_id = 102
-    LEFT OUTER JOIN ya_artist a ON
+    LEFT OUTER JOIN YA_ARTIST a ON
       tn.artist_id = a.artist_id
-    LEFT OUTER JOIN ya_artist_lang al ON
+    LEFT OUTER JOIN YA_ARTIST_LANG al ON
       a.artist_id = al.artist_id
-      and al.lang_id = iPlangId
-    LEFT OUTER JOIN ya_artist_lang al2 ON
+      AND al.lang_id = iPlangId
+    LEFT OUTER JOIN YA_ARTIST_LANG al2 ON
       a.artist_id = al2.artist_id
-      and al2.lang_id = 1
-    LEFT OUTER JOIN ya_artist_lang al3 ON
+      AND al2.lang_id = 1
+    LEFT OUTER JOIN YA_ARTIST_LANG al3 ON
       a.artist_id = al3.artist_id
-      and al3.lang_id in
+      AND al3.lang_id IN
         (
-          select lang_id
-          from ya_artist_lang
-          where
+          SELECT lang_id
+          FROM YA_ARTIST_LANG
+          WHERE
             artist_id=a.artist_id
-            and preferred_flag='Y'
+            AND preferred_flag='Y'
             AND ROWNUM = 1
         )
-    INNER JOIN temp_product_int_table p ON
+    INNER JOIN TEMP_PRODUCT_INT_TABLE p ON
       pt.sku = p.column1
-    LEFT OUTER JOIN ya_prod_lang ypl ON
+    LEFT OUTER JOIN YA_PROD_LANG ypl ON
       ypl.sku = pt.refer_sku
-      and ypl.lang_id = iPlangId
-    LEFT OUTER JOIN ya_prod_attr ypa ON
+      AND ypl.lang_id = iPlangId
+    LEFT OUTER JOIN YA_PROD_ATTR ypa ON
       ypa.sku = pt.refer_sku
-      and ypa.attribute_id IN
+      AND ypa.attribute_id IN
         (
           SELECT yat.attribute_id
-          from ya_attribute yat
-          where yat.attribute_type_id = 27
+          FROM YA_ATTRIBUTE yat
+          WHERE yat.attribute_type_id = 27
         )
-    LEFT OUTER JOIN ya_attribute_lang yatl ON
+    LEFT OUTER JOIN YA_ATTRIBUTE_LANG yatl ON
       yatl.attribute_id = ypa.attribute_id
-      and yatl.lang_id = iPlangId
+      AND yatl.lang_id = iPlangId
     ORDER BY p.column2;
 
   RETURN;
@@ -1358,26 +1341,26 @@ END FillProductBooksInformation;
         WHILE  iLendpos  >  0
         LOOP
           BEGIN
-      	  INSERT INTO temp_product_int_table
+      	  INSERT INTO TEMP_PRODUCT_INT_TABLE
           (
             column1
           )
           VALUES
           (
-            CAST(substr(cLsku_csv,1,iLendpos-1) AS int)
+            CAST(SUBSTR(cLsku_csv,1,iLendpos-1) AS INT)
           );
   	      cLsku_csv := SUBSTR(cLsku_csv, iLendpos+1);
           iLendpos := INSTR(cLsku_csv, ',');
         END;
         END LOOP;
 
-      	INSERT INTO temp_product_int_table
+      	INSERT INTO TEMP_PRODUCT_INT_TABLE
         (
           column1
         )
         VALUES
         (
-          CAST(cLsku_csv AS int)
+          CAST(cLsku_csv AS INT)
         );
       END;
     END IF;
@@ -1393,11 +1376,11 @@ END FillProductBooksInformation;
       NVL(a.img_height, 0),
       NVL(a.img_width, 0)
     FROM
-      ya_prod_attr pa,
-      ya_attribute a,
-      ya_attribute_lang ale,
-      ya_attribute_lang al,
-      temp_product_int_table p
+      YA_PROD_ATTR pa,
+      YA_ATTRIBUTE a,
+      YA_ATTRIBUTE_LANG ale,
+      YA_ATTRIBUTE_LANG al,
+      TEMP_PRODUCT_INT_TABLE p
     WHERE 1=1
     AND p.column1 = pa.sku
     AND pa.attribute_id = a.attribute_id
@@ -1415,10 +1398,10 @@ END FillProductBooksInformation;
       lq.sku,
       lq.frontend_quantity
     FROM
-      ya_limited_quantity lq,
-      temp_product_int_table p
+      YA_LIMITED_QUANTITY lq,
+      TEMP_PRODUCT_INT_TABLE p
     WHERE lq.sku = p.column1
-    AND lq.site_id in (99, iPsite_id)
+    AND lq.site_id IN (99, iPsite_id)
     AND lq.frontend_quantity > 0
     ORDER BY lq.sku;
 
@@ -1430,28 +1413,28 @@ END FillProductBooksInformation;
       CASE
         WHEN t2.shipment_unit IS NOT NULL THEN t2.shipment_unit
         ELSE
-          ceil
+          CEIL
             (
-              nvl
+              NVL
                 (
-                  case
-                    when dimension_weight is not null and weight is not null then
-                      case
-                        when dimension_weight > weight then dimension_weight
-                        else weight
-                      end
-                    else weight
-                  end,
+                  CASE
+                    WHEN dimension_weight IS NOT NULL AND weight IS NOT NULL THEN
+                      CASE
+                        WHEN dimension_weight > weight THEN dimension_weight
+                        ELSE weight
+                      END
+                    ELSE weight
+                  END,
                   iLShipmentUnitConst
                 ) / iLShipmentUnitConst
             )
-      END as shipment_unit
+      END AS shipment_unit
     FROM
-      ya_product t1
-      INNER JOIN temp_product_int_table p ON
+      YA_PRODUCT t1
+      INNER JOIN TEMP_PRODUCT_INT_TABLE p ON
         t1.sku = p.column1
-      LEFT OUTER JOIN ya_shipping_unit t2 ON
-        t1.sku = t2.sku and t2.site_id = iPsite_id;
+      LEFT OUTER JOIN YA_SHIPPING_UNIT t2 ON
+        t1.sku = t2.sku AND t2.site_id = iPsite_id;
     /*
     SELECT
       t1.sku,
@@ -1484,14 +1467,14 @@ END FillProductBooksInformation;
       END,
       pa.availability
     FROM
-      temp_product_int_table pt
-      INNER JOIN ya_product p ON
+      TEMP_PRODUCT_INT_TABLE pt
+      INNER JOIN YA_PRODUCT p ON
         pt.column1 = p.sku
       INNER JOIN backend_adm.productavailability pa ON
-        pt.column1 = pa.productid and pa.regionId = iPsite_id
+        pt.column1 = pa.productid AND pa.regionId = iPsite_id
       INNER JOIN backend_adm.productregion pr ON
-        pt.column1 = pr.productid and pr.regionId = iPsite_id
-      LEFT OUTER JOIN ya_availability_override o ON
+        pt.column1 = pr.productid AND pr.regionId = iPsite_id
+      LEFT OUTER JOIN YA_AVAILABILITY_OVERRIDE o ON
         pr.supplierId = o.supplier_id
         AND p.account_id = o.account_id
         AND SYSDATE BETWEEN o.start_date AND o.end_date
@@ -1506,8 +1489,8 @@ END FillProductBooksInformation;
       c.sku,
       c.campaign_code
     FROM
-      ya_campaign c,
-      temp_product_int_table tp
+      YA_CAMPAIGN c,
+      TEMP_PRODUCT_INT_TABLE tp
       --(select * FROM TABLE (cast ( TabData as tabSKUList))) tp
     WHERE c.sku = tp.column1
     ORDER BY tp.column1 DESC;
@@ -1515,16 +1498,16 @@ END FillProductBooksInformation;
     OPEN curPgetProduct6 FOR
     SELECT
       tp.column1,
-      p.cover_img_loc as cover_img_loc,
-      NVL(p.cover_img_width, 0) as cover_img_width,
-      NVL(p.cover_img_height, 0) as cover_img_height,
-      NVL(pr.preorder, 'N') as preorder,
-      NVL(pr.preorderstart, dtLnullDate) as preorder_start,
-      NVL(pr.preorderend, dtLnullDate) as preorder_end,
-      NVL(pr.listprice, 9999) as list_price,
-      NVL(pr.saleprice, 9999) as sale_price,
-      NVL(pr.salepricestart, dtLnullDate) as sale_start,
-      NVL(pr.salepriceend, dtLnullDate) as sale_end,
+      p.cover_img_loc AS cover_img_loc,
+      NVL(p.cover_img_width, 0) AS cover_img_width,
+      NVL(p.cover_img_height, 0) AS cover_img_height,
+      NVL(pr.preorder, 'N') AS preorder,
+      NVL(pr.preorderstart, dtLnullDate) AS preorder_start,
+      NVL(pr.preorderend, dtLnullDate) AS preorder_end,
+      NVL(pr.listprice, 9999) AS list_price,
+      NVL(pr.saleprice, 9999) AS sale_price,
+      NVL(pr.salepricestart, dtLnullDate) AS sale_start,
+      NVL(pr.salepriceend, dtLnullDate) AS sale_end,
       NVL(pl.prod_name_u, ple.prod_name_u),
       NVL(p.release_date, dtLnullDate),
       pl2.prod_name_img_loc,
@@ -1532,19 +1515,19 @@ END FillProductBooksInformation;
       NVL(pl2.name_img_height, 0),
       NVL(p.account_id, -1),
       NVL(pr.supplierId, -1),
-      NVL(pr.enable, 'N'),
+      NVL(pr.ENABLE, 'N'),
       NVL(pr.cansell, 'N'),
       NVL(pl.prod_subtitle, ple.prod_subtitle),
       NVL(pl.prod_name_aka, ple.prod_name_aka),
       NVL(pl.prod_subtitle_aka, ple.prod_subtitle_aka),
-      p.preorder_buffer_day as preorder_buffer_day,
-      1 as region_count
+      p.preorder_buffer_day AS preorder_buffer_day,
+      1 AS region_count
     FROM
-      temp_product_int_table tp,
-      ya_product p,
-      ya_prod_lang pl,
-      ya_prod_lang pl2,
-      ya_prod_lang ple,
+      TEMP_PRODUCT_INT_TABLE tp,
+      YA_PRODUCT p,
+      YA_PROD_LANG pl,
+      YA_PROD_LANG pl2,
+      YA_PROD_LANG ple,
       productregion pr
     WHERE tp.column1 = p.sku
     AND p.sku=pr.productId
@@ -1552,9 +1535,9 @@ END FillProductBooksInformation;
     AND p.sku = pl.sku (+)
     AND pl.lang_id = iPlang_id
     AND p.sku = pl2.sku (+)
-    AND pl2.lang_id in (
+    AND pl2.lang_id IN (
                         SELECT lang_id
-                        FROM ya_prod_lang
+                        FROM YA_PROD_LANG
                         WHERE sku = p.sku
                         AND preferred_flag='Y'
                         AND ROWNUM = 1
@@ -1595,18 +1578,18 @@ BEGIN
 
   OPEN curPgetDept FOR
   SELECT dept_id
-  FROM ya_prod_dept
+  FROM YA_PROD_DEPT
   WHERE sku = iPsku
   AND dept_id <> 0
   AND ((CASE iPsite_id
-  	WHEN 1 then us_enabled
-  	WHEN 2 then us_ws_enabled
-  	WHEN 3 then jp_enabled
-  	WHEN 5 then hk_enabled
-  	WHEN 7 then tw_enabled
-  	ELSE 'Y'  end)='Y')
+  	WHEN 1 THEN us_enabled
+  	WHEN 2 THEN us_ws_enabled
+  	WHEN 3 THEN jp_enabled
+  	WHEN 5 THEN hk_enabled
+  	WHEN 7 THEN tw_enabled
+  	ELSE 'Y'  END)='Y')
   ORDER BY dept_id;
-return;
+RETURN;
 END;
 
 
@@ -1635,19 +1618,19 @@ BEGIN
 
   OPEN curPgetDept FOR
   SELECT DISTINCT dept_id
-  FROM ya_prod_dept
-  WHERE sku in (SELECT sku FROM ya_prod_rel WHERE parent_sku = iPsku)
+  FROM YA_PROD_DEPT
+  WHERE sku IN (SELECT sku FROM YA_PROD_REL WHERE parent_sku = iPsku)
 
   AND dept_id <> 0
   AND ((CASE iPsite_id
-  	WHEN 1 then us_enabled
-  	WHEN 2 then us_ws_enabled
-  	WHEN 3 then jp_enabled
-  	WHEN 5 then hk_enabled
-  	WHEN 7 then tw_enabled
-  	ELSE 'Y'  end)='Y')
+  	WHEN 1 THEN us_enabled
+  	WHEN 2 THEN us_ws_enabled
+  	WHEN 3 THEN jp_enabled
+  	WHEN 5 THEN hk_enabled
+  	WHEN 7 THEN tw_enabled
+  	ELSE 'Y'  END)='Y')
   ORDER BY dept_id;
-return;
+RETURN;
 END;
 
   PROCEDURE GetPreferredProductLangBySKU (
@@ -1657,8 +1640,8 @@ END;
 AS
 BEGIN
   OPEN curPgetPreferred FOR
-  SELECT CAST(NVL(lang_id,-1) as int) as lang_id
-  FROM ya_prod_lang
+  SELECT CAST(NVL(lang_id,-1) AS INT) AS lang_id
+  FROM YA_PROD_LANG
   WHERE preferred_flag = 'Y'
   AND sku = iPsku
   AND ROWNUM = 1;
@@ -1678,11 +1661,11 @@ BEGIN
   OPEN curPgetBargain FOR
       SELECT pl.sku
       FROM
-        ya_product_pool pl,
-        ya_product p,
-        ya_limited_quantity lq,
-        ya_campaign c,
-        ya_prod_dept pd,
+        YA_PRODUCT_POOL pl,
+        YA_PRODUCT p,
+        YA_LIMITED_QUANTITY lq,
+        YA_CAMPAIGN c,
+        YA_PROD_DEPT pd,
 		productregion pr,
 		productavailability pa
       WHERE pl.sku = p.sku
@@ -1694,15 +1677,15 @@ BEGIN
       AND lq.sku = c.sku
       AND pl.sku = pd.sku
       AND lq.frontend_quantity > 0
-      AND (lq.site_id = iPsiteId or lq.site_id = 99)
+      AND (lq.site_id = iPsiteId OR lq.site_id = 99)
       AND c.campaign_code = 10
       AND pd.dept_id = iPdeptId
       AND pl.type_id = iLtypeId
       AND pl.rating >= iPrating
       AND pr.cansell = 'Y'
-      AND pr.enable = 'Y'
+      AND pr.ENABLE = 'Y'
       AND pa.availability = 10
-      AND pr.saleprice is not null
+      AND pr.saleprice IS NOT NULL
       AND pr.saleprice < pr.listprice
       ORDER BY pl.rating DESC;
 RETURN;
@@ -1716,17 +1699,17 @@ END;
     )
 AS
 BEGIN
-  
+
       OPEN curPgetSeo FOR
       SELECT productId
       FROM productregion
       WHERE regionId=iPsiteID
 	  AND productId >= iPlRange
       AND productId <= iPuRange
-      AND enable = 'Y'
-      ORDER BY productId desc;
-    
-return;
+      AND ENABLE = 'Y'
+      ORDER BY productId DESC;
+
+RETURN;
 END;
 
   PROCEDURE GetMaxProductSku (
@@ -1735,10 +1718,10 @@ END;
     )
 AS
 BEGIN
-      SELECT max(productId) INTO iPMaxSku
+      SELECT MAX(productId) INTO iPMaxSku
       FROM productregion
       WHERE regionId=iPsiteID
-	  AND enable = 'Y';
+	  AND ENABLE = 'Y';
 RETURN;
 END;
 
@@ -1755,7 +1738,7 @@ END;
     SELECT
       TYPE, content
     FROM
-      ya_storyboard
+      YA_STORYBOARD
     WHERE
       sku = iPsku
       AND lang_id = iPlangId
@@ -1764,7 +1747,7 @@ END;
     SELECT
       TYPE, content
       FROM
-        ya_storyboard
+        YA_STORYBOARD
       WHERE
         sku = iPsku
         AND lang_id = iPlangId
@@ -1784,12 +1767,12 @@ END;
     OPEN curPgetStoryBoard FOR
     SELECT
       b.section_id, b.section_name, c.image_id, c.image_path, c.thumb_path,
-      d.description, c.priority as priority, b.priority as section_priority
+      d.description, c.priority AS priority, b.priority AS section_priority
     FROM
-      ya_prod_gallery a,
-      ya_prod_gallery_section b,
-      ya_prod_gallery_image c,
-      ya_prod_gallery_desc d
+      YA_PROD_GALLERY a,
+      YA_PROD_GALLERY_SECTION b,
+      YA_PROD_GALLERY_IMAGE c,
+      YA_PROD_GALLERY_DESC d
     WHERE
       a.gallery_id=c.gallery_id
       AND b.section_id=c.section_id
@@ -1815,10 +1798,10 @@ END;
       COUNT(1)
     INTO iPcount
     FROM
-      ya_prod_gallery a,
-      ya_prod_gallery_section b,
-      ya_prod_gallery_image c,
-      ya_prod_gallery_desc d
+      YA_PROD_GALLERY a,
+      YA_PROD_GALLERY_SECTION b,
+      YA_PROD_GALLERY_IMAGE c,
+      YA_PROD_GALLERY_DESC d
     WHERE
       a.gallery_id=c.gallery_id
       AND b.section_id=c.section_id
@@ -1837,13 +1820,13 @@ END;
   AS
   BEGIN
     SELECT COUNT(*) AS num INTO iPcount
-      FROM ya_prod_dept a, ya_product_artist b
+      FROM YA_PROD_DEPT a, YA_PRODUCT_ARTIST b
      WHERE a.sku       = b.sku
        AND a.dept_id   = iPdeptId
        AND b.artist_id = iPartistId;
 
     EXCEPTION
-      WHEN no_data_found THEN
+      WHEN NO_DATA_FOUND THEN
         iPcount := 0;
   END GetPrdCountByArtistDepartment;
 
@@ -1853,17 +1836,45 @@ END;
   )
   AS
   BEGIN
-    SELECT COUNT(*) as num INTO iPcount
-      FROM ya_prod_dept
+    SELECT COUNT(*) AS num INTO iPcount
+      FROM YA_PROD_DEPT
      WHERE dept_id = iPdeptId;
 
     EXCEPTION
-      WHEN no_data_found THEN
+      WHEN NO_DATA_FOUND THEN
         iPcount := 0;
   END GetProductCountByDepartment;
-END Pkg_fe_ProductAccess_Katie;
+
+  PROCEDURE GetPublisherProductGroup (
+    iPpublisherId IN INT,
+    iPlangId IN INT,
+    curPgetProductGroup OUT refCur
+  )
+  AS
+  BEGIN
+    OPEN curPgetProductGroup FOR
+    SELECT
+      p.sku, pl.prod_name_u
+    FROM
+      YA_PRODUCT p
+    INNER JOIN YA_PROD_LANG pl
+    ON p.is_parent = 'Y'
+      AND p.sku IN (SELECT DISTINCT parent_sku FROM YA_PROD_REL WHERE sku IN (SELECT sku FROM YA_PRODUCT WHERE publisher_id = iPpublisherId))
+      AND p.sku = pl.sku
+      AND pl.lang_id = iPlangId
+    GROUP BY p.sku, pl.prod_name_u
+    ORDER BY p.sku DESC;
+/*
+    SELECT
+      p.sku, pl.prod_name_u
+    FROM YA_PROD_REL pr
+    INNER JOIN YA_PRODUCT p ON p.sku = pr.parent_sku AND p.publisher_id = iPpublisherId AND p.is_parent = 'Y'
+    INNER JOIN YA_PROD_LANG pl ON p.sku = pl.sku AND pl.lang_id = iPlangId
+    GROUP BY p.sku, pl.prod_name_u
+    ORDER BY p.sku DESC;
+*/
+    RETURN;
+  END GetPublisherProductGroup;
+
+END Pkg_Fe_Productaccess;
 /
-
---CREATE OR REPLACE PUBLIC SYNONYM Pkg_fe_ProductAccess_Katie FOR Pkg_fe_ProductAccess_Katie;
-
---GRANT EXECUTE ON Pkg_fe_ProductAccess_Katie TO YA_WEB;

@@ -351,6 +351,9 @@ is
           WHERE
             a.rating_id = b.rating_id
             AND b.us_review_id =  c.review_id
+						AND a.sku in (
+							SELECT productId FROM productRegion WHERE enable = 'Y' AND categoryid = 1 AND (regionid <> 10 OR originid <> 10)
+						)
           ORDER BY
             a.date_posted DESC , a.rating_id DESC
         ) x
@@ -423,6 +426,9 @@ is
       ) g ON c.review_id=g.review_id
       WHERE a.rating_id = b.rating_id
       AND b.us_review_id = c.review_id
+			AND a.sku in (
+				SELECT productId FROM productRegion WHERE enable = 'Y' AND categoryid = 1 AND (regionid <> 10 AND originid <> 10)
+			)
       AND
       (
         (a.date_posted = dtLlast_date_posted AND a.rating_id <= iLlast_rating_id) OR
@@ -1104,7 +1110,7 @@ is
       COUNT(1) AS num
     FROM
       (
-        SELECT rating_id, shopper_id, REVIEW_APPROVED, REVIEWER_TYPE
+        SELECT rating_id, shopper_id, REVIEW_APPROVED, REVIEWER_TYPE, SKU
         FROM ya_product_rating
         WHERE
           review_approved='Y'
@@ -1119,6 +1125,9 @@ is
     WHERE
       a.rating_id=b.rating_id
       AND b.us_review_id = c.review_id
+			AND a.sku in (
+				SELECT productId FROM productRegion WHERE enable = 'Y' AND (regionid <> 10 OR originid <> 10) AND categoryid = 1			
+			)
     GROUP BY b.lang_id, a.reviewer_type;
     RETURN;
   END GetReviewCountByShopperId;
@@ -1139,12 +1148,15 @@ is
       ya_product_rating a,
       ya_prod_rating_lang b,
       ya_review c,
-      ya_review_helpful d
+      ya_review_helpful d,
+			productRegion h
     WHERE
       a.rating_id = b.rating_id
       AND a.shopper_id = cPshopper_id
       AND b.us_review_id =  c.review_id
       AND c.review_id = d.review_id
+			AND a.sku = h.productid
+			AND h.enable = 'Y' AND (h.regionid <> 10 OR h.originid <> 10) AND categoryid = 1
     GROUP BY d.review_helpful;
   END GetHelpfulCountByShopperId;
 
