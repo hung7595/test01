@@ -217,7 +217,22 @@ PROCEDURE InsertReviewData1 (
     iPtotal_rating OUT INT,
     iPnum_review OUT INT
   );
-
+   PROCEDURE GetReviewsBySkuWithNoLang (
+    iPsku IN INT,
+    iPsite_id IN INT,
+    iPstart_rec IN INT,
+    iProw_num IN INT,
+    iPget_share IN INT,
+    iPget_best IN INT,
+    curPresult OUT refCur
+  );
+   PROCEDURE GetAllReviewsByShopperID (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    iPstart_rec IN INT,
+    iProw_num IN INT,
+    curPresult OUT refCur
+  );
 END Pkg_FE_ReviewAccess;
 /
 
@@ -1891,8 +1906,332 @@ PROCEDURE GetShopperReviewCount (
 
 		RETURN;
 	END GetProductShareReviewRating;
+	
+ PROCEDURE GetReviewsBySkuWithNoLang (
+    iPsku IN INT,
+    iPsite_id IN INT,
+    iPstart_rec IN INT,
+    iProw_num IN INT,
+    iPget_share IN INT,
+    iPget_best IN INT,
+    curPresult OUT refCur
+  )
+  AS
+    dtLlast_date_posted DATE;
+    iLstart_rec INT;
+    iLlast_rating_id INT;
+  BEGIN
+    SELECT (iPstart_rec + 1) INTO iLstart_rec FROM DUAL;
 
+    --get start record
 
+    BEGIN
+      SELECT
+        r.date_posted, r.rating_id INTO
+        dtLlast_date_posted, iLlast_rating_id
+      FROM
+      (
+        SELECT
+          x.date_posted,
+          x.rating_id
+        FROM
+        (
+          SELECT a.date_posted, a.rating_id
+          FROM
+          (
+               SELECT a2.* FROM
+                   (
+                         SELECT * FROM ya_product_rating
+                         WHERE review_approved='Y'
+                         AND (reviewer_type = 'USER' OR CASE WHEN iPget_best=1 THEN 'WINNER'  WHEN iPget_best=0 THEN 'dummy' END = reviewer_type)
+                         AND sku <> iPsku
+                    ) a2,
+                    (
+                         SELECT a1.sku FROM ya_review_share_group a1, ya_review_share_customerReview c1
+                         WHERE a1.group_id = (SELECT b1.group_id FROM ya_review_share_group b1 WHERE b1.sku = iPsku)
+                         AND a1.sku = c1.sku
+                         AND a1.sku <> iPsku
+                         AND iPget_share = 1
+                     )b2
+               WHERE a2.sku = b2.sku
+               UNION
+               SELECT * FROM ya_product_rating
+               WHERE review_approved='Y'
+               AND (reviewer_type = 'USER' OR CASE WHEN iPget_best=1 THEN 'WINNER'  WHEN iPget_best=0 THEN 'dummy' END = reviewer_type)
+               AND sku = iPsku
+          ) a,
+          (
+               SELECT * FROM ya_prod_rating_lang --WHERE (lang_id = iPlang_id OR lang_id=1)
+          ) b,
+          (
+               SELECT * FROM ya_review WHERE (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
+          )c
+          WHERE a.rating_id = b.rating_id
+          AND b.us_review_id =  c.review_id
+          ORDER BY a.date_posted DESC, a.rating_id DESC
+        ) x
+        WHERE
+          ROWNUM <= iLstart_rec
+        ORDER BY
+          x.date_posted, x.rating_id
+      ) r
+      WHERE
+        ROWNUM = 1;
+
+      EXCEPTION WHEN no_data_found THEN
+        SELECT NULL INTO dtLlast_date_posted FROM DUAL;
+        SELECT -1 INTO iLlast_rating_id FROM DUAL;
+    END;
+
+    -- get final result
+
+    OPEN curPresult FOR
+    SELECT *
+    FROM
+    (
+        SELECT
+          a.rating_id, c.review_id, a.sku,
+          CAST(NVL(a.product_rating, 0) AS int) as product_rating,
+          a.date_posted, a.review_approved,
+          a.shopper_id as shopper_id,
+          a.reviewer as reviewer,
+          a.reviewer_type,
+          CAST(NVL(b.lang_id, 1) AS int) as lang_id,
+          b.title as title,
+          c.review as review,
+          c.review_img_loc as review_img_loc,
+          CAST(NVL(c.review_img_width, 0) AS int) as review_img_width,
+          CAST(NVL(c.review_img_height, 0) AS int) as review_img_height,
+          d.firstname as firstname, d.lastname as lastname,
+          d.nickname as nickname, NVL(e.display_mode, 0) as display_mode,
+          CAST(NVL(f.helpful_num, 0) AS int) as helpful_num,
+          CAST(NVL(g.nonhelpful_num, 0) AS int) as nonhelpful_num
+        FROM
+        (
+          SELECT a2.*
+          FROM
+          (
+            SELECT *
+            FROM ya_product_rating
+            WHERE
+              review_approved =  'Y'
+              AND
+              (
+                reviewer_type   =  'USER'
+                OR
+                  CASE
+                    WHEN iPget_best  =  1 THEN 'WINNER'
+                    WHEN iPget_best  =  0 THEN 'dummy'
+                  END =  reviewer_type
+              )
+              AND sku <> iPsku
+            ) a2,
+          (
+            SELECT a1.sku
+            FROM ya_review_share_group a1, ya_review_share_customerReview c1
+            WHERE
+              a1.group_id =
+              (
+                SELECT b1.group_id
+                FROM ya_review_share_group b1
+                WHERE
+                  b1.sku = iPsku
+              )
+              AND a1.sku          =  c1.sku
+              AND a1.sku          <> iPsku
+              AND iPget_share     =  1
+          ) b2
+          WHERE a2.sku = b2.sku
+        UNION
+          SELECT * FROM ya_product_rating
+          WHERE
+            review_approved='Y'
+            AND
+            (
+              reviewer_type = 'USER'
+              OR
+                CASE
+                  WHEN iPget_best=1 THEN 'WINNER'
+                  WHEN iPget_best=0 THEN 'dummy'
+                END = reviewer_type
+            )
+            AND sku = iPsku
+        ) a
+        LEFT JOIN ya_shopper d ON a.shopper_id=d.shopper_id
+        LEFT JOIN ya_review_reviewerName e ON a.shopper_id=e.shopper_id,
+        (
+          SELECT * FROM ya_prod_rating_lang --WHERE (lang_id = iPlang_id OR lang_id=1)
+        ) b,
+        (
+          SELECT * FROM ya_review WHERE (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
+        )c
+        LEFT JOIN
+        (
+          SELECT review_id, count(*) as helpful_num FROM ya_review_helpful WHERE review_helpful='Y' GROUP BY review_id
+        ) f ON c.review_id=f.review_id
+        LEFT JOIN
+        (
+          SELECT review_id, count(*) as nonhelpful_num FROM ya_review_helpful WHERE review_helpful='N' GROUP BY review_id
+        ) g ON c.review_id=g.review_id
+        WHERE
+          a.rating_id = b.rating_id
+          AND b.us_review_id = c.review_id
+          AND
+          (
+            (a.date_posted = dtLlast_date_posted AND a.rating_id <= iLlast_rating_id)
+            OR (a.date_posted < dtLlast_date_posted)
+          )
+        ORDER BY a.date_posted desc, a.rating_id desc
+    )
+    WHERE
+      ROWNUM <=
+        CASE
+          WHEN iProw_num = 0 THEN (ROWNUM + 1)
+          ELSE iProw_num
+        END;
+
+    RETURN;
+  END GetReviewsBySkuWithNoLang;
+PROCEDURE GetAllReviewsByShopperID (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    iPstart_rec IN INT,
+    iProw_num IN INT,
+    curPresult OUT refCur
+  )
+  AS
+    dtLlast_date_posted DATE;
+    iLstart_rec INT;
+    iLlast_rating_id INT;
+  BEGIN
+    SELECT (iPstart_rec + 1) INTO iLstart_rec FROM DUAL;
+
+    --get start record
+
+    BEGIN
+      SELECT
+        r.date_posted, r.rating_id INTO
+        dtLlast_date_posted, iLlast_rating_id
+      FROM
+      (
+        SELECT
+          x.date_posted,
+          x.rating_id
+        FROM
+        (
+          SELECT
+            a.date_posted, a.rating_id
+          FROM
+            (
+              SELECT * FROM ya_product_rating WHERE review_approved='Y'
+              AND shopper_id = cPshopper_id
+              AND (reviewer_type = 'USER' OR reviewer_type = 'WINNER')
+            ) a, 
+						(
+							SELECT * FROM productRegion WHERE enable = 'Y' AND regionid = iPsite_id AND originid = iPsite_id AND categoryid = 1			
+						) h ,
+            (
+              SELECT * FROM ya_prod_rating_lang --WHERE lang_id = iPlang_id
+            ) b,
+            (
+              SELECT * FROM ya_review WHERE (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
+            ) c
+          WHERE
+            a.rating_id = b.rating_id
+            AND b.us_review_id =  c.review_id
+						AND a.sku = h.productid
+          ORDER BY
+            a.date_posted DESC , a.rating_id DESC
+        ) x
+        WHERE
+          ROWNUM <= iLstart_rec
+        ORDER BY
+          x.date_posted, x.rating_id
+      ) r
+      WHERE
+        ROWNUM = 1;
+
+      EXCEPTION WHEN no_data_found THEN
+        SELECT NULL INTO dtLlast_date_posted FROM DUAL;
+        SELECT -1 INTO iLlast_rating_id FROM DUAL;
+    END;
+
+    -- get final result
+    OPEN curPresult FOR
+    SELECT *
+    FROM
+    (
+      SELECT
+        a.rating_id, c.review_id, a.sku,
+        cast(NVL(a.product_rating, 0) AS INT) AS product_rating,
+        a.date_posted, a.review_approved,
+        a.shopper_id AS shopper_id,
+        a.reviewer AS reviewer,
+        a.reviewer_type,
+
+        cast(NVL(b.lang_id, 1) AS INT) AS lang_id,
+        b.title AS title,
+        c.review AS review,
+
+        c.review_img_loc as review_img_loc,
+        CAST(NVL(c.review_img_width, 0) AS INT) AS review_img_width,
+        CAST(NVL(c.review_img_height, 0) AS INT) AS review_img_height,
+
+        d.firstname AS firstname,
+        d.lastname AS lastname,
+        d.nickname AS nickname,
+        NVL(e.display_mode, 0) AS display_mode,
+
+        CAST(NVL(f.helpful_num, 0) AS INT) AS helpful_num,
+        CAST(NVL(g.nonhelpful_num, 0) AS INT) AS nonhelpful_num
+      FROM
+      (
+        SELECT * FROM ya_product_rating WHERE review_approved='Y'
+        AND shopper_id = cPshopper_id
+        AND (reviewer_type = 'USER' OR reviewer_type = 'WINNER')
+      ) a
+      LEFT JOIN ya_shopper d ON a.shopper_id=d.shopper_id
+      LEFT JOIN ya_review_reviewerName e ON a.shopper_id=e.shopper_id,
+			(
+				SELECT productid FROM productRegion WHERE enable = 'Y' AND regionid = iPsite_id AND originid = iPsite_id AND categoryid = 1			
+			) h, 
+			(
+        SELECT * FROM ya_prod_rating_lang --WHERE lang_id = iPlang_id
+      ) b,
+      (
+        SELECT * FROM ya_review WHERE (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
+      ) c
+      LEFT JOIN
+      (
+        SELECT review_id, count(*) as helpful_num
+        FROM ya_review_helpful WHERE review_helpful='Y'
+        GROUP BY review_id
+      ) f ON c.review_id=f.review_id
+      LEFT JOIN
+      (
+        SELECT review_id, count(*) as nonhelpful_num
+        FROM ya_review_helpful WHERE review_helpful='N'
+        GROUP BY review_id
+      ) g ON c.review_id=g.review_id
+      WHERE a.rating_id = b.rating_id
+      AND b.us_review_id = c.review_id
+			AND a.sku = h.productid
+      AND
+      (
+        (a.date_posted = dtLlast_date_posted AND a.rating_id <= iLlast_rating_id) OR
+        (a.date_posted < dtLlast_date_posted)
+      )
+      ORDER BY a.date_posted DESC, a.rating_id DESC
+    ) r
+    WHERE
+      ROWNUM <=
+      CASE
+        WHEN iProw_num = 0 THEN (ROWNUM + 1)
+        ELSE iProw_num
+       END;
+
+    RETURN;
+  END GetAllReviewsByShopperID;
 END Pkg_FE_ReviewAccess;
 /
 
