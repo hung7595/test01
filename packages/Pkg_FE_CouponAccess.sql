@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE Pkg_FE_CouponAccess
+create or replace PACKAGE Pkg_FE_CouponAccess
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -30,10 +30,15 @@ AS
     cPshopper_id IN CHAR,
     iPreturn OUT INT
   );
+
+  /* proc_fe_CreateNewShopperCoupon */
+  PROCEDURE CreateNewShopperCoupon (
+    cPshopper_id IN CHAR,
+    cPcoupon_code IN VARCHAR2
+  );
 END Pkg_FE_CouponAccess;
 /
-
-CREATE OR REPLACE PACKAGE BODY Pkg_FE_CouponAccess
+create or replace PACKAGE BODY Pkg_FE_CouponAccess
 AS
   PROCEDURE GetCoupon (
     cPcode IN VARCHAR2,
@@ -86,8 +91,6 @@ AS
 
     RETURN;
   END GetCoupon;
-
-
 
   PROCEDURE GetCorporateCoupon (
     cPdomain IN VARCHAR2,
@@ -145,8 +148,6 @@ AS
       cPcoupon_code := '';
   END GetCorporateCoupon;
 
-
-
   PROCEDURE GetValidShopperId (
     cPcoupon_code IN VARCHAR2,
     curPresult OUT refCur
@@ -159,7 +160,6 @@ AS
     WHERE coupon_code = cPcoupon_code;
     RETURN;
   END GetValidShopperId;
-
 
   PROCEDURE ValidateShopperId (
     cPcoupon_code IN VARCHAR2,
@@ -177,6 +177,18 @@ AS
   EXCEPTION WHEN NO_DATA_FOUND THEN
     iPreturn := -1;
   END ValidateShopperId;
+
+  PROCEDURE CreateNewShopperCoupon (
+    cPshopper_id IN CHAR,
+    cPcoupon_code IN VARCHAR2
+  )
+  AS
+  BEGIN
+   INSERT INTO ya_coupon  
+      (shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value,expiration_date, all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger)  
+   VALUES  
+      (cPshopper_id, cPcoupon_code, 'YS New Customer Coupon 060711', 'YesStyle New Customer Coupon', 5, to_date('2006/09/30', 'yyyy/mm/dd'), 'O', 'N', 1, 10, 5);
+
+  END CreateNewShopperCoupon;
 END Pkg_FE_CouponAccess;
 /
-
