@@ -1,5 +1,4 @@
-CREATE OR REPLACE
-PACKAGE Pkg_fe_OrderAccess
+create or replace PACKAGE Pkg_fe_OrderAccess
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -275,8 +274,7 @@ AS
   );
 END Pkg_fe_OrderAccess;
 /
-CREATE OR REPLACE
-PACKAGE BODY Pkg_fe_OrderAccess
+create or replace PACKAGE BODY Pkg_fe_OrderAccess
 AS
   PROCEDURE InsertSaleCode (
     iPorder_num IN INT,
@@ -341,7 +339,7 @@ AS
         SELECT cPtransaction_id INTO cLtransaction_id FROM DUAL;
       END;
     END IF;
-    
+
     -- Make sure there's enough credit
     SELECT NVL(SUM(current_balance), 0)
     INTO iLtemp
@@ -475,7 +473,7 @@ AS
         SELECT cPtransaction_id INTO cLtransaction_id FROM DUAL;
       END;
     END IF;
-    
+
     -- Make sure there's enough credit
     SELECT NVL(SUM(current_balance), 0)
     INTO iLtemp
@@ -1795,7 +1793,7 @@ AS
     ELSE
       BEGIN
         iLship_profile := NULL;
-      END;    
+      END;
     END IF;
 
     BEGIN
@@ -1839,6 +1837,15 @@ AS
       END;
     ELSE
       BEGIN
+        SELECT cc.profile_id
+        INTO iLcc_profile
+        FROM ya_credit_card_profile cc
+        WHERE
+          cc.preferred = 'Y'
+          AND cc.shopper_id = cPshopper_id
+          AND cc.card_type_id IN (1,2,3,6)
+          AND ROWNUM = 1;
+      EXCEPTION WHEN NO_DATA_FOUND THEN
         iLcc_profile := NULL;
       END;
     END IF;
@@ -2925,7 +2932,6 @@ AS
   EXCEPTION WHEN others THEN
     ROLLBACK;
   END UpdateCouponCode;
-
 
 
   PROCEDURE UpdateApplicationCredit (
