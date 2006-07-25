@@ -14,10 +14,11 @@ AS
 END Pkg_BO_ProdSpecificationDALC;
 /
 
+
 CREATE OR REPLACE PACKAGE BODY Pkg_BO_ProdSpecificationDALC
 IS
   PROCEDURE FillProductSpecification (
-    iPsku int,
+    iPsku INT,
     rcPresult OUT refCur
     )
   AS
@@ -35,7 +36,7 @@ IS
       pgl.label7_value,
       pgl.label8_value
     FROM
-      ya_prod_grid_lang pgl
+      YA_PROD_GRID_LANG pgl
     WHERE
       pgl.sku = iPsku
     ORDER BY pgl.grid_id ASC, pgl.lang_id;
@@ -52,10 +53,9 @@ IS
       specification_id,
       (grid_id * 10 + col_num) AS grid_key
     FROM
-      ya_prod_specification_grid_rel
+      YA_PROD_SPECIFICATION_GRID_REL
     ORDER BY specification_id ASC, grid_id ASC, col_num ASC;
     RETURN;
   END GetProdSpecificationGridRel;
 END Pkg_BO_ProdSpecificationDALC;
 /
-
