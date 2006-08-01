@@ -1,4 +1,4 @@
-CREATE OR REPLACE package Pkg_fe_MyAccountOrderAccess
+create or replace package Pkg_fe_MyAccountOrderAccess
 As
   TYPE curGorder IS REF CURSOR;
   TYPE curGinvoice IS REF CURSOR;
@@ -38,8 +38,7 @@ As
 
 END Pkg_fe_MyAccountOrderAccess;
 /
-
-CREATE OR REPLACE package body Pkg_fe_MyAccountOrderAccess
+create or replace package body Pkg_fe_MyAccountOrderAccess
 AS
   FUNCTION GetOrderLineStatus(iLproduct_id INT, iLorder_id INT) RETURN INT IS
     iLnew_status INT;
@@ -83,7 +82,7 @@ AS
       , s.city as s_city, s.state as s_state, s.zip as s_zip, s.method as shipMethodId, s.country as ship_country_id, pl.prod_name as prod_name, pe.prod_name as prod_ename
       , cast(miscinfo as varchar2(4000)) as miscInfo, pr.preorder as preorder, pr.preorderstart as preorder_start, pr.preorderend as preorder_end
       , bbl.meaning as cardType, bpl.meaning as paymentMethod, bcl.meaning as bill_country, scl.meaning as ship_country, sml.meaning as shipMethod
-      , b.method, '' as prod_name_img_loc, o.status, o.hold, pd.account_id
+      , b.method, '' as prod_name_img_loc, o.status, o.hold, pd.account_id, pe.prod_subtitle_aka
     FROM OrderInfo o
       INNER JOIN OrderLine ol ON o.id = ol.orderId AND (ol.parentId = -1 OR ol.parentId = productId)
       INNER JOIN OrderLineDetail ld ON ol.orderId = ld.orderId AND ol.id = ld.orderLineId
@@ -138,7 +137,7 @@ AS
       s.firstname as s_firstname, s.lastname as s_lastname, s.email as s_email, s.dayPhone as s_dayPhone,
       s.address1 as s_address1, s.address2 as s_address2, s.city as s_city, s.state as s_state, s.zip as s_zip,
       pl.prod_name as prod_name, pf.prod_name as prod_name_english, pf.prod_name_img_loc, s.method as shipMethodId, s.country as ship_country_id,
-      bbl.meaning as cardType, bpl.meaning as paymentMethod, bcl.meaning as bill_country, scl.meaning as ship_country, sml.meaning as shipMethod, ol.productid
+      bbl.meaning as cardType, bpl.meaning as paymentMethod, bcl.meaning as bill_country, scl.meaning as ship_country, sml.meaning as shipMethod, ol.productid, pf.prod_subtitle_aka
     FROM Invoice i
       INNER JOIN InvoiceLine il ON i.id = il.invoiceId AND SUBSTR(il.skuCode,0,4)<>'MISC'
       INNER JOIN Shipment sp ON il.shipmentId = sp.id
@@ -176,4 +175,3 @@ AS
   END GetItemShippingAmount;
 END Pkg_fe_MyAccountOrderAccess;
 /
-
