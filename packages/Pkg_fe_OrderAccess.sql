@@ -74,6 +74,25 @@ AS
   );
 
   /* proc_fe_GetOrder */
+  PROCEDURE GetOrderWithWarranty (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+    curPresult1 OUT refCur, -- GetBasket refCur1
+    curPresult2 OUT refCur, -- GetBasket refCur2
+    curPresult3 OUT refCur, -- GetBasket refCur3
+    curPresult4 OUT refCur, -- GetBasket refCur4
+    curPresult5 OUT refCur, -- GetBasket refCur5
+    curPresult6 OUT refCur, -- GetBasket refCur6
+    curPresult7 OUT refCur, -- GetBasket refCur7
+    curPresult8 OUT refCur,
+    curPresult9 OUT refCur,
+    curPresult10 OUT refCur,
+    curPresult11 OUT refCur,
+    curPresult12 OUT refCur    
+  );
+
+  /* proc_fe_GetOrder */
   PROCEDURE GetOrder (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
@@ -88,7 +107,7 @@ AS
     curPresult8 OUT refCur,
     curPresult9 OUT refCur,
     curPresult10 OUT refCur,
-    curPresult11 OUT refCur
+    curPresult11 OUT refCur    
   );
 
   /* proc_fe_GetOrderXML */
@@ -954,6 +973,11 @@ AS
       AND site_id = iPsite_id
       AND type = 0;
 
+    DELETE FROM ya_warranty_basket
+    WHERE
+      shopper_id = cPshopper_id
+      AND site_id = iPsite_id;
+
     -- remove checkout data
     DELETE FROM ya_checkout_data
     WHERE
@@ -1189,6 +1213,11 @@ AS
           AND site_id = iPsite_id
           AND type = 0;
 
+        DELETE FROM ya_warranty_basket
+        WHERE
+          shopper_id = cPshopper_id
+          AND site_id = iPsite_id;
+
         DELETE FROM ya_checkout_data
         WHERE
           shopper_id = cPshopper_id
@@ -1305,6 +1334,180 @@ AS
   END InsertPaypalOrderXml;
 
 
+
+  PROCEDURE GetOrderWithWarranty (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+    curPresult1 OUT refCur, -- GetBasket refCur1
+    curPresult2 OUT refCur, -- GetBasket refCur2
+    curPresult3 OUT refCur, -- GetBasket refCur3
+    curPresult4 OUT refCur, -- GetBasket refCur4
+    curPresult5 OUT refCur, -- GetBasket refCur5
+    curPresult6 OUT refCur, -- GetBasket refCur6
+    curPresult7 OUT refCur, -- GetBasket refCur7
+    curPresult8 OUT refCur,
+    curPresult9 OUT refCur,
+    curPresult10 OUT refCur,
+    curPresult11 OUT refCur,
+    curPresult12 OUT refCur
+  )
+  AS
+    iLcountry_id INT;
+    vcLcoupon_code VARCHAR2(32);
+    iLdummy INT;
+  BEGIN
+    BEGIN
+      SELECT ship_to_country_id
+      INTO iLcountry_Id
+      FROM ya_checkout_data
+      WHERE
+        shopper_id = cPshopper_id
+        AND	site_id = iPsite_id;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        iLcountry_id := -1;
+    END;
+
+    -- GetBasket INTO curPresult1 to curPresult6
+    Pkg_FE_BasketAccess.GetBasketWithWarranty(
+      cPshopper_id,
+      iPsite_id,
+      iPlang_id,
+      0,
+      iLcountry_id,
+      curPresult1,
+      curPresult2,
+      curPresult3,
+      curPresult4,
+      curPresult5,
+      curPresult6,
+      curPresult7
+      );
+
+    BEGIN
+      SELECT trim(coupon_code)
+      INTO vcLcoupon_code
+      FROM ya_checkout_data
+      WHERE
+        shopper_id = cPshopper_id
+        AND site_id = iPsite_id;
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+      vcLcoupon_code := '';
+    END;
+
+    -- get coupon constraint type 1
+    OPEN curPresult8 FOR
+    SELECT constraint_value
+    FROM ya_coupon_constraint
+    WHERE
+      coupon_code = vcLcoupon_code
+      AND constraint_type = 1;
+
+    -- get coupon constraint type 2
+    OPEN curPresult9 FOR
+    SELECT constraint_value
+    FROM ya_coupon_constraint
+    WHERE
+      coupon_code = vcLcoupon_code
+      AND constraint_type = 2;
+
+    -- get coupon constraint type 3
+    OPEN curPresult10 FOR
+    SELECT constraint_value
+    FROM ya_coupon_constraint
+    WHERE
+      coupon_code = vcLcoupon_code
+      AND constraint_type = 3;
+
+    OPEN curPresult11 FOR
+    SELECT
+      c.coupon_code,
+      coupon_description,
+      dollar_coupon_value,
+      percentage_coupon_value,
+      order_amount_trigger,
+      item_sku_trigger,
+      expiration_date,
+      shopper_id,
+      all_shoppers,
+      coupon_used,
+      coupon_type_id,
+      site_id,
+      corporate_domain
+    FROM
+      ya_coupon c
+      LEFT OUTER JOIN ya_coupon_corporate cc ON
+        c.coupon_code = cc.coupon_code
+    WHERE c.coupon_code = vcLcoupon_code;
+
+
+    OPEN curPresult12 FOR
+    SELECT
+      sale_id,
+      customer_firstname,
+      customer_lastname,
+      customer_email,
+      customer_comment,
+      shipping_method_id,
+      split_shipment,
+      ship_to_firstname,
+      ship_to_lastname,
+      ship_to_address_one,
+      ship_to_address_two,
+      ship_to_city,
+      ship_to_state_id,
+      ship_to_state,
+      ship_to_zip,
+      ship_to_country_id,
+      ship_to_day_phone,
+      ship_to_eve_phone,
+      ship_to_fax_number,
+      ship_to_mobile_phone,
+      ship_to_email,
+      payment_method_id,
+      bill_to_firstname,
+      bill_to_lastname,
+      bill_to_address_one,
+      bill_to_address_two,
+      bill_to_city,
+      bill_to_state_id,
+      bill_to_state,
+      bill_to_zip,
+      bill_to_country_id,
+      bill_to_phone,
+      bill_to_email,
+      coupon_code,
+      CAST(credit_amount AS FLOAT),
+      cc_number,
+      cc_type_id,
+      cc_expiration_month,
+      cc_expiration_year,
+      bank_name,
+      bank_phone,
+      currency,
+      ship_profile_id,
+      bill_profile_id,
+      cc_profile_id,
+      message_type,
+      sender,
+      receiver,
+      date_of_delivery,
+      content,
+      font,
+      colour,
+      lang
+    FROM
+      ya_checkout_data c
+      LEFT OUTER JOIN ya_giftcard_data g ON
+        c.shopper_id = g.shopper_id
+        AND c.site_id = g.site_id
+    WHERE
+      c.shopper_id = cPshopper_id
+      AND c.site_id = iPsite_id;
+
+    RETURN;
+  END GetOrderWithWarranty;
 
   PROCEDURE GetOrder (
     cPshopper_id IN CHAR,
@@ -1477,8 +1680,6 @@ AS
 
     RETURN;
   END GetOrder;
-
-
 
   PROCEDURE GetOrderXml (
     iPorder_num IN INT,
