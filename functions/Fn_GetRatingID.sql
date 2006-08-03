@@ -10,7 +10,7 @@ BEGIN
   WHERE 1=1
   AND pr.rating_id = rl.rating_id
   AND rl.us_review_id = r.review_id
-  AND r.review is not null
+  AND (case when r.review is not null then r.review_id else NULL end) = RL.US_REVIEW_ID
   AND ROWNUM = 1
   AND pr.sku = iSKU
   AND pr.shopper_id = 'EDITORIAL';
