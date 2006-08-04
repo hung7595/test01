@@ -1,4 +1,4 @@
-CREATE OR REPLACE package Pkg_bo_ProductListDalc
+create or replace package Pkg_bo_ProductListDalc
 AS
   TYPE refcur IS ref CURSOR;
 
@@ -35,6 +35,14 @@ AS
     iPpublisherId IN INT,
     curPsku	OUT	refcur,
     curPcrossSell	OUT refcur
+  );
+  PROCEDURE GetPreOrderArtPubProdList (
+    iPdeptId IN INT,
+    iPartistId IN INT,
+    iPpublisherId IN INT,
+    iPcampaignCode IN INT DEFAULT -1,
+    curPsku OUT refcur,
+    curPcrossSell OUT refcur
   );
   PROCEDURE GetPreOrderArtPubProductList (
     iPdeptId IN INT,
@@ -343,8 +351,7 @@ AS
   );
 END Pkg_bo_ProductListDalc;
 /
-
-CREATE OR REPLACE package body Pkg_bo_ProductListDalc
+create or replace package body Pkg_bo_ProductListDalc
 IS
   PROCEDURE GetBargainHighlightProdList (
     iPdeptId IN INT,
@@ -2607,6 +2614,191 @@ IS
     END IF;
   END GetArtPubCampaignProductList;
 
+  PROCEDURE GetPreOrderArtPubProdList (
+    iPdeptId IN INT,
+    iPartistId IN INT,
+    iPpublisherId IN INT,
+    iPcampaignCode IN INT DEFAULT -1,
+    curPsku OUT refcur,
+    curPcrossSell OUT refcur
+  )
+  AS
+    iLadultBit INT;
+    iLtemp INT;
+  BEGIN
+    BEGIN
+      SELECT 1 INTO iLadultBit
+      FROM ya_dept_attr
+      WHERE dept_id = iPdeptId
+        AND attribute_id = 84
+        AND ROWNUM = 1;
+
+     EXCEPTION
+       WHEN no_data_found THEN
+         iLadultBit := 0;
+    END;
+
+    IF ( iPcampaignCode = -1) THEN
+      IF iPartistId > 0 THEN
+        IF iPpublisherId > 0 THEN
+          OPEN curPsku FOR
+          SELECT pd.sku, pr.preorder as us_preorder, pr.preorderstart as us_preorder_start, pr.preorderend as us_preorder_end, pr1.preorder as tw_preorder, pr1.preorderstart as tw_preorder_start, pr1.preorderend as tw_preorder_end, SYSDATE, p.release_date
+          FROM ya_preorder_list l
+          INNER JOIN ya_prod_dept pd on pd.sku = l.sku
+          INNER JOIN ya_product p on pd.sku = p.sku
+          INNER JOIN ya_product_artist par ON p.sku=par.sku AND par.artist_id = iPartistId
+		  INNER JOIN productregion pr on l.sku=pr.productId AND pr.regionId=1
+		  INNER JOIN productregion pr1 on l.sku=pr1.productId AND pr1.regionId=7
+          LEFT OUTER JOIN ya_adult_product pa on pd.sku = pa.sku
+          WHERE pd.dept_id = iPdeptId
+          AND p.release_date >= SYSDATE
+          AND ((pr.preorder = 'Y' AND pr.preorderstart <= SYSDATE AND pr.preorderend >= SYSDATE)
+          OR (pr1.preorder = 'Y' AND pr1.preorderstart <= SYSDATE AND pr1.preorderend >= SYSDATE))
+          AND p.publisher_id=iPpublisherId
+          AND CASE WHEN iLadultBit = 0 THEN pa.sku ELSE NULL END is NULL;
+        ELSE
+          OPEN curPsku FOR
+          SELECT pd.sku, pr.preorder as us_preorder, pr.preorderstart as us_preorder_start, pr.preorderend as us_preorder_end, pr1.preorder as tw_preorder, pr1.preorderstart as tw_preorder_start, pr1.preorderend as tw_preorder_end, SYSDATE, p.release_date
+          FROM ya_preorder_list l
+          INNER JOIN ya_prod_dept pd on pd.sku = l.sku
+          INNER JOIN ya_product p on pd.sku = p.sku
+          INNER JOIN ya_product_artist par ON p.sku=par.sku AND par.artist_id = iPartistId
+          LEFT OUTER JOIN ya_adult_product pa on pd.sku = pa.sku
+		  INNER JOIN productregion pr on l.sku=pr.productId AND pr.regionId=1
+		  INNER JOIN productregion pr1 on l.sku=pr1.productId AND pr1.regionId=7
+          WHERE pd.dept_id = iPdeptId
+          AND p.release_date >= SYSDATE
+          AND ((pr.preorder = 'Y' AND pr.preorderstart <= SYSDATE AND pr.preorderend >= SYSDATE)
+          OR (pr1.preorder = 'Y' AND pr1.preorderstart <= SYSDATE AND pr1.preorderend >= SYSDATE))
+          AND CASE WHEN iLadultBit = 0 THEN pa.sku ELSE NULL END is NULL;
+        END IF;
+      ELSE
+        IF iPpublisherId > 0 THEN
+          OPEN curPsku FOR
+          SELECT pd.sku, pr.preorder as us_preorder, pr.preorderstart as us_preorder_start, pr.preorderend as us_preorder_end, pr1.preorder as tw_preorder, pr1.preorderstart as tw_preorder_start, pr1.preorderend as tw_preorder_end, SYSDATE, p.release_date
+          FROM ya_preorder_list l
+          INNER JOIN ya_prod_dept pd on pd.sku = l.sku
+          INNER JOIN ya_product p on pd.sku = p.sku
+          LEFT OUTER JOIN ya_adult_product pa on pd.sku = pa.sku
+		  INNER JOIN productregion pr on l.sku=pr.productId AND pr.regionId=1
+		  INNER JOIN productregion pr1 on l.sku=pr1.productId AND  pr1.regionId=7
+          WHERE pd.dept_id = iPdeptId
+          AND p.release_date >= SYSDATE
+          AND ((pr.preorder = 'Y' AND pr.preorderstart <= SYSDATE AND pr.preorderend >= SYSDATE)
+          OR (pr1.preorder = 'Y' AND pr1.preorderstart <= SYSDATE AND pr1.preorderend >= SYSDATE))
+          AND p.publisher_id=iPpublisherId
+          AND CASE WHEN iLadultBit = 0 THEN pa.sku ELSE NULL END is NULL;
+        ELSE
+          OPEN curPsku FOR
+          SELECT pd.sku, pr.preorder as us_preorder, pr.preorderstart as us_preorder_start, pr.preorderend as us_preorder_end, pr1.preorder as tw_preorder, pr1.preorderstart as tw_preorder_start, pr1.preorderend as tw_preorder_end, SYSDATE, p.release_date
+          FROM ya_preorder_list l
+          INNER JOIN ya_prod_dept pd on pd.sku = l.sku
+          INNER JOIN ya_product p on pd.sku = p.sku
+          LEFT OUTER JOIN ya_adult_product pa on pd.sku = pa.sku
+		  INNER JOIN productregion pr on l.sku=pr.productId AND pr.regionId=1
+		  INNER JOIN productregion pr1 on l.sku=pr1.productId AND  pr1.regionId=7
+          WHERE pd.dept_id = iPdeptId
+          AND p.release_date >= SYSDATE
+          AND ((pr.preorder = 'Y' AND pr.preorderstart <= SYSDATE AND pr.preorderend >= SYSDATE)
+          OR (pr1.preorder = 'Y' AND pr1.preorderstart <= SYSDATE AND pr1.preorderend >= SYSDATE))
+          AND CASE WHEN iLadultBit = 0 THEN pa.sku ELSE NULL END is NULL;
+        END IF;
+      END IF;
+    ELSE
+      IF iPartistId > 0 THEN
+        IF iPpublisherId > 0 THEN
+          OPEN curPsku FOR
+          SELECT pd.sku, pr.preorder as us_preorder, pr.preorderstart as us_preorder_start, pr.preorderend as us_preorder_end, pr1.preorder as tw_preorder, pr1.preorderstart as tw_preorder_start, pr1.preorderend as tw_preorder_end, SYSDATE, p.release_date
+          FROM ya_preorder_list l
+          INNER JOIN ya_prod_dept pd on pd.sku = l.sku
+          INNER JOIN ya_product p on pd.sku = p.sku
+          INNER JOIN ya_campaign c on c.sku = p.sku AND c.campaign_code = iPcampaignCode
+          INNER JOIN ya_product_artist par ON p.sku=par.sku AND par.artist_id = iPartistId
+          LEFT OUTER JOIN ya_adult_product pa on pd.sku = pa.sku
+		  INNER JOIN productregion pr on l.sku=pr.productId AND pr.regionId=1
+		  INNER JOIN productregion pr1 on l.sku=pr1.productId AND  pr1.regionId=7
+          WHERE pd.dept_id = iPdeptId
+          AND p.release_date >= SYSDATE
+          AND ((pr.preorder = 'Y' AND pr.preorderstart <= SYSDATE AND pr.preorderend >= SYSDATE)
+          OR (pr1.preorder = 'Y' AND pr1.preorderstart <= SYSDATE AND pr1.preorderend >= SYSDATE))
+          AND p.publisher_id=iPpublisherId
+          AND CASE WHEN iLadultBit = 0 THEN pa.sku ELSE NULL END is NULL;
+        ELSE
+          OPEN curPsku FOR
+          SELECT pd.sku, pr.preorder as us_preorder, pr.preorderstart as us_preorder_start, pr.preorderend as us_preorder_end, pr1.preorder as tw_preorder, pr1.preorderstart as tw_preorder_start, pr1.preorderend as tw_preorder_end, SYSDATE, p.release_date
+          FROM ya_preorder_list l
+          INNER JOIN ya_prod_dept pd on pd.sku = l.sku
+          INNER JOIN ya_product p on pd.sku = p.sku
+          INNER JOIN ya_campaign c on c.sku = p.sku AND c.campaign_code = iPcampaignCode
+          INNER JOIN ya_product_artist par ON p.sku=par.sku AND par.artist_id = iPartistId
+          LEFT OUTER JOIN ya_adult_product pa on pd.sku = pa.sku
+		  INNER JOIN productregion pr on l.sku=pr.productId AND pr.regionId=1
+		  INNER JOIN productregion pr1 on l.sku=pr1.productId AND  pr1.regionId=7
+          WHERE pd.dept_id = iPdeptId
+          AND p.release_date >= SYSDATE
+          AND ((pr.preorder = 'Y' AND pr.preorderstart <= SYSDATE AND pr.preorderend >= SYSDATE)
+          OR (pr1.preorder = 'Y' AND pr1.preorderstart <= SYSDATE AND pr1.preorderend >= SYSDATE))
+          AND CASE WHEN iLadultBit = 0 THEN pa.sku ELSE NULL END is NULL;
+        END IF;
+      ELSE
+        IF iPpublisherId > 0 THEN
+          OPEN curPsku FOR
+          SELECT pd.sku, pr.preorder as us_preorder, pr.preorderstart as us_preorder_start, pr.preorderend as us_preorder_end, pr1.preorder as tw_preorder, pr1.preorderstart as tw_preorder_start, pr1.preorderend as tw_preorder_end, SYSDATE, p.release_date
+          FROM ya_preorder_list l
+          INNER JOIN ya_prod_dept pd on pd.sku = l.sku
+          INNER JOIN ya_product p on pd.sku = p.sku
+          INNER JOIN ya_campaign c on c.sku = p.sku AND c.campaign_code = iPcampaignCode
+          LEFT OUTER JOIN ya_adult_product pa on pd.sku = pa.sku
+		  INNER JOIN productregion pr on l.sku=pr.productId AND pr.regionId=1
+		  INNER JOIN productregion pr1 on l.sku=pr1.productId AND  pr1.regionId=7
+          WHERE pd.dept_id = iPdeptId
+          AND p.release_date >= SYSDATE
+          AND ((pr.preorder = 'Y' AND pr.preorderstart <= SYSDATE AND pr.preorderend >= SYSDATE)
+          OR (pr1.preorder = 'Y' AND pr1.preorderstart <= SYSDATE AND pr1.preorderend >= SYSDATE))
+          AND p.publisher_id=iPpublisherId
+          AND CASE WHEN iLadultBit = 0 THEN pa.sku ELSE NULL END is NULL;
+        ELSE
+          OPEN curPsku FOR
+          SELECT pd.sku, pr.preorder as us_preorder, pr.preorderstart as us_preorder_start, pr.preorderend as us_preorder_end, pr1.preorder as tw_preorder, pr1.preorderstart as tw_preorder_start, pr1.preorderend as tw_preorder_end, SYSDATE, p.release_date
+          FROM ya_preorder_list l
+          INNER JOIN ya_prod_dept pd on pd.sku = l.sku
+          INNER JOIN ya_product p on pd.sku = p.sku
+          INNER JOIN ya_campaign c on c.sku = p.sku AND c.campaign_code = iPcampaignCode
+          LEFT OUTER JOIN ya_adult_product pa on pd.sku = pa.sku
+		  INNER JOIN productregion pr on l.sku=pr.productId AND pr.regionId=1
+		  INNER JOIN productregion pr1 on l.sku=pr1.productId AND  pr1.regionId=7
+          WHERE pd.dept_id = iPdeptId
+          AND p.release_date >= SYSDATE
+          AND ((pr.preorder = 'Y' AND pr.preorderstart <= SYSDATE AND pr.preorderend >= SYSDATE)
+          OR (pr1.preorder = 'Y' AND pr1.preorderstart <= SYSDATE AND pr1.preorderend >= SYSDATE))
+          AND CASE WHEN iLadultBit = 0 THEN pa.sku ELSE NULL END is NULL;
+        END IF;
+      END IF;
+    END IF;
+
+    BEGIN
+      SELECT 1 INTO iLtemp
+      FROM ya_dept_attr
+      WHERE dept_id = iPdeptId
+        AND attribute_id = 125;
+
+     EXCEPTION
+       WHEN no_data_found THEN
+         iLtemp := 0;
+    END;
+
+    IF (iLtemp = 1) THEN-- video attribute
+      OPEN curPcrosssell FOR
+      SELECT c.sku, c.related_sku
+        FROM ya_cross_selling_type3 c
+       INNER JOIN ya_prod_dept pd
+          on c.sku      = pd.sku
+       WHERE 1=1 -- c.type_id  = 3
+         AND pd.dept_id = iPdeptId;
+    END IF;
+
+  END GetPreOrderArtPubProdList;
+
   PROCEDURE GetPreOrderArtPubProductList (
     iPdeptId IN INT,
     iPartistId IN INT,
@@ -3240,4 +3432,3 @@ IS
 
 END Pkg_bo_ProductListDalc;
 /
-
