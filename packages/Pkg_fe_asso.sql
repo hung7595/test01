@@ -1,8 +1,8 @@
-CREATE OR REPLACE package Pkg_fe_asso AS
+CREATE OR REPLACE PACKAGE Pkg_fe_asso AS
 
-type cur_return IS ref cursor;
-type cur_asso IS ref cursor return ya_associate%rowtype;
-type cur_assoCommDetail IS ref cursor return ya_associate_commission_detail%rowtype;
+TYPE cur_return IS REF CURSOR;
+TYPE cur_asso IS REF CURSOR RETURN YA_ASSOCIATE%ROWTYPE;
+TYPE cur_assoCommDetail IS REF CURSOR RETURN YA_ASSOCIATE_COMMISSION_DETAIL%ROWTYPE;
 
 PROCEDURE sp_fe_asso_getProductLot
 (
@@ -37,47 +37,47 @@ PROCEDURE sp_fe_asso_genLinkCode
 PROCEDURE sp_fe_asso_myLogin
 (
 	cEmail IN VARCHAR2,
-	iSiteId out INT,
-	cPassword out VARCHAR2,
-	iAssociateId out INT,
-	cShopperId out VARCHAR2,
-	cName out VARCHAR2,
-	iLangId out INT
+	iSiteId OUT INT,
+	cPassword OUT VARCHAR2,
+	iAssociateId OUT INT,
+	cShopperId OUT VARCHAR2,
+	cName OUT VARCHAR2,
+	iLangId OUT INT
 );
 PROCEDURE sp_fe_asso_selAssoId
 (
 	cSsn IN VARCHAR2,
 	cPayeeName IN VARCHAR2,
 	cPayeeEmailAddress IN VARCHAR2,
-	cur_out1 out cur_return
+	cur_out1 OUT cur_return
 );
 PROCEDURE sp_fe_asso_anonymousShopper
 (
 	cShopperId IN VARCHAR2,
-	nIsAnonymous out number
+	nIsAnonymous OUT NUMBER
 );
 PROCEDURE sp_fe_asso_readAsso
 (
 	cShopperId IN VARCHAR2,
 	iSiteId IN INT,
-	cur_out1 out cur_return
+	cur_out1 OUT cur_return
 );
 PROCEDURE sp_fe_asso_isAsso
 (
 	iSiteId IN INT,
 	cShopperId IN VARCHAR2,
-	iAssociateId out INT
+	iAssociateId OUT INT
 );
 PROCEDURE sp_fe_asso_getComm
 (
 	iAssociateId IN INT,
-	cur_out1 out cur_return
+	cur_out1 OUT cur_return
 );
 PROCEDURE sp_fe_asso_getLinkName
 (
 	iLinkId IN INT,
-	cLinkName out VARCHAR2,
-	iLangId out INT
+	cLinkName OUT VARCHAR2,
+	iLangId OUT INT
 );
 PROCEDURE sp_fe_asso_insAsso
 (
@@ -111,12 +111,12 @@ PROCEDURE sp_fe_asso_insAsso
 	cPaypalEmail IN VARCHAR2,
 	iLangId IN INT,
 	iAssociateId IN INT,
-	iRowAffected out INT
+	iRowAffected OUT INT
 );
 PROCEDURE sp_fe_asso_insAssoHitsRaw
 (
 	cCode IN VARCHAR2,
-	iRowAffected out INT
+	iRowAffected OUT INT
 );
 PROCEDURE sp_fe_asso_insLink
 (
@@ -141,7 +141,7 @@ PROCEDURE sp_fe_asso_insLink
 	cIsVideoGames IN VARCHAR2,
 	cIsElectronics IN VARCHAR2,
 	iLangId IN INT,
-	iRowAffected out INT
+	iRowAffected OUT INT
 );
 PROCEDURE sp_fe_asso_updAsso
 (
@@ -172,28 +172,28 @@ PROCEDURE sp_fe_asso_updAsso
 	cNewsPref IN VARCHAR2,
 	cPaypalEmail IN VARCHAR2,
 	iLangId IN INT,
-	iAssociateId out INT,
-	iRowAffected out INT
+	iAssociateId OUT INT,
+	iRowAffected OUT INT
 );
 PROCEDURE sp_fe_asso_updComm
 (
-	deci11 IN float,
-	deci12 IN float,
-	deci13 IN float,
-	deci21 IN float,
-	deci22 IN float,
-	deci23 IN float,
-	deci31 IN float,
-	deci32 IN float,
-	deci33 IN float,
-	deci41 IN float,
-	deci42 IN float,
-	deci43 IN float,
-	deci51 IN float,
-	deci52 IN float,
-	deci53 IN float,
+	deci11 IN FLOAT,
+	deci12 IN FLOAT,
+	deci13 IN FLOAT,
+	deci21 IN FLOAT,
+	deci22 IN FLOAT,
+	deci23 IN FLOAT,
+	deci31 IN FLOAT,
+	deci32 IN FLOAT,
+	deci33 IN FLOAT,
+	deci41 IN FLOAT,
+	deci42 IN FLOAT,
+	deci43 IN FLOAT,
+	deci51 IN FLOAT,
+	deci52 IN FLOAT,
+	deci53 IN FLOAT,
 	iCommId IN INT,
-	iRowAffected out INT
+	iRowAffected OUT INT
 );
 PROCEDURE sp_fe_asso_updLink
 (
@@ -217,86 +217,86 @@ PROCEDURE sp_fe_asso_updLink
 	cIsVideoGames IN VARCHAR2,
 	cIsElectronics IN VARCHAR2,
 	iLangId IN INT,
-	iRowAffected out INT
+	iRowAffected OUT INT
 );
 PROCEDURE sp_fe_asso_link
 (
 	cShopperId IN VARCHAR2,
 	iSiteId IN INT,
-	iLangId out INT,
-	cur_out1 out cur_return,
-	cur_out2 out cur_return
+	iLangId OUT INT,
+	cur_out1 OUT cur_return,
+	cur_out2 OUT cur_return
 );
 PROCEDURE sp_fe_asso_linkDetail
 (
 	iLinkId IN INT,
-	cur_out1 out cur_return
+	cur_out1 OUT cur_return
 );
 PROCEDURE sp_fe_asso_linkPageview
 (
 	iLinkId IN INT,
-	cur_out1 out cur_return
+	cur_out1 OUT cur_return
 );
 PROCEDURE sp_fe_asso_pageview
 (
 	cShopperId IN VARCHAR2,
 	iSiteId IN INT,
-	cur_out1 out cur_return
+	cur_out1 OUT cur_return
 );
 PROCEDURE sp_fe_asso_password
 (
 	cEmail IN VARCHAR2,
-	cur_out1 out cur_return
+	cur_out1 OUT cur_return
 );
 PROCEDURE sp_fe_asso_payHistory
 (
 	cShopperId IN VARCHAR2,
 	iSiteId IN INT,
-	deciTotalCommision out float,
-	cur_out1 out cur_return
+	deciTotalCommision OUT FLOAT,
+	cur_out1 OUT cur_return
 );
 PROCEDURE sp_fe_asso_login
 (
 	iSiteId IN INT,
 	cEmail IN VARCHAR2,
-	cPassword out VARCHAR2,
-	iAssociateId out INT,
-	cShopperId out VARCHAR2,
-	cName out VARCHAR2,
-	iLangId out INT,
-	iRowAffected out INT
+	cPassword OUT VARCHAR2,
+	iAssociateId OUT INT,
+	cShopperId OUT VARCHAR2,
+	cName OUT VARCHAR2,
+	iLangId OUT INT,
+	iRowAffected OUT INT
 );
 PROCEDURE sp_fe_asso_getCreditSummary
 (
 	iAssociateId IN INT,
-	cur_out1 out cur_return
+	cur_out1 OUT cur_return
 );
 PROCEDURE sp_fe_asso_createComm
 (
-	deci11 IN float,
-	deci12 IN float,
-	deci13 IN float,
-	deci21 IN float,
-	deci22 IN float,
-	deci23 IN float,
-	deci31 IN float,
-	deci32 IN float,
-	deci33 IN float,
-	deci41 IN float,
-	deci42 IN float,
-	deci43 IN float,
-	deci51 IN float,
-	deci52 IN float,
-	deci53 IN float,
+	deci11 IN FLOAT,
+	deci12 IN FLOAT,
+	deci13 IN FLOAT,
+	deci21 IN FLOAT,
+	deci22 IN FLOAT,
+	deci23 IN FLOAT,
+	deci31 IN FLOAT,
+	deci32 IN FLOAT,
+	deci33 IN FLOAT,
+	deci41 IN FLOAT,
+	deci42 IN FLOAT,
+	deci43 IN FLOAT,
+	deci51 IN FLOAT,
+	deci52 IN FLOAT,
+	deci53 IN FLOAT,
 	iAssocaiteId IN INT,
-	iCommId out INT,
-	iRowAffected out INT
+	iCommId OUT INT,
+	iRowAffected OUT INT
 );
 PROCEDURE sp_fe_asso_selImgLotLang
 (
 	iLotId IN INT,
 	iLangId IN INT,
-	cur_out1 out cur_return
+	cur_out1 OUT cur_return
 );
 PROCEDURE sp_fe_asso_exportSales
 (
@@ -305,17 +305,17 @@ PROCEDURE sp_fe_asso_exportSales
 	iAssociateId INT,
 	iLangId INT,
 	iCreditStatus INT,
-	cur_out1 out cur_return,
-	cur_out2 out cur_return
+	cur_out1 OUT cur_return,
+	cur_out2 OUT cur_return
 );
 PROCEDURE sp_fe_asso_monthlyCredit
 (
 	iAssociateId IN INT,
-	deciPercentage out float,
-	deciOldPercentage out float,
-	deciLastApproved out float,
-	cur_out1 out cur_return,
-	cur_out2 out cur_return
+	deciPercentage OUT FLOAT,
+	deciOldPercentage OUT FLOAT,
+	deciLastApproved OUT FLOAT,
+	cur_out1 OUT cur_return,
+	cur_out2 OUT cur_return
 );
 PROCEDURE sp_fe_asso_selOrderByAid
 (
@@ -327,26 +327,26 @@ PROCEDURE sp_fe_asso_selOrderByAid
 	iNeedGroup IN INT,
 	iNeedLinkInfo IN INT,
 	iBestSeller IN INT,
-	iCustomer out INT,
-	deciPercentage out float,
-	iNextLevel out INT,
-	iLangId out INT,
-	deciThisPeriodComm out float,
-	deciTotalComm out float,
-	cur_out01 out cur_return,
-	cur_out02 out cur_return,
-	cur_out03 out cur_return,
-	cur_out04 out cur_return,
-	cur_out05 out cur_return,
-	cur_out06 out cur_return,
-	cur_out07 out cur_return,
-	cur_out08 out cur_return,
-	cur_out09 out cur_return,
-	cur_out10 out cur_return,
-	cur_out11 out cur_return,
-	cur_out12 out cur_return,
-	cur_out13 out cur_return,
-	cur_out14 out cur_return
+	iCustomer OUT INT,
+	deciPercentage OUT FLOAT,
+	iNextLevel OUT INT,
+	iLangId OUT INT,
+	deciThisPeriodComm OUT FLOAT,
+	deciTotalComm OUT FLOAT,
+	cur_out01 OUT cur_return,
+	cur_out02 OUT cur_return,
+	cur_out03 OUT cur_return,
+	cur_out04 OUT cur_return,
+	cur_out05 OUT cur_return,
+	cur_out06 OUT cur_return,
+	cur_out07 OUT cur_return,
+	cur_out08 OUT cur_return,
+	cur_out09 OUT cur_return,
+	cur_out10 OUT cur_return,
+	cur_out11 OUT cur_return,
+	cur_out12 OUT cur_return,
+	cur_out13 OUT cur_return,
+	cur_out14 OUT cur_return
 );
 PROCEDURE sp_fe_asso_selOrderByLid
 (
@@ -358,32 +358,34 @@ PROCEDURE sp_fe_asso_selOrderByLid
 	iCreditStatus IN INT,
 	iNeedGroup IN INT,
 	iBestSeller IN INT,
-	iCustomer out INT,
-	deciPercentage out float,
-	iNextLevel out INT,
-	iLangId out INT,
-	deciThisPeriodComm out float,
-	deciTotalComm out float,
-	cur_out01 out cur_return,
-	cur_out02 out cur_return,
-	cur_out03 out cur_return,
-	cur_out04 out cur_return,
-	cur_out05 out cur_return,
-	cur_out06 out cur_return,
-	cur_out07 out cur_return,
-	cur_out08 out cur_return,
-	cur_out09 out cur_return,
-	cur_out10 out cur_return,
-	cur_out11 out cur_return,
-	cur_out12 out cur_return,
-	cur_out13 out cur_return,
-	cur_out14 out cur_return
+	iCustomer OUT INT,
+	deciPercentage OUT FLOAT,
+	iNextLevel OUT INT,
+	iLangId OUT INT,
+	deciThisPeriodComm OUT FLOAT,
+	deciTotalComm OUT FLOAT,
+	cur_out01 OUT cur_return,
+	cur_out02 OUT cur_return,
+	cur_out03 OUT cur_return,
+	cur_out04 OUT cur_return,
+	cur_out05 OUT cur_return,
+	cur_out06 OUT cur_return,
+	cur_out07 OUT cur_return,
+	cur_out08 OUT cur_return,
+	cur_out09 OUT cur_return,
+	cur_out10 OUT cur_return,
+	cur_out11 OUT cur_return,
+	cur_out12 OUT cur_return,
+	cur_out13 OUT cur_return,
+	cur_out14 OUT cur_return
 );
 
 END Pkg_fe_asso;
 /
 
-CREATE OR REPLACE package body Pkg_fe_asso AS
+
+
+CREATE OR REPLACE PACKAGE BODY Pkg_fe_asso AS
 
 
 PROCEDURE sp_fe_asso_genLinkCode
@@ -398,32 +400,32 @@ iCheck INT;
 cOldLinkCode VARCHAR2(8);
 BEGIN
 
-SELECT link_code INTO cOldLinkCode FROM ya_associate_link WHERE link_id = iLinkId;
-IF (cOldLinkCode IS null) OR (length(cOldLinkCode)<1) THEN
-	while (iCheck>0) loop
-		while (iCount<iLength) loop
-			while (not(((iCharCode>=ascii('0'))AND(iCharCode<=ascii('9')))OR((iCharCode>=ascii('A'))AND(iCharCode<=ascii('Z'))))) loop
-				SELECT (1+ABS(MOD(dbms_random.random,ascii('Z')))) INTO iCharCode FROM dual;
-			END loop;
-			cLinkCode := cLinkCode || chr(iCharCode);
+SELECT link_code INTO cOldLinkCode FROM YA_ASSOCIATE_LINK WHERE link_id = iLinkId;
+IF (cOldLinkCode IS NULL) OR (LENGTH(cOldLinkCode)<1) THEN
+	WHILE (iCheck>0) LOOP
+		WHILE (iCount<iLength) LOOP
+			WHILE (NOT(((iCharCode>=ASCII('0'))AND(iCharCode<=ASCII('9')))OR((iCharCode>=ASCII('A'))AND(iCharCode<=ASCII('Z'))))) LOOP
+				SELECT (1+ABS(MOD(dbms_random.random,ASCII('Z')))) INTO iCharCode FROM dual;
+			END LOOP;
+			cLinkCode := cLinkCode || CHR(iCharCode);
 			iCharCode := 0;
 			iCount := iCount+1;
-		END loop;
-		SELECT count(*) INTO iCheck FROM ya_associate_link WHERE link_code=cLinkCode;
-	END loop;
+		END LOOP;
+		SELECT COUNT(*) INTO iCheck FROM YA_ASSOCIATE_LINK WHERE link_code=cLinkCode;
+	END LOOP;
 END IF;
 
 UPDATE
-	ya_associate_link
+	YA_ASSOCIATE_LINK
 SET
 	link_code = cLinkCode
 WHERE
 	link_id = iLinkId;
 
-IF (sqlcode=0) THEN
-	commit;
+IF (SQLCODE=0) THEN
+	COMMIT;
 ELSE
-	rollback;
+	ROLLBACK;
 END IF;
 
 END sp_fe_asso_genLinkCode;
@@ -432,12 +434,12 @@ END sp_fe_asso_genLinkCode;
 PROCEDURE sp_fe_asso_myLogin
 (
 	cEmail IN VARCHAR2,
-	iSiteId out INT,
-	cPassword out VARCHAR2,
-	iAssociateId out INT,
-	cShopperId out VARCHAR2,
-	cName out VARCHAR2,
-	iLangId out INT
+	iSiteId OUT INT,
+	cPassword OUT VARCHAR2,
+	iAssociateId OUT INT,
+	cShopperId OUT VARCHAR2,
+	cName OUT VARCHAR2,
+	iLangId OUT INT
 ) IS
 BEGIN
 
@@ -446,8 +448,8 @@ SELECT
 	associate_id,
 	shopper_id,
 	contact_name,
-	password,
-	nvl(lang_id, 1)
+	PASSWORD,
+	NVL(lang_id, 1)
 	INTO
 	iSiteId,
 	iAssociateId,
@@ -457,18 +459,18 @@ SELECT
 	iLangId
 FROM (
    SELECT
-      ya_associate.site_id,
-      ya_associate.associate_id,
-      ya_shopper.shopper_id,
-      ya_associate.contact_name,
-      ya_shopper.PASSWORD,
-      ya_associate.lang_id
+      YA_ASSOCIATE.site_id,
+      YA_ASSOCIATE.associate_id,
+      YA_SHOPPER.shopper_id,
+      YA_ASSOCIATE.contact_name,
+      YA_SHOPPER.PASSWORD,
+      YA_ASSOCIATE.lang_id
    FROM
-      ya_shopper LEFT OUTER JOIN ya_associate
+      YA_SHOPPER LEFT OUTER JOIN YA_ASSOCIATE
    ON
-      ya_shopper.shopper_id = ya_associate.shopper_id
+      YA_SHOPPER.shopper_id = YA_ASSOCIATE.shopper_id
    WHERE
-      LOWER(ya_shopper.email) = LOWER(cEmail)
+      LOWER(YA_SHOPPER.email) = LOWER(cEmail)
 	)
 WHERE
 	ROWNUM = 1;
@@ -476,32 +478,32 @@ WHERE
 END sp_fe_asso_myLogin;
 
 
-PROCEDURE sp_fe_asso_selAssoId(cSsn IN VARCHAR2, cPayeeName IN varchar2, cPayeeEmailAddress IN varchar2, cur_out1 out cur_return) IS
+PROCEDURE sp_fe_asso_selAssoId(cSsn IN VARCHAR2, cPayeeName IN VARCHAR2, cPayeeEmailAddress IN VARCHAR2, cur_out1 OUT cur_return) IS
 BEGIN
 
-IF (length(cSsn)>0) THEN
-	OPEN cur_out1 for
-	SELECT * FROM ya_associate WHERE taxid_ssn=cSsn;
-elsif (length(cPayeeName)>0) THEN
-	OPEN cur_out1 for
-	SELECT * FROM ya_associate WHERE payee_name like '%'+cPayeeName+'%';
-elsif (length(cPayeeEmailAddress)>0) THEN
-	OPEN cur_out1 for
-	SELECT * FROM ya_associate WHERE payee_email like '%'+cPayeeEmailAddress+'%';
+IF (LENGTH(cSsn)>0) THEN
+	OPEN cur_out1 FOR
+	SELECT * FROM YA_ASSOCIATE WHERE taxid_ssn=cSsn;
+ELSIF (LENGTH(cPayeeName)>0) THEN
+	OPEN cur_out1 FOR
+	SELECT * FROM YA_ASSOCIATE WHERE payee_name LIKE '%'+cPayeeName+'%';
+ELSIF (LENGTH(cPayeeEmailAddress)>0) THEN
+	OPEN cur_out1 FOR
+	SELECT * FROM YA_ASSOCIATE WHERE payee_email LIKE '%'+cPayeeEmailAddress+'%';
 END IF;
 
 END sp_fe_asso_selAssoId;
 
 
-PROCEDURE sp_fe_asso_anonymousShopper(cShopperId IN VARCHAR2, nIsAnonymous out number) IS
-	cAnonymous char(1);
+PROCEDURE sp_fe_asso_anonymousShopper(cShopperId IN VARCHAR2, nIsAnonymous OUT NUMBER) IS
+	cAnonymous CHAR(1);
 	iCount INT;
 BEGIN
 
 SELECT 'Y' INTO cAnonymous FROM dual;
-SELECT count(1) INTO iCount FROM ya_shopper WHERE shopper_id = cShopperId;
+SELECT COUNT(1) INTO iCount FROM YA_SHOPPER WHERE shopper_id = cShopperId;
 IF (iCount>0) THEN
-   SELECT anonymous INTO cAnonymous FROM ya_shopper WHERE shopper_id = cShopperId;
+   SELECT anonymous INTO cAnonymous FROM YA_SHOPPER WHERE shopper_id = cShopperId;
 END IF;
 
 IF (cAnonymous='Y') THEN
@@ -513,14 +515,14 @@ END IF;
 END sp_fe_asso_anonymousShopper;
 
 
-PROCEDURE sp_fe_asso_readAsso(cShopperId IN VARCHAR2, ISiteId IN INT, cur_out1 out cur_return) IS
+PROCEDURE sp_fe_asso_readAsso(cShopperId IN VARCHAR2, ISiteId IN INT, cur_out1 OUT cur_return) IS
 BEGIN
 
-OPEN cur_out1 for
+OPEN cur_out1 FOR
 SELECT
 	*
 FROM
-	ya_associate
+	YA_ASSOCIATE
 WHERE
 	shopper_id = cShopperId
 	AND
@@ -529,19 +531,19 @@ WHERE
 END sp_fe_asso_readAsso;
 
 
-PROCEDURE sp_fe_asso_isAsso(iSiteId IN INT, cShopperId IN VARCHAR2, iAssociateId out int) IS
+PROCEDURE sp_fe_asso_isAsso(iSiteId IN INT, cShopperId IN VARCHAR2, iAssociateId OUT INT) IS
 BEGIN
 
 SELECT
-nvl(associate_id, -1) INTO iAssociateid
+NVL(associate_id, -1) INTO iAssociateid
 FROM
-ya_associate
+YA_ASSOCIATE
 WHERE
 associate_approved='Y'
 AND site_id=iSiteId
 AND shopper_id=cShopperId;
 
-exception
+EXCEPTION
 WHEN NO_DATA_FOUND THEN
 	iAssociateId := -1;
 WHEN OTHERS THEN
@@ -550,32 +552,32 @@ WHEN OTHERS THEN
 END sp_fe_asso_isAsso;
 
 
-PROCEDURE sp_fe_asso_getComm(iAssociateId IN INT, cur_out1 out cur_return) IS
+PROCEDURE sp_fe_asso_getComm(iAssociateId IN INT, cur_out1 OUT cur_return) IS
 BEGIN
 
-OPEN cur_out1 for
+OPEN cur_out1 FOR
 SELECT
 *
 FROM
-ya_associate_commission_detail
+YA_ASSOCIATE_COMMISSION_DETAIL
 WHERE
-commission_id = (SELECT commission_id FROM ya_associate WHERE associate_id = iAssociateId);
+commission_id = (SELECT commission_id FROM YA_ASSOCIATE WHERE associate_id = iAssociateId);
 
 END sp_fe_asso_getComm;
 
 
-PROCEDURE sp_fe_asso_getLinkName(iLinkId IN INT, cLinkName out VARCHAR2, iLangId out int) IS
-	type typeLinkDetails IS record(c_link_name VARCHAR2(100), i_lang_id INT);
+PROCEDURE sp_fe_asso_getLinkName(iLinkId IN INT, cLinkName OUT VARCHAR2, iLangId OUT INT) IS
+	TYPE typeLinkDetails IS RECORD(c_link_name VARCHAR2(100), i_lang_id INT);
 	ret_link_details typeLinkDetails;
 BEGIN
 
 SELECT
 	site_name,
-	nvl(lang_id, -1)
+	NVL(lang_id, -1)
 	INTO
 	ret_link_details
 FROM
-	ya_associate_link
+	YA_ASSOCIATE_LINK
 WHERE
 	link_id=iLinkId;
 
@@ -623,25 +625,18 @@ PROCEDURE sp_fe_asso_insAsso
 	cPaypalEmail IN VARCHAR2,
 	iLangId IN INT,
 	iAssociateId IN INT,
-	iRowAffected out INT
+	iRowAffected OUT INT
 ) IS
 	iCount INT;
 	oriPaymentOption INT;
-	cSsnApproved char(1);
+	cSsnApproved CHAR(1);
 BEGIN
 
-SELECT count(*) INTO iCount FROM ya_associate WHERE shopper_id=cShopperId;
+SELECT COUNT(*) INTO iCount FROM YA_ASSOCIATE WHERE shopper_id=cShopperId and site_id=iSiteId;
 IF (iCount<1) THEN
-/*
-	IF (iPaymentOption=1) THEN
-		cSsnApproved := 'Y';
-	ELSE
-		cSsnApproved := 'N';
-	END IF;
-*/
 	cSsnApproved := 'N';
 
-	INSERT INTO ya_associate
+	INSERT INTO YA_ASSOCIATE
 	(
 		taxid_ssn, company_name,
 		shopper_id, site_id,
@@ -681,22 +676,9 @@ IF (iCount<1) THEN
 	);
 
 ELSE
-
-	IF (iPaymentOption=1) THEN
-		cSsnApproved := 'Y';
-	ELSE
-		cSsnApproved := 'Y';
-	END IF;
-	SELECT payment_option INTO oriPaymentOption
-	FROM ya_associate WHERE shopper_id = cShopperId;
-	IF (oriPaymentOption=iPaymentOption) THEN
-		SELECT ssn_approved INTO cSsnApproved FROM ya_associate WHERE shopper_id=cShopperId;
-	END IF;
-	UPDATE ya_associate
+	UPDATE YA_ASSOCIATE
 	SET taxid_ssn = cPSSN,
 		company_name = cComp,
-		site_id = ISiteId,
-		join_date = (SYSDATE),
 		payee_name = cPName,
 		payee_address1 = cPAdd1,
 		payee_address2 = cPAdd2,
@@ -721,35 +703,36 @@ ELSE
 		comm_lang = iCommLang,
 		news_pref = cNewsPref,
 		paypal_email = cPaypalEmail,
-		ssn_approved = cSsnApproved,
 		lang_id = iLangId
-		WHERE  shopper_id  = cShopperId;
+  WHERE  
+    shopper_id =cShopperId 
+    and site_id=iSiteId;
 
 END IF;
 iRowAffected := SQL%ROWCOUNT;
 
 IF (iRowAffected>0) AND (SQLCODE=0) THEN
-	commit;
+	COMMIT;
 ELSE
-	rollback;
+	ROLLBACK;
 END IF;
 
 END sp_fe_asso_insAsso;
 
 
-PROCEDURE sp_fe_asso_insAssoHitsRaw(cCode IN VARCHAR2, iRowAffected out INT) IS
+PROCEDURE sp_fe_asso_insAssoHitsRaw(cCode IN VARCHAR2, iRowAffected OUT INT) IS
 	iLinkId INT;
 BEGIN
 
-SELECT link_id INTO iLinkId FROM ya_associate_link WHERE link_code = cCode;
+SELECT link_id INTO iLinkId FROM YA_ASSOCIATE_LINK WHERE link_code = cCode;
 
-INSERT INTO ya_associate_hits_raw (link_id, hit_datetime) VALUES(iLinkId, sysdate);
+INSERT INTO YA_ASSOCIATE_HITS_RAW (link_id, hit_datetime) VALUES(iLinkId, SYSDATE);
 iRowAffected := SQL%ROWCOUNT;
 
 IF (iRowAffected>0) THEN
-	commit;
+	COMMIT;
 ELSE
-	rollback;
+	ROLLBACK;
 END IF;
 
 END sp_fe_asso_insAssoHitsRaw;
@@ -778,11 +761,11 @@ PROCEDURE sp_fe_asso_insLink
 	cIsVideoGames IN VARCHAR2,
 	cIsElectronics IN VARCHAR2,
 	iLangId IN INT,
-	iRowAffected out INT
+	iRowAffected OUT INT
 ) IS
 BEGIN
 
-INSERT INTO ya_associate_link
+INSERT INTO YA_ASSOCIATE_LINK
 (
 	link_url,
 	link_desc,
@@ -839,9 +822,9 @@ VALUES
 iRowAffected := SQL%ROWCOUNT;
 
 IF (iRowAffected>0) AND (SQLCODE=0) THEN
-	commit;
+	COMMIT;
 ELSE
-	rollback;
+	ROLLBACK;
 END IF;
 
 END sp_fe_asso_insLink;
@@ -876,63 +859,50 @@ PROCEDURE sp_fe_asso_updAsso
 	cNewsPref IN VARCHAR2,
 	cPaypalEmail IN VARCHAR2,
 	iLangId IN INT,
-	iAssociateId out INT,
-	iRowAffected out INT
+	iAssociateId OUT INT,
+	iRowAffected OUT INT
 ) IS
 	oriPaymentOption INT;
-	cSsnApproved char(1);
+	cSsnApproved CHAR(1);
 BEGIN
-/*
-IF (iPaymentOption=1) THEN
-	cSsnApproved := 'Y';
-ELSE
-	cSsnApproved := 'N';
-END IF;
-SELECT payment_option INTO oriPaymentOption
-FROM ya_associate WHERE shopper_id = cShopperId AND site_id = ISiteID;
-IF (oriPaymentOption=iPaymentOption) THEN
-	SELECT ssn_approved INTO cSsnApproved FROM ya_associate WHERE shopper_id=cShopperId AND site_id = ISiteID AND rownum=1;
-END IF;
-*/
 
-UPDATE ya_associate
-SET taxid_ssn = cPSSN,
-	--site_id = ISiteId,
-	join_date = (SYSDATE),
-	payee_name = cPName,
-	payee_address1 = cPAdd1,
-	payee_address2 = cPAdd2,
-	payee_city = cPCity,
-	payee_state = cPState,
-	payee_country_id = iPCid,
-	payee_zip = cPZip,
-	payee_phone = cPPhone,
-	payee_email = cPEmail,
-	contact_name = cCName,
-	contact_address1 = cCAdd1,
-	contact_address2 = cCAdd2,
-	contact_city = cCCity,
-	contact_state = cCState,
-	contact_zip = cCZip,
-	contact_country_id = iCCid,
-	contact_phone = cCPhone,
-	contact_email = cCEmail,
-	payment_threshold = iPayment,
-	payment_option = iPaymentOption,
-	comm_lang = iCommLang,
-	news_pref = cNewsPref,
-	paypal_email = cPaypalEmail,
---	ssn_approved = cSsnApproved,
-	lang_id = iLangId
-	WHERE  shopper_id  = cShopperId AND site_id = ISiteID;
+  UPDATE YA_ASSOCIATE
+  SET taxid_ssn = cPSSN,
+  	payee_name = cPName,
+  	payee_address1 = cPAdd1,
+  	payee_address2 = cPAdd2,
+  	payee_city = cPCity,
+  	payee_state = cPState,
+  	payee_country_id = iPCid,
+  	payee_zip = cPZip,
+  	payee_phone = cPPhone,
+  	payee_email = cPEmail,
+  	contact_name = cCName,
+  	contact_address1 = cCAdd1,
+  	contact_address2 = cCAdd2,
+  	contact_city = cCCity,
+  	contact_state = cCState,
+  	contact_zip = cCZip,
+  	contact_country_id = iCCid,
+  	contact_phone = cCPhone,
+  	contact_email = cCEmail,
+  	payment_threshold = iPayment,
+  	payment_option = iPaymentOption,
+  	comm_lang = iCommLang,
+  	news_pref = cNewsPref,
+  	paypal_email = cPaypalEmail,
+  	lang_id = iLangId
+	WHERE  
+    shopper_id=cShopperId 
+    AND site_id=ISiteID;
 
-SELECT associate_id INTO iAssociateId FROM ya_associate WHERE ((shopper_id = cShopperId)  AND (site_id=iSiteId));
+SELECT associate_id INTO iAssociateId FROM YA_ASSOCIATE WHERE ((shopper_id = cShopperId)  AND (site_id=iSiteId));
 iRowAffected := SQL%ROWCOUNT;
 
 IF (iRowAffected>0) THEN
-	commit;
+	COMMIT;
 ELSE
-	rollback;
+	ROLLBACK;
 END IF;
 
 END sp_fe_asso_updAsso;
@@ -940,48 +910,48 @@ END sp_fe_asso_updAsso;
 
 PROCEDURE sp_fe_asso_updComm
 (
-	deci11 IN float,
-	deci12 IN float,
-	deci13 IN float,
-	deci21 IN float,
-	deci22 IN float,
-	deci23 IN float,
-	deci31 IN float,
-	deci32 IN float,
-	deci33 IN float,
-	deci41 IN float,
-	deci42 IN float,
-	deci43 IN float,
-	deci51 IN float,
-	deci52 IN float,
-	deci53 IN float,
+	deci11 IN FLOAT,
+	deci12 IN FLOAT,
+	deci13 IN FLOAT,
+	deci21 IN FLOAT,
+	deci22 IN FLOAT,
+	deci23 IN FLOAT,
+	deci31 IN FLOAT,
+	deci32 IN FLOAT,
+	deci33 IN FLOAT,
+	deci41 IN FLOAT,
+	deci42 IN FLOAT,
+	deci43 IN FLOAT,
+	deci51 IN FLOAT,
+	deci52 IN FLOAT,
+	deci53 IN FLOAT,
 	iCommId IN INT,
-	iRowAffected out INT
+	iRowAffected OUT INT
 ) IS
 BEGIN
 
-UPDATE ya_associate_commission_detail SET percentage=deci11 WHERE commission_id = iCommId AND comm_type_id = 1 AND payment_option = 1;
-UPDATE ya_associate_commission_detail SET percentage=deci12 WHERE commission_id = iCommId AND comm_type_id = 1 AND payment_option = 2;
-UPDATE ya_associate_commission_detail SET percentage=deci13 WHERE commission_id = iCommId AND comm_type_id = 1 AND payment_option = 3;
-UPDATE ya_associate_commission_detail SET percentage=deci21 WHERE commission_id = iCommId AND comm_type_id = 2 AND payment_option = 1;
-UPDATE ya_associate_commission_detail SET percentage=deci22 WHERE commission_id = iCommId AND comm_type_id = 2 AND payment_option = 2;
-UPDATE ya_associate_commission_detail SET percentage=deci23 WHERE commission_id = iCommId AND comm_type_id = 2 AND payment_option = 3;
-UPDATE ya_associate_commission_detail SET percentage=deci31 WHERE commission_id = iCommId AND comm_type_id = 3 AND payment_option = 1;
-UPDATE ya_associate_commission_detail SET percentage=deci32 WHERE commission_id = iCommId AND comm_type_id = 3 AND payment_option = 2;
-UPDATE ya_associate_commission_detail SET percentage=deci33 WHERE commission_id = iCommId AND comm_type_id = 3 AND payment_option = 3;
-UPDATE ya_associate_commission_detail SET percentage=deci41 WHERE commission_id = iCommId AND comm_type_id = 4 AND payment_option = 1;
-UPDATE ya_associate_commission_detail SET percentage=deci42 WHERE commission_id = iCommId AND comm_type_id = 4 AND payment_option = 2;
-UPDATE ya_associate_commission_detail SET percentage=deci43 WHERE commission_id = iCommId AND comm_type_id = 4 AND payment_option = 3;
-UPDATE ya_associate_commission_detail SET percentage=deci51 WHERE commission_id = iCommId AND comm_type_id = 5 AND payment_option = 1;
-UPDATE ya_associate_commission_detail SET percentage=deci52 WHERE commission_id = iCommId AND comm_type_id = 5 AND payment_option = 2;
-UPDATE ya_associate_commission_detail SET percentage=deci53 WHERE commission_id = iCommId AND comm_type_id = 5 AND payment_option = 3;
+UPDATE YA_ASSOCIATE_COMMISSION_DETAIL SET percentage=deci11 WHERE commission_id = iCommId AND comm_type_id = 1 AND payment_option = 1;
+UPDATE YA_ASSOCIATE_COMMISSION_DETAIL SET percentage=deci12 WHERE commission_id = iCommId AND comm_type_id = 1 AND payment_option = 2;
+UPDATE YA_ASSOCIATE_COMMISSION_DETAIL SET percentage=deci13 WHERE commission_id = iCommId AND comm_type_id = 1 AND payment_option = 3;
+UPDATE YA_ASSOCIATE_COMMISSION_DETAIL SET percentage=deci21 WHERE commission_id = iCommId AND comm_type_id = 2 AND payment_option = 1;
+UPDATE YA_ASSOCIATE_COMMISSION_DETAIL SET percentage=deci22 WHERE commission_id = iCommId AND comm_type_id = 2 AND payment_option = 2;
+UPDATE YA_ASSOCIATE_COMMISSION_DETAIL SET percentage=deci23 WHERE commission_id = iCommId AND comm_type_id = 2 AND payment_option = 3;
+UPDATE YA_ASSOCIATE_COMMISSION_DETAIL SET percentage=deci31 WHERE commission_id = iCommId AND comm_type_id = 3 AND payment_option = 1;
+UPDATE YA_ASSOCIATE_COMMISSION_DETAIL SET percentage=deci32 WHERE commission_id = iCommId AND comm_type_id = 3 AND payment_option = 2;
+UPDATE YA_ASSOCIATE_COMMISSION_DETAIL SET percentage=deci33 WHERE commission_id = iCommId AND comm_type_id = 3 AND payment_option = 3;
+UPDATE YA_ASSOCIATE_COMMISSION_DETAIL SET percentage=deci41 WHERE commission_id = iCommId AND comm_type_id = 4 AND payment_option = 1;
+UPDATE YA_ASSOCIATE_COMMISSION_DETAIL SET percentage=deci42 WHERE commission_id = iCommId AND comm_type_id = 4 AND payment_option = 2;
+UPDATE YA_ASSOCIATE_COMMISSION_DETAIL SET percentage=deci43 WHERE commission_id = iCommId AND comm_type_id = 4 AND payment_option = 3;
+UPDATE YA_ASSOCIATE_COMMISSION_DETAIL SET percentage=deci51 WHERE commission_id = iCommId AND comm_type_id = 5 AND payment_option = 1;
+UPDATE YA_ASSOCIATE_COMMISSION_DETAIL SET percentage=deci52 WHERE commission_id = iCommId AND comm_type_id = 5 AND payment_option = 2;
+UPDATE YA_ASSOCIATE_COMMISSION_DETAIL SET percentage=deci53 WHERE commission_id = iCommId AND comm_type_id = 5 AND payment_option = 3;
 
 IF (SQLCODE!=0) THEN
 	iRowAffected := 0;
-	rollback;
+	ROLLBACK;
 ELSE
 	iRowAffected := SQL%ROWCOUNT;
-	commit;
+	COMMIT;
 END IF;
 
 END sp_fe_asso_updComm;
@@ -1009,11 +979,11 @@ PROCEDURE sp_fe_asso_updLink
 	cIsVideoGames IN VARCHAR2,
 	cIsElectronics IN VARCHAR2,
 	iLangId IN INT,
-	iRowAffected out INT
+	iRowAffected OUT INT
 ) IS
 BEGIN
 
-UPDATE ya_associate_link SET
+UPDATE YA_ASSOCIATE_LINK SET
 	site_name = cSiteName,
 	link_type = iLinkType,
 	link_desc = cLinkDesc,
@@ -1038,10 +1008,10 @@ WHERE link_id = iLinkId;
 
 IF (SQLCODE!=0) THEN
 	iRowAffected := 0;
-	rollback;
+	ROLLBACK;
 ELSE
 	iRowAffected := SQL%ROWCOUNT;
-	commit;
+	COMMIT;
 END IF;
 
 END sp_fe_asso_updLink;
@@ -1051,36 +1021,36 @@ PROCEDURE sp_fe_asso_link
 (
 	cShopperId IN VARCHAR2,
 	iSiteId IN INT,
-	iLangId out INT,
-	cur_out1 out cur_return,
-	cur_out2 out cur_return
+	iLangId OUT INT,
+	cur_out1 OUT cur_return,
+	cur_out2 OUT cur_return
 ) IS
 BEGIN
 
-OPEN cur_out1 for
-SELECT nvl(sum(hits), 0)  AS total, al.link_id
-FROM ya_associate_hits_summary ah
+OPEN cur_out1 FOR
+SELECT NVL(SUM(hits), 0)  AS total, al.link_id
+FROM YA_ASSOCIATE_HITS_SUMMARY ah
 	RIGHT OUTER JOIN
-	   (SELECT al.link_id  FROM ya_associate_link al
-		    INNER JOIN (SELECT * FROM ya_associate WHERE shopper_id = cShopperId) a ON al.associate_id = a.associate_id AND a.site_id = ISiteId
+	   (SELECT al.link_id  FROM YA_ASSOCIATE_LINK al
+		    INNER JOIN (SELECT * FROM YA_ASSOCIATE WHERE shopper_id = cShopperId) a ON al.associate_id = a.associate_id AND a.site_id = ISiteId
 		    AND (al.link_status = 2 OR al.link_status = 4)) al
 	ON al.link_id = ah.link_id
 GROUP BY al.link_id;
 
-OPEN cur_out2 for
-SELECT a.associate_id, al.site_name, al.link_id, ar.credit_status, nvl(sum(ar.credit_amount),0) AS credit, al.link_code,
-nvl(ah.total_credit,0) AS total
- FROM (SELECT * FROM ya_associate WHERE shopper_id = cShopperId AND site_id = ISiteId)  a
-	INNER JOIN ya_associate_link al ON a.associate_id = al.associate_id AND al.link_status > 1
-	LEFT OUTER JOIN ya_associate_legacy_history ah on ah.link_id = al.link_id
-	 LEFT OUTER JOIN ya_associate_link_orders ar on ar.link_id = al.link_id AND ar.credit_status IS not null
+OPEN cur_out2 FOR
+SELECT a.associate_id, al.site_name, al.link_id, ar.credit_status, NVL(SUM(ar.credit_amount),0) AS credit, al.link_code,
+NVL(ah.total_credit,0) AS total
+ FROM (SELECT * FROM YA_ASSOCIATE WHERE shopper_id = cShopperId AND site_id = ISiteId)  a
+	INNER JOIN YA_ASSOCIATE_LINK al ON a.associate_id = al.associate_id AND al.link_status > 1
+	LEFT OUTER JOIN YA_ASSOCIATE_LEGACY_HISTORY ah ON ah.link_id = al.link_id
+	 LEFT OUTER JOIN YA_ASSOCIATE_LINK_ORDERS ar ON ar.link_id = al.link_id AND ar.credit_status IS NOT NULL
 GROUP BY a.associate_id, al.link_id, ar.credit_status, al.site_name, al.link_code, ah.total_credit
 ORDER BY al.link_id DESC;
 
-SELECT        nvl(ya_associate.lang_id, 1) INTO iLangId
-FROM             ya_shopper INNER JOIN
-                          ya_associate ON ya_shopper.shopper_id = ya_associate.shopper_id
-WHERE ((ya_associate.shopper_id=cShopperId) AND (rownum=1));
+SELECT        NVL(YA_ASSOCIATE.lang_id, 1) INTO iLangId
+FROM             YA_SHOPPER INNER JOIN
+                          YA_ASSOCIATE ON YA_SHOPPER.shopper_id = YA_ASSOCIATE.shopper_id
+WHERE ((YA_ASSOCIATE.shopper_id=cShopperId) AND (ROWNUM=1));
 
 END sp_fe_asso_link;
 
@@ -1088,15 +1058,15 @@ END sp_fe_asso_link;
 PROCEDURE sp_fe_asso_linkDetail
 (
 	iLinkId IN INT,
-	cur_out1 out cur_return
+	cur_out1 OUT cur_return
 ) IS
 BEGIN
 
-OPEN cur_out1 for
+OPEN cur_out1 FOR
 SELECT link_status, link_code, link_id, associate_id, site_name, link_type, link_url, link_desc, IS_english, IS_chinese,
 	is_japanese, IS_korean, IS_other, hits_type, IS_music, IS_karaoke, IS_movies, IS_anime, IS_comics,
 	 IS_books, IS_video_games, IS_electronics, lang_id, created_date
-FROM ya_associate_link
+FROM YA_ASSOCIATE_LINK
 WHERE link_id=iLinkId;
 
 END sp_fe_asso_linkDetail;
@@ -1105,15 +1075,15 @@ END sp_fe_asso_linkDetail;
 PROCEDURE sp_fe_asso_linkPageview
 (
 	iLinkId IN INT,
-	cur_out1 out cur_return
+	cur_out1 OUT cur_return
 ) IS
 BEGIN
 
-OPEN cur_out1 for
-SELECT ah.hit_day, ah.hits, al.link_id, al.site_name, to_char(ah.hit_day, 'mm/dd/yy') AS hitDay
-FROM (SELECT * FROM ya_associate_link WHERE link_id=iLinkId AND (link_status = 2 OR link_status = 4)) al
+OPEN cur_out1 FOR
+SELECT ah.hit_day, ah.hits, al.link_id, al.site_name, TO_CHAR(ah.hit_day, 'mm/dd/yy') AS hitDay
+FROM (SELECT * FROM YA_ASSOCIATE_LINK WHERE link_id=iLinkId AND (link_status = 2 OR link_status = 4)) al
 INNER JOIN
-(SELECT * FROM ya_associate_hits_summary WHERE link_id=iLinkId AND (hit_day >= (SYSDATE)-31)) ah
+(SELECT * FROM YA_ASSOCIATE_HITS_SUMMARY WHERE link_id=iLinkId AND (hit_day >= (SYSDATE)-31)) ah
  ON al.link_id = ah.link_id
  ORDER BY hit_day DESC;
 
@@ -1124,23 +1094,23 @@ PROCEDURE sp_fe_asso_pageview
 (
 	cShopperId IN VARCHAR2,
 	iSiteId IN INT,
-	cur_out1 out cur_return
+	cur_out1 OUT cur_return
 ) IS
 BEGIN
 
-OPEN cur_out1 for
-SELECT sum(ah.hits) AS month_hit,
-	to_char(ah.hit_day, 'fmmm') || '/' || to_char(ah.hit_day, 'yyyy') AS hit_date,
-	to_number(to_char(ah.hit_day, 'mm')) AS month, to_number(to_char(ah.hit_day, 'yyyy')) AS year
- FROM ya_associate_link al
-	INNER JOIN ya_associate_hits_summary ah ON al.link_id = ah.link_id
+OPEN cur_out1 FOR
+SELECT SUM(ah.hits) AS month_hit,
+	TO_CHAR(ah.hit_day, 'fmmm') || '/' || TO_CHAR(ah.hit_day, 'yyyy') AS hit_date,
+	TO_NUMBER(TO_CHAR(ah.hit_day, 'mm')) AS MONTH, TO_NUMBER(TO_CHAR(ah.hit_day, 'yyyy')) AS YEAR
+ FROM YA_ASSOCIATE_LINK al
+	INNER JOIN YA_ASSOCIATE_HITS_SUMMARY ah ON al.link_id = ah.link_id
 WHERE al.associate_id =
 	(SELECT associate_id
-	FROM ya_associate
+	FROM YA_ASSOCIATE
 	WHERE shopper_id = cShopperId AND associate_approved = 'Y' AND site_id = ISiteId)
-		AND ah.hit_day >= add_months((SYSDATE), -11)
- GROUP BY to_char(ah.hit_day, 'fmmm') || '/' || to_char(ah.hit_day, 'yyyy'), to_number(to_char(ah.hit_day, 'yyyy')), to_number(to_char(ah.hit_day, 'mm'))
-ORDER BY year ASC , month ASC;
+		AND ah.hit_day >= ADD_MONTHS((SYSDATE), -11)
+ GROUP BY TO_CHAR(ah.hit_day, 'fmmm') || '/' || TO_CHAR(ah.hit_day, 'yyyy'), TO_NUMBER(TO_CHAR(ah.hit_day, 'yyyy')), TO_NUMBER(TO_CHAR(ah.hit_day, 'mm'))
+ORDER BY YEAR ASC , MONTH ASC;
 
 END sp_fe_asso_pageview;
 
@@ -1148,13 +1118,13 @@ END sp_fe_asso_pageview;
 PROCEDURE sp_fe_asso_password
 (
 	cEmail IN VARCHAR2,
-	cur_out1 out cur_return
+	cur_out1 OUT cur_return
 ) IS
 BEGIN
 
-OPEN cur_out1 for
-SELECT password, firstname, lastname, comm_lang, nvl(lang_id, 1) AS lang_id
-FROM ya_shopper INNER JOIN ya_associate on ya_shopper.shopper_id = ya_associate.shopper_id
+OPEN cur_out1 FOR
+SELECT PASSWORD, firstname, lastname, comm_lang, NVL(lang_id, 1) AS lang_id
+FROM YA_SHOPPER INNER JOIN YA_ASSOCIATE ON YA_SHOPPER.shopper_id = YA_ASSOCIATE.shopper_id
 WHERE email=cEmail;
 
 END sp_fe_asso_password;
@@ -1164,20 +1134,20 @@ PROCEDURE sp_fe_asso_payHistory
 (
 	cShopperId IN VARCHAR2,
 	iSiteId IN INT,
-	deciTotalCommision out float,
-	cur_out1 out cur_return
+	deciTotalCommision OUT FLOAT,
+	cur_out1 OUT cur_return
 ) IS
 BEGIN
 
-OPEN cur_out1 for
-SELECT to_char( pay_date, 'mm/dd/yy') AS payDate, amount_paid, cheque_num, pay_date
-FROM ya_associate_pay_history yaph, ya_associate ya
+OPEN cur_out1 FOR
+SELECT TO_CHAR( pay_date, 'mm/dd/yy') AS payDate, amount_paid, cheque_num, pay_date
+FROM YA_ASSOCIATE_PAY_HISTORY yaph, YA_ASSOCIATE ya
 WHERE ya.associate_approved='Y' AND ya.shopper_id=cShopperId
 AND ya.site_id = ISiteId
 AND ya.associate_id = yaph.associate_id ORDER BY pay_date DESC;
 
-SELECT sum(amount_paid) INTO deciTotalCommision
-FROM ya_associate_pay_history yaph, ya_associate ya
+SELECT SUM(amount_paid) INTO deciTotalCommision
+FROM YA_ASSOCIATE_PAY_HISTORY yaph, YA_ASSOCIATE ya
 WHERE ya.associate_approved='Y' AND ya.shopper_id=cShopperId
 AND ya.site_id = ISiteId
 AND ya.associate_id = yaph.associate_id;
@@ -1189,21 +1159,21 @@ PROCEDURE sp_fe_asso_login
 (
 	iSiteId IN INT,
 	cEmail IN VARCHAR2,
-	cPassword out VARCHAR2,
-	iAssociateId out INT,
-	cShopperId out VARCHAR2,
-	cName out VARCHAR2,
-	iLangId out INT,
-	iRowAffected out INT
+	cPassword OUT VARCHAR2,
+	iAssociateId OUT INT,
+	cShopperId OUT VARCHAR2,
+	cName OUT VARCHAR2,
+	iLangId OUT INT,
+	iRowAffected OUT INT
 ) IS
-	type typeAssoDetails IS record(c_password VARCHAR2(255), i_associate_id INT, c_shopper_id varchar2(32), c_name varchar2(255), i_lang_id int);
+	TYPE typeAssoDetails IS RECORD(c_password VARCHAR2(255), i_associate_id INT, c_shopper_id VARCHAR2(32), c_name VARCHAR2(255), i_lang_id INT);
 	ret_asso_details typeAssoDetails;
 BEGIN
 
-SELECT      ya_shopper.password, ya_associate.associate_id, ya_shopper.shopper_id, ya_associate.contact_name, nvl(ya_associate.lang_id, 1) AS lang_id INTO ret_asso_details
-FROM        ya_shopper LEFT OUTER JOIN
-                      ya_associate ON ya_associate.shopper_id = ya_shopper.shopper_id
-WHERE LOWER(ya_shopper.email) = LOWER(cEmail) AND ya_associate.site_id=iSiteId AND ya_associate.associate_approved='Y' AND rownum=1;
+SELECT      YA_SHOPPER.PASSWORD, YA_ASSOCIATE.associate_id, YA_SHOPPER.shopper_id, YA_ASSOCIATE.contact_name, NVL(YA_ASSOCIATE.lang_id, 1) AS lang_id INTO ret_asso_details
+FROM        YA_SHOPPER LEFT OUTER JOIN
+                      YA_ASSOCIATE ON YA_ASSOCIATE.shopper_id = YA_SHOPPER.shopper_id
+WHERE LOWER(YA_SHOPPER.email) = LOWER(cEmail) AND YA_ASSOCIATE.site_id=iSiteId AND YA_ASSOCIATE.associate_approved='Y' AND ROWNUM=1;
 
 cPassword := ret_asso_details.c_password;
 iAssociateId := ret_asso_details.i_associate_id;
@@ -1220,198 +1190,198 @@ END sp_fe_asso_login;
 PROCEDURE sp_fe_asso_getCreditSummary
 (
 	iAssociateId IN INT,
-	cur_out1 out cur_return
+	cur_out1 OUT cur_return
 ) IS
-	type typeLegacyCreditDetails IS record(deci_tot_legacy_credit float, deci_tot_legacy_credit_paid float);
+	TYPE typeLegacyCreditDetails IS RECORD(deci_tot_legacy_credit FLOAT, deci_tot_legacy_credit_paid FLOAT);
 	ret_legacy_credit_details typeLegacyCreditDetails;
 
-	deciTotLegacyCredit float;
-  	deciTotLegacyCreditPaid float;
-	deciTotApprovedCredit float;
-	deciTotApprovedCreditNew float;
-	deciTotCreditPaid float;
+	deciTotLegacyCredit FLOAT;
+  	deciTotLegacyCreditPaid FLOAT;
+	deciTotApprovedCredit FLOAT;
+	deciTotApprovedCreditNew FLOAT;
+	deciTotCreditPaid FLOAT;
 	cCutOffDate VARCHAR2(10);
-	deciTotNormalComm float;
-	deciTotOverrideComm float;
+	deciTotNormalComm FLOAT;
+	deciTotOverrideComm FLOAT;
 BEGIN
 
 cCutOffDate := '07/01/2005';
 
-SELECT sum(t1.total_credit),
-         sum(t1.total_credit_paid) INTO ret_legacy_credit_details
-FROM ya_associate_legacy_history t1,
-         ya_associate_link t2
+SELECT SUM(t1.total_credit),
+         SUM(t1.total_credit_paid) INTO ret_legacy_credit_details
+FROM YA_ASSOCIATE_LEGACY_HISTORY t1,
+         YA_ASSOCIATE_LINK t2
 WHERE t1.link_id = t2.link_id
      AND t2.associate_id = iAssociateId;
 
 deciTotLegacyCredit := ret_legacy_credit_details.deci_tot_legacy_credit;
 deciTotLegacyCreditPaid := ret_legacy_credit_details.deci_tot_legacy_credit_paid;
 
-SELECT sum(t1.credit_amount) INTO deciTotApprovedCredit
-FROM ya_associate_link_orders t1
+SELECT SUM(t1.credit_amount) INTO deciTotApprovedCredit
+FROM YA_ASSOCIATE_LINK_ORDERS t1
 WHERE t1.credit_status = 2 /* Approved */
-	AND t1.last_change_date < to_date(cCutOffDate, 'mm/dd/yyyy')
+	AND t1.last_change_date < TO_DATE(cCutOffDate, 'mm/dd/yyyy')
 	AND t1.link_id IN (SELECT t2.link_id
-			FROM ya_associate_link t2
+			FROM YA_ASSOCIATE_LINK t2
 			WHERE t2.associate_id = iAssociateId);
 
-SELECT sum(t1.amount_paid) INTO deciTotCreditPaid
-FROM ya_associate_pay_history t1
+SELECT SUM(t1.amount_paid) INTO deciTotCreditPaid
+FROM YA_ASSOCIATE_PAY_HISTORY t1
 WHERE t1.associate_id = iAssociateId;
 
 SELECT
-	sum((quantity * unit_price * comm_rate)) INTO deciTotApprovedCreditNew
+	SUM((quantity * unit_price * comm_rate)) INTO deciTotApprovedCreditNew
 FROM
-	ya_associate_link_orders lo, ya_associate_link l, ya_associate_commission_hist ch
+	YA_ASSOCIATE_LINK_ORDERS lo, YA_ASSOCIATE_LINK l, YA_ASSOCIATE_COMMISSION_HIST ch
 WHERE
 	lo.link_id = l.link_id
 	AND
 	ch.associate_id = l.associate_id
 	AND
-	ch.valid_date = to_date(to_char(lo.order_date, 'mm') || '/01/' || to_char(lo.order_date,'yyyy'), 'mm/dd/yyyy')
+	ch.valid_date = TO_DATE(TO_CHAR(lo.order_date, 'mm') || '/01/' || TO_CHAR(lo.order_date,'yyyy'), 'mm/dd/yyyy')
 	AND
-	(lo.last_change_date >= to_date(cCutOffDate, 'mm/dd/yyyy'))
+	(lo.last_change_date >= TO_DATE(cCutOffDate, 'mm/dd/yyyy'))
 	AND
 	l.associate_id = iAssociateId
 	AND
 	credit_status = 2;
 
-SELECT sum((credit_amount)) INTO deciTotOverrideComm
+SELECT SUM((credit_amount)) INTO deciTotOverrideComm
 FROM
-	ya_associate_link_orders yalo
+	YA_ASSOCIATE_LINK_ORDERS yalo
 INNER JOIN
-	ya_associate_link yal
+	YA_ASSOCIATE_LINK yal
 ON
 	yalo.link_id = yal.link_id
 INNER JOIN
-	ya_associate_commission_hist yach
-on
+	YA_ASSOCIATE_COMMISSION_HIST yach
+ON
 	yach.associate_id = yal.associate_id AND
-	yach.valid_date = to_date(to_char(yalo.order_date, 'mm') || '/01/' || to_char(yalo.order_date,'yyyy'), 'mm/dd/yyyy')
+	yach.valid_date = TO_DATE(TO_CHAR(yalo.order_date, 'mm') || '/01/' || TO_CHAR(yalo.order_date,'yyyy'), 'mm/dd/yyyy')
 WHERE
-	(yalo.last_change_date >= to_date(cCutOffDate, 'mm/dd/yyyy')) AND
+	(yalo.last_change_date >= TO_DATE(cCutOffDate, 'mm/dd/yyyy')) AND
 	yal.associate_id = iAssociateId AND
 	credit_status = 2 AND
-	credit_amount IS not null;
+	credit_amount IS NOT NULL;
 
-SELECT  sum((quantity * unit_price * comm_rate)) INTO deciTotNormalComm
+SELECT  SUM((quantity * unit_price * comm_rate)) INTO deciTotNormalComm
 FROM
-	ya_associate_link_orders yalo
+	YA_ASSOCIATE_LINK_ORDERS yalo
 INNER JOIN
-	ya_associate_link yal
+	YA_ASSOCIATE_LINK yal
 ON
 	yalo.link_id = yal.link_id
 INNER JOIN
-	ya_associate_commission_hist yach
-on
+	YA_ASSOCIATE_COMMISSION_HIST yach
+ON
 	yach.associate_id = yal.associate_id AND
-	yach.valid_date = to_date(to_char(yalo.order_date, 'mm') || '/01/' || to_char(yalo.order_date,'yyyy'), 'mm/dd/yyyy')
+	yach.valid_date = TO_DATE(TO_CHAR(yalo.order_date, 'mm') || '/01/' || TO_CHAR(yalo.order_date,'yyyy'), 'mm/dd/yyyy')
 WHERE
-	(yalo.last_change_date >= to_date(cCutOffDate, 'mm/dd/yyyy')) AND
+	(yalo.last_change_date >= TO_DATE(cCutOffDate, 'mm/dd/yyyy')) AND
 	yal.associate_id = iAssociateId AND
 	credit_status = 2 AND
-	credit_amount IS null;
+	credit_amount IS NULL;
 
-deciTotApprovedCreditNew := nvl(deciTotOverrideComm,0) + nvl(deciTotNormalComm,0);
+deciTotApprovedCreditNew := NVL(deciTotOverrideComm,0) + NVL(deciTotNormalComm,0);
 
-OPEN cur_out1 for
-SELECT nvl(deciTotLegacyCredit ,0.0) -
-	nvl(deciTotLegacyCreditPaid,0.0) +
-	nvl(deciTotApprovedCredit,0.0) +
-	nvl(deciTotApprovedCreditNew,0.0) -
-	nvl(deciTotCreditPaid,0.0) AS outstanding_credit,
-	nvl(deciTotLegacyCredit ,0.0) +
-	nvl(deciTotApprovedCreditNew,0.0) +
-	nvl(deciTotApprovedCredit,0.0) AS total_credits
-FROM ya_associate
-WHERE rownum=1;
+OPEN cur_out1 FOR
+SELECT NVL(deciTotLegacyCredit ,0.0) -
+	NVL(deciTotLegacyCreditPaid,0.0) +
+	NVL(deciTotApprovedCredit,0.0) +
+	NVL(deciTotApprovedCreditNew,0.0) -
+	NVL(deciTotCreditPaid,0.0) AS outstanding_credit,
+	NVL(deciTotLegacyCredit ,0.0) +
+	NVL(deciTotApprovedCreditNew,0.0) +
+	NVL(deciTotApprovedCredit,0.0) AS total_credits
+FROM YA_ASSOCIATE
+WHERE ROWNUM=1;
 
 END sp_fe_asso_getCreditSummary;
 
 
 PROCEDURE sp_fe_asso_createComm
 (
-	deci11 IN float,
-	deci12 IN float,
-	deci13 IN float,
-	deci21 IN float,
-	deci22 IN float,
-	deci23 IN float,
-	deci31 IN float,
-	deci32 IN float,
-	deci33 IN float,
-	deci41 IN float,
-	deci42 IN float,
-	deci43 IN float,
-	deci51 IN float,
-	deci52 IN float,
-	deci53 IN float,
+	deci11 IN FLOAT,
+	deci12 IN FLOAT,
+	deci13 IN FLOAT,
+	deci21 IN FLOAT,
+	deci22 IN FLOAT,
+	deci23 IN FLOAT,
+	deci31 IN FLOAT,
+	deci32 IN FLOAT,
+	deci33 IN FLOAT,
+	deci41 IN FLOAT,
+	deci42 IN FLOAT,
+	deci43 IN FLOAT,
+	deci51 IN FLOAT,
+	deci52 IN FLOAT,
+	deci53 IN FLOAT,
 	iAssocaiteId IN INT,
-	iCommId out INT,
-	iRowAffected out INT
+	iCommId OUT INT,
+	iRowAffected OUT INT
 ) IS
 	iId INT;
 BEGIN
 
-SELECT max(commission_id)+1 INTO iId FROM ya_associate_commission;
+SELECT MAX(commission_id)+1 INTO iId FROM YA_ASSOCIATE_COMMISSION;
 
-INSERT INTO ya_associate_commission (commission_id, commission_desc, created_date, updated_date,created_by, updated_by)
+INSERT INTO YA_ASSOCIATE_COMMISSION (commission_id, commission_desc, created_date, updated_date,created_by, updated_by)
 VALUES (iId, 'custom commission tier', (SYSDATE), (SYSDATE), 'system', 'system');
 
-INSERT INTO ya_associate_commission_detail (commission_id, comm_type_id, payment_option, percentage)
+INSERT INTO YA_ASSOCIATE_COMMISSION_DETAIL (commission_id, comm_type_id, payment_option, percentage)
 VALUES (iId, 1, 1, deci11);
 
-INSERT INTO ya_associate_commission_detail (commission_id, comm_type_id, payment_option, percentage)
+INSERT INTO YA_ASSOCIATE_COMMISSION_DETAIL (commission_id, comm_type_id, payment_option, percentage)
 VALUES (iId, 1, 2, deci12);
 
-INSERT INTO ya_associate_commission_detail (commission_id, comm_type_id, payment_option, percentage)
+INSERT INTO YA_ASSOCIATE_COMMISSION_DETAIL (commission_id, comm_type_id, payment_option, percentage)
 VALUES (iId, 1, 3, deci13);
 
-INSERT INTO ya_associate_commission_detail (commission_id, comm_type_id, payment_option, percentage)
+INSERT INTO YA_ASSOCIATE_COMMISSION_DETAIL (commission_id, comm_type_id, payment_option, percentage)
 VALUES (iId, 2, 1, deci21);
 
-INSERT INTO ya_associate_commission_detail (commission_id, comm_type_id, payment_option, percentage)
+INSERT INTO YA_ASSOCIATE_COMMISSION_DETAIL (commission_id, comm_type_id, payment_option, percentage)
 VALUES (iId, 2, 2, deci22);
 
-INSERT INTO ya_associate_commission_detail (commission_id, comm_type_id, payment_option, percentage)
+INSERT INTO YA_ASSOCIATE_COMMISSION_DETAIL (commission_id, comm_type_id, payment_option, percentage)
 VALUES (iId, 2, 3, deci23);
 
-INSERT INTO ya_associate_commission_detail (commission_id, comm_type_id, payment_option, percentage)
+INSERT INTO YA_ASSOCIATE_COMMISSION_DETAIL (commission_id, comm_type_id, payment_option, percentage)
 VALUES (iId, 3, 1, deci31);
 
-INSERT INTO ya_associate_commission_detail (commission_id, comm_type_id, payment_option, percentage)
+INSERT INTO YA_ASSOCIATE_COMMISSION_DETAIL (commission_id, comm_type_id, payment_option, percentage)
 VALUES (iId, 3, 2, deci32);
 
-INSERT INTO ya_associate_commission_detail (commission_id, comm_type_id, payment_option, percentage)
+INSERT INTO YA_ASSOCIATE_COMMISSION_DETAIL (commission_id, comm_type_id, payment_option, percentage)
 VALUES (iId, 3, 3, deci33);
 
-INSERT INTO ya_associate_commission_detail (commission_id, comm_type_id, payment_option, percentage)
+INSERT INTO YA_ASSOCIATE_COMMISSION_DETAIL (commission_id, comm_type_id, payment_option, percentage)
 VALUES (iId, 4, 1, deci41);
 
-INSERT INTO ya_associate_commission_detail (commission_id, comm_type_id, payment_option, percentage)
+INSERT INTO YA_ASSOCIATE_COMMISSION_DETAIL (commission_id, comm_type_id, payment_option, percentage)
 VALUES (iId, 4, 2, deci42);
 
-INSERT INTO ya_associate_commission_detail (commission_id, comm_type_id, payment_option, percentage)
+INSERT INTO YA_ASSOCIATE_COMMISSION_DETAIL (commission_id, comm_type_id, payment_option, percentage)
 VALUES (iId, 4, 3, deci43);
 
-INSERT INTO ya_associate_commission_detail (commission_id, comm_type_id, payment_option, percentage)
+INSERT INTO YA_ASSOCIATE_COMMISSION_DETAIL (commission_id, comm_type_id, payment_option, percentage)
 VALUES (iId, 5, 1, deci51);
 
-INSERT INTO ya_associate_commission_detail (commission_id, comm_type_id, payment_option, percentage)
+INSERT INTO YA_ASSOCIATE_COMMISSION_DETAIL (commission_id, comm_type_id, payment_option, percentage)
 VALUES (iId, 5, 2, deci52);
 
-INSERT INTO ya_associate_commission_detail (commission_id, comm_type_id, payment_option, percentage)
+INSERT INTO YA_ASSOCIATE_COMMISSION_DETAIL (commission_id, comm_type_id, payment_option, percentage)
 VALUES (iId, 5, 3, deci53);
 
-UPDATE ya_associate SET commission_id=iId WHERE associate_id = iAssocaiteId;
+UPDATE YA_ASSOCIATE SET commission_id=iId WHERE associate_id = iAssocaiteId;
 
 IF (SQLCODE!=0) THEN
 	iRowAffected := 0;
-	rollback;
+	ROLLBACK;
 ELSE
 	iRowAffected := SQL%ROWCOUNT;
 	iCommId := iId;
-	commit;
+	COMMIT;
 END IF;
 
 END sp_fe_asso_createComm;
@@ -1421,18 +1391,18 @@ PROCEDURE sp_fe_asso_selImgLotLang
 (
 	iLotId IN INT,
 	iLangId IN INT,
-	cur_out1 out cur_return
+	cur_out1 OUT cur_return
 ) IS
 	iTemp INT;
 BEGIN
 
-SELECT count(*) INTO iTemp FROM ya_img_lot_lang WHERE image_lot_id=iLotId AND lang_id=iLangId AND not image_loc='';
+SELECT COUNT(*) INTO iTemp FROM YA_IMG_LOT_LANG WHERE image_lot_id=iLotId AND lang_id=iLangId AND NOT image_loc='';
 IF (iTemp>0) THEN
-	OPEN cur_out1 for
-	SELECT * FROM ya_img_lot_lang WHERE image_lot_id=iLotId AND lang_id=iLangId AND not image_loc='';
+	OPEN cur_out1 FOR
+	SELECT * FROM YA_IMG_LOT_LANG WHERE image_lot_id=iLotId AND lang_id=iLangId AND NOT image_loc='';
 ELSE
-	OPEN cur_out1 for
-	SELECT * FROM ya_img_lot_lang WHERE image_lot_id=iLotId AND preferred_flag='Y';
+	OPEN cur_out1 FOR
+	SELECT * FROM YA_IMG_LOT_LANG WHERE image_lot_id=iLotId AND preferred_flag='Y';
 END IF;
 
 END sp_fe_asso_selImgLotLang;
@@ -1445,100 +1415,100 @@ PROCEDURE sp_fe_asso_exportSales
 	iAssociateId INT,
 	iLangId INT,
 	iCreditStatus INT,
-	cur_out1 out cur_return,
-	cur_out2 out cur_return
+	cur_out1 OUT cur_return,
+	cur_out2 OUT cur_return
 ) IS
-	dtStartDate date;
-	dtEndDate date;
+	dtStartDate DATE;
+	dtEndDate DATE;
 BEGIN
 
-dtStartDate := to_date(cMonth || '/01/' || cYear, 'mm/dd/yyyy');
-dtEndDate := add_months(dtStartDate, 1);
+dtStartDate := TO_DATE(cMonth || '/01/' || cYear, 'mm/dd/yyyy');
+dtEndDate := ADD_MONTHS(dtStartDate, 1);
 
 IF (iCreditStatus<>1) THEN
-	OPEN cur_out1 for
-	SELECT  to_char(order_date, 'mm/dd/yyyy') AS order_date, to_char(last_change_date, 'mm/dd/yyyy') AS posting_date, ya_prod_lang.prod_name_u AS prod_name, yalo.sku, sum(yalo.quantity) AS items,
-		sum(yalo.unit_price * yalo.quantity) AS price, link_id,
-	                      nvl(yg.group_id, 18) AS group_id
+	OPEN cur_out1 FOR
+	SELECT  TO_CHAR(order_date, 'mm/dd/yyyy') AS order_date, TO_CHAR(last_change_date, 'mm/dd/yyyy') AS posting_date, YA_PROD_LANG.prod_name_u AS prod_name, yalo.sku, SUM(yalo.quantity) AS items,
+		SUM(yalo.unit_price * yalo.quantity) AS price, link_id,
+	                      NVL(yg.group_id, 18) AS group_id
 	FROM       (SELECT order_date, last_change_date, sku, quantity, unit_price, credit_status, yal.link_id, credit_amount
-		 FROM ya_associate_link_orders
+		 FROM YA_ASSOCIATE_LINK_ORDERS
 		    INNER JOIN
-		      (SELECT * FROM ya_associate_link WHERE associate_id=iAssociateId) yal
-		    ON ya_associate_link_orders.link_id = yal.link_id
-		WHERE (ya_associate_link_orders.last_change_date >= dtStartDate) AND
-	                                  (ya_associate_link_orders.last_change_date <  dtEndDate) AND
+		      (SELECT * FROM YA_ASSOCIATE_LINK WHERE associate_id=iAssociateId) yal
+		    ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
+		WHERE (YA_ASSOCIATE_LINK_ORDERS.last_change_date >= dtStartDate) AND
+	                                  (YA_ASSOCIATE_LINK_ORDERS.last_change_date <  dtEndDate) AND
 	                 	               (credit_status = 2) AND (unit_price > 0)) yalo
 		LEFT OUTER  JOIN
-	                      ya_product ON yalo.sku = ya_product.sku LEFT OUTER  JOIN
-	                      ya_prod_lang ON yalo.sku = ya_prod_lang.sku  LEFT OUTER  JOIN
-		   (SELECT * FROM ya_group WHERE division_id=1) yg
-	                       ON yg.account_id = ya_product.account_id
-	WHERE      (ya_prod_lang.lang_id = iLangId)
-	GROUP BY ya_prod_lang.prod_name_u,  yalo.sku, yg.group_id, link_id,
-	to_char(order_date, 'mm/dd/yyyy'), to_char(last_change_date, 'mm/dd/yyyy')
+	                      YA_PRODUCT ON yalo.sku = YA_PRODUCT.sku LEFT OUTER  JOIN
+	                      YA_PROD_LANG ON yalo.sku = YA_PROD_LANG.sku  LEFT OUTER  JOIN
+		   (SELECT * FROM YA_GROUP WHERE division_id=1) yg
+	                       ON yg.account_id = YA_PRODUCT.account_id
+	WHERE      (YA_PROD_LANG.lang_id = iLangId)
+	GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, yg.group_id, link_id,
+	TO_CHAR(order_date, 'mm/dd/yyyy'), TO_CHAR(last_change_date, 'mm/dd/yyyy')
 	ORDER BY group_id, posting_date, prod_name;
 END IF;
 
 IF (iCreditStatus<>2) THEN
-	IF (cur_out1 IS not null) THEN
-		OPEN cur_out2 for
-		SELECT  to_char(order_date, 'mm/dd/yyyy') AS order_date,
-			to_char(last_change_date, 'mm/dd/yyyy') AS posting_date,
-			ya_prod_lang.prod_name_u AS prod_name,
+	IF (cur_out1 IS NOT NULL) THEN
+		OPEN cur_out2 FOR
+		SELECT  TO_CHAR(order_date, 'mm/dd/yyyy') AS order_date,
+			TO_CHAR(last_change_date, 'mm/dd/yyyy') AS posting_date,
+			YA_PROD_LANG.prod_name_u AS prod_name,
 			yalo.sku,
-			sum(yalo.quantity) AS items,
-			sum(yalo.unit_price * yalo.quantity) AS price,
+			SUM(yalo.quantity) AS items,
+			SUM(yalo.unit_price * yalo.quantity) AS price,
 			link_id,
-			nvl(yg.group_id, 18) AS group_id
+			NVL(yg.group_id, 18) AS group_id
 		FROM
 			(
 			SELECT order_date, last_change_date, sku, quantity, unit_price, credit_status, yal.link_id
-			FROM ya_associate_link_orders
+			FROM YA_ASSOCIATE_LINK_ORDERS
 			INNER JOIN
 				(
-				SELECT * FROM ya_associate_link WHERE associate_id=iAssociateId
+				SELECT * FROM YA_ASSOCIATE_LINK WHERE associate_id=iAssociateId
 				) yal
-			ON ya_associate_link_orders.link_id = yal.link_id
-			WHERE (ya_associate_link_orders.last_change_date >= dtStartDate) AND
-				(ya_associate_link_orders.last_change_date <  dtEndDate) AND
+			ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
+			WHERE (YA_ASSOCIATE_LINK_ORDERS.last_change_date >= dtStartDate) AND
+				(YA_ASSOCIATE_LINK_ORDERS.last_change_date <  dtEndDate) AND
 				(credit_status = 1) AND (unit_price > 0)
 			) yalo
 		LEFT OUTER  JOIN
-			ya_product
-			ON yalo.sku = ya_product.sku
+			YA_PRODUCT
+			ON yalo.sku = YA_PRODUCT.sku
 		LEFT OUTER  JOIN
-			ya_prod_lang
-			ON yalo.sku = ya_prod_lang.sku
+			YA_PROD_LANG
+			ON yalo.sku = YA_PROD_LANG.sku
 		LEFT OUTER  JOIN
 			(
-			SELECT * FROM ya_group WHERE division_id=1
+			SELECT * FROM YA_GROUP WHERE division_id=1
 			) yg
-			ON yg.account_id = ya_product.account_id
-		WHERE      (ya_prod_lang.lang_id = iLangId)
-		GROUP BY ya_prod_lang.prod_name_u,  yalo.sku, yg.group_id, link_id,
-		to_char(order_date, 'mm/dd/yyyy'), to_char(last_change_date, 'mm/dd/yyyy')
+			ON yg.account_id = YA_PRODUCT.account_id
+		WHERE      (YA_PROD_LANG.lang_id = iLangId)
+		GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, yg.group_id, link_id,
+		TO_CHAR(order_date, 'mm/dd/yyyy'), TO_CHAR(last_change_date, 'mm/dd/yyyy')
 		ORDER BY group_id, posting_date, prod_name;
 	ELSE
-		OPEN cur_out1 for
-		SELECT  to_char(order_date, 'mm/dd/yyyy') AS order_date, to_char(last_change_date, 'mm/dd/yyyy') AS posting_date, ya_prod_lang.prod_name_u AS prod_name, yalo.sku, sum(yalo.quantity) AS items,
-			sum(yalo.unit_price * yalo.quantity) AS price, link_id,
-		                      nvl(yg.group_id, 18) AS group_id
+		OPEN cur_out1 FOR
+		SELECT  TO_CHAR(order_date, 'mm/dd/yyyy') AS order_date, TO_CHAR(last_change_date, 'mm/dd/yyyy') AS posting_date, YA_PROD_LANG.prod_name_u AS prod_name, yalo.sku, SUM(yalo.quantity) AS items,
+			SUM(yalo.unit_price * yalo.quantity) AS price, link_id,
+		                      NVL(yg.group_id, 18) AS group_id
 		FROM       (SELECT order_date, last_change_date, sku, quantity, unit_price, credit_status, yal.link_id
-			 FROM ya_associate_link_orders
+			 FROM YA_ASSOCIATE_LINK_ORDERS
 			    INNER JOIN
-			      (SELECT * FROM ya_associate_link WHERE associate_id=iAssociateId) yal
-			    ON ya_associate_link_orders.link_id = yal.link_id
-			WHERE (ya_associate_link_orders.last_change_date >= dtStartDate) AND
-		                                  (ya_associate_link_orders.last_change_date <  dtEndDate) AND
+			      (SELECT * FROM YA_ASSOCIATE_LINK WHERE associate_id=iAssociateId) yal
+			    ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
+			WHERE (YA_ASSOCIATE_LINK_ORDERS.last_change_date >= dtStartDate) AND
+		                                  (YA_ASSOCIATE_LINK_ORDERS.last_change_date <  dtEndDate) AND
 		                 	               (credit_status = 1) AND (unit_price > 0)) yalo
 			LEFT OUTER  JOIN
-		                      ya_product ON yalo.sku = ya_product.sku LEFT OUTER  JOIN
-		                      ya_prod_lang ON yalo.sku = ya_prod_lang.sku  LEFT OUTER  JOIN
-			   (SELECT * FROM ya_group WHERE division_id=1) yg
-		                       ON yg.account_id = ya_product.account_id
-		WHERE      (ya_prod_lang.lang_id = iLangId)
-		GROUP BY ya_prod_lang.prod_name_u,  yalo.sku, yg.group_id, link_id,
-		to_char(order_date, 'mm/dd/yyyy'), to_char(last_change_date, 'mm/dd/yyyy')
+		                      YA_PRODUCT ON yalo.sku = YA_PRODUCT.sku LEFT OUTER  JOIN
+		                      YA_PROD_LANG ON yalo.sku = YA_PROD_LANG.sku  LEFT OUTER  JOIN
+			   (SELECT * FROM YA_GROUP WHERE division_id=1) yg
+		                       ON yg.account_id = YA_PRODUCT.account_id
+		WHERE      (YA_PROD_LANG.lang_id = iLangId)
+		GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, yg.group_id, link_id,
+		TO_CHAR(order_date, 'mm/dd/yyyy'), TO_CHAR(last_change_date, 'mm/dd/yyyy')
 		ORDER BY group_id, posting_date, prod_name;
 	END IF;
 END IF;
@@ -1548,74 +1518,74 @@ END sp_fe_asso_exportSales;
 PROCEDURE sp_fe_asso_monthlyCredit
 (
 	iAssociateId IN INT,
-	deciPercentage out float,
-	deciOldPercentage out float,
-	deciLastApproved out float,
-	cur_out1 out cur_return,
-	cur_out2 out cur_return
+	deciPercentage OUT FLOAT,
+	deciOldPercentage OUT FLOAT,
+	deciLastApproved OUT FLOAT,
+	cur_out1 OUT cur_return,
+	cur_out2 OUT cur_return
 ) IS
 	iCustomer INT;
 	cStartDate VARCHAR2(10);
 	cEndDate VARCHAR2(10);
-	dtDate date;
+	dtDate DATE;
    iCount INT;
 BEGIN
 
-OPEN cur_out1 for
+OPEN cur_out1 FOR
 SELECT
 	associate_id,
-	sum(commission) AS credit_amount,
-	order_month AS month,
-	order_year AS year,
-	to_char(order_month) || '/' || to_char(order_year) AS order_date, credit_status
+	SUM(commission) AS credit_amount,
+	order_month AS MONTH,
+	order_year AS YEAR,
+	TO_CHAR(order_month) || '/' || TO_CHAR(order_year) AS order_date, credit_status
 FROM
 	(SELECT
 		yalo.associate_id, credit_status,
-		to_number(to_char(last_change_date,'fmmm')) AS order_month,
-		to_number(to_char(last_change_date, 'yyyy')) AS order_year,
-		sum(nvl(yalo.unit_price, 0) * nvl(yalo.quantity, 0)) * nvl(comm_rate, (SELECT link_percentage  FROM ya_associate_link WHERE (associate_id=iAssociateId) AND (rownum=1)))  AS commission
+		TO_NUMBER(TO_CHAR(last_change_date,'fmmm')) AS order_month,
+		TO_NUMBER(TO_CHAR(last_change_date, 'yyyy')) AS order_year,
+		SUM(NVL(yalo.unit_price, 0) * NVL(yalo.quantity, 0)) * NVL(comm_rate, (SELECT link_percentage  FROM YA_ASSOCIATE_LINK WHERE (associate_id=iAssociateId) AND (ROWNUM=1)))  AS commission
 	FROM
 		(SELECT order_date, last_change_date, sku, quantity, unit_price, credit_status, associate_id
-		 FROM ya_associate_link_orders INNER JOIN
-			(SELECT * FROM ya_associate_link WHERE associate_id=iAssociateId) yal
-			ON ya_associate_link_orders.link_id = yal.link_id
-		WHERE (ya_associate_link_orders.last_change_date >= add_months(SYSDATE, -11) AND ya_associate_link_orders.Credit_status = 2)) yalo
-			LEFT OUTER JOIN ya_associate_commission_hist yach on yach.associate_id=iAssociateId
-			AND yach.valid_date = to_date(to_char(order_date, 'mm') || '/01/' || to_char(order_date, 'yyyy'), 'mm/dd/yyyy')
+		 FROM YA_ASSOCIATE_LINK_ORDERS INNER JOIN
+			(SELECT * FROM YA_ASSOCIATE_LINK WHERE associate_id=iAssociateId) yal
+			ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
+		WHERE (YA_ASSOCIATE_LINK_ORDERS.last_change_date >= ADD_MONTHS(SYSDATE, -11) AND YA_ASSOCIATE_LINK_ORDERS.Credit_status = 2)) yalo
+			LEFT OUTER JOIN YA_ASSOCIATE_COMMISSION_HIST yach ON yach.associate_id=iAssociateId
+			AND yach.valid_date = TO_DATE(TO_CHAR(order_date, 'mm') || '/01/' || TO_CHAR(order_date, 'yyyy'), 'mm/dd/yyyy')
 	GROUP BY yalo.associate_id, last_change_date, comm_rate, credit_status
 	) yar
 GROUP BY yar.credit_status,
-	to_char(order_month) || '/' || to_char(order_year),
+	TO_CHAR(order_month) || '/' || TO_CHAR(order_year),
 	order_month,
 	order_year,
 	yar.associate_id
 ORDER BY order_year, order_month;
 
-OPEN cur_out2 for
+OPEN cur_out2 FOR
 SELECT
 	associate_id,
-	sum(nvl(commission, 0)) AS credit_amount,
-	order_month AS month,
-	order_year AS year,
-	to_char(order_month) || '/' || to_char(order_year) AS order_date, credit_status
+	SUM(NVL(commission, 0)) AS credit_amount,
+	order_month AS MONTH,
+	order_year AS YEAR,
+	TO_CHAR(order_month) || '/' || TO_CHAR(order_year) AS order_date, credit_status
 FROM
 	(SELECT
 		yalo.associate_id, credit_status,
-		to_number(to_char(order_date, 'fmmm')) AS order_month,
-		to_number(to_char(order_date, 'yyyy')) AS order_year,
-		sum(nvl(yalo.unit_price, 0) * nvl(yalo.quantity, 0)) * nvl(comm_rate, (SELECT link_percentage  FROM ya_associate_link WHERE (associate_id=iAssociateId) AND (rownum=1)))  AS commission
+		TO_NUMBER(TO_CHAR(order_date, 'fmmm')) AS order_month,
+		TO_NUMBER(TO_CHAR(order_date, 'yyyy')) AS order_year,
+		SUM(NVL(yalo.unit_price, 0) * NVL(yalo.quantity, 0)) * NVL(comm_rate, (SELECT link_percentage  FROM YA_ASSOCIATE_LINK WHERE (associate_id=iAssociateId) AND (ROWNUM=1)))  AS commission
 	FROM
 		(SELECT order_date, last_change_date, sku, quantity, unit_price, credit_status, associate_id
-		 FROM ya_associate_link_orders INNER JOIN
-			      (SELECT * FROM ya_associate_link WHERE associate_id=iAssociateId) yal
-			    ON ya_associate_link_orders.link_id = yal.link_id
-		WHERE (ya_associate_link_orders.order_date >= add_months(SYSDATE, -11) AND ya_associate_link_orders.Credit_status <>2)) yalo
-		LEFT OUTER JOIN ya_associate_commission_hist yach on yach.associate_id =iAssociateId
-                  AND yach.valid_date = to_date(to_char(order_date, 'mm') || '/01/' || to_char(order_date, 'yyyy'), 'mm/dd/yyyy')
+		 FROM YA_ASSOCIATE_LINK_ORDERS INNER JOIN
+			      (SELECT * FROM YA_ASSOCIATE_LINK WHERE associate_id=iAssociateId) yal
+			    ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
+		WHERE (YA_ASSOCIATE_LINK_ORDERS.order_date >= ADD_MONTHS(SYSDATE, -11) AND YA_ASSOCIATE_LINK_ORDERS.Credit_status <>2)) yalo
+		LEFT OUTER JOIN YA_ASSOCIATE_COMMISSION_HIST yach ON yach.associate_id =iAssociateId
+                  AND yach.valid_date = TO_DATE(TO_CHAR(order_date, 'mm') || '/01/' || TO_CHAR(order_date, 'yyyy'), 'mm/dd/yyyy')
 	GROUP BY yalo.associate_id,order_date, comm_rate, credit_status
 	) yar
 GROUP BY yar.credit_status,
-	to_char(order_month) || '/' || to_char(order_year),
+	TO_CHAR(order_month) || '/' || TO_CHAR(order_year),
 	order_month,
 	order_year,
 	yar.associate_id
@@ -1623,47 +1593,47 @@ ORDER BY order_year, order_month;
 
 dtDate := (SYSDATE);
 
-cStartDate := to_char(dtDate, 'mm') || '/01/' || to_char(dtDate, 'yyyy');
-dtDate := add_months(dtDate, 1);
-cEndDate := to_char(dtDate, 'mm') || '/01/' || to_char(dtDate, 'yyyy');
+cStartDate := TO_CHAR(dtDate, 'mm') || '/01/' || TO_CHAR(dtDate, 'yyyy');
+dtDate := ADD_MONTHS(dtDate, 1);
+cEndDate := TO_CHAR(dtDate, 'mm') || '/01/' || TO_CHAR(dtDate, 'yyyy');
 
-SELECT count(customerId) INTO iCustomer
-FROM dm_new_shopper
-WHERE dm_new_shopper.validorder='Y'
-AND dm_new_shopper.feorderid IN
-	(SELECT distinct to_char(order_num) AS orderId
-	FROM ya_associate_link_orders INNER JOIN
-		(SELECT link_id FROM ya_associate_link WHERE associate_id=iAssociateId) yal
-		ON ya_associate_link_orders.link_id = yal.link_id
-	WHERE order_date >= to_date(cStartDate, 'mm/dd/yyyy') AND order_date < to_date(cEndDate, 'mm/dd/yyyy') AND credit_status <> 4);
+SELECT COUNT(customerId) INTO iCustomer
+FROM DM_NEW_SHOPPER
+WHERE DM_NEW_SHOPPER.validorder='Y'
+AND DM_NEW_SHOPPER.feorderid IN
+	(SELECT DISTINCT TO_CHAR(order_num) AS orderId
+	FROM YA_ASSOCIATE_LINK_ORDERS INNER JOIN
+		(SELECT link_id FROM YA_ASSOCIATE_LINK WHERE associate_id=iAssociateId) yal
+		ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
+	WHERE order_date >= TO_DATE(cStartDate, 'mm/dd/yyyy') AND order_date < TO_DATE(cEndDate, 'mm/dd/yyyy') AND credit_status <> 4);
 
 dbms_output.put_line(iCustomer);
 
-SELECT count(1) INTO iCount
-FROM ya_associate_commission_detail cd INNER JOIN
-	(SELECT comm_type_id, nc_max FROM ya_associate_commission_type ct WHERE ((nc_min <= iCustomer AND nc_max >= iCustomer) OR nc_max < iCustomer)) ct
+SELECT COUNT(1) INTO iCount
+FROM YA_ASSOCIATE_COMMISSION_DETAIL cd INNER JOIN
+	(SELECT comm_type_id, nc_max FROM YA_ASSOCIATE_COMMISSION_TYPE ct WHERE ((nc_min <= iCustomer AND nc_max >= iCustomer) OR nc_max < iCustomer)) ct
 	ON ct.comm_type_id =cd.comm_type_id
-	 INNER JOIN (SELECT commission_id, payment_option FROM ya_associate WHERE associate_id=iAssociateId) ya
+	 INNER JOIN (SELECT commission_id, payment_option FROM YA_ASSOCIATE WHERE associate_id=iAssociateId) ya
 	ON cd.commission_id = ya.commission_id AND cd.payment_option = ya.payment_option;
 IF (iCount>0) THEN
    SELECT percentage INTO deciPercentage
-   FROM ya_associate_commission_detail cd INNER JOIN
-      (SELECT comm_type_id, nc_max FROM ya_associate_commission_type ct WHERE ((nc_min <= iCustomer AND nc_max >= iCustomer) OR nc_max < iCustomer)) ct
+   FROM YA_ASSOCIATE_COMMISSION_DETAIL cd INNER JOIN
+      (SELECT comm_type_id, nc_max FROM YA_ASSOCIATE_COMMISSION_TYPE ct WHERE ((nc_min <= iCustomer AND nc_max >= iCustomer) OR nc_max < iCustomer)) ct
       ON ct.comm_type_id =cd.comm_type_id
-       INNER JOIN (SELECT commission_id, payment_option FROM ya_associate WHERE associate_id=iAssociateId) ya
+       INNER JOIN (SELECT commission_id, payment_option FROM YA_ASSOCIATE WHERE associate_id=iAssociateId) ya
       ON cd.commission_id = ya.commission_id AND cd.payment_option = ya.payment_option
-   WHERE rownum=1;
+   WHERE ROWNUM=1;
    dbms_output.put_line(deciPercentage);
-   dbms_output.put_line(to_char(deciPercentage));
+   dbms_output.put_line(TO_CHAR(deciPercentage));
    dbms_output.put_line(SYSDATE);
 ELSE
 	SELECT percentage INTO deciPercentage
-	FROM ya_associate_commission_detail cd INNER JOIN
-		(SELECT comm_type_id, nc_max FROM ya_associate_commission_type ct WHERE nc_min <= iCustomer) ct
+	FROM YA_ASSOCIATE_COMMISSION_DETAIL cd INNER JOIN
+		(SELECT comm_type_id, nc_max FROM YA_ASSOCIATE_COMMISSION_TYPE ct WHERE nc_min <= iCustomer) ct
 		ON ct.comm_type_id =cd.comm_type_id
-		 INNER JOIN (SELECT commission_id, payment_option FROM ya_associate WHERE associate_id=iAssociateId) ya
+		 INNER JOIN (SELECT commission_id, payment_option FROM YA_ASSOCIATE WHERE associate_id=iAssociateId) ya
 		ON cd.commission_id = ya.commission_id AND cd.payment_option = ya.payment_option
-   WHERE rownum=1;
+   WHERE ROWNUM=1;
 END IF;
 /*
 IF deciPercentage IS null THEN
@@ -1675,10 +1645,10 @@ IF deciPercentage IS null THEN
 		ON cd.commission_id = ya.commission_id AND cd.payment_option = ya.payment_option;
 END IF;
 */
-SELECT link_percentage INTO deciOldPercentage FROM ya_associate_link WHERE (associate_id=iAssociateId) AND (rownum=1);
+SELECT link_percentage INTO deciOldPercentage FROM YA_ASSOCIATE_LINK WHERE (associate_id=iAssociateId) AND (ROWNUM=1);
 
 
-SELECT sum(commission) INTO deciLastApproved
+SELECT SUM(commission) INTO deciLastApproved
 FROM (
 	SELECT  (
    /*
@@ -1695,29 +1665,29 @@ FROM (
 			)
 		)
       */
-      sum(nvl(credit_amount, yalo.unit_price*yalo.quantity*nvl(comm_rate, nvl(percentage, (SELECT comm_rate FROM ya_associate_commission_hist WHERE associate_id = iAssociateId AND rownum=1)))))
+      SUM(NVL(credit_amount, yalo.unit_price*yalo.quantity*NVL(comm_rate, NVL(percentage, (SELECT comm_rate FROM YA_ASSOCIATE_COMMISSION_HIST WHERE associate_id = iAssociateId AND ROWNUM=1)))))
    )
 		  AS commission
 	FROM (
-		SELECT order_date, last_change_date, sku, nvl(quantity, 0) AS quantity, nvl(unit_price, 0) AS unit_price, credit_status, credit_amount
-		FROM ya_associate_link_orders
+		SELECT order_date, last_change_date, sku, NVL(quantity, 0) AS quantity, NVL(unit_price, 0) AS unit_price, credit_status, credit_amount
+		FROM YA_ASSOCIATE_LINK_ORDERS
 			INNER JOIN
 			(
-			SELECT * FROM ya_associate_link WHERE associate_id=iAssociateId
+			SELECT * FROM YA_ASSOCIATE_LINK WHERE associate_id=iAssociateId
 			) yal
-			  ON ya_associate_link_orders.link_id = yal.link_id
-		WHERE (ya_associate_link_orders.last_change_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-	                                  (ya_associate_link_orders.last_change_date < to_date(cEndDate, 'mm/dd/yyyy')) AND
+			  ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
+		WHERE (YA_ASSOCIATE_LINK_ORDERS.last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+	                                  (YA_ASSOCIATE_LINK_ORDERS.last_change_date < TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 	                 	               (credit_status = 2)
 	            ) yalo
-		LEFT OUTER JOIN ya_associate_commission_hist yach on yach.associate_id = iAssociateId
-		AND yach.valid_date = to_date(to_char(order_date, 'mm') || '/01/' ||to_char(order_date, 'yyyy'),'mm/dd/yyyy'),
-		(SELECT percentage  FROM ya_associate_commission_detail cd INNER JOIN
-		(SELECT comm_type_id, nc_max FROM ya_associate_commission_type ct WHERE ((nc_min <= iCustomer AND nc_max >= iCustomer) OR nc_max < iCustomer) ORDER BY nc_min DESC) ct
+		LEFT OUTER JOIN YA_ASSOCIATE_COMMISSION_HIST yach ON yach.associate_id = iAssociateId
+		AND yach.valid_date = TO_DATE(TO_CHAR(order_date, 'mm') || '/01/' ||TO_CHAR(order_date, 'yyyy'),'mm/dd/yyyy'),
+		(SELECT percentage  FROM YA_ASSOCIATE_COMMISSION_DETAIL cd INNER JOIN
+		(SELECT comm_type_id, nc_max FROM YA_ASSOCIATE_COMMISSION_TYPE ct WHERE ((nc_min <= iCustomer AND nc_max >= iCustomer) OR nc_max < iCustomer) ORDER BY nc_min DESC) ct
 	ON ct.comm_type_id =cd.comm_type_id
-	 INNER JOIN (SELECT commission_id, payment_option FROM ya_associate WHERE associate_id=iAssociateId) ya
-	ON cd.commission_id = ya.commission_id AND cd.payment_option = ya.payment_option WHERE rownum=1)t
-GROUP BY to_number(to_char(order_date, 'mm')), to_number(to_char(order_date, 'yyyy')) , comm_rate, t.percentage) a;
+	 INNER JOIN (SELECT commission_id, payment_option FROM YA_ASSOCIATE WHERE associate_id=iAssociateId) ya
+	ON cd.commission_id = ya.commission_id AND cd.payment_option = ya.payment_option WHERE ROWNUM=1)t
+GROUP BY TO_NUMBER(TO_CHAR(order_date, 'mm')), TO_NUMBER(TO_CHAR(order_date, 'yyyy')) , comm_rate, t.percentage) a;
 
 
 END sp_fe_asso_monthlyCredit;
@@ -1733,33 +1703,33 @@ PROCEDURE sp_fe_asso_selOrderByAid
 	iNeedGroup IN INT,
 	iNeedLinkInfo IN INT,
 	iBestSeller IN INT,
-	iCustomer out INT,
-	deciPercentage out float,
-	iNextLevel out INT,
-	iLangId out INT,
-	deciThisPeriodComm out float,
-	deciTotalComm out float,
-	cur_out01 out cur_return,
-	cur_out02 out cur_return,
-	cur_out03 out cur_return,
-	cur_out04 out cur_return,
-	cur_out05 out cur_return,
-	cur_out06 out cur_return,
-	cur_out07 out cur_return,
-	cur_out08 out cur_return,
-	cur_out09 out cur_return,
-	cur_out10 out cur_return,
-	cur_out11 out cur_return,
-	cur_out12 out cur_return,
-	cur_out13 out cur_return,
-	cur_out14 out cur_return
+	iCustomer OUT INT,
+	deciPercentage OUT FLOAT,
+	iNextLevel OUT INT,
+	iLangId OUT INT,
+	deciThisPeriodComm OUT FLOAT,
+	deciTotalComm OUT FLOAT,
+	cur_out01 OUT cur_return,
+	cur_out02 OUT cur_return,
+	cur_out03 OUT cur_return,
+	cur_out04 OUT cur_return,
+	cur_out05 OUT cur_return,
+	cur_out06 OUT cur_return,
+	cur_out07 OUT cur_return,
+	cur_out08 OUT cur_return,
+	cur_out09 OUT cur_return,
+	cur_out10 OUT cur_return,
+	cur_out11 OUT cur_return,
+	cur_out12 OUT cur_return,
+	cur_out13 OUT cur_return,
+	cur_out14 OUT cur_return
 ) IS
 
-	cStartDate varchar(10);
-	cEndDate varchar(10);
-	cCutOffDate varchar(10);
+	cStartDate VARCHAR(10);
+	cEndDate VARCHAR(10);
+	cCutOffDate VARCHAR(10);
 
-	type typePercentageNextLevel IS record(percentage float, next_level INT);
+	TYPE typePercentageNextLevel IS RECORD(percentage FLOAT, next_level INT);
 	ret_percentage_next_level typePercentageNextLevel;
 
 	cur_temp01 cur_return;
@@ -1780,334 +1750,319 @@ PROCEDURE sp_fe_asso_selOrderByAid
 BEGIN
 
 cStartDate := cMonth || '/01/' || cYear;
-cEndDate := to_char(add_months(to_date(cStartDate, 'mm/dd/yyyy'), 1), 'mm/dd/yyyy');
+cEndDate := TO_CHAR(ADD_MONTHS(TO_DATE(cStartDate, 'mm/dd/yyyy'), 1), 'mm/dd/yyyy');
 cCutOffDate := '07/01/2005';
 
 
-SELECT count(customerId) INTO iCustomer
-FROM dm_new_shopper
-WHERE dm_new_shopper.validOrder = 'Y'
-	AND dm_new_shopper.feOrderId IN
-	(SELECT  distinct to_char(order_num) AS orderId
+SELECT COUNT(customerId) INTO iCustomer
+FROM DM_NEW_SHOPPER
+WHERE DM_NEW_SHOPPER.validOrder = 'Y'
+	AND DM_NEW_SHOPPER.feOrderId IN
+	(SELECT  DISTINCT TO_CHAR(order_num) AS orderId
 	FROM
 		(SELECT *
-		FROM ya_associate_link_orders
-		WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)) ya_associate_link_orders
+		FROM YA_ASSOCIATE_LINK_ORDERS
+		WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)) YA_ASSOCIATE_LINK_ORDERS
 	INNER JOIN
 		(SELECT link_id
-		FROM ya_associate_link
+		FROM YA_ASSOCIATE_LINK
 		WHERE associate_id=iAssociateId) yal
-	ON ya_associate_link_orders.link_id = yal.link_id
-	WHERE order_date >= to_date(cStartDate, 'mm/dd/yyyy') AND order_date < to_date(cEndDate, 'mm/dd/yyyy') AND credit_status <> 4);
+	ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
+	WHERE order_date >= TO_DATE(cStartDate, 'mm/dd/yyyy') AND order_date < TO_DATE(cEndDate, 'mm/dd/yyyy') AND credit_status <> 4);
 
 
-IF (to_date(cStartDate, 'mm/dd/yyyy') < to_date(cCutOffDate, 'mm/dd/yyyy')) THEN
-	SELECT link_percentage INTO deciPercentage FROM ya_associate_link WHERE associate_id=iAssociateId AND rownum=1 ORDER BY link_id ASC;
+IF (TO_DATE(cStartDate, 'mm/dd/yyyy') < TO_DATE(cCutOffDate, 'mm/dd/yyyy')) THEN
+	SELECT link_percentage INTO deciPercentage FROM YA_ASSOCIATE_LINK WHERE associate_id=iAssociateId AND ROWNUM=1 ORDER BY link_id ASC;
 	iNextLevel := 0;
 ELSE
-/*
-	SELECT percentage, nc_max + 1 - iCustomer INTO ret_percentage_next_level
-	FROM ya_associate_commission_detail cd INNER JOIN
-			(SELECT comm_type_id, nc_max
-			FROM ya_associate_commission_type ct
-			WHERE nc_min <= iCustomer AND nc_max >= iCustomer) ct
-		ON ct.comm_type_id =cd.comm_type_id
-		 INNER JOIN (SELECT commission_id, payment_option
-			FROM ya_associate
-			WHERE associate_id=iAssociateId) ya
-	ON cd.commission_id = ya.commission_id AND cd.payment_option = ya.payment_option;
-
-	deciPercentage := ret_percentage_next_level.percentage;
-	iNextLevel := ret_percentage_next_level.next_level;
-*/
-   SELECT comm_rate, 0 INTO ret_percentage_next_level FROM ya_associate_commission_hist ach WHERE valid_date = to_date(cStartDate, 'mm/dd/yyyy') AND associate_id = iAssociateId AND rownum = 1;
+   SELECT comm_rate, 0 INTO ret_percentage_next_level FROM YA_ASSOCIATE_COMMISSION_HIST ach WHERE valid_date = TO_DATE(cStartDate, 'mm/dd/yyyy') AND associate_id = iAssociateId AND ROWNUM = 1;
 	deciPercentage := ret_percentage_next_level.percentage;
 	iNextLevel := ret_percentage_next_level.next_level;
 
-	IF (deciPercentage IS null) THEN
+	IF (deciPercentage IS NULL) THEN
 		SELECT percentage, nc_max + 1 - iCustomer INTO ret_percentage_next_level
-		FROM ya_associate_commission_detail cd INNER JOIN
+		FROM YA_ASSOCIATE_COMMISSION_DETAIL cd INNER JOIN
 				(SELECT comm_type_id, nc_max
-				FROM ya_associate_commission_type ct
+				FROM YA_ASSOCIATE_COMMISSION_TYPE ct
 				WHERE nc_min <= iCustomer ) ct
 			ON ct.comm_type_id =cd.comm_type_id
 			 INNER JOIN (SELECT commission_id, payment_option
-				FROM ya_associate
+				FROM YA_ASSOCIATE
 				WHERE associate_id=iAssociateId) ya
-		ON cd.commission_id = ya.commission_id AND cd.payment_option = ya.payment_option AND rownum = 1;
+		ON cd.commission_id = ya.commission_id AND cd.payment_option = ya.payment_option AND ROWNUM = 1;
 
    ELSE
 		SELECT deciPercentage, nc_max + 1 - iCustomer INTO ret_percentage_next_level
-		FROM ya_associate_commission_detail cd INNER JOIN
+		FROM YA_ASSOCIATE_COMMISSION_DETAIL cd INNER JOIN
 				(SELECT comm_type_id, nc_max
-				FROM ya_associate_commission_type ct
+				FROM YA_ASSOCIATE_COMMISSION_TYPE ct
 				WHERE nc_min <= iCustomer ) ct
 			ON ct.comm_type_id =cd.comm_type_id
 			 INNER JOIN (SELECT commission_id, payment_option
-				FROM ya_associate
+				FROM YA_ASSOCIATE
 				WHERE associate_id=iAssociateId) ya
-		ON cd.commission_id = ya.commission_id AND cd.payment_option = ya.payment_option AND rownum = 1;
+		ON cd.commission_id = ya.commission_id AND cd.payment_option = ya.payment_option AND ROWNUM = 1;
 	END IF;
 	deciPercentage := ret_percentage_next_level.percentage;
 	iNextLevel := ret_percentage_next_level.next_level;
 END IF;
 
 /*use new comm %*/
-SELECT sum(nvl(credit_amount,unit_price * quantity * deciPercentage)) INTO deciTotalComm
-FROM ya_associate_link_orders
+SELECT SUM(NVL(credit_amount,unit_price * quantity * deciPercentage)) INTO deciTotalComm
+FROM YA_ASSOCIATE_LINK_ORDERS
 WHERE
-	(last_change_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-	(last_change_date < to_date(cEndDate, 'mm/dd/yyyy')) AND
-	link_id IN (SELECT link_id FROM ya_associate_link WHERE associate_id=iAssociateId) AND
+	(last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+	(last_change_date < TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
+	link_id IN (SELECT link_id FROM YA_ASSOCIATE_LINK WHERE associate_id=iAssociateId) AND
 	credit_status = 2;
 
-SELECT sum(nvl(credit_amount,unit_price * quantity * nvl(deciPercentage,0))) INTO deciThisPeriodComm
-FROM ya_associate_link_orders
+SELECT SUM(NVL(credit_amount,unit_price * quantity * NVL(deciPercentage,0))) INTO deciThisPeriodComm
+FROM YA_ASSOCIATE_LINK_ORDERS
 WHERE
-	(last_change_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-	(last_change_date < to_date(cEndDate, 'mm/dd/yyyy')) AND
-	order_date >= to_date(cStartDate, 'mm/dd/yyyy') AND order_date < to_date(cEndDate, 'mm/dd/yyyy') AND
-	link_id IN (SELECT link_id FROM ya_associate_link WHERE associate_id=iAssociateId) AND
+	(last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+	(last_change_date < TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
+	order_date >= TO_DATE(cStartDate, 'mm/dd/yyyy') AND order_date < TO_DATE(cEndDate, 'mm/dd/yyyy') AND
+	link_id IN (SELECT link_id FROM YA_ASSOCIATE_LINK WHERE associate_id=iAssociateId) AND
 	credit_status = 2;
 
 
 IF (iNeedGroup = 1) THEN
 	IF (iCreditStatus <> 1) THEN
 
-		OPEN cur_out01 for
-		SELECT  to_char(order_date, 'mm/dd/yyyy') AS order_date, to_char(last_change_date, 'mm/dd/yyyy') AS posting_date,
+		OPEN cur_out01 FOR
+		SELECT  TO_CHAR(order_date, 'mm/dd/yyyy') AS order_date, TO_CHAR(last_change_date, 'mm/dd/yyyy') AS posting_date,
 			CASE
-				WHEN (ya_prod_lang.prod_name_u IS null OR ya_prod_lang.prod_name_u = '')
-				THEN (SELECT prod_name_u FROM ya_prod_lang WHERE sku=yalo.sku AND lang_id = 1)
-				ELSE ya_prod_lang.prod_name_u
+				WHEN (YA_PROD_LANG.prod_name_u IS NULL OR YA_PROD_LANG.prod_name_u = '')
+				THEN (SELECT prod_name_u FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
+				ELSE YA_PROD_LANG.prod_name_u
 				END
 			AS prod_name,
-			yalo.sku, sum(yalo.quantity) AS items,
-			sum(yalo.unit_price * yalo.quantity) AS price, yalo.link_id,
+			yalo.sku, SUM(yalo.quantity) AS items,
+			SUM(yalo.unit_price * yalo.quantity) AS price, yalo.link_id,
 			yg.group_id
 		FROM
-			(SELECT order_date, last_change_date, sku, nvl(quantity, 0) AS quantity, nvl(unit_price, 0) AS unit_price, credit_status, yal.link_id
+			(SELECT order_date, last_change_date, sku, NVL(quantity, 0) AS quantity, NVL(unit_price, 0) AS unit_price, credit_status, yal.link_id
 			FROM
 				(SELECT *
-				FROM ya_associate_link_orders
-				WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-				) ya_associate_link_orders
+				FROM YA_ASSOCIATE_LINK_ORDERS
+				WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+				) YA_ASSOCIATE_LINK_ORDERS
 			INNER JOIN
 				(SELECT *
-				FROM ya_associate_link
+				FROM YA_ASSOCIATE_LINK
 				WHERE associate_id=iAssociateId
 				) yal
-			ON ya_associate_link_orders.link_id = yal.link_id
-			WHERE (ya_associate_link_orders.last_change_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-				(ya_associate_link_orders.last_change_date <  to_date(cEndDate, 'mm/dd/yyyy')) AND
+			ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
+			WHERE (YA_ASSOCIATE_LINK_ORDERS.last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+				(YA_ASSOCIATE_LINK_ORDERS.last_change_date <  TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 				(credit_status = 2) AND (unit_price > 0)) yalo
 		LEFT OUTER  JOIN
-			ya_product ON yalo.sku = ya_product.sku
+			YA_PRODUCT ON yalo.sku = YA_PRODUCT.sku
 		LEFT OUTER  JOIN
-			ya_prod_lang ON yalo.sku = ya_prod_lang.sku
+			YA_PROD_LANG ON yalo.sku = YA_PROD_LANG.sku
 		LEFT OUTER  JOIN
-			(SELECT * FROM ya_group WHERE division_id=1) yg
-			ON yg.account_id = ya_product.account_id
-		WHERE      (ya_prod_lang.lang_id = tiLangId)
-		GROUP BY ya_prod_lang.prod_name_u,  yalo.sku, yg.group_id, link_id,
-			to_char(order_date, 'mm/dd/yyyy'), to_char(last_change_date, 'mm/dd/yyyy')
+			(SELECT * FROM YA_GROUP WHERE division_id=1) yg
+			ON yg.account_id = YA_PRODUCT.account_id
+		WHERE      (YA_PROD_LANG.lang_id = tiLangId)
+		GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, yg.group_id, link_id,
+			TO_CHAR(order_date, 'mm/dd/yyyy'), TO_CHAR(last_change_date, 'mm/dd/yyyy')
 		ORDER BY group_id, posting_date, prod_name;
 
-		OPEN cur_out02 for
-		SELECT distinct yg.group_id
+		OPEN cur_out02 FOR
+		SELECT DISTINCT yg.group_id
 		FROM
 			(SELECT order_date, last_change_date, sku, quantity, unit_price, credit_status
 			FROM
 				(SELECT *
-				FROM ya_associate_link_orders
-				WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-				) ya_associate_link_orders
+				FROM YA_ASSOCIATE_LINK_ORDERS
+				WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+				) YA_ASSOCIATE_LINK_ORDERS
 			INNER JOIN
 				(SELECT *
-				FROM ya_associate_link
+				FROM YA_ASSOCIATE_LINK
 				WHERE associate_id=iAssociateId
 				) yal
-			ON ya_associate_link_orders.link_id = yal.link_id
-			WHERE (ya_associate_link_orders.last_change_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-				(ya_associate_link_orders.last_change_date <  to_date(cEndDate, 'mm/dd/yyyy')) AND
+			ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
+			WHERE (YA_ASSOCIATE_LINK_ORDERS.last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+				(YA_ASSOCIATE_LINK_ORDERS.last_change_date <  TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 				(credit_status = 2) AND (unit_price > 0)) yalo
 		LEFT OUTER  JOIN
-			ya_product ON yalo.sku = ya_product.sku
+			YA_PRODUCT ON yalo.sku = YA_PRODUCT.sku
 		LEFT OUTER  JOIN
-			(SELECT * FROM ya_group WHERE division_id=1) yg
-			ON yg.account_id = ya_product.account_id;
+			(SELECT * FROM YA_GROUP WHERE division_id=1) yg
+			ON yg.account_id = YA_PRODUCT.account_id;
 	END IF;
 
 	IF (iCreditStatus <>2) THEN
-		OPEN cur_temp03 for
-		SELECT   to_char(yalo.order_date, 'mm/dd/yyyy') AS order_date,
+		OPEN cur_temp03 FOR
+		SELECT   TO_CHAR(yalo.order_date, 'mm/dd/yyyy') AS order_date,
 			CASE
-				WHEN (ya_prod_lang.prod_name_u IS null OR ya_prod_lang.prod_name_u = '')
-				THEN (SELECT prod_name_u FROM ya_prod_lang WHERE sku=yalo.sku AND lang_id = 1)
-				ELSE ya_prod_lang.prod_name_u
+				WHEN (YA_PROD_LANG.prod_name_u IS NULL OR YA_PROD_LANG.prod_name_u = '')
+				THEN (SELECT prod_name_u FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
+				ELSE YA_PROD_LANG.prod_name_u
 				END
 			AS prod_name, yalo.sku,
-			sum(yalo.quantity) AS items,
-			sum(yalo.unit_price * yalo.quantity) AS price, link_id,
+			SUM(yalo.quantity) AS items,
+			SUM(yalo.unit_price * yalo.quantity) AS price, link_id,
 			yg.group_id
 		FROM
-			(SELECT order_date, last_change_date, sku, quantity, unit_price, credit_status, ya_associate_link_orders.link_id
+			(SELECT order_date, last_change_date, sku, quantity, unit_price, credit_status, YA_ASSOCIATE_LINK_ORDERS.link_id
 			FROM
 				(SELECT *
-				FROM ya_associate_link_orders
-				WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-				) ya_associate_link_orders
+				FROM YA_ASSOCIATE_LINK_ORDERS
+				WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+				) YA_ASSOCIATE_LINK_ORDERS
 			INNER JOIN
 				(SELECT *
-				FROM ya_associate_link
+				FROM YA_ASSOCIATE_LINK
 				WHERE associate_id=iAssociateId
 				) yal
-			ON ya_associate_link_orders.link_id = yal.link_id
-			WHERE (ya_associate_link_orders.order_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-				(ya_associate_link_orders.order_date < to_date(cEndDate, 'mm/dd/yyyy')) AND
+			ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
+			WHERE (YA_ASSOCIATE_LINK_ORDERS.order_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+				(YA_ASSOCIATE_LINK_ORDERS.order_date < TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 				(credit_status = 1) AND (unit_price > 0)
 			) yalo
 		LEFT OUTER  JOIN
-			ya_product ON yalo.sku = ya_product.sku
+			YA_PRODUCT ON yalo.sku = YA_PRODUCT.sku
 		LEFT OUTER  JOIN
-			ya_prod_lang ON yalo.sku = ya_prod_lang.sku
+			YA_PROD_LANG ON yalo.sku = YA_PROD_LANG.sku
 		LEFT OUTER  JOIN
-			(SELECT * FROM ya_group WHERE division_id=1) yg
-		ON yg.account_id = ya_product.account_id
-		WHERE      (ya_prod_lang.lang_id = tiLangId OR ya_prod_lang.lang_id = 1)
-		GROUP BY ya_prod_lang.prod_name_u,  yalo.sku, yg.group_id, order_date, link_id
+			(SELECT * FROM YA_GROUP WHERE division_id=1) yg
+		ON yg.account_id = YA_PRODUCT.account_id
+		WHERE      (YA_PROD_LANG.lang_id = tiLangId OR YA_PROD_LANG.lang_id = 1)
+		GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, yg.group_id, order_date, link_id
 		ORDER BY group_id, order_date, prod_name;
 
-		IF (cur_out01 IS null) THEN
+		IF (cur_out01 IS NULL) THEN
 			cur_out01 := cur_temp03;
-		elsif (cur_out02 IS null) THEN
+		ELSIF (cur_out02 IS NULL) THEN
 			cur_out02 := cur_temp03;
-		elsif (cur_out03 IS null) THEN
+		ELSIF (cur_out03 IS NULL) THEN
 			cur_out03 := cur_temp03;
-		elsif (cur_out04 IS null) THEN
+		ELSIF (cur_out04 IS NULL) THEN
 			cur_out04 := cur_temp03;
-		elsif (cur_out05 IS null) THEN
+		ELSIF (cur_out05 IS NULL) THEN
 			cur_out05 := cur_temp03;
-		elsif (cur_out06 IS null) THEN
+		ELSIF (cur_out06 IS NULL) THEN
 			cur_out06 := cur_temp03;
-		elsif (cur_out07 IS null) THEN
+		ELSIF (cur_out07 IS NULL) THEN
 			cur_out07 := cur_temp03;
-		elsif (cur_out08 IS null) THEN
+		ELSIF (cur_out08 IS NULL) THEN
 			cur_out08 := cur_temp03;
-		elsif (cur_out09 IS null) THEN
+		ELSIF (cur_out09 IS NULL) THEN
 			cur_out09 := cur_temp03;
-		elsif (cur_out10 IS null) THEN
+		ELSIF (cur_out10 IS NULL) THEN
 			cur_out10 := cur_temp03;
 		ELSE
 			cur_out11 := cur_temp03;
 		END IF;
 
-		OPEN cur_temp04 for
+		OPEN cur_temp04 FOR
 		SELECT    DISTINCT  yg.group_id
 		FROM
 			(SELECT order_date, last_change_date, sku, quantity, unit_price, credit_status
 			FROM
 				(SELECT *
-				FROM ya_associate_link_orders
-				WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-				) ya_associate_link_orders
+				FROM YA_ASSOCIATE_LINK_ORDERS
+				WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+				) YA_ASSOCIATE_LINK_ORDERS
 			INNER JOIN
 				(SELECT *
-				FROM ya_associate_link
+				FROM YA_ASSOCIATE_LINK
 				WHERE associate_id=iAssociateId
 				) yal
-			ON ya_associate_link_orders.link_id = yal.link_id
-			WHERE (ya_associate_link_orders.order_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-				(ya_associate_link_orders.order_date <  to_date(cEndDate, 'mm/dd/yyyy')) AND
+			ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
+			WHERE (YA_ASSOCIATE_LINK_ORDERS.order_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+				(YA_ASSOCIATE_LINK_ORDERS.order_date <  TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 				(credit_status = 1) AND (unit_price > 0)
 			) yalo
 		LEFT OUTER  JOIN
-			ya_product ON yalo.sku = ya_product.sku
+			YA_PRODUCT ON yalo.sku = YA_PRODUCT.sku
 		LEFT OUTER  JOIN
-			(SELECT * FROM ya_group WHERE division_id=1) yg
-		ON yg.account_id = ya_product.account_id;
+			(SELECT * FROM YA_GROUP WHERE division_id=1) yg
+		ON yg.account_id = YA_PRODUCT.account_id;
 
-		IF (cur_out01 IS null) THEN
+		IF (cur_out01 IS NULL) THEN
 			cur_out01 := cur_temp04;
-		elsif (cur_out02 IS null) THEN
+		ELSIF (cur_out02 IS NULL) THEN
 			cur_out02 := cur_temp04;
-		elsif (cur_out03 IS null) THEN
+		ELSIF (cur_out03 IS NULL) THEN
 			cur_out03 := cur_temp04;
-		elsif (cur_out04 IS null) THEN
+		ELSIF (cur_out04 IS NULL) THEN
 			cur_out04 := cur_temp04;
-		elsif (cur_out05 IS null) THEN
+		ELSIF (cur_out05 IS NULL) THEN
 			cur_out05 := cur_temp04;
-		elsif (cur_out06 IS null) THEN
+		ELSIF (cur_out06 IS NULL) THEN
 			cur_out06 := cur_temp04;
-		elsif (cur_out07 IS null) THEN
+		ELSIF (cur_out07 IS NULL) THEN
 			cur_out07 := cur_temp04;
-		elsif (cur_out08 IS null) THEN
+		ELSIF (cur_out08 IS NULL) THEN
 			cur_out08 := cur_temp04;
-		elsif (cur_out09 IS null) THEN
+		ELSIF (cur_out09 IS NULL) THEN
 			cur_out09 := cur_temp04;
-		elsif (cur_out10 IS null) THEN
+		ELSIF (cur_out10 IS NULL) THEN
 			cur_out10 := cur_temp04;
-		elsif (cur_out11 IS null) THEN
+		ELSIF (cur_out11 IS NULL) THEN
 			cur_out11 := cur_temp04;
-		elsif (cur_out12 IS null) THEN
+		ELSIF (cur_out12 IS NULL) THEN
 			cur_out12 := cur_temp04;
-		elsif (cur_out13 IS null) THEN
+		ELSIF (cur_out13 IS NULL) THEN
 			cur_out13 := cur_temp04;
-		elsif (cur_out14 IS null) THEN
+		ELSIF (cur_out14 IS NULL) THEN
 			cur_out14 := cur_temp04;
 		ELSE
 			cur_out14 := cur_temp04;
 		END IF;
 
-		OPEN cur_temp05 for
-		SELECT    sum(yalo.quantity) AS items,
-			sum(yalo.unit_price * yalo.quantity) AS price
+		OPEN cur_temp05 FOR
+		SELECT    SUM(yalo.quantity) AS items,
+			SUM(yalo.unit_price * yalo.quantity) AS price
 		FROM
-			(SELECT order_date, last_change_date, sku, nvl(quantity, 0) AS quantity, nvl(unit_price, 0) AS unit_price, credit_status
+			(SELECT order_date, last_change_date, sku, NVL(quantity, 0) AS quantity, NVL(unit_price, 0) AS unit_price, credit_status
 			FROM
 				(SELECT *
-				FROM ya_associate_link_orders
-				WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-				) ya_associate_link_orders
+				FROM YA_ASSOCIATE_LINK_ORDERS
+				WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+				) YA_ASSOCIATE_LINK_ORDERS
 			INNER JOIN
 				(SELECT *
-				FROM ya_associate_link
+				FROM YA_ASSOCIATE_LINK
 				WHERE associate_id=iAssociateId
 				) yal
-			ON ya_associate_link_orders.link_id = yal.link_id
-			WHERE (ya_associate_link_orders.order_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-		                                  (ya_associate_link_orders.order_date <  to_date(cEndDate, 'mm/dd/yyyy')) AND
+			ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
+			WHERE (YA_ASSOCIATE_LINK_ORDERS.order_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+		                                  (YA_ASSOCIATE_LINK_ORDERS.order_date <  TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 		                 	               (credit_status =1) AND (unit_price > 0)
 			) yalo
-		GROUP BY to_number(to_char(order_date, 'fmmm'));
+		GROUP BY TO_NUMBER(TO_CHAR(order_date, 'fmmm'));
 
-		IF (cur_out01 IS null) THEN
+		IF (cur_out01 IS NULL) THEN
 			cur_out01 := cur_temp05;
-		elsif (cur_out02 IS null) THEN
+		ELSIF (cur_out02 IS NULL) THEN
 			cur_out02 := cur_temp05;
-		elsif (cur_out03 IS null) THEN
+		ELSIF (cur_out03 IS NULL) THEN
 			cur_out03 := cur_temp05;
-		elsif (cur_out04 IS null) THEN
+		ELSIF (cur_out04 IS NULL) THEN
 			cur_out04 := cur_temp05;
-		elsif (cur_out05 IS null) THEN
+		ELSIF (cur_out05 IS NULL) THEN
 			cur_out05 := cur_temp05;
-		elsif (cur_out06 IS null) THEN
+		ELSIF (cur_out06 IS NULL) THEN
 			cur_out06 := cur_temp05;
-		elsif (cur_out07 IS null) THEN
+		ELSIF (cur_out07 IS NULL) THEN
 			cur_out07 := cur_temp05;
-		elsif (cur_out08 IS null) THEN
+		ELSIF (cur_out08 IS NULL) THEN
 			cur_out08 := cur_temp05;
-		elsif (cur_out09 IS null) THEN
+		ELSIF (cur_out09 IS NULL) THEN
 			cur_out09 := cur_temp05;
-		elsif (cur_out10 IS null) THEN
+		ELSIF (cur_out10 IS NULL) THEN
 			cur_out10 := cur_temp05;
-		elsif (cur_out11 IS null) THEN
+		ELSIF (cur_out11 IS NULL) THEN
 			cur_out11 := cur_temp05;
-		elsif (cur_out12 IS null) THEN
+		ELSIF (cur_out12 IS NULL) THEN
 			cur_out12 := cur_temp05;
-		elsif (cur_out13 IS null) THEN
+		ELSIF (cur_out13 IS NULL) THEN
 			cur_out13 := cur_temp05;
-		elsif (cur_out14 IS null) THEN
+		ELSIF (cur_out14 IS NULL) THEN
 			cur_out14 := cur_temp05;
 		ELSE
 			cur_out14 := cur_temp05;
@@ -2115,159 +2070,159 @@ IF (iNeedGroup = 1) THEN
 
 	END IF;
 
-	IF (to_date(cStartDate, 'mm/dd/yyyy') < to_date(cCutOffDate, 'mm/dd/yyyy')) THEN
-		OPEN cur_temp06 for
-		SELECT    sum(yalo.quantity) AS items,
-			sum(yalo.unit_price * yalo.quantity) AS price,
-			to_number(to_char(order_date,'fmmm')) AS posting_month,
-			to_number(to_char(order_date,'yyyy')) AS posting_year,
-			(SELECT link_percentage FROM ya_associate_link WHERE associate_id=iAssociateId AND rownum=1) AS percentage,
+	IF (TO_DATE(cStartDate, 'mm/dd/yyyy') < TO_DATE(cCutOffDate, 'mm/dd/yyyy')) THEN
+		OPEN cur_temp06 FOR
+		SELECT    SUM(yalo.quantity) AS items,
+			SUM(yalo.unit_price * yalo.quantity) AS price,
+			TO_NUMBER(TO_CHAR(order_date,'fmmm')) AS posting_month,
+			TO_NUMBER(TO_CHAR(order_date,'yyyy')) AS posting_year,
+			(SELECT link_percentage FROM YA_ASSOCIATE_LINK WHERE associate_id=iAssociateId AND ROWNUM=1) AS percentage,
 			--sum(yalo.unit_price * yalo.quantity) * (SELECT link_percentage FROM ya_associate_link WHERE associate_id=iAssociateId AND rownum = 1)  AS commission
-			sum(nvl(yalo.credit_amount, yalo.unit_price * yalo.quantity* nvl(comm_rate, nvl(percentage, (SELECT comm_rate FROM ya_associate_commission_hist WHERE associate_id = 8050 AND rownum=1))))) AS commission
+			SUM(NVL(yalo.credit_amount, yalo.unit_price * yalo.quantity* NVL(comm_rate, NVL(percentage, (SELECT comm_rate FROM YA_ASSOCIATE_COMMISSION_HIST WHERE associate_id = 8050 AND ROWNUM=1))))) AS commission
 		FROM
-			(SELECT order_date, last_change_date, sku,nvl(quantity, 0) AS quantity, nvl(unit_price, 0) AS unit_price, credit_status, credit_amount
+			(SELECT order_date, last_change_date, sku,NVL(quantity, 0) AS quantity, NVL(unit_price, 0) AS unit_price, credit_status, credit_amount
 			FROM
 				(SELECT *
-				FROM ya_associate_link_orders
-				WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-				) ya_associate_link_orders
+				FROM YA_ASSOCIATE_LINK_ORDERS
+				WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+				) YA_ASSOCIATE_LINK_ORDERS
 			INNER JOIN
 				(SELECT *
-				FROM ya_associate_link
+				FROM YA_ASSOCIATE_LINK
 				WHERE associate_id=iAssociateId
 				) yal
-			ON ya_associate_link_orders.link_id = yal.link_id
-			WHERE (ya_associate_link_orders.last_change_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-				(ya_associate_link_orders.last_change_date < to_date(cEndDate, 'mm/dd/yyyy')) AND
+			ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
+			WHERE (YA_ASSOCIATE_LINK_ORDERS.last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+				(YA_ASSOCIATE_LINK_ORDERS.last_change_date < TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 				(credit_status = 2) AND (unit_price > 0)
 			) yalo
-			LEFT OUTER JOIN ya_associate_commission_hist yach on yach.associate_id = iAssociateId
-				AND yach.valid_date = to_date(to_char(order_date, 'mm') || '/01/' || to_char(order_date, 'yyyy'), 'mm/dd/yyyy'),
+			LEFT OUTER JOIN YA_ASSOCIATE_COMMISSION_HIST yach ON yach.associate_id = iAssociateId
+				AND yach.valid_date = TO_DATE(TO_CHAR(order_date, 'mm') || '/01/' || TO_CHAR(order_date, 'yyyy'), 'mm/dd/yyyy'),
 				(SELECT percentage
-				FROM ya_associate_commission_detail cd
+				FROM YA_ASSOCIATE_COMMISSION_DETAIL cd
 				INNER JOIN
 					(SELECT comm_type_id, nc_max
-					FROM ya_associate_commission_type ct
+					FROM YA_ASSOCIATE_COMMISSION_TYPE ct
                WHERE ((nc_min <=iCustomer AND nc_max >=iCustomer) OR (nc_max < iCustomer))
                ORDER BY nc_min DESC
 					) ct
 				ON ct.comm_type_id =cd.comm_type_id
 				INNER JOIN
 					(SELECT commission_id, payment_option
-					FROM ya_associate
+					FROM YA_ASSOCIATE
 					WHERE associate_id=iAssociateId
 					) ya
 				ON cd.commission_id = ya.commission_id AND cd.payment_option = ya.payment_option
-            WHERE rownum=1
+            WHERE ROWNUM=1
 				)t
-		GROUP BY to_number(to_char(order_date,'fmmm')), to_number(to_char(order_date, 'yyyy')) , comm_rate, t.percentage;
+		GROUP BY TO_NUMBER(TO_CHAR(order_date,'fmmm')), TO_NUMBER(TO_CHAR(order_date, 'yyyy')) , comm_rate, t.percentage;
 
-		IF (cur_out01 IS null) THEN
+		IF (cur_out01 IS NULL) THEN
 			cur_out01 := cur_temp06;
-		elsif (cur_out02 IS null) THEN
+		ELSIF (cur_out02 IS NULL) THEN
 			cur_out02 := cur_temp06;
-		elsif (cur_out03 IS null) THEN
+		ELSIF (cur_out03 IS NULL) THEN
 			cur_out03 := cur_temp06;
-		elsif (cur_out04 IS null) THEN
+		ELSIF (cur_out04 IS NULL) THEN
 			cur_out04 := cur_temp06;
-		elsif (cur_out05 IS null) THEN
+		ELSIF (cur_out05 IS NULL) THEN
 			cur_out05 := cur_temp06;
-		elsif (cur_out06 IS null) THEN
+		ELSIF (cur_out06 IS NULL) THEN
 			cur_out06 := cur_temp06;
-		elsif (cur_out07 IS null) THEN
+		ELSIF (cur_out07 IS NULL) THEN
 			cur_out07 := cur_temp06;
-		elsif (cur_out08 IS null) THEN
+		ELSIF (cur_out08 IS NULL) THEN
 			cur_out08 := cur_temp06;
-		elsif (cur_out09 IS null) THEN
+		ELSIF (cur_out09 IS NULL) THEN
 			cur_out09 := cur_temp06;
-		elsif (cur_out10 IS null) THEN
+		ELSIF (cur_out10 IS NULL) THEN
 			cur_out10 := cur_temp06;
-		elsif (cur_out11 IS null) THEN
+		ELSIF (cur_out11 IS NULL) THEN
 			cur_out11 := cur_temp06;
-		elsif (cur_out12 IS null) THEN
+		ELSIF (cur_out12 IS NULL) THEN
 			cur_out12 := cur_temp06;
-		elsif (cur_out13 IS null) THEN
+		ELSIF (cur_out13 IS NULL) THEN
 			cur_out13 := cur_temp06;
-		elsif (cur_out14 IS null) THEN
+		ELSIF (cur_out14 IS NULL) THEN
 			cur_out14 := cur_temp06;
 		ELSE
 			cur_out14 := cur_temp06;
 		END IF;
 	ELSE
-		OPEN cur_temp07 for
-		SELECT    sum(yalo.quantity) AS items,
-			sum(yalo.unit_price * yalo.quantity) AS price,
-			to_number(to_char(order_date, 'fmmm')) AS posting_month,
-			to_number(to_char(order_date, 'yyyy')) AS posting_year,
-			nvl(comm_rate, nvl(percentage, (SELECT comm_rate FROM ya_associate_commission_hist WHERE associate_id = iAssociateId AND rownum=1))) AS percentage,
+		OPEN cur_temp07 FOR
+		SELECT    SUM(yalo.quantity) AS items,
+			SUM(yalo.unit_price * yalo.quantity) AS price,
+			TO_NUMBER(TO_CHAR(order_date, 'fmmm')) AS posting_month,
+			TO_NUMBER(TO_CHAR(order_date, 'yyyy')) AS posting_year,
+			NVL(comm_rate, NVL(percentage, (SELECT comm_rate FROM YA_ASSOCIATE_COMMISSION_HIST WHERE associate_id = iAssociateId AND ROWNUM=1))) AS percentage,
 			--sum(yalo.unit_price * yalo.quantity) * nvl(comm_rate, nvl(percentage, (SELECT comm_rate FROM ya_associate_commission_hist WHERE associate_id = iAssociateId AND rownum=1)))  AS commission
-			sum(nvl(yalo.credit_amount, yalo.unit_price * yalo.quantity* nvl(comm_rate, nvl(percentage, (SELECT comm_rate FROM ya_associate_commission_hist WHERE associate_id = 8050 AND rownum=1))))) AS commission
+			SUM(NVL(yalo.credit_amount, yalo.unit_price * yalo.quantity* NVL(comm_rate, NVL(percentage, (SELECT comm_rate FROM YA_ASSOCIATE_COMMISSION_HIST WHERE associate_id = 8050 AND ROWNUM=1))))) AS commission
 		FROM
-			(SELECT order_date, last_change_date, sku, nvl(quantity, 0) AS quantity, nvl(unit_price, 0) AS unit_price, credit_status, credit_amount
+			(SELECT order_date, last_change_date, sku, NVL(quantity, 0) AS quantity, NVL(unit_price, 0) AS unit_price, credit_status, credit_amount
 			FROM
 				(SELECT *
-				FROM ya_associate_link_orders
-				WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-				) ya_associate_link_orders
+				FROM YA_ASSOCIATE_LINK_ORDERS
+				WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+				) YA_ASSOCIATE_LINK_ORDERS
 			INNER JOIN
 				(SELECT *
-				FROM ya_associate_link
+				FROM YA_ASSOCIATE_LINK
 				WHERE associate_id=iAssociateId
 				) yal
-			ON ya_associate_link_orders.link_id = yal.link_id
+			ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
 			WHERE
-				(ya_associate_link_orders.last_change_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-				(ya_associate_link_orders.last_change_date < to_date(cEndDate, 'mm/dd/yyyy')) AND
+				(YA_ASSOCIATE_LINK_ORDERS.last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+				(YA_ASSOCIATE_LINK_ORDERS.last_change_date < TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 				(credit_status = 2) AND (unit_price > 0)
 			) yalo
-		LEFT OUTER JOIN ya_associate_commission_hist yach on yach.associate_id = iAssociateId
-			AND yach.valid_date = to_date(to_char(order_date, 'mm') || '/01/' || to_char(order_date, 'yyyy'), 'mm/dd/yyyy'),
+		LEFT OUTER JOIN YA_ASSOCIATE_COMMISSION_HIST yach ON yach.associate_id = iAssociateId
+			AND yach.valid_date = TO_DATE(TO_CHAR(order_date, 'mm') || '/01/' || TO_CHAR(order_date, 'yyyy'), 'mm/dd/yyyy'),
 			(SELECT percentage
-			FROM ya_associate_commission_detail cd
+			FROM YA_ASSOCIATE_COMMISSION_DETAIL cd
 			INNER JOIN
 				(SELECT comm_type_id, 	nc_max
-				FROM ya_associate_commission_type ct
+				FROM YA_ASSOCIATE_COMMISSION_TYPE ct
 				WHERE ((nc_min <=iCustomer AND nc_max >=iCustomer) OR (nc_max < iCustomer))
             ORDER BY nc_min DESC
 				) ct
 			ON ct.comm_type_id =cd.comm_type_id
 			INNER JOIN
 				(SELECT commission_id, payment_option
-				FROM ya_associate
+				FROM YA_ASSOCIATE
 				WHERE associate_id=iAssociateId
 				) ya
 			ON cd.commission_id = ya.commission_id AND cd.payment_option = ya.payment_option
-         WHERE rownum=1
+         WHERE ROWNUM=1
 			)t
-		GROUP BY to_number(to_char(order_date,'fmmm')), to_number(to_char(order_date, 'yyyy')) , comm_rate, t.percentage;
+		GROUP BY TO_NUMBER(TO_CHAR(order_date,'fmmm')), TO_NUMBER(TO_CHAR(order_date, 'yyyy')) , comm_rate, t.percentage;
 
-		IF (cur_out01 IS null) THEN
+		IF (cur_out01 IS NULL) THEN
 			cur_out01 := cur_temp07;
-		elsif (cur_out02 IS null) THEN
+		ELSIF (cur_out02 IS NULL) THEN
 			cur_out02 := cur_temp07;
-		elsif (cur_out03 IS null) THEN
+		ELSIF (cur_out03 IS NULL) THEN
 			cur_out03 := cur_temp07;
-		elsif (cur_out04 IS null) THEN
+		ELSIF (cur_out04 IS NULL) THEN
 			cur_out04 := cur_temp07;
-		elsif (cur_out05 IS null) THEN
+		ELSIF (cur_out05 IS NULL) THEN
 			cur_out05 := cur_temp07;
-		elsif (cur_out06 IS null) THEN
+		ELSIF (cur_out06 IS NULL) THEN
 			cur_out06 := cur_temp07;
-		elsif (cur_out07 IS null) THEN
+		ELSIF (cur_out07 IS NULL) THEN
 			cur_out07 := cur_temp07;
-		elsif (cur_out08 IS null) THEN
+		ELSIF (cur_out08 IS NULL) THEN
 			cur_out08 := cur_temp07;
-		elsif (cur_out09 IS null) THEN
+		ELSIF (cur_out09 IS NULL) THEN
 			cur_out09 := cur_temp07;
-		elsif (cur_out10 IS null) THEN
+		ELSIF (cur_out10 IS NULL) THEN
 			cur_out10 := cur_temp07;
-		elsif (cur_out11 IS null) THEN
+		ELSIF (cur_out11 IS NULL) THEN
 			cur_out11 := cur_temp07;
-		elsif (cur_out12 IS null) THEN
+		ELSIF (cur_out12 IS NULL) THEN
 			cur_out12 := cur_temp07;
-		elsif (cur_out13 IS null) THEN
+		ELSIF (cur_out13 IS NULL) THEN
 			cur_out13 := cur_temp07;
-		elsif (cur_out14 IS null) THEN
+		ELSIF (cur_out14 IS NULL) THEN
 			cur_out14 := cur_temp07;
 		ELSE
 			cur_out14 := cur_temp07;
@@ -2279,139 +2234,139 @@ END IF;
 IF (iNeedGroup = 0) THEN
 
 	IF (iBestSeller = 1) THEN
-		OPEN cur_temp08 for
+		OPEN cur_temp08 FOR
       SELECT * FROM (
          SELECT
             CASE
-               WHEN (ya_prod_lang.prod_name_u IS null OR ya_prod_lang.prod_name_u = '')
-               THEN (SELECT prod_name_u FROM ya_prod_lang WHERE sku=yalo.sku AND lang_id = 1)
+               WHEN (YA_PROD_LANG.prod_name_u IS NULL OR YA_PROD_LANG.prod_name_u = '')
+               THEN (SELECT prod_name_u FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
                ELSE
-               ya_prod_lang.prod_name_u
+               YA_PROD_LANG.prod_name_u
                END
             AS prod_name,
             yalo.sku,
-            sum(yalo.quantity) AS items, link_id,
-            sum(yalo.unit_price * yalo.quantity) AS price
+            SUM(yalo.quantity) AS items, link_id,
+            SUM(yalo.unit_price * yalo.quantity) AS price
          FROM
-            (SELECT order_date, last_change_date, sku, quantity, unit_price, credit_status, ya_associate_link_orders.link_id
+            (SELECT order_date, last_change_date, sku, quantity, unit_price, credit_status, YA_ASSOCIATE_LINK_ORDERS.link_id
             FROM
                (SELECT *
-               FROM ya_associate_link_orders
-               WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-               ) ya_associate_link_orders
+               FROM YA_ASSOCIATE_LINK_ORDERS
+               WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+               ) YA_ASSOCIATE_LINK_ORDERS
             INNER JOIN
                (SELECT *
-               FROM ya_associate_link
+               FROM YA_ASSOCIATE_LINK
                WHERE associate_id=iAssociateId
                ) yal
-            ON ya_associate_link_orders.link_id = yal.link_id
-            WHERE (ya_associate_link_orders.last_change_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-               (ya_associate_link_orders.last_change_date <  to_date(cEndDate, 'mm/dd/yyyy')) AND
+            ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
+            WHERE (YA_ASSOCIATE_LINK_ORDERS.last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+               (YA_ASSOCIATE_LINK_ORDERS.last_change_date <  TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
                (credit_status = 2 OR credit_status = 1) AND (unit_price > 0)
             ) yalo
-            LEFT OUTER  JOIN ya_product ON yalo.sku = ya_product.sku
-            LEFT OUTER  JOIN ya_prod_lang ON yalo.sku = ya_prod_lang.sku
-         WHERE      (ya_prod_lang.lang_id = tiLangId)
-         GROUP BY ya_prod_lang.prod_name_u,  yalo.sku, link_id
+            LEFT OUTER  JOIN YA_PRODUCT ON yalo.sku = YA_PRODUCT.sku
+            LEFT OUTER  JOIN YA_PROD_LANG ON yalo.sku = YA_PROD_LANG.sku
+         WHERE      (YA_PROD_LANG.lang_id = tiLangId)
+         GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, link_id
          ORDER BY items DESC)
-      WHERE (rownum<=20);
+      WHERE (ROWNUM<=20);
 
-		IF (cur_out01 IS null) THEN
+		IF (cur_out01 IS NULL) THEN
 			cur_out01 := cur_temp08;
-		elsif (cur_out02 IS null) THEN
+		ELSIF (cur_out02 IS NULL) THEN
 			cur_out02 := cur_temp08;
-		elsif (cur_out03 IS null) THEN
+		ELSIF (cur_out03 IS NULL) THEN
 			cur_out03 := cur_temp08;
-		elsif (cur_out04 IS null) THEN
+		ELSIF (cur_out04 IS NULL) THEN
 			cur_out04 := cur_temp08;
-		elsif (cur_out05 IS null) THEN
+		ELSIF (cur_out05 IS NULL) THEN
 			cur_out05 := cur_temp08;
-		elsif (cur_out06 IS null) THEN
+		ELSIF (cur_out06 IS NULL) THEN
 			cur_out06 := cur_temp08;
-		elsif (cur_out07 IS null) THEN
+		ELSIF (cur_out07 IS NULL) THEN
 			cur_out07 := cur_temp08;
-		elsif (cur_out08 IS null) THEN
+		ELSIF (cur_out08 IS NULL) THEN
 			cur_out08 := cur_temp08;
-		elsif (cur_out09 IS null) THEN
+		ELSIF (cur_out09 IS NULL) THEN
 			cur_out09 := cur_temp08;
-		elsif (cur_out10 IS null) THEN
+		ELSIF (cur_out10 IS NULL) THEN
 			cur_out10 := cur_temp08;
-		elsif (cur_out11 IS null) THEN
+		ELSIF (cur_out11 IS NULL) THEN
 			cur_out11 := cur_temp08;
-		elsif (cur_out12 IS null) THEN
+		ELSIF (cur_out12 IS NULL) THEN
 			cur_out12 := cur_temp08;
-		elsif (cur_out13 IS null) THEN
+		ELSIF (cur_out13 IS NULL) THEN
 			cur_out13 := cur_temp08;
-		elsif (cur_out14 IS null) THEN
+		ELSIF (cur_out14 IS NULL) THEN
 			cur_out14 := cur_temp08;
 		ELSE
 			cur_out14 := cur_temp08;
 		END IF;
 	ELSE
 		IF (iCreditStatus <> 1)  THEN
-			OPEN cur_temp09 for
-			SELECT  to_char(order_date, 'mm/dd/yyyy') AS order_date,
-				to_char(last_change_date, 'mm/dd/yyyy') AS posting_date,
+			OPEN cur_temp09 FOR
+			SELECT  TO_CHAR(order_date, 'mm/dd/yyyy') AS order_date,
+				TO_CHAR(last_change_date, 'mm/dd/yyyy') AS posting_date,
 				CASE
-					WHEN (ya_prod_lang.prod_name_u IS null OR ya_prod_lang.prod_name_u = '')
-					THEN (SELECT prod_name_u FROM ya_prod_lang WHERE sku=yalo.sku AND lang_id = 1)
+					WHEN (YA_PROD_LANG.prod_name_u IS NULL OR YA_PROD_LANG.prod_name_u = '')
+					THEN (SELECT prod_name_u FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
 					ELSE
-					ya_prod_lang.prod_name_u
+					YA_PROD_LANG.prod_name_u
 					END
 				AS prod_name,
 				yalo.sku,
-				sum(yalo.quantity) AS items, link_id,
-				sum(yalo.unit_price * yalo.quantity) AS price
+				SUM(yalo.quantity) AS items, link_id,
+				SUM(yalo.unit_price * yalo.quantity) AS price
 			FROM
-				(SELECT order_date, last_change_date, sku, quantity, unit_price, credit_status, ya_associate_link_orders.link_id
+				(SELECT order_date, last_change_date, sku, quantity, unit_price, credit_status, YA_ASSOCIATE_LINK_ORDERS.link_id
 				FROM
 					(SELECT *
-					FROM ya_associate_link_orders
-					WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-					) ya_associate_link_orders
+					FROM YA_ASSOCIATE_LINK_ORDERS
+					WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+					) YA_ASSOCIATE_LINK_ORDERS
 				INNER JOIN
 					(SELECT *
-					FROM ya_associate_link
+					FROM YA_ASSOCIATE_LINK
 					WHERE associate_id=iAssociateId
 					) yal
-				ON ya_associate_link_orders.link_id = yal.link_id
-				WHERE (ya_associate_link_orders.last_change_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-			                                  (ya_associate_link_orders.last_change_date <  to_date(cEndDate, 'mm/dd/yyyy')) AND
+				ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
+				WHERE (YA_ASSOCIATE_LINK_ORDERS.last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+			                                  (YA_ASSOCIATE_LINK_ORDERS.last_change_date <  TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 			                 	               (credit_status = 2) AND (unit_price > 0)) yalo
-				LEFT OUTER  JOIN ya_product ON yalo.sku = ya_product.sku
-				LEFT OUTER  JOIN ya_prod_lang ON yalo.sku = ya_prod_lang.sku
-			WHERE      (ya_prod_lang.lang_id = tiLangId)
-			GROUP BY ya_prod_lang.prod_name_u,  yalo.sku, link_id,
-				to_char(order_date, 'mm/dd/yyyy'), to_char(last_change_date, 'mm/dd/yyyy')
+				LEFT OUTER  JOIN YA_PRODUCT ON yalo.sku = YA_PRODUCT.sku
+				LEFT OUTER  JOIN YA_PROD_LANG ON yalo.sku = YA_PROD_LANG.sku
+			WHERE      (YA_PROD_LANG.lang_id = tiLangId)
+			GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, link_id,
+				TO_CHAR(order_date, 'mm/dd/yyyy'), TO_CHAR(last_change_date, 'mm/dd/yyyy')
 			ORDER BY posting_date, prod_name;
 
-			IF (cur_out01 IS null) THEN
+			IF (cur_out01 IS NULL) THEN
 				cur_out01 := cur_temp09;
-			elsif (cur_out02 IS null) THEN
+			ELSIF (cur_out02 IS NULL) THEN
 				cur_out02 := cur_temp09;
-			elsif (cur_out03 IS null) THEN
+			ELSIF (cur_out03 IS NULL) THEN
 				cur_out03 := cur_temp09;
-			elsif (cur_out04 IS null) THEN
+			ELSIF (cur_out04 IS NULL) THEN
 				cur_out04 := cur_temp09;
-			elsif (cur_out05 IS null) THEN
+			ELSIF (cur_out05 IS NULL) THEN
 				cur_out05 := cur_temp09;
-			elsif (cur_out06 IS null) THEN
+			ELSIF (cur_out06 IS NULL) THEN
 				cur_out06 := cur_temp09;
-			elsif (cur_out07 IS null) THEN
+			ELSIF (cur_out07 IS NULL) THEN
 				cur_out07 := cur_temp09;
-			elsif (cur_out08 IS null) THEN
+			ELSIF (cur_out08 IS NULL) THEN
 				cur_out08 := cur_temp09;
-			elsif (cur_out09 IS null) THEN
+			ELSIF (cur_out09 IS NULL) THEN
 				cur_out09 := cur_temp09;
-			elsif (cur_out10 IS null) THEN
+			ELSIF (cur_out10 IS NULL) THEN
 				cur_out10 := cur_temp09;
-			elsif (cur_out11 IS null) THEN
+			ELSIF (cur_out11 IS NULL) THEN
 				cur_out11 := cur_temp09;
-			elsif (cur_out12 IS null) THEN
+			ELSIF (cur_out12 IS NULL) THEN
 				cur_out12 := cur_temp09;
-			elsif (cur_out13 IS null) THEN
+			ELSIF (cur_out13 IS NULL) THEN
 				cur_out13 := cur_temp09;
-			elsif (cur_out14 IS null) THEN
+			ELSIF (cur_out14 IS NULL) THEN
 				cur_out14 := cur_temp09;
 			ELSE
 				cur_out14 := cur_temp09;
@@ -2419,128 +2374,128 @@ IF (iNeedGroup = 0) THEN
 		END IF;
 
 		IF (iCreditStatus <>2) THEN
-			OPEN cur_temp10 for
-			SELECT  to_char(order_date, 'mm/dd/yyyy') AS order_date, to_char(last_change_date, 'mm/dd/yyyy') AS posting_date,
+			OPEN cur_temp10 FOR
+			SELECT  TO_CHAR(order_date, 'mm/dd/yyyy') AS order_date, TO_CHAR(last_change_date, 'mm/dd/yyyy') AS posting_date,
 			                CASE
-					WHEN (ya_prod_lang.prod_name_u IS null OR ya_prod_lang.prod_name_u = '')
-					THEN (SELECT prod_name_u FROM ya_prod_lang WHERE sku=yalo.sku AND lang_id = 1)
-					ELSE ya_prod_lang.prod_name_u
+					WHEN (YA_PROD_LANG.prod_name_u IS NULL OR YA_PROD_LANG.prod_name_u = '')
+					THEN (SELECT prod_name_u FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
+					ELSE YA_PROD_LANG.prod_name_u
 					END
 				AS prod_name,
-				yalo.sku, sum(yalo.quantity) AS items,
-				sum(yalo.unit_price * yalo.quantity) AS price, yalo.link_id,
+				yalo.sku, SUM(yalo.quantity) AS items,
+				SUM(yalo.unit_price * yalo.quantity) AS price, yalo.link_id,
 			                      yg.group_id
 			FROM
-				(SELECT order_date, last_change_date, sku, nvl(quantity, 0) AS quantity, nvl(unit_price, 0) AS unit_price, credit_status, yal.link_id
+				(SELECT order_date, last_change_date, sku, NVL(quantity, 0) AS quantity, NVL(unit_price, 0) AS unit_price, credit_status, yal.link_id
 				FROM
 					(SELECT *
-					FROM ya_associate_link_orders
-					WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-					) ya_associate_link_orders
+					FROM YA_ASSOCIATE_LINK_ORDERS
+					WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+					) YA_ASSOCIATE_LINK_ORDERS
 				INNER JOIN
 					(SELECT *
-					FROM ya_associate_link
+					FROM YA_ASSOCIATE_LINK
 					WHERE associate_id=iAssociateId
 					) yal
-				ON ya_associate_link_orders.link_id = yal.link_id
-				WHERE (ya_associate_link_orders.last_change_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-			                                  (ya_associate_link_orders.last_change_date <  to_date(cEndDate, 'mm/dd/yyyy')) AND
+				ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
+				WHERE (YA_ASSOCIATE_LINK_ORDERS.last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+			                                  (YA_ASSOCIATE_LINK_ORDERS.last_change_date <  TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 			                 	               (credit_status = 1) AND (unit_price > 0)
 				) yalo
-				LEFT OUTER  JOIN ya_product ON yalo.sku = ya_product.sku
-				LEFT OUTER  JOIN ya_prod_lang ON yalo.sku = ya_prod_lang.sku
+				LEFT OUTER  JOIN YA_PRODUCT ON yalo.sku = YA_PRODUCT.sku
+				LEFT OUTER  JOIN YA_PROD_LANG ON yalo.sku = YA_PROD_LANG.sku
 				LEFT OUTER  JOIN
 					(SELECT *
-					FROM ya_group
+					FROM YA_GROUP
 					WHERE division_id=1
 					) yg
-				ON yg.account_id = ya_product.account_id
-			WHERE      (ya_prod_lang.lang_id = tiLangId)
-			GROUP BY ya_prod_lang.prod_name_u,  yalo.sku, yg.group_id, link_id,
-				to_char(order_date, 'mm/dd/yyyy'), to_char(last_change_date, 'mm/dd/yyyy')
+				ON yg.account_id = YA_PRODUCT.account_id
+			WHERE      (YA_PROD_LANG.lang_id = tiLangId)
+			GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, yg.group_id, link_id,
+				TO_CHAR(order_date, 'mm/dd/yyyy'), TO_CHAR(last_change_date, 'mm/dd/yyyy')
 			ORDER BY group_id, posting_date, prod_name;
 
-			IF (cur_out01 IS null) THEN
+			IF (cur_out01 IS NULL) THEN
 				cur_out01 := cur_temp10;
-			elsif (cur_out02 IS null) THEN
+			ELSIF (cur_out02 IS NULL) THEN
 				cur_out02 := cur_temp10;
-			elsif (cur_out03 IS null) THEN
+			ELSIF (cur_out03 IS NULL) THEN
 				cur_out03 := cur_temp10;
-			elsif (cur_out04 IS null) THEN
+			ELSIF (cur_out04 IS NULL) THEN
 				cur_out04 := cur_temp10;
-			elsif (cur_out05 IS null) THEN
+			ELSIF (cur_out05 IS NULL) THEN
 				cur_out05 := cur_temp10;
-			elsif (cur_out06 IS null) THEN
+			ELSIF (cur_out06 IS NULL) THEN
 				cur_out06 := cur_temp10;
-			elsif (cur_out07 IS null) THEN
+			ELSIF (cur_out07 IS NULL) THEN
 				cur_out07 := cur_temp10;
-			elsif (cur_out08 IS null) THEN
+			ELSIF (cur_out08 IS NULL) THEN
 				cur_out08 := cur_temp10;
-			elsif (cur_out09 IS null) THEN
+			ELSIF (cur_out09 IS NULL) THEN
 				cur_out09 := cur_temp10;
-			elsif (cur_out10 IS null) THEN
+			ELSIF (cur_out10 IS NULL) THEN
 				cur_out10 := cur_temp10;
-			elsif (cur_out11 IS null) THEN
+			ELSIF (cur_out11 IS NULL) THEN
 				cur_out11 := cur_temp10;
-			elsif (cur_out12 IS null) THEN
+			ELSIF (cur_out12 IS NULL) THEN
 				cur_out12 := cur_temp10;
-			elsif (cur_out13 IS null) THEN
+			ELSIF (cur_out13 IS NULL) THEN
 				cur_out13 := cur_temp10;
-			elsif (cur_out14 IS null) THEN
+			ELSIF (cur_out14 IS NULL) THEN
 				cur_out14 := cur_temp10;
 			ELSE
 				cur_out14 := cur_temp10;
 			END IF;
 
-			OPEN cur_temp11 for
-			SELECT    sum(yalo.quantity) AS items,
-				sum(yalo.unit_price * yalo.quantity) AS price
+			OPEN cur_temp11 FOR
+			SELECT    SUM(yalo.quantity) AS items,
+				SUM(yalo.unit_price * yalo.quantity) AS price
 			FROM
-				(SELECT order_date, last_change_date, sku, nvl(quantity, 0) AS quantity, nvl(unit_price, 0) AS unit_price, credit_status
+				(SELECT order_date, last_change_date, sku, NVL(quantity, 0) AS quantity, NVL(unit_price, 0) AS unit_price, credit_status
 				 FROM
 					(SELECT *
-					FROM ya_associate_link_orders
-					WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-					) ya_associate_link_orders
+					FROM YA_ASSOCIATE_LINK_ORDERS
+					WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+					) YA_ASSOCIATE_LINK_ORDERS
 				INNER JOIN
 					(SELECT *
-					FROM ya_associate_link
+					FROM YA_ASSOCIATE_LINK
 					WHERE associate_id=iAssociateId
 					) yal
-				ON ya_associate_link_orders.link_id = yal.link_id
-				WHERE (ya_associate_link_orders.order_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-			                                  (ya_associate_link_orders.order_date <  to_date(cEndDate, 'mm/dd/yyyy')) AND
+				ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
+				WHERE (YA_ASSOCIATE_LINK_ORDERS.order_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+			                                  (YA_ASSOCIATE_LINK_ORDERS.order_date <  TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 			                 	               (credit_status =1) AND (unit_price > 0)
 				) yalo
-			GROUP BY to_number(to_char(order_date, 'fmmm'));
+			GROUP BY TO_NUMBER(TO_CHAR(order_date, 'fmmm'));
 
-			IF (cur_out01 IS null) THEN
+			IF (cur_out01 IS NULL) THEN
 				cur_out01 := cur_temp11;
-			elsif (cur_out02 IS null) THEN
+			ELSIF (cur_out02 IS NULL) THEN
 				cur_out02 := cur_temp11;
-			elsif (cur_out03 IS null) THEN
+			ELSIF (cur_out03 IS NULL) THEN
 				cur_out03 := cur_temp11;
-			elsif (cur_out04 IS null) THEN
+			ELSIF (cur_out04 IS NULL) THEN
 				cur_out04 := cur_temp11;
-			elsif (cur_out05 IS null) THEN
+			ELSIF (cur_out05 IS NULL) THEN
 				cur_out05 := cur_temp11;
-			elsif (cur_out06 IS null) THEN
+			ELSIF (cur_out06 IS NULL) THEN
 				cur_out06 := cur_temp11;
-			elsif (cur_out07 IS null) THEN
+			ELSIF (cur_out07 IS NULL) THEN
 				cur_out07 := cur_temp11;
-			elsif (cur_out08 IS null) THEN
+			ELSIF (cur_out08 IS NULL) THEN
 				cur_out08 := cur_temp11;
-			elsif (cur_out09 IS null) THEN
+			ELSIF (cur_out09 IS NULL) THEN
 				cur_out09 := cur_temp11;
-			elsif (cur_out10 IS null) THEN
+			ELSIF (cur_out10 IS NULL) THEN
 				cur_out10 := cur_temp11;
-			elsif (cur_out11 IS null) THEN
+			ELSIF (cur_out11 IS NULL) THEN
 				cur_out11 := cur_temp11;
-			elsif (cur_out12 IS null) THEN
+			ELSIF (cur_out12 IS NULL) THEN
 				cur_out12 := cur_temp11;
-			elsif (cur_out13 IS null) THEN
+			ELSIF (cur_out13 IS NULL) THEN
 				cur_out13 := cur_temp11;
-			elsif (cur_out14 IS null) THEN
+			ELSIF (cur_out14 IS NULL) THEN
 				cur_out14 := cur_temp11;
 			ELSE
 				cur_out14 := cur_temp11;
@@ -2549,145 +2504,145 @@ IF (iNeedGroup = 0) THEN
 	END IF;
 
 	IF (cStartDate < cCutOffDate) THEN
-		OPEN cur_temp12 for
-		SELECT    sum(yalo.quantity) AS items,
-			sum(yalo.unit_price * yalo.quantity) AS price,
-			to_number(to_char(order_date, 'fmmm')) AS posting_month,
-			to_number(to_char(order_date, 'yyyy')) AS posting_year,
-			(SELECT link_percentage FROM ya_associate_link WHERE associate_id=iAssociateId AND rownum=1 ) AS percentage,
+		OPEN cur_temp12 FOR
+		SELECT    SUM(yalo.quantity) AS items,
+			SUM(yalo.unit_price * yalo.quantity) AS price,
+			TO_NUMBER(TO_CHAR(order_date, 'fmmm')) AS posting_month,
+			TO_NUMBER(TO_CHAR(order_date, 'yyyy')) AS posting_year,
+			(SELECT link_percentage FROM YA_ASSOCIATE_LINK WHERE associate_id=iAssociateId AND ROWNUM=1 ) AS percentage,
 			--sum(yalo.unit_price * yalo.quantity) * (SELECT link_percentage FROM ya_associate_link WHERE associate_id=iAssociateId AND rownum=1) AS commission
-			sum(nvl(yalo.credit_amount, yalo.unit_price * yalo.quantity* nvl(comm_rate, nvl(percentage, (SELECT comm_rate FROM ya_associate_commission_hist WHERE associate_id = 8050 AND rownum=1))))) AS commission
+			SUM(NVL(yalo.credit_amount, yalo.unit_price * yalo.quantity* NVL(comm_rate, NVL(percentage, (SELECT comm_rate FROM YA_ASSOCIATE_COMMISSION_HIST WHERE associate_id = 8050 AND ROWNUM=1))))) AS commission
 		FROM
-			(SELECT order_date, last_change_date, sku, nvl(quantity, 0) AS quantity, nvl(unit_price, 0) AS unit_price, credit_status, credit_amount
+			(SELECT order_date, last_change_date, sku, NVL(quantity, 0) AS quantity, NVL(unit_price, 0) AS unit_price, credit_status, credit_amount
 			FROM
 				(SELECT *
-				FROM ya_associate_link_orders
-				WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-				) ya_associate_link_orders
+				FROM YA_ASSOCIATE_LINK_ORDERS
+				WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+				) YA_ASSOCIATE_LINK_ORDERS
 			INNER JOIN
 				(SELECT *
-				FROM ya_associate_link
+				FROM YA_ASSOCIATE_LINK
 				WHERE associate_id=iAssociateId
 				) yal
-			ON ya_associate_link_orders.link_id = yal.link_id
-			WHERE (ya_associate_link_orders.last_change_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-				(ya_associate_link_orders.last_change_date < to_date(cEndDate, 'mm/dd/yyyy')) AND
+			ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
+			WHERE (YA_ASSOCIATE_LINK_ORDERS.last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+				(YA_ASSOCIATE_LINK_ORDERS.last_change_date < TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 				(credit_status = 2) AND (unit_price > 0)
 			) yalo
-		LEFT OUTER JOIN ya_associate_commission_hist yach on yach.associate_id = iAssociateId
-			AND yach.valid_date = to_date(to_char(order_date, 'mm') || '/01/' || to_char(order_date, 'yyyy'), 'mm/dd/yyyy'),
-			(SELECT percentage  FROM ya_associate_commission_detail cd INNER JOIN
-			(SELECT comm_type_id, nc_max FROM ya_associate_commission_type ct WHERE ((nc_min <= iCustomer AND nc_max >= iCustomer) OR nc_max < iCustomer)) ct
+		LEFT OUTER JOIN YA_ASSOCIATE_COMMISSION_HIST yach ON yach.associate_id = iAssociateId
+			AND yach.valid_date = TO_DATE(TO_CHAR(order_date, 'mm') || '/01/' || TO_CHAR(order_date, 'yyyy'), 'mm/dd/yyyy'),
+			(SELECT percentage  FROM YA_ASSOCIATE_COMMISSION_DETAIL cd INNER JOIN
+			(SELECT comm_type_id, nc_max FROM YA_ASSOCIATE_COMMISSION_TYPE ct WHERE ((nc_min <= iCustomer AND nc_max >= iCustomer) OR nc_max < iCustomer)) ct
 			ON ct.comm_type_id =cd.comm_type_id
 			INNER JOIN
 				(SELECT commission_id, payment_option
-				FROM ya_associate
+				FROM YA_ASSOCIATE
 				WHERE associate_id=iAssociateId
 				) ya
 			ON cd.commission_id = ya.commission_id AND cd.payment_option = ya.payment_option
-         WHERE rownum=1
+         WHERE ROWNUM=1
 			)t
-		GROUP BY to_number(to_char(order_date, 'fmmm')), to_number(to_char(order_date, 'yyyy')) , comm_rate, t.percentage;
+		GROUP BY TO_NUMBER(TO_CHAR(order_date, 'fmmm')), TO_NUMBER(TO_CHAR(order_date, 'yyyy')) , comm_rate, t.percentage;
 
-		IF (cur_out01 IS null) THEN
+		IF (cur_out01 IS NULL) THEN
 			cur_out01 := cur_temp12;
-		elsif (cur_out02 IS null) THEN
+		ELSIF (cur_out02 IS NULL) THEN
 			cur_out02 := cur_temp12;
-		elsif (cur_out03 IS null) THEN
+		ELSIF (cur_out03 IS NULL) THEN
 			cur_out03 := cur_temp12;
-		elsif (cur_out04 IS null) THEN
+		ELSIF (cur_out04 IS NULL) THEN
 			cur_out04 := cur_temp12;
-		elsif (cur_out05 IS null) THEN
+		ELSIF (cur_out05 IS NULL) THEN
 			cur_out05 := cur_temp12;
-		elsif (cur_out06 IS null) THEN
+		ELSIF (cur_out06 IS NULL) THEN
 			cur_out06 := cur_temp12;
-		elsif (cur_out07 IS null) THEN
+		ELSIF (cur_out07 IS NULL) THEN
 			cur_out07 := cur_temp12;
-		elsif (cur_out08 IS null) THEN
+		ELSIF (cur_out08 IS NULL) THEN
 			cur_out08 := cur_temp12;
-		elsif (cur_out09 IS null) THEN
+		ELSIF (cur_out09 IS NULL) THEN
 			cur_out09 := cur_temp12;
-		elsif (cur_out10 IS null) THEN
+		ELSIF (cur_out10 IS NULL) THEN
 			cur_out10 := cur_temp12;
-		elsif (cur_out11 IS null) THEN
+		ELSIF (cur_out11 IS NULL) THEN
 			cur_out11 := cur_temp12;
-		elsif (cur_out12 IS null) THEN
+		ELSIF (cur_out12 IS NULL) THEN
 			cur_out12 := cur_temp12;
-		elsif (cur_out13 IS null) THEN
+		ELSIF (cur_out13 IS NULL) THEN
 			cur_out13 := cur_temp12;
-		elsif (cur_out14 IS null) THEN
+		ELSIF (cur_out14 IS NULL) THEN
 			cur_out14 := cur_temp12;
 		ELSE
 			cur_out14 := cur_temp12;
 		END IF;
 	ELSE
-		OPEN cur_temp13 for
-		SELECT    sum(yalo.quantity) AS items,
-			sum(yalo.unit_price * yalo.quantity) AS price,
-			to_number(to_char(order_date, 'fmmm')) AS posting_month,
-			to_number(to_char(order_date, 'yyyy')) AS posting_year,
-			nvl(comm_rate, nvl(percentage, (SELECT comm_rate FROM ya_associate_commission_hist WHERE associate_id = iAssociateId AND rownum=1))) AS percentage,
+		OPEN cur_temp13 FOR
+		SELECT    SUM(yalo.quantity) AS items,
+			SUM(yalo.unit_price * yalo.quantity) AS price,
+			TO_NUMBER(TO_CHAR(order_date, 'fmmm')) AS posting_month,
+			TO_NUMBER(TO_CHAR(order_date, 'yyyy')) AS posting_year,
+			NVL(comm_rate, NVL(percentage, (SELECT comm_rate FROM YA_ASSOCIATE_COMMISSION_HIST WHERE associate_id = iAssociateId AND ROWNUM=1))) AS percentage,
 			--sum(yalo.unit_price * yalo.quantity) * nvl(comm_rate, nvl(percentage, (SELECT comm_rate FROM ya_associate_commission_hist WHERE associate_id = iAssociateId AND rownum=1 )))  AS commission
-			sum(nvl(yalo.credit_amount, yalo.unit_price * yalo.quantity* nvl(comm_rate, nvl(percentage, (SELECT comm_rate FROM ya_associate_commission_hist WHERE associate_id = 8050 AND rownum=1))))) AS commission
+			SUM(NVL(yalo.credit_amount, yalo.unit_price * yalo.quantity* NVL(comm_rate, NVL(percentage, (SELECT comm_rate FROM YA_ASSOCIATE_COMMISSION_HIST WHERE associate_id = 8050 AND ROWNUM=1))))) AS commission
 		FROM
-			(SELECT order_date, last_change_date, sku, nvl(quantity, 0) AS quantity, nvl(unit_price, 0) AS unit_price, credit_status, credit_amount
+			(SELECT order_date, last_change_date, sku, NVL(quantity, 0) AS quantity, NVL(unit_price, 0) AS unit_price, credit_status, credit_amount
 			FROM
 				(SELECT *
-				FROM ya_associate_link_orders
-				WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-				) ya_associate_link_orders
+				FROM YA_ASSOCIATE_LINK_ORDERS
+				WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+				) YA_ASSOCIATE_LINK_ORDERS
 			INNER JOIN
 				(SELECT *
-				FROM ya_associate_link
+				FROM YA_ASSOCIATE_LINK
 				WHERE associate_id=iAssociateId
 				) yal
-			ON ya_associate_link_orders.link_id = yal.link_id
-			WHERE (ya_associate_link_orders.last_change_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-				(ya_associate_link_orders.last_change_date < to_date(cEndDate, 'mm/dd/yyyy')) AND
+			ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
+			WHERE (YA_ASSOCIATE_LINK_ORDERS.last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+				(YA_ASSOCIATE_LINK_ORDERS.last_change_date < TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 				(credit_status = 2) AND (unit_price > 0)
 			) yalo
-			LEFT OUTER JOIN ya_associate_commission_hist yach on yach.associate_id = iAssociateId
-				AND yach.valid_date = to_date(to_char(order_date, 'mm') || '/01/' || to_char(order_date, 'yyyy'), 'mm/dd/yyyy'),
-				(SELECT percentage  FROM ya_associate_commission_detail cd INNER JOIN
-				(SELECT comm_type_id, nc_max FROM ya_associate_commission_type ct WHERE ((nc_min <= iCustomer AND nc_max >= iCustomer) OR nc_max < iCustomer)) ct
+			LEFT OUTER JOIN YA_ASSOCIATE_COMMISSION_HIST yach ON yach.associate_id = iAssociateId
+				AND yach.valid_date = TO_DATE(TO_CHAR(order_date, 'mm') || '/01/' || TO_CHAR(order_date, 'yyyy'), 'mm/dd/yyyy'),
+				(SELECT percentage  FROM YA_ASSOCIATE_COMMISSION_DETAIL cd INNER JOIN
+				(SELECT comm_type_id, nc_max FROM YA_ASSOCIATE_COMMISSION_TYPE ct WHERE ((nc_min <= iCustomer AND nc_max >= iCustomer) OR nc_max < iCustomer)) ct
 				ON ct.comm_type_id =cd.comm_type_id
 				INNER JOIN
 					(SELECT commission_id, payment_option
-					FROM ya_associate
+					FROM YA_ASSOCIATE
 					WHERE associate_id=iAssociateId
 					) ya
 			ON cd.commission_id = ya.commission_id AND cd.payment_option = ya.payment_option
-         WHERE rownum=1
+         WHERE ROWNUM=1
 			)t
-		GROUP BY to_number(to_char(order_date, 'fmmm')), to_number(to_char(order_date, 'yyyy')), comm_rate, t.percentage;
+		GROUP BY TO_NUMBER(TO_CHAR(order_date, 'fmmm')), TO_NUMBER(TO_CHAR(order_date, 'yyyy')), comm_rate, t.percentage;
 
-		IF (cur_out01 IS null) THEN
+		IF (cur_out01 IS NULL) THEN
 			cur_out01 := cur_temp13;
-		elsif (cur_out02 IS null) THEN
+		ELSIF (cur_out02 IS NULL) THEN
 			cur_out02 := cur_temp13;
-		elsif (cur_out03 IS null) THEN
+		ELSIF (cur_out03 IS NULL) THEN
 			cur_out03 := cur_temp13;
-		elsif (cur_out04 IS null) THEN
+		ELSIF (cur_out04 IS NULL) THEN
 			cur_out04 := cur_temp13;
-		elsif (cur_out05 IS null) THEN
+		ELSIF (cur_out05 IS NULL) THEN
 			cur_out05 := cur_temp13;
-		elsif (cur_out06 IS null) THEN
+		ELSIF (cur_out06 IS NULL) THEN
 			cur_out06 := cur_temp13;
-		elsif (cur_out07 IS null) THEN
+		ELSIF (cur_out07 IS NULL) THEN
 			cur_out07 := cur_temp13;
-		elsif (cur_out08 IS null) THEN
+		ELSIF (cur_out08 IS NULL) THEN
 			cur_out08 := cur_temp13;
-		elsif (cur_out09 IS null) THEN
+		ELSIF (cur_out09 IS NULL) THEN
 			cur_out09 := cur_temp13;
-		elsif (cur_out10 IS null) THEN
+		ELSIF (cur_out10 IS NULL) THEN
 			cur_out10 := cur_temp13;
-		elsif (cur_out11 IS null) THEN
+		ELSIF (cur_out11 IS NULL) THEN
 			cur_out11 := cur_temp13;
-		elsif (cur_out12 IS null) THEN
+		ELSIF (cur_out12 IS NULL) THEN
 			cur_out12 := cur_temp13;
-		elsif (cur_out13 IS null) THEN
+		ELSIF (cur_out13 IS NULL) THEN
 			cur_out13 := cur_temp13;
-		elsif (cur_out14 IS null) THEN
+		ELSIF (cur_out14 IS NULL) THEN
 			cur_out14 := cur_temp13;
 		ELSE
 			cur_out14 := cur_temp13;
@@ -2696,97 +2651,97 @@ IF (iNeedGroup = 0) THEN
 END IF;
 
 IF (iNeedLinkInfo = 1) THEN
-	OPEN cur_temp14 for
-	SELECT link_id, '<B>' || site_name || '</B> (' || link_code || ')' AS site_name FROM ya_associate_link WHERE associate_id = iAssociateId;
-	IF (cur_out01 IS null) THEN
+	OPEN cur_temp14 FOR
+	SELECT link_id, '<B>' || site_name || '</B> (' || link_code || ')' AS site_name FROM YA_ASSOCIATE_LINK WHERE associate_id = iAssociateId;
+	IF (cur_out01 IS NULL) THEN
 		cur_out01 := cur_temp14;
-	elsif (cur_out02 IS null) THEN
+	ELSIF (cur_out02 IS NULL) THEN
 		cur_out02 := cur_temp14;
-	elsif (cur_out03 IS null) THEN
+	ELSIF (cur_out03 IS NULL) THEN
 		cur_out03 := cur_temp14;
-	elsif (cur_out04 IS null) THEN
+	ELSIF (cur_out04 IS NULL) THEN
 		cur_out04 := cur_temp14;
-	elsif (cur_out05 IS null) THEN
+	ELSIF (cur_out05 IS NULL) THEN
 		cur_out05 := cur_temp14;
-	elsif (cur_out06 IS null) THEN
+	ELSIF (cur_out06 IS NULL) THEN
 		cur_out06 := cur_temp14;
-	elsif (cur_out07 IS null) THEN
+	ELSIF (cur_out07 IS NULL) THEN
 		cur_out07 := cur_temp14;
-	elsif (cur_out08 IS null) THEN
+	ELSIF (cur_out08 IS NULL) THEN
 		cur_out08 := cur_temp14;
-	elsif (cur_out09 IS null) THEN
+	ELSIF (cur_out09 IS NULL) THEN
 		cur_out09 := cur_temp14;
-	elsif (cur_out10 IS null) THEN
+	ELSIF (cur_out10 IS NULL) THEN
 		cur_out10 := cur_temp14;
-	elsif (cur_out11 IS null) THEN
+	ELSIF (cur_out11 IS NULL) THEN
 		cur_out11 := cur_temp14;
-	elsif (cur_out12 IS null) THEN
+	ELSIF (cur_out12 IS NULL) THEN
 		cur_out12 := cur_temp14;
-	elsif (cur_out13 IS null) THEN
+	ELSIF (cur_out13 IS NULL) THEN
 		cur_out13 := cur_temp14;
-	elsif (cur_out14 IS null) THEN
+	ELSIF (cur_out14 IS NULL) THEN
 		cur_out14 := cur_temp14;
 	ELSE
 		cur_out14 := cur_temp14;
 	END IF;
-	SELECT nvl(lang_id, 1) INTO iLangId FROM ya_associate_link WHERE associate_id = iAssociateId AND rownum=1;
+	SELECT NVL(lang_id, 1) INTO iLangId FROM YA_ASSOCIATE_LINK WHERE associate_id = iAssociateId AND ROWNUM=1;
 END IF;
 
 
-IF (cur_out01 IS null) THEN
-	OPEN cur_out01 for
+IF (cur_out01 IS NULL) THEN
+	OPEN cur_out01 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out02 IS null) THEN
-	OPEN cur_out02 for
+IF (cur_out02 IS NULL) THEN
+	OPEN cur_out02 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out03 IS null) THEN
-	OPEN cur_out03 for
+IF (cur_out03 IS NULL) THEN
+	OPEN cur_out03 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out04 IS null) THEN
-	OPEN cur_out04 for
+IF (cur_out04 IS NULL) THEN
+	OPEN cur_out04 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out05 IS null) THEN
-	OPEN cur_out05 for
+IF (cur_out05 IS NULL) THEN
+	OPEN cur_out05 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out06 IS null) THEN
-	OPEN cur_out06 for
+IF (cur_out06 IS NULL) THEN
+	OPEN cur_out06 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out07 IS null) THEN
-	OPEN cur_out07 for
+IF (cur_out07 IS NULL) THEN
+	OPEN cur_out07 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out08 IS null) THEN
-	OPEN cur_out08 for
+IF (cur_out08 IS NULL) THEN
+	OPEN cur_out08 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out09 IS null) THEN
-	OPEN cur_out09 for
+IF (cur_out09 IS NULL) THEN
+	OPEN cur_out09 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out10 IS null) THEN
-	OPEN cur_out10 for
+IF (cur_out10 IS NULL) THEN
+	OPEN cur_out10 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out11 IS null) THEN
-	OPEN cur_out11 for
+IF (cur_out11 IS NULL) THEN
+	OPEN cur_out11 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out12 IS null) THEN
-	OPEN cur_out12 for
+IF (cur_out12 IS NULL) THEN
+	OPEN cur_out12 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out13 IS null) THEN
-	OPEN cur_out13 for
+IF (cur_out13 IS NULL) THEN
+	OPEN cur_out13 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out14 IS null) THEN
-	OPEN cur_out14 for
+IF (cur_out14 IS NULL) THEN
+	OPEN cur_out14 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
 
@@ -2804,33 +2759,33 @@ PROCEDURE sp_fe_asso_selOrderByLid
 	iCreditStatus IN INT,
 	iNeedGroup IN INT,
 	iBestSeller IN INT,
-	iCustomer out INT,
-	deciPercentage out float,
-	iNextLevel out INT,
-	iLangId out INT,
-	deciThisPeriodComm out float,
-	deciTotalComm out float,
-	cur_out01 out cur_return,
-	cur_out02 out cur_return,
-	cur_out03 out cur_return,
-	cur_out04 out cur_return,
-	cur_out05 out cur_return,
-	cur_out06 out cur_return,
-	cur_out07 out cur_return,
-	cur_out08 out cur_return,
-	cur_out09 out cur_return,
-	cur_out10 out cur_return,
-	cur_out11 out cur_return,
-	cur_out12 out cur_return,
-	cur_out13 out cur_return,
-	cur_out14 out cur_return
+	iCustomer OUT INT,
+	deciPercentage OUT FLOAT,
+	iNextLevel OUT INT,
+	iLangId OUT INT,
+	deciThisPeriodComm OUT FLOAT,
+	deciTotalComm OUT FLOAT,
+	cur_out01 OUT cur_return,
+	cur_out02 OUT cur_return,
+	cur_out03 OUT cur_return,
+	cur_out04 OUT cur_return,
+	cur_out05 OUT cur_return,
+	cur_out06 OUT cur_return,
+	cur_out07 OUT cur_return,
+	cur_out08 OUT cur_return,
+	cur_out09 OUT cur_return,
+	cur_out10 OUT cur_return,
+	cur_out11 OUT cur_return,
+	cur_out12 OUT cur_return,
+	cur_out13 OUT cur_return,
+	cur_out14 OUT cur_return
 ) IS
 
-	cStartDate varchar(10);
-	cEndDate varchar(10);
-	cCutOffDate varchar(10);
+	cStartDate VARCHAR(10);
+	cEndDate VARCHAR(10);
+	cCutOffDate VARCHAR(10);
 
-	type typePercentageNextLevel IS record(percentage float, next_level INT);
+	TYPE typePercentageNextLevel IS RECORD(percentage FLOAT, next_level INT);
 	ret_percentage_next_level typePercentageNextLevel;
 
 	cur_temp01 cur_return;
@@ -2851,28 +2806,28 @@ PROCEDURE sp_fe_asso_selOrderByLid
 BEGIN
 
 cStartDate := cMonth || '/01/' || cYear;
-cEndDate := to_char(add_months(to_date(cStartDate, 'mm/dd/yyyy'), 1), 'mm/dd/yyyy');
+cEndDate := TO_CHAR(ADD_MONTHS(TO_DATE(cStartDate, 'mm/dd/yyyy'), 1), 'mm/dd/yyyy');
 cCutOffDate := '07/01/2005';
 
-SELECT count(customerId) INTO iCustomer
-FROM dm_new_shopper
-WHERE dm_new_shopper.validOrder = 'Y'
-	AND dm_new_shopper.feOrderId IN
-	(SELECT  distinct to_char(order_num) AS orderId
+SELECT COUNT(customerId) INTO iCustomer
+FROM DM_NEW_SHOPPER
+WHERE DM_NEW_SHOPPER.validOrder = 'Y'
+	AND DM_NEW_SHOPPER.feOrderId IN
+	(SELECT  DISTINCT TO_CHAR(order_num) AS orderId
 	FROM
 		(SELECT *
-		FROM ya_associate_link_orders
-		WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)) ya_associate_link_orders
+		FROM YA_ASSOCIATE_LINK_ORDERS
+		WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)) YA_ASSOCIATE_LINK_ORDERS
 	INNER JOIN
 		(SELECT link_id
-		FROM ya_associate_link
+		FROM YA_ASSOCIATE_LINK
 		WHERE associate_id=iAssociateId) yal
-	ON ya_associate_link_orders.link_id = yal.link_id
-	WHERE order_date >= to_date(cStartDate, 'mm/dd/yyyy') AND order_date < to_date(cEndDate, 'mm/dd/yyyy') AND credit_status <> 4);
+	ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
+	WHERE order_date >= TO_DATE(cStartDate, 'mm/dd/yyyy') AND order_date < TO_DATE(cEndDate, 'mm/dd/yyyy') AND credit_status <> 4);
 
 
-IF (to_date(cStartDate, 'mm/dd/yyyy') < to_date(cCutOffDate, 'mm/dd/yyyy')) THEN
-	SELECT link_percentage INTO deciPercentage FROM ya_associate_link WHERE associate_id=iAssociateId AND rownum=1 ORDER BY link_id ASC;
+IF (TO_DATE(cStartDate, 'mm/dd/yyyy') < TO_DATE(cCutOffDate, 'mm/dd/yyyy')) THEN
+	SELECT link_percentage INTO deciPercentage FROM YA_ASSOCIATE_LINK WHERE associate_id=iAssociateId AND ROWNUM=1 ORDER BY link_id ASC;
 	iNextLevel := 0;
 ELSE
 /*
@@ -2906,266 +2861,266 @@ ELSE
 		iNextLevel := ret_percentage_next_level.next_level;
 	END IF;
 */
-   SELECT comm_rate, 0 INTO ret_percentage_next_level FROM ya_associate_commission_hist ach WHERE valid_date = to_date(cStartDate, 'mm/dd/yyyy') AND associate_id = iAssociateId AND rownum = 1;
+   SELECT comm_rate, 0 INTO ret_percentage_next_level FROM YA_ASSOCIATE_COMMISSION_HIST ach WHERE valid_date = TO_DATE(cStartDate, 'mm/dd/yyyy') AND associate_id = iAssociateId AND ROWNUM = 1;
 	deciPercentage := ret_percentage_next_level.percentage;
 	iNextLevel := ret_percentage_next_level.next_level;
 
-	IF (deciPercentage IS null) THEN
+	IF (deciPercentage IS NULL) THEN
 		SELECT percentage, nc_max + 1 - iCustomer INTO ret_percentage_next_level
-		FROM ya_associate_commission_detail cd INNER JOIN
+		FROM YA_ASSOCIATE_COMMISSION_DETAIL cd INNER JOIN
 				(SELECT comm_type_id, nc_max
-				FROM ya_associate_commission_type ct
+				FROM YA_ASSOCIATE_COMMISSION_TYPE ct
 				WHERE nc_min <= iCustomer ) ct
 			ON ct.comm_type_id =cd.comm_type_id
 			 INNER JOIN (SELECT commission_id, payment_option
-				FROM ya_associate
+				FROM YA_ASSOCIATE
 				WHERE associate_id=iAssociateId) ya
-		ON cd.commission_id = ya.commission_id AND cd.payment_option = ya.payment_option AND rownum = 1;
+		ON cd.commission_id = ya.commission_id AND cd.payment_option = ya.payment_option AND ROWNUM = 1;
 
    ELSE
 		SELECT deciPercentage, nc_max + 1 - iCustomer INTO ret_percentage_next_level
-		FROM ya_associate_commission_detail cd INNER JOIN
+		FROM YA_ASSOCIATE_COMMISSION_DETAIL cd INNER JOIN
 				(SELECT comm_type_id, nc_max
-				FROM ya_associate_commission_type ct
+				FROM YA_ASSOCIATE_COMMISSION_TYPE ct
 				WHERE nc_min <= iCustomer ) ct
 			ON ct.comm_type_id =cd.comm_type_id
 			 INNER JOIN (SELECT commission_id, payment_option
-				FROM ya_associate
+				FROM YA_ASSOCIATE
 				WHERE associate_id=iAssociateId) ya
-		ON cd.commission_id = ya.commission_id AND cd.payment_option = ya.payment_option AND rownum = 1;
+		ON cd.commission_id = ya.commission_id AND cd.payment_option = ya.payment_option AND ROWNUM = 1;
 	END IF;
 	deciPercentage := ret_percentage_next_level.percentage;
 	iNextLevel := ret_percentage_next_level.next_level;
 END IF;
 
 /*use new comm %*/
-SELECT sum(nvl(credit_amount,unit_price * quantity * deciPercentage)) INTO deciTotalComm
-FROM ya_associate_link_orders
+SELECT SUM(NVL(credit_amount,unit_price * quantity * deciPercentage)) INTO deciTotalComm
+FROM YA_ASSOCIATE_LINK_ORDERS
 WHERE
-	(last_change_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-	(last_change_date < to_date(cEndDate, 'mm/dd/yyyy')) AND
-	link_id IN (SELECT link_id FROM ya_associate_link WHERE associate_id=iAssociateId) AND
+	(last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+	(last_change_date < TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
+	link_id IN (SELECT link_id FROM YA_ASSOCIATE_LINK WHERE associate_id=iAssociateId) AND
 	credit_status = 2;
 
-SELECT sum(nvl(credit_amount,unit_price * quantity * nvl(deciPercentage,0))) INTO deciThisPeriodComm
-FROM ya_associate_link_orders
+SELECT SUM(NVL(credit_amount,unit_price * quantity * NVL(deciPercentage,0))) INTO deciThisPeriodComm
+FROM YA_ASSOCIATE_LINK_ORDERS
 WHERE
-	(last_change_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-	(last_change_date < to_date(cEndDate, 'mm/dd/yyyy')) AND
-	order_date >= to_date(cStartDate, 'mm/dd/yyyy') AND order_date < to_date(cEndDate, 'mm/dd/yyyy') AND
-	link_id IN (SELECT link_id FROM ya_associate_link WHERE associate_id=iAssociateId) AND
+	(last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+	(last_change_date < TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
+	order_date >= TO_DATE(cStartDate, 'mm/dd/yyyy') AND order_date < TO_DATE(cEndDate, 'mm/dd/yyyy') AND
+	link_id IN (SELECT link_id FROM YA_ASSOCIATE_LINK WHERE associate_id=iAssociateId) AND
 	credit_status = 2;
 
 
 IF (iNeedGroup = 1) THEN
 	IF (iCreditStatus <> 1) THEN
 
-		OPEN cur_out01 for
-		SELECT  to_char(order_date, 'mm/dd/yyyy') AS order_date, to_char(last_change_date, 'mm/dd/yyyy') AS posting_date,
+		OPEN cur_out01 FOR
+		SELECT  TO_CHAR(order_date, 'mm/dd/yyyy') AS order_date, TO_CHAR(last_change_date, 'mm/dd/yyyy') AS posting_date,
 			CASE
-				WHEN (ya_prod_lang.prod_name_u IS null OR ya_prod_lang.prod_name_u = '')
-				THEN (SELECT prod_name_u FROM ya_prod_lang WHERE sku=yalo.sku AND lang_id = 1)
-				ELSE ya_prod_lang.prod_name_u
+				WHEN (YA_PROD_LANG.prod_name_u IS NULL OR YA_PROD_LANG.prod_name_u = '')
+				THEN (SELECT prod_name_u FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
+				ELSE YA_PROD_LANG.prod_name_u
 				END
 			AS prod_name,
-			yalo.sku, sum(yalo.quantity) AS items,
-			sum(yalo.unit_price * yalo.quantity) AS price, yalo.link_id,
+			yalo.sku, SUM(yalo.quantity) AS items,
+			SUM(yalo.unit_price * yalo.quantity) AS price, yalo.link_id,
 			yg.group_id
 		FROM
-			(SELECT order_date, last_change_date, sku, nvl(quantity, 0) AS quantity, nvl(unit_price, 0) AS unit_price, credit_status, link_id
+			(SELECT order_date, last_change_date, sku, NVL(quantity, 0) AS quantity, NVL(unit_price, 0) AS unit_price, credit_status, link_id
 			FROM
 				(SELECT *
-				FROM ya_associate_link_orders
-				WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-				) ya_associate_link_orders
-			WHERE (ya_associate_link_orders.last_change_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-				(ya_associate_link_orders.last_change_date <  to_date(cEndDate, 'mm/dd/yyyy')) AND
+				FROM YA_ASSOCIATE_LINK_ORDERS
+				WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+				) YA_ASSOCIATE_LINK_ORDERS
+			WHERE (YA_ASSOCIATE_LINK_ORDERS.last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+				(YA_ASSOCIATE_LINK_ORDERS.last_change_date <  TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 				(credit_status = 2) AND (unit_price > 0) AND
 				(link_id = iLinkId)
 			) yalo
 		LEFT OUTER  JOIN
-			ya_product ON yalo.sku = ya_product.sku
+			YA_PRODUCT ON yalo.sku = YA_PRODUCT.sku
 		LEFT OUTER  JOIN
-			ya_prod_lang ON yalo.sku = ya_prod_lang.sku
+			YA_PROD_LANG ON yalo.sku = YA_PROD_LANG.sku
 		LEFT OUTER  JOIN
-			(SELECT * FROM ya_group WHERE division_id=1) yg
-			ON yg.account_id = ya_product.account_id
-		WHERE      (ya_prod_lang.lang_id = tiLangId)
-		GROUP BY ya_prod_lang.prod_name_u,  yalo.sku, yg.group_id, link_id,
-			to_char(order_date, 'mm/dd/yyyy'), to_char(last_change_date, 'mm/dd/yyyy')
+			(SELECT * FROM YA_GROUP WHERE division_id=1) yg
+			ON yg.account_id = YA_PRODUCT.account_id
+		WHERE      (YA_PROD_LANG.lang_id = tiLangId)
+		GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, yg.group_id, link_id,
+			TO_CHAR(order_date, 'mm/dd/yyyy'), TO_CHAR(last_change_date, 'mm/dd/yyyy')
 		ORDER BY group_id, posting_date, prod_name;
 
-		OPEN cur_out02 for
-		SELECT distinct yg.group_id
+		OPEN cur_out02 FOR
+		SELECT DISTINCT yg.group_id
 		FROM
 			(SELECT order_date, last_change_date, sku, quantity, unit_price, credit_status
 			FROM
 				(SELECT *
-				FROM ya_associate_link_orders
-				WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-				) ya_associate_link_orders
-			WHERE (ya_associate_link_orders.last_change_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-				(ya_associate_link_orders.last_change_date <  to_date(cEndDate, 'mm/dd/yyyy')) AND
+				FROM YA_ASSOCIATE_LINK_ORDERS
+				WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+				) YA_ASSOCIATE_LINK_ORDERS
+			WHERE (YA_ASSOCIATE_LINK_ORDERS.last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+				(YA_ASSOCIATE_LINK_ORDERS.last_change_date <  TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 				(credit_status = 2) AND (link_id = iLinkId) AND (unit_price > 0)) yalo
 		LEFT OUTER  JOIN
-			ya_product ON yalo.sku = ya_product.sku
+			YA_PRODUCT ON yalo.sku = YA_PRODUCT.sku
 		LEFT OUTER  JOIN
-			(SELECT * FROM ya_group WHERE division_id=1) yg
-			ON yg.account_id = ya_product.account_id;
+			(SELECT * FROM YA_GROUP WHERE division_id=1) yg
+			ON yg.account_id = YA_PRODUCT.account_id;
 	END IF;
 
 	IF (iCreditStatus <>2) THEN
-		OPEN cur_temp03 for
-		SELECT   to_char(yalo.order_date, 'mm/dd/yyyy') AS order_date,
+		OPEN cur_temp03 FOR
+		SELECT   TO_CHAR(yalo.order_date, 'mm/dd/yyyy') AS order_date,
 			CASE
-				WHEN (ya_prod_lang.prod_name_u IS null OR ya_prod_lang.prod_name_u = '')
-				THEN (SELECT prod_name_u FROM ya_prod_lang WHERE sku=yalo.sku AND lang_id = 1)
-				ELSE ya_prod_lang.prod_name_u
+				WHEN (YA_PROD_LANG.prod_name_u IS NULL OR YA_PROD_LANG.prod_name_u = '')
+				THEN (SELECT prod_name_u FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
+				ELSE YA_PROD_LANG.prod_name_u
 				END
 			AS prod_name, yalo.sku,
-			sum(yalo.quantity) AS items,
-			sum(yalo.unit_price * yalo.quantity) AS price, link_id,
+			SUM(yalo.quantity) AS items,
+			SUM(yalo.unit_price * yalo.quantity) AS price, link_id,
 			yg.group_id
 		FROM
-			(SELECT order_date, last_change_date, sku, quantity, unit_price, credit_status, ya_associate_link_orders.link_id
+			(SELECT order_date, last_change_date, sku, quantity, unit_price, credit_status, YA_ASSOCIATE_LINK_ORDERS.link_id
 			FROM
 				(SELECT *
-				FROM ya_associate_link_orders
-				WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-				) ya_associate_link_orders
-			WHERE (ya_associate_link_orders.order_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-				(ya_associate_link_orders.order_date < to_date(cEndDate, 'mm/dd/yyyy')) AND
+				FROM YA_ASSOCIATE_LINK_ORDERS
+				WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+				) YA_ASSOCIATE_LINK_ORDERS
+			WHERE (YA_ASSOCIATE_LINK_ORDERS.order_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+				(YA_ASSOCIATE_LINK_ORDERS.order_date < TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 				(credit_status = 1) AND (link_id = iLinkId) AND (unit_price > 0)
 			) yalo
 		LEFT OUTER  JOIN
-			ya_product ON yalo.sku = ya_product.sku
+			YA_PRODUCT ON yalo.sku = YA_PRODUCT.sku
 		LEFT OUTER  JOIN
-			ya_prod_lang ON yalo.sku = ya_prod_lang.sku
+			YA_PROD_LANG ON yalo.sku = YA_PROD_LANG.sku
 		LEFT OUTER  JOIN
-			(SELECT * FROM ya_group WHERE division_id=1) yg
-		ON yg.account_id = ya_product.account_id
-		WHERE      (ya_prod_lang.lang_id = tiLangId OR ya_prod_lang.lang_id = 1)
-		GROUP BY ya_prod_lang.prod_name_u,  yalo.sku, yg.group_id, order_date, link_id
+			(SELECT * FROM YA_GROUP WHERE division_id=1) yg
+		ON yg.account_id = YA_PRODUCT.account_id
+		WHERE      (YA_PROD_LANG.lang_id = tiLangId OR YA_PROD_LANG.lang_id = 1)
+		GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, yg.group_id, order_date, link_id
 		ORDER BY group_id, order_date, prod_name;
 
-		IF (cur_out01 IS null) THEN
+		IF (cur_out01 IS NULL) THEN
 			cur_out01 := cur_temp03;
-		elsif (cur_out02 IS null) THEN
+		ELSIF (cur_out02 IS NULL) THEN
 			cur_out02 := cur_temp03;
-		elsif (cur_out03 IS null) THEN
+		ELSIF (cur_out03 IS NULL) THEN
 			cur_out03 := cur_temp03;
-		elsif (cur_out04 IS null) THEN
+		ELSIF (cur_out04 IS NULL) THEN
 			cur_out04 := cur_temp03;
-		elsif (cur_out05 IS null) THEN
+		ELSIF (cur_out05 IS NULL) THEN
 			cur_out05 := cur_temp03;
-		elsif (cur_out06 IS null) THEN
+		ELSIF (cur_out06 IS NULL) THEN
 			cur_out06 := cur_temp03;
-		elsif (cur_out07 IS null) THEN
+		ELSIF (cur_out07 IS NULL) THEN
 			cur_out07 := cur_temp03;
-		elsif (cur_out08 IS null) THEN
+		ELSIF (cur_out08 IS NULL) THEN
 			cur_out08 := cur_temp03;
-		elsif (cur_out09 IS null) THEN
+		ELSIF (cur_out09 IS NULL) THEN
 			cur_out09 := cur_temp03;
-		elsif (cur_out10 IS null) THEN
+		ELSIF (cur_out10 IS NULL) THEN
 			cur_out10 := cur_temp03;
 		ELSE
 			cur_out11 := cur_temp03;
 		END IF;
 
-		OPEN cur_temp04 for
+		OPEN cur_temp04 FOR
 		SELECT    DISTINCT  yg.group_id
 		FROM
 			(SELECT order_date, last_change_date, sku, quantity, unit_price, credit_status
 			FROM
 				(SELECT *
-				FROM ya_associate_link_orders
-				WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-				) ya_associate_link_orders
-			WHERE (ya_associate_link_orders.order_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-				(ya_associate_link_orders.order_date <  to_date(cEndDate, 'mm/dd/yyyy')) AND
+				FROM YA_ASSOCIATE_LINK_ORDERS
+				WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+				) YA_ASSOCIATE_LINK_ORDERS
+			WHERE (YA_ASSOCIATE_LINK_ORDERS.order_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+				(YA_ASSOCIATE_LINK_ORDERS.order_date <  TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 				(credit_status = 1) AND (link_id = iLinkId) AND (unit_price > 0)
 			) yalo
 		LEFT OUTER  JOIN
-			ya_product ON yalo.sku = ya_product.sku
+			YA_PRODUCT ON yalo.sku = YA_PRODUCT.sku
 		LEFT OUTER  JOIN
-			(SELECT * FROM ya_group WHERE division_id=1) yg
-		ON yg.account_id = ya_product.account_id;
+			(SELECT * FROM YA_GROUP WHERE division_id=1) yg
+		ON yg.account_id = YA_PRODUCT.account_id;
 
-		IF (cur_out01 IS null) THEN
+		IF (cur_out01 IS NULL) THEN
 			cur_out01 := cur_temp04;
-		elsif (cur_out02 IS null) THEN
+		ELSIF (cur_out02 IS NULL) THEN
 			cur_out02 := cur_temp04;
-		elsif (cur_out03 IS null) THEN
+		ELSIF (cur_out03 IS NULL) THEN
 			cur_out03 := cur_temp04;
-		elsif (cur_out04 IS null) THEN
+		ELSIF (cur_out04 IS NULL) THEN
 			cur_out04 := cur_temp04;
-		elsif (cur_out05 IS null) THEN
+		ELSIF (cur_out05 IS NULL) THEN
 			cur_out05 := cur_temp04;
-		elsif (cur_out06 IS null) THEN
+		ELSIF (cur_out06 IS NULL) THEN
 			cur_out06 := cur_temp04;
-		elsif (cur_out07 IS null) THEN
+		ELSIF (cur_out07 IS NULL) THEN
 			cur_out07 := cur_temp04;
-		elsif (cur_out08 IS null) THEN
+		ELSIF (cur_out08 IS NULL) THEN
 			cur_out08 := cur_temp04;
-		elsif (cur_out09 IS null) THEN
+		ELSIF (cur_out09 IS NULL) THEN
 			cur_out09 := cur_temp04;
-		elsif (cur_out10 IS null) THEN
+		ELSIF (cur_out10 IS NULL) THEN
 			cur_out10 := cur_temp04;
-		elsif (cur_out11 IS null) THEN
+		ELSIF (cur_out11 IS NULL) THEN
 			cur_out11 := cur_temp04;
-		elsif (cur_out12 IS null) THEN
+		ELSIF (cur_out12 IS NULL) THEN
 			cur_out12 := cur_temp04;
-		elsif (cur_out13 IS null) THEN
+		ELSIF (cur_out13 IS NULL) THEN
 			cur_out13 := cur_temp04;
-		elsif (cur_out14 IS null) THEN
+		ELSIF (cur_out14 IS NULL) THEN
 			cur_out14 := cur_temp04;
 		ELSE
 			cur_out14 := cur_temp04;
 		END IF;
 
-		OPEN cur_temp05 for
-		SELECT    sum(yalo.quantity) AS items,
-			sum(yalo.unit_price * yalo.quantity) AS price
+		OPEN cur_temp05 FOR
+		SELECT    SUM(yalo.quantity) AS items,
+			SUM(yalo.unit_price * yalo.quantity) AS price
 		FROM
-			(SELECT order_date, last_change_date, sku, nvl(quantity, 0) AS quantity, nvl(unit_price, 0) AS unit_price, credit_status
+			(SELECT order_date, last_change_date, sku, NVL(quantity, 0) AS quantity, NVL(unit_price, 0) AS unit_price, credit_status
 			FROM
 				(SELECT *
-				FROM ya_associate_link_orders
-				WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-				) ya_associate_link_orders
-			WHERE (ya_associate_link_orders.order_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-		                                  (ya_associate_link_orders.order_date <  to_date(cEndDate, 'mm/dd/yyyy')) AND
+				FROM YA_ASSOCIATE_LINK_ORDERS
+				WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+				) YA_ASSOCIATE_LINK_ORDERS
+			WHERE (YA_ASSOCIATE_LINK_ORDERS.order_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+		                                  (YA_ASSOCIATE_LINK_ORDERS.order_date <  TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 		                 	               (credit_status =1) AND (link_id = iLinkId) AND (unit_price > 0)
 			) yalo
-		GROUP BY to_number(to_char(order_date, 'fmmm'));
+		GROUP BY TO_NUMBER(TO_CHAR(order_date, 'fmmm'));
 
-		IF (cur_out01 IS null) THEN
+		IF (cur_out01 IS NULL) THEN
 			cur_out01 := cur_temp05;
-		elsif (cur_out02 IS null) THEN
+		ELSIF (cur_out02 IS NULL) THEN
 			cur_out02 := cur_temp05;
-		elsif (cur_out03 IS null) THEN
+		ELSIF (cur_out03 IS NULL) THEN
 			cur_out03 := cur_temp05;
-		elsif (cur_out04 IS null) THEN
+		ELSIF (cur_out04 IS NULL) THEN
 			cur_out04 := cur_temp05;
-		elsif (cur_out05 IS null) THEN
+		ELSIF (cur_out05 IS NULL) THEN
 			cur_out05 := cur_temp05;
-		elsif (cur_out06 IS null) THEN
+		ELSIF (cur_out06 IS NULL) THEN
 			cur_out06 := cur_temp05;
-		elsif (cur_out07 IS null) THEN
+		ELSIF (cur_out07 IS NULL) THEN
 			cur_out07 := cur_temp05;
-		elsif (cur_out08 IS null) THEN
+		ELSIF (cur_out08 IS NULL) THEN
 			cur_out08 := cur_temp05;
-		elsif (cur_out09 IS null) THEN
+		ELSIF (cur_out09 IS NULL) THEN
 			cur_out09 := cur_temp05;
-		elsif (cur_out10 IS null) THEN
+		ELSIF (cur_out10 IS NULL) THEN
 			cur_out10 := cur_temp05;
-		elsif (cur_out11 IS null) THEN
+		ELSIF (cur_out11 IS NULL) THEN
 			cur_out11 := cur_temp05;
-		elsif (cur_out12 IS null) THEN
+		ELSIF (cur_out12 IS NULL) THEN
 			cur_out12 := cur_temp05;
-		elsif (cur_out13 IS null) THEN
+		ELSIF (cur_out13 IS NULL) THEN
 			cur_out13 := cur_temp05;
-		elsif (cur_out14 IS null) THEN
+		ELSIF (cur_out14 IS NULL) THEN
 			cur_out14 := cur_temp05;
 		ELSE
 			cur_out14 := cur_temp05;
@@ -3173,147 +3128,147 @@ IF (iNeedGroup = 1) THEN
 
 	END IF;
 
-	IF (to_date(cStartDate, 'mm/dd/yyyy') < to_date(cCutOffDate, 'mm/dd/yyyy')) THEN
-		OPEN cur_temp06 for
-		SELECT    sum(yalo.quantity) AS items,
-			sum(yalo.unit_price * yalo.quantity) AS price,
-			to_number(to_char(order_date,'fmmm')) AS posting_month,
-			to_number(to_char(order_date,'yyyy')) AS posting_year,
-			(SELECT link_percentage FROM ya_associate_link WHERE associate_id=iAssociateId AND rownum=1) AS percentage,
+	IF (TO_DATE(cStartDate, 'mm/dd/yyyy') < TO_DATE(cCutOffDate, 'mm/dd/yyyy')) THEN
+		OPEN cur_temp06 FOR
+		SELECT    SUM(yalo.quantity) AS items,
+			SUM(yalo.unit_price * yalo.quantity) AS price,
+			TO_NUMBER(TO_CHAR(order_date,'fmmm')) AS posting_month,
+			TO_NUMBER(TO_CHAR(order_date,'yyyy')) AS posting_year,
+			(SELECT link_percentage FROM YA_ASSOCIATE_LINK WHERE associate_id=iAssociateId AND ROWNUM=1) AS percentage,
 			--sum(yalo.unit_price * yalo.quantity) * (SELECT link_percentage FROM ya_associate_link WHERE associate_id=iAssociateId AND rownum = 1)  AS commission
-			sum(nvl(yalo.credit_amount, yalo.unit_price * yalo.quantity* nvl(comm_rate, nvl(percentage, (SELECT comm_rate FROM ya_associate_commission_hist WHERE associate_id = 8050 AND rownum=1))))) AS commission
+			SUM(NVL(yalo.credit_amount, yalo.unit_price * yalo.quantity* NVL(comm_rate, NVL(percentage, (SELECT comm_rate FROM YA_ASSOCIATE_COMMISSION_HIST WHERE associate_id = 8050 AND ROWNUM=1))))) AS commission
 		FROM
-			(SELECT order_date, last_change_date, sku,nvl(quantity, 0) AS quantity, nvl(unit_price, 0) AS unit_price, credit_status, credit_amount
+			(SELECT order_date, last_change_date, sku,NVL(quantity, 0) AS quantity, NVL(unit_price, 0) AS unit_price, credit_status, credit_amount
 			FROM
 				(SELECT *
-				FROM ya_associate_link_orders
-				WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-				) ya_associate_link_orders
-			WHERE (ya_associate_link_orders.last_change_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-				(ya_associate_link_orders.last_change_date < to_date(cEndDate, 'mm/dd/yyyy')) AND
+				FROM YA_ASSOCIATE_LINK_ORDERS
+				WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+				) YA_ASSOCIATE_LINK_ORDERS
+			WHERE (YA_ASSOCIATE_LINK_ORDERS.last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+				(YA_ASSOCIATE_LINK_ORDERS.last_change_date < TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 				(credit_status = 2) AND (link_id = iLinkId) AND (unit_price > 0)
 			) yalo
-			LEFT OUTER JOIN ya_associate_commission_hist yach on yach.associate_id = iAssociateId
-				AND yach.valid_date = to_date(to_char(order_date, 'mm') || '/01/' || to_char(order_date, 'yyyy'), 'mm/dd/yyyy'),
+			LEFT OUTER JOIN YA_ASSOCIATE_COMMISSION_HIST yach ON yach.associate_id = iAssociateId
+				AND yach.valid_date = TO_DATE(TO_CHAR(order_date, 'mm') || '/01/' || TO_CHAR(order_date, 'yyyy'), 'mm/dd/yyyy'),
 				(SELECT percentage
-				FROM ya_associate_commission_detail cd
+				FROM YA_ASSOCIATE_COMMISSION_DETAIL cd
 				INNER JOIN
 					(SELECT comm_type_id, nc_max
-					FROM ya_associate_commission_type ct
+					FROM YA_ASSOCIATE_COMMISSION_TYPE ct
                WHERE ((nc_min <=iCustomer AND nc_max >=iCustomer) OR (nc_max < iCustomer))
                ORDER BY nc_min DESC
 					) ct
 				ON ct.comm_type_id =cd.comm_type_id
 				INNER JOIN
 					(SELECT commission_id, payment_option
-					FROM ya_associate
+					FROM YA_ASSOCIATE
 					WHERE associate_id=iAssociateId
 					) ya
 				ON cd.commission_id = ya.commission_id AND cd.payment_option = ya.payment_option
-            WHERE rownum=1
+            WHERE ROWNUM=1
 				)t
-		GROUP BY to_number(to_char(order_date,'fmmm')), to_number(to_char(order_date, 'yyyy')) , comm_rate, t.percentage;
+		GROUP BY TO_NUMBER(TO_CHAR(order_date,'fmmm')), TO_NUMBER(TO_CHAR(order_date, 'yyyy')) , comm_rate, t.percentage;
 
-		IF (cur_out01 IS null) THEN
+		IF (cur_out01 IS NULL) THEN
 			cur_out01 := cur_temp06;
-		elsif (cur_out02 IS null) THEN
+		ELSIF (cur_out02 IS NULL) THEN
 			cur_out02 := cur_temp06;
-		elsif (cur_out03 IS null) THEN
+		ELSIF (cur_out03 IS NULL) THEN
 			cur_out03 := cur_temp06;
-		elsif (cur_out04 IS null) THEN
+		ELSIF (cur_out04 IS NULL) THEN
 			cur_out04 := cur_temp06;
-		elsif (cur_out05 IS null) THEN
+		ELSIF (cur_out05 IS NULL) THEN
 			cur_out05 := cur_temp06;
-		elsif (cur_out06 IS null) THEN
+		ELSIF (cur_out06 IS NULL) THEN
 			cur_out06 := cur_temp06;
-		elsif (cur_out07 IS null) THEN
+		ELSIF (cur_out07 IS NULL) THEN
 			cur_out07 := cur_temp06;
-		elsif (cur_out08 IS null) THEN
+		ELSIF (cur_out08 IS NULL) THEN
 			cur_out08 := cur_temp06;
-		elsif (cur_out09 IS null) THEN
+		ELSIF (cur_out09 IS NULL) THEN
 			cur_out09 := cur_temp06;
-		elsif (cur_out10 IS null) THEN
+		ELSIF (cur_out10 IS NULL) THEN
 			cur_out10 := cur_temp06;
-		elsif (cur_out11 IS null) THEN
+		ELSIF (cur_out11 IS NULL) THEN
 			cur_out11 := cur_temp06;
-		elsif (cur_out12 IS null) THEN
+		ELSIF (cur_out12 IS NULL) THEN
 			cur_out12 := cur_temp06;
-		elsif (cur_out13 IS null) THEN
+		ELSIF (cur_out13 IS NULL) THEN
 			cur_out13 := cur_temp06;
-		elsif (cur_out14 IS null) THEN
+		ELSIF (cur_out14 IS NULL) THEN
 			cur_out14 := cur_temp06;
 		ELSE
 			cur_out14 := cur_temp06;
 		END IF;
 	ELSE
-		OPEN cur_temp07 for
-		SELECT    sum(yalo.quantity) AS items,
-			sum(yalo.unit_price * yalo.quantity) AS price,
-			to_number(to_char(order_date, 'fmmm')) AS posting_month,
-			to_number(to_char(order_date, 'yyyy')) AS posting_year,
-			nvl(comm_rate, nvl(percentage, (SELECT comm_rate FROM ya_associate_commission_hist WHERE associate_id = iAssociateId AND rownum=1))) AS percentage,
+		OPEN cur_temp07 FOR
+		SELECT    SUM(yalo.quantity) AS items,
+			SUM(yalo.unit_price * yalo.quantity) AS price,
+			TO_NUMBER(TO_CHAR(order_date, 'fmmm')) AS posting_month,
+			TO_NUMBER(TO_CHAR(order_date, 'yyyy')) AS posting_year,
+			NVL(comm_rate, NVL(percentage, (SELECT comm_rate FROM YA_ASSOCIATE_COMMISSION_HIST WHERE associate_id = iAssociateId AND ROWNUM=1))) AS percentage,
 			--sum(yalo.unit_price * yalo.quantity) * nvl(comm_rate, nvl(percentage, (SELECT comm_rate FROM ya_associate_commission_hist WHERE associate_id = iAssociateId AND rownum=1)))  AS commission
-			sum(nvl(yalo.credit_amount, yalo.unit_price * yalo.quantity* nvl(comm_rate, nvl(percentage, (SELECT comm_rate FROM ya_associate_commission_hist WHERE associate_id = 8050 AND rownum=1))))) AS commission
+			SUM(NVL(yalo.credit_amount, yalo.unit_price * yalo.quantity* NVL(comm_rate, NVL(percentage, (SELECT comm_rate FROM YA_ASSOCIATE_COMMISSION_HIST WHERE associate_id = 8050 AND ROWNUM=1))))) AS commission
 		FROM
-			(SELECT order_date, last_change_date, sku, nvl(quantity, 0) AS quantity, nvl(unit_price, 0) AS unit_price, credit_status, credit_amount
+			(SELECT order_date, last_change_date, sku, NVL(quantity, 0) AS quantity, NVL(unit_price, 0) AS unit_price, credit_status, credit_amount
 			FROM
 				(SELECT *
-				FROM ya_associate_link_orders
-				WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-				) ya_associate_link_orders
+				FROM YA_ASSOCIATE_LINK_ORDERS
+				WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+				) YA_ASSOCIATE_LINK_ORDERS
 			WHERE
-				(ya_associate_link_orders.last_change_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-				(ya_associate_link_orders.last_change_date < to_date(cEndDate, 'mm/dd/yyyy')) AND
+				(YA_ASSOCIATE_LINK_ORDERS.last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+				(YA_ASSOCIATE_LINK_ORDERS.last_change_date < TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 				(credit_status = 2) AND (link_id = iLinkId) AND (unit_price > 0)
 			) yalo
-		LEFT OUTER JOIN ya_associate_commission_hist yach on yach.associate_id = iAssociateId
-			AND yach.valid_date = to_date(to_char(order_date, 'mm') || '/01/' || to_char(order_date, 'yyyy'), 'mm/dd/yyyy'),
+		LEFT OUTER JOIN YA_ASSOCIATE_COMMISSION_HIST yach ON yach.associate_id = iAssociateId
+			AND yach.valid_date = TO_DATE(TO_CHAR(order_date, 'mm') || '/01/' || TO_CHAR(order_date, 'yyyy'), 'mm/dd/yyyy'),
 			(SELECT percentage
-			FROM ya_associate_commission_detail cd
+			FROM YA_ASSOCIATE_COMMISSION_DETAIL cd
 			INNER JOIN
 				(SELECT comm_type_id, 	nc_max
-				FROM ya_associate_commission_type ct
+				FROM YA_ASSOCIATE_COMMISSION_TYPE ct
 				WHERE ((nc_min <=iCustomer AND nc_max >=iCustomer) OR (nc_max < iCustomer))
             ORDER BY nc_min DESC
 				) ct
 			ON ct.comm_type_id =cd.comm_type_id
 			INNER JOIN
 				(SELECT commission_id, payment_option
-				FROM ya_associate
+				FROM YA_ASSOCIATE
 				WHERE associate_id=iAssociateId
 				) ya
 			ON cd.commission_id = ya.commission_id AND cd.payment_option = ya.payment_option
-         WHERE rownum=1
+         WHERE ROWNUM=1
 			)t
-		GROUP BY to_number(to_char(order_date,'fmmm')), to_number(to_char(order_date, 'yyyy')) , comm_rate, t.percentage;
+		GROUP BY TO_NUMBER(TO_CHAR(order_date,'fmmm')), TO_NUMBER(TO_CHAR(order_date, 'yyyy')) , comm_rate, t.percentage;
 
-		IF (cur_out01 IS null) THEN
+		IF (cur_out01 IS NULL) THEN
 			cur_out01 := cur_temp07;
-		elsif (cur_out02 IS null) THEN
+		ELSIF (cur_out02 IS NULL) THEN
 			cur_out02 := cur_temp07;
-		elsif (cur_out03 IS null) THEN
+		ELSIF (cur_out03 IS NULL) THEN
 			cur_out03 := cur_temp07;
-		elsif (cur_out04 IS null) THEN
+		ELSIF (cur_out04 IS NULL) THEN
 			cur_out04 := cur_temp07;
-		elsif (cur_out05 IS null) THEN
+		ELSIF (cur_out05 IS NULL) THEN
 			cur_out05 := cur_temp07;
-		elsif (cur_out06 IS null) THEN
+		ELSIF (cur_out06 IS NULL) THEN
 			cur_out06 := cur_temp07;
-		elsif (cur_out07 IS null) THEN
+		ELSIF (cur_out07 IS NULL) THEN
 			cur_out07 := cur_temp07;
-		elsif (cur_out08 IS null) THEN
+		ELSIF (cur_out08 IS NULL) THEN
 			cur_out08 := cur_temp07;
-		elsif (cur_out09 IS null) THEN
+		ELSIF (cur_out09 IS NULL) THEN
 			cur_out09 := cur_temp07;
-		elsif (cur_out10 IS null) THEN
+		ELSIF (cur_out10 IS NULL) THEN
 			cur_out10 := cur_temp07;
-		elsif (cur_out11 IS null) THEN
+		ELSIF (cur_out11 IS NULL) THEN
 			cur_out11 := cur_temp07;
-		elsif (cur_out12 IS null) THEN
+		ELSIF (cur_out12 IS NULL) THEN
 			cur_out12 := cur_temp07;
-		elsif (cur_out13 IS null) THEN
+		ELSIF (cur_out13 IS NULL) THEN
 			cur_out13 := cur_temp07;
-		elsif (cur_out14 IS null) THEN
+		ELSIF (cur_out14 IS NULL) THEN
 			cur_out14 := cur_temp07;
 		ELSE
 			cur_out14 := cur_temp07;
@@ -3325,127 +3280,127 @@ END IF;
 IF (iNeedGroup = 0) THEN
 
 	IF (iBestSeller = 1) THEN
-		OPEN cur_temp08 for
+		OPEN cur_temp08 FOR
       SELECT * FROM(
          SELECT
             CASE
-               WHEN (ya_prod_lang.prod_name_u IS null OR ya_prod_lang.prod_name_u = '')
-               THEN (SELECT prod_name_u FROM ya_prod_lang WHERE sku=yalo.sku AND lang_id = 1)
+               WHEN (YA_PROD_LANG.prod_name_u IS NULL OR YA_PROD_LANG.prod_name_u = '')
+               THEN (SELECT prod_name_u FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
                ELSE
-               ya_prod_lang.prod_name_u
+               YA_PROD_LANG.prod_name_u
                END
             AS prod_name,
             yalo.sku,
-            sum(yalo.quantity) AS items, link_id,
-            sum(yalo.unit_price * yalo.quantity) AS price
+            SUM(yalo.quantity) AS items, link_id,
+            SUM(yalo.unit_price * yalo.quantity) AS price
          FROM
-            (SELECT order_date, last_change_date, sku, quantity, unit_price, credit_status, ya_associate_link_orders.link_id
+            (SELECT order_date, last_change_date, sku, quantity, unit_price, credit_status, YA_ASSOCIATE_LINK_ORDERS.link_id
             FROM
                (SELECT *
-               FROM ya_associate_link_orders
-               WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-               ) ya_associate_link_orders
-            WHERE (ya_associate_link_orders.last_change_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-               (ya_associate_link_orders.last_change_date <  to_date(cEndDate, 'mm/dd/yyyy')) AND
+               FROM YA_ASSOCIATE_LINK_ORDERS
+               WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+               ) YA_ASSOCIATE_LINK_ORDERS
+            WHERE (YA_ASSOCIATE_LINK_ORDERS.last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+               (YA_ASSOCIATE_LINK_ORDERS.last_change_date <  TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
                (credit_status = 2 OR credit_status = 1) AND (link_id = iLinkId) AND (unit_price > 0)
             ) yalo
-            LEFT OUTER  JOIN ya_product ON yalo.sku = ya_product.sku
-            LEFT OUTER  JOIN ya_prod_lang ON yalo.sku = ya_prod_lang.sku
-         WHERE      (ya_prod_lang.lang_id = tiLangId)
-         GROUP BY ya_prod_lang.prod_name_u,  yalo.sku, link_id
+            LEFT OUTER  JOIN YA_PRODUCT ON yalo.sku = YA_PRODUCT.sku
+            LEFT OUTER  JOIN YA_PROD_LANG ON yalo.sku = YA_PROD_LANG.sku
+         WHERE      (YA_PROD_LANG.lang_id = tiLangId)
+         GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, link_id
          ORDER BY items DESC)
-      WHERE (rownum<=20);
+      WHERE (ROWNUM<=20);
 
-		IF (cur_out01 IS null) THEN
+		IF (cur_out01 IS NULL) THEN
 			cur_out01 := cur_temp08;
-		elsif (cur_out02 IS null) THEN
+		ELSIF (cur_out02 IS NULL) THEN
 			cur_out02 := cur_temp08;
-		elsif (cur_out03 IS null) THEN
+		ELSIF (cur_out03 IS NULL) THEN
 			cur_out03 := cur_temp08;
-		elsif (cur_out04 IS null) THEN
+		ELSIF (cur_out04 IS NULL) THEN
 			cur_out04 := cur_temp08;
-		elsif (cur_out05 IS null) THEN
+		ELSIF (cur_out05 IS NULL) THEN
 			cur_out05 := cur_temp08;
-		elsif (cur_out06 IS null) THEN
+		ELSIF (cur_out06 IS NULL) THEN
 			cur_out06 := cur_temp08;
-		elsif (cur_out07 IS null) THEN
+		ELSIF (cur_out07 IS NULL) THEN
 			cur_out07 := cur_temp08;
-		elsif (cur_out08 IS null) THEN
+		ELSIF (cur_out08 IS NULL) THEN
 			cur_out08 := cur_temp08;
-		elsif (cur_out09 IS null) THEN
+		ELSIF (cur_out09 IS NULL) THEN
 			cur_out09 := cur_temp08;
-		elsif (cur_out10 IS null) THEN
+		ELSIF (cur_out10 IS NULL) THEN
 			cur_out10 := cur_temp08;
-		elsif (cur_out11 IS null) THEN
+		ELSIF (cur_out11 IS NULL) THEN
 			cur_out11 := cur_temp08;
-		elsif (cur_out12 IS null) THEN
+		ELSIF (cur_out12 IS NULL) THEN
 			cur_out12 := cur_temp08;
-		elsif (cur_out13 IS null) THEN
+		ELSIF (cur_out13 IS NULL) THEN
 			cur_out13 := cur_temp08;
-		elsif (cur_out14 IS null) THEN
+		ELSIF (cur_out14 IS NULL) THEN
 			cur_out14 := cur_temp08;
 		ELSE
 			cur_out14 := cur_temp08;
 		END IF;
 	ELSE
 		IF (iCreditStatus <> 1)  THEN
-			OPEN cur_temp09 for
-			SELECT  to_char(order_date, 'mm/dd/yyyy') AS order_date,
-				to_char(last_change_date, 'mm/dd/yyyy') AS posting_date,
+			OPEN cur_temp09 FOR
+			SELECT  TO_CHAR(order_date, 'mm/dd/yyyy') AS order_date,
+				TO_CHAR(last_change_date, 'mm/dd/yyyy') AS posting_date,
 				CASE
-					WHEN (ya_prod_lang.prod_name_u IS null OR ya_prod_lang.prod_name_u = '')
-					THEN (SELECT prod_name_u FROM ya_prod_lang WHERE sku=yalo.sku AND lang_id = 1)
+					WHEN (YA_PROD_LANG.prod_name_u IS NULL OR YA_PROD_LANG.prod_name_u = '')
+					THEN (SELECT prod_name_u FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
 					ELSE
-					ya_prod_lang.prod_name_u
+					YA_PROD_LANG.prod_name_u
 					END
 				AS prod_name,
 				yalo.sku,
-				sum(yalo.quantity) AS items, link_id,
-				sum(yalo.unit_price * yalo.quantity) AS price
+				SUM(yalo.quantity) AS items, link_id,
+				SUM(yalo.unit_price * yalo.quantity) AS price
 			FROM
-				(SELECT order_date, last_change_date, sku, quantity, unit_price, credit_status, ya_associate_link_orders.link_id
+				(SELECT order_date, last_change_date, sku, quantity, unit_price, credit_status, YA_ASSOCIATE_LINK_ORDERS.link_id
 				FROM
 					(SELECT *
-					FROM ya_associate_link_orders
-					WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-					) ya_associate_link_orders
-				WHERE (ya_associate_link_orders.last_change_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-			                                  (ya_associate_link_orders.last_change_date <  to_date(cEndDate, 'mm/dd/yyyy')) AND
+					FROM YA_ASSOCIATE_LINK_ORDERS
+					WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+					) YA_ASSOCIATE_LINK_ORDERS
+				WHERE (YA_ASSOCIATE_LINK_ORDERS.last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+			                                  (YA_ASSOCIATE_LINK_ORDERS.last_change_date <  TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 			                 	               (credit_status = 2) AND (link_id = iLinkId) AND (unit_price > 0)) yalo
-				LEFT OUTER  JOIN ya_product ON yalo.sku = ya_product.sku
-				LEFT OUTER  JOIN ya_prod_lang ON yalo.sku = ya_prod_lang.sku
-			WHERE      (ya_prod_lang.lang_id = tiLangId)
-			GROUP BY ya_prod_lang.prod_name_u,  yalo.sku, link_id,
-				to_char(order_date, 'mm/dd/yyyy'), to_char(last_change_date, 'mm/dd/yyyy')
+				LEFT OUTER  JOIN YA_PRODUCT ON yalo.sku = YA_PRODUCT.sku
+				LEFT OUTER  JOIN YA_PROD_LANG ON yalo.sku = YA_PROD_LANG.sku
+			WHERE      (YA_PROD_LANG.lang_id = tiLangId)
+			GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, link_id,
+				TO_CHAR(order_date, 'mm/dd/yyyy'), TO_CHAR(last_change_date, 'mm/dd/yyyy')
 			ORDER BY posting_date, prod_name;
 
-			IF (cur_out01 IS null) THEN
+			IF (cur_out01 IS NULL) THEN
 				cur_out01 := cur_temp09;
-			elsif (cur_out02 IS null) THEN
+			ELSIF (cur_out02 IS NULL) THEN
 				cur_out02 := cur_temp09;
-			elsif (cur_out03 IS null) THEN
+			ELSIF (cur_out03 IS NULL) THEN
 				cur_out03 := cur_temp09;
-			elsif (cur_out04 IS null) THEN
+			ELSIF (cur_out04 IS NULL) THEN
 				cur_out04 := cur_temp09;
-			elsif (cur_out05 IS null) THEN
+			ELSIF (cur_out05 IS NULL) THEN
 				cur_out05 := cur_temp09;
-			elsif (cur_out06 IS null) THEN
+			ELSIF (cur_out06 IS NULL) THEN
 				cur_out06 := cur_temp09;
-			elsif (cur_out07 IS null) THEN
+			ELSIF (cur_out07 IS NULL) THEN
 				cur_out07 := cur_temp09;
-			elsif (cur_out08 IS null) THEN
+			ELSIF (cur_out08 IS NULL) THEN
 				cur_out08 := cur_temp09;
-			elsif (cur_out09 IS null) THEN
+			ELSIF (cur_out09 IS NULL) THEN
 				cur_out09 := cur_temp09;
-			elsif (cur_out10 IS null) THEN
+			ELSIF (cur_out10 IS NULL) THEN
 				cur_out10 := cur_temp09;
-			elsif (cur_out11 IS null) THEN
+			ELSIF (cur_out11 IS NULL) THEN
 				cur_out11 := cur_temp09;
-			elsif (cur_out12 IS null) THEN
+			ELSIF (cur_out12 IS NULL) THEN
 				cur_out12 := cur_temp09;
-			elsif (cur_out13 IS null) THEN
+			ELSIF (cur_out13 IS NULL) THEN
 				cur_out13 := cur_temp09;
-			elsif (cur_out14 IS null) THEN
+			ELSIF (cur_out14 IS NULL) THEN
 				cur_out14 := cur_temp09;
 			ELSE
 				cur_out14 := cur_temp09;
@@ -3453,116 +3408,116 @@ IF (iNeedGroup = 0) THEN
 		END IF;
 
 		IF (iCreditStatus <>2) THEN
-			OPEN cur_temp10 for
-			SELECT  to_char(order_date, 'mm/dd/yyyy') AS order_date, to_char(last_change_date, 'mm/dd/yyyy') AS posting_date,
+			OPEN cur_temp10 FOR
+			SELECT  TO_CHAR(order_date, 'mm/dd/yyyy') AS order_date, TO_CHAR(last_change_date, 'mm/dd/yyyy') AS posting_date,
 			                CASE
-					WHEN (ya_prod_lang.prod_name_u IS null OR ya_prod_lang.prod_name_u = '')
-					THEN (SELECT prod_name_u FROM ya_prod_lang WHERE sku=yalo.sku AND lang_id = 1)
-					ELSE ya_prod_lang.prod_name_u
+					WHEN (YA_PROD_LANG.prod_name_u IS NULL OR YA_PROD_LANG.prod_name_u = '')
+					THEN (SELECT prod_name_u FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
+					ELSE YA_PROD_LANG.prod_name_u
 					END
 				AS prod_name,
-				yalo.sku, sum(yalo.quantity) AS items,
-				sum(yalo.unit_price * yalo.quantity) AS price, yalo.link_id,
+				yalo.sku, SUM(yalo.quantity) AS items,
+				SUM(yalo.unit_price * yalo.quantity) AS price, yalo.link_id,
 			                      yg.group_id
 			FROM
-				(SELECT order_date, last_change_date, sku, nvl(quantity, 0) AS quantity, nvl(unit_price, 0) AS unit_price, credit_status, link_id
+				(SELECT order_date, last_change_date, sku, NVL(quantity, 0) AS quantity, NVL(unit_price, 0) AS unit_price, credit_status, link_id
 				FROM
 					(SELECT *
-					FROM ya_associate_link_orders
-					WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-					) ya_associate_link_orders
-				WHERE (ya_associate_link_orders.last_change_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-			                                  (ya_associate_link_orders.last_change_date <  to_date(cEndDate, 'mm/dd/yyyy')) AND
+					FROM YA_ASSOCIATE_LINK_ORDERS
+					WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+					) YA_ASSOCIATE_LINK_ORDERS
+				WHERE (YA_ASSOCIATE_LINK_ORDERS.last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+			                                  (YA_ASSOCIATE_LINK_ORDERS.last_change_date <  TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 			                 	               (credit_status = 1) AND (link_id = iLinkId) AND (unit_price > 0)
 				) yalo
-				LEFT OUTER  JOIN ya_product ON yalo.sku = ya_product.sku
-				LEFT OUTER  JOIN ya_prod_lang ON yalo.sku = ya_prod_lang.sku
+				LEFT OUTER  JOIN YA_PRODUCT ON yalo.sku = YA_PRODUCT.sku
+				LEFT OUTER  JOIN YA_PROD_LANG ON yalo.sku = YA_PROD_LANG.sku
 				LEFT OUTER  JOIN
 					(SELECT *
-					FROM ya_group
+					FROM YA_GROUP
 					WHERE division_id=1
 					) yg
-				ON yg.account_id = ya_product.account_id
-			WHERE      (ya_prod_lang.lang_id = tiLangId)
-			GROUP BY ya_prod_lang.prod_name_u,  yalo.sku, yg.group_id, link_id,
-				to_char(order_date, 'mm/dd/yyyy'), to_char(last_change_date, 'mm/dd/yyyy')
+				ON yg.account_id = YA_PRODUCT.account_id
+			WHERE      (YA_PROD_LANG.lang_id = tiLangId)
+			GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, yg.group_id, link_id,
+				TO_CHAR(order_date, 'mm/dd/yyyy'), TO_CHAR(last_change_date, 'mm/dd/yyyy')
 			ORDER BY group_id, posting_date, prod_name;
 
-			IF (cur_out01 IS null) THEN
+			IF (cur_out01 IS NULL) THEN
 				cur_out01 := cur_temp10;
-			elsif (cur_out02 IS null) THEN
+			ELSIF (cur_out02 IS NULL) THEN
 				cur_out02 := cur_temp10;
-			elsif (cur_out03 IS null) THEN
+			ELSIF (cur_out03 IS NULL) THEN
 				cur_out03 := cur_temp10;
-			elsif (cur_out04 IS null) THEN
+			ELSIF (cur_out04 IS NULL) THEN
 				cur_out04 := cur_temp10;
-			elsif (cur_out05 IS null) THEN
+			ELSIF (cur_out05 IS NULL) THEN
 				cur_out05 := cur_temp10;
-			elsif (cur_out06 IS null) THEN
+			ELSIF (cur_out06 IS NULL) THEN
 				cur_out06 := cur_temp10;
-			elsif (cur_out07 IS null) THEN
+			ELSIF (cur_out07 IS NULL) THEN
 				cur_out07 := cur_temp10;
-			elsif (cur_out08 IS null) THEN
+			ELSIF (cur_out08 IS NULL) THEN
 				cur_out08 := cur_temp10;
-			elsif (cur_out09 IS null) THEN
+			ELSIF (cur_out09 IS NULL) THEN
 				cur_out09 := cur_temp10;
-			elsif (cur_out10 IS null) THEN
+			ELSIF (cur_out10 IS NULL) THEN
 				cur_out10 := cur_temp10;
-			elsif (cur_out11 IS null) THEN
+			ELSIF (cur_out11 IS NULL) THEN
 				cur_out11 := cur_temp10;
-			elsif (cur_out12 IS null) THEN
+			ELSIF (cur_out12 IS NULL) THEN
 				cur_out12 := cur_temp10;
-			elsif (cur_out13 IS null) THEN
+			ELSIF (cur_out13 IS NULL) THEN
 				cur_out13 := cur_temp10;
-			elsif (cur_out14 IS null) THEN
+			ELSIF (cur_out14 IS NULL) THEN
 				cur_out14 := cur_temp10;
 			ELSE
 				cur_out14 := cur_temp10;
 			END IF;
 
-			OPEN cur_temp11 for
-			SELECT    sum(yalo.quantity) AS items,
-				sum(yalo.unit_price * yalo.quantity) AS price
+			OPEN cur_temp11 FOR
+			SELECT    SUM(yalo.quantity) AS items,
+				SUM(yalo.unit_price * yalo.quantity) AS price
 			FROM
-				(SELECT order_date, last_change_date, sku, nvl(quantity, 0) AS quantity, nvl(unit_price, 0) AS unit_price, credit_status
+				(SELECT order_date, last_change_date, sku, NVL(quantity, 0) AS quantity, NVL(unit_price, 0) AS unit_price, credit_status
 				 FROM
 					(SELECT *
-					FROM ya_associate_link_orders
-					WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-					) ya_associate_link_orders
-				WHERE (ya_associate_link_orders.order_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-			                                  (ya_associate_link_orders.order_date <  to_date(cEndDate, 'mm/dd/yyyy')) AND
+					FROM YA_ASSOCIATE_LINK_ORDERS
+					WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+					) YA_ASSOCIATE_LINK_ORDERS
+				WHERE (YA_ASSOCIATE_LINK_ORDERS.order_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+			                                  (YA_ASSOCIATE_LINK_ORDERS.order_date <  TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 			                 	               (credit_status =1) AND (link_id = iLinkId) AND (unit_price > 0)
 				) yalo
-			GROUP BY to_number(to_char(order_date, 'fmmm'));
+			GROUP BY TO_NUMBER(TO_CHAR(order_date, 'fmmm'));
 
-			IF (cur_out01 IS null) THEN
+			IF (cur_out01 IS NULL) THEN
 				cur_out01 := cur_temp11;
-			elsif (cur_out02 IS null) THEN
+			ELSIF (cur_out02 IS NULL) THEN
 				cur_out02 := cur_temp11;
-			elsif (cur_out03 IS null) THEN
+			ELSIF (cur_out03 IS NULL) THEN
 				cur_out03 := cur_temp11;
-			elsif (cur_out04 IS null) THEN
+			ELSIF (cur_out04 IS NULL) THEN
 				cur_out04 := cur_temp11;
-			elsif (cur_out05 IS null) THEN
+			ELSIF (cur_out05 IS NULL) THEN
 				cur_out05 := cur_temp11;
-			elsif (cur_out06 IS null) THEN
+			ELSIF (cur_out06 IS NULL) THEN
 				cur_out06 := cur_temp11;
-			elsif (cur_out07 IS null) THEN
+			ELSIF (cur_out07 IS NULL) THEN
 				cur_out07 := cur_temp11;
-			elsif (cur_out08 IS null) THEN
+			ELSIF (cur_out08 IS NULL) THEN
 				cur_out08 := cur_temp11;
-			elsif (cur_out09 IS null) THEN
+			ELSIF (cur_out09 IS NULL) THEN
 				cur_out09 := cur_temp11;
-			elsif (cur_out10 IS null) THEN
+			ELSIF (cur_out10 IS NULL) THEN
 				cur_out10 := cur_temp11;
-			elsif (cur_out11 IS null) THEN
+			ELSIF (cur_out11 IS NULL) THEN
 				cur_out11 := cur_temp11;
-			elsif (cur_out12 IS null) THEN
+			ELSIF (cur_out12 IS NULL) THEN
 				cur_out12 := cur_temp11;
-			elsif (cur_out13 IS null) THEN
+			ELSIF (cur_out13 IS NULL) THEN
 				cur_out13 := cur_temp11;
-			elsif (cur_out14 IS null) THEN
+			ELSIF (cur_out14 IS NULL) THEN
 				cur_out14 := cur_temp11;
 			ELSE
 				cur_out14 := cur_temp11;
@@ -3571,131 +3526,131 @@ IF (iNeedGroup = 0) THEN
 	END IF;
 
 	IF (cStartDate < cCutOffDate) THEN
-		OPEN cur_temp12 for
-		SELECT    sum(yalo.quantity) AS items,
-			sum(yalo.unit_price * yalo.quantity) AS price,
-			to_number(to_char(order_date, 'fmmm')) AS posting_month,
-			to_number(to_char(order_date, 'yyyy')) AS posting_year,
-			(SELECT link_percentage FROM ya_associate_link WHERE associate_id=iAssociateId AND rownum=1 ) AS percentage,
+		OPEN cur_temp12 FOR
+		SELECT    SUM(yalo.quantity) AS items,
+			SUM(yalo.unit_price * yalo.quantity) AS price,
+			TO_NUMBER(TO_CHAR(order_date, 'fmmm')) AS posting_month,
+			TO_NUMBER(TO_CHAR(order_date, 'yyyy')) AS posting_year,
+			(SELECT link_percentage FROM YA_ASSOCIATE_LINK WHERE associate_id=iAssociateId AND ROWNUM=1 ) AS percentage,
 			--sum(yalo.unit_price * yalo.quantity) * (SELECT link_percentage FROM ya_associate_link WHERE associate_id=iAssociateId AND rownum=1) AS commission
-			sum(nvl(yalo.credit_amount, yalo.unit_price * yalo.quantity* nvl(comm_rate, nvl(percentage, (SELECT comm_rate FROM ya_associate_commission_hist WHERE associate_id = 8050 AND rownum=1))))) AS commission
+			SUM(NVL(yalo.credit_amount, yalo.unit_price * yalo.quantity* NVL(comm_rate, NVL(percentage, (SELECT comm_rate FROM YA_ASSOCIATE_COMMISSION_HIST WHERE associate_id = 8050 AND ROWNUM=1))))) AS commission
 		FROM
-			(SELECT order_date, last_change_date, sku, nvl(quantity, 0) AS quantity, nvl(unit_price, 0) AS unit_price, credit_status, credit_amount
+			(SELECT order_date, last_change_date, sku, NVL(quantity, 0) AS quantity, NVL(unit_price, 0) AS unit_price, credit_status, credit_amount
 			FROM
 				(SELECT *
-				FROM ya_associate_link_orders
-				WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-				) ya_associate_link_orders
-			WHERE (ya_associate_link_orders.last_change_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-				(ya_associate_link_orders.last_change_date < to_date(cEndDate, 'mm/dd/yyyy')) AND
+				FROM YA_ASSOCIATE_LINK_ORDERS
+				WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+				) YA_ASSOCIATE_LINK_ORDERS
+			WHERE (YA_ASSOCIATE_LINK_ORDERS.last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+				(YA_ASSOCIATE_LINK_ORDERS.last_change_date < TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 				(credit_status = 2) AND (link_id = iLinkId) AND (unit_price > 0)
 			) yalo
-		LEFT OUTER JOIN ya_associate_commission_hist yach on yach.associate_id = iAssociateId
-			AND yach.valid_date = to_date(to_char(order_date, 'mm') || '/01/' || to_char(order_date, 'yyyy'), 'mm/dd/yyyy'),
-			(SELECT percentage  FROM ya_associate_commission_detail cd INNER JOIN
-			(SELECT comm_type_id, nc_max FROM ya_associate_commission_type ct WHERE ((nc_min <= iCustomer AND nc_max >= iCustomer) OR nc_max < iCustomer)) ct
+		LEFT OUTER JOIN YA_ASSOCIATE_COMMISSION_HIST yach ON yach.associate_id = iAssociateId
+			AND yach.valid_date = TO_DATE(TO_CHAR(order_date, 'mm') || '/01/' || TO_CHAR(order_date, 'yyyy'), 'mm/dd/yyyy'),
+			(SELECT percentage  FROM YA_ASSOCIATE_COMMISSION_DETAIL cd INNER JOIN
+			(SELECT comm_type_id, nc_max FROM YA_ASSOCIATE_COMMISSION_TYPE ct WHERE ((nc_min <= iCustomer AND nc_max >= iCustomer) OR nc_max < iCustomer)) ct
 			ON ct.comm_type_id =cd.comm_type_id
 			INNER JOIN
 				(SELECT commission_id, payment_option
-				FROM ya_associate
+				FROM YA_ASSOCIATE
 				WHERE associate_id=iAssociateId
 				) ya
 			ON cd.commission_id = ya.commission_id AND cd.payment_option = ya.payment_option
-         WHERE rownum=1
+         WHERE ROWNUM=1
 			)t
-		GROUP BY to_number(to_char(order_date, 'fmmm')), to_number(to_char(order_date, 'yyyy')) , comm_rate, t.percentage;
+		GROUP BY TO_NUMBER(TO_CHAR(order_date, 'fmmm')), TO_NUMBER(TO_CHAR(order_date, 'yyyy')) , comm_rate, t.percentage;
 
-		IF (cur_out01 IS null) THEN
+		IF (cur_out01 IS NULL) THEN
 			cur_out01 := cur_temp12;
-		elsif (cur_out02 IS null) THEN
+		ELSIF (cur_out02 IS NULL) THEN
 			cur_out02 := cur_temp12;
-		elsif (cur_out03 IS null) THEN
+		ELSIF (cur_out03 IS NULL) THEN
 			cur_out03 := cur_temp12;
-		elsif (cur_out04 IS null) THEN
+		ELSIF (cur_out04 IS NULL) THEN
 			cur_out04 := cur_temp12;
-		elsif (cur_out05 IS null) THEN
+		ELSIF (cur_out05 IS NULL) THEN
 			cur_out05 := cur_temp12;
-		elsif (cur_out06 IS null) THEN
+		ELSIF (cur_out06 IS NULL) THEN
 			cur_out06 := cur_temp12;
-		elsif (cur_out07 IS null) THEN
+		ELSIF (cur_out07 IS NULL) THEN
 			cur_out07 := cur_temp12;
-		elsif (cur_out08 IS null) THEN
+		ELSIF (cur_out08 IS NULL) THEN
 			cur_out08 := cur_temp12;
-		elsif (cur_out09 IS null) THEN
+		ELSIF (cur_out09 IS NULL) THEN
 			cur_out09 := cur_temp12;
-		elsif (cur_out10 IS null) THEN
+		ELSIF (cur_out10 IS NULL) THEN
 			cur_out10 := cur_temp12;
-		elsif (cur_out11 IS null) THEN
+		ELSIF (cur_out11 IS NULL) THEN
 			cur_out11 := cur_temp12;
-		elsif (cur_out12 IS null) THEN
+		ELSIF (cur_out12 IS NULL) THEN
 			cur_out12 := cur_temp12;
-		elsif (cur_out13 IS null) THEN
+		ELSIF (cur_out13 IS NULL) THEN
 			cur_out13 := cur_temp12;
-		elsif (cur_out14 IS null) THEN
+		ELSIF (cur_out14 IS NULL) THEN
 			cur_out14 := cur_temp12;
 		ELSE
 			cur_out14 := cur_temp12;
 		END IF;
 	ELSE
-		OPEN cur_temp13 for
-		SELECT    sum(yalo.quantity) AS items,
-			sum(yalo.unit_price * yalo.quantity) AS price,
-			to_number(to_char(order_date, 'fmmm')) AS posting_month,
-			to_number(to_char(order_date, 'yyyy')) AS posting_year,
-			nvl(comm_rate, nvl(percentage, (SELECT comm_rate FROM ya_associate_commission_hist WHERE associate_id = iAssociateId AND rownum=1))) AS percentage,
-			sum(yalo.unit_price * yalo.quantity) * nvl(comm_rate, nvl(percentage, (SELECT comm_rate FROM ya_associate_commission_hist WHERE associate_id = iAssociateId AND rownum=1 )))  AS commission
+		OPEN cur_temp13 FOR
+		SELECT    SUM(yalo.quantity) AS items,
+			SUM(yalo.unit_price * yalo.quantity) AS price,
+			TO_NUMBER(TO_CHAR(order_date, 'fmmm')) AS posting_month,
+			TO_NUMBER(TO_CHAR(order_date, 'yyyy')) AS posting_year,
+			NVL(comm_rate, NVL(percentage, (SELECT comm_rate FROM YA_ASSOCIATE_COMMISSION_HIST WHERE associate_id = iAssociateId AND ROWNUM=1))) AS percentage,
+			SUM(yalo.unit_price * yalo.quantity) * NVL(comm_rate, NVL(percentage, (SELECT comm_rate FROM YA_ASSOCIATE_COMMISSION_HIST WHERE associate_id = iAssociateId AND ROWNUM=1 )))  AS commission
 		FROM
-			(SELECT order_date, last_change_date, sku, nvl(quantity, 0) AS quantity, nvl(unit_price, 0) AS unit_price, credit_status, credit_amount
+			(SELECT order_date, last_change_date, sku, NVL(quantity, 0) AS quantity, NVL(unit_price, 0) AS unit_price, credit_status, credit_amount
 			FROM
 				(SELECT *
-				FROM ya_associate_link_orders
-				WHERE sku not IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
-				) ya_associate_link_orders
-			WHERE (ya_associate_link_orders.last_change_date >= to_date(cStartDate, 'mm/dd/yyyy')) AND
-				(ya_associate_link_orders.last_change_date < to_date(cEndDate, 'mm/dd/yyyy')) AND
+				FROM YA_ASSOCIATE_LINK_ORDERS
+				WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+				) YA_ASSOCIATE_LINK_ORDERS
+			WHERE (YA_ASSOCIATE_LINK_ORDERS.last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')) AND
+				(YA_ASSOCIATE_LINK_ORDERS.last_change_date < TO_DATE(cEndDate, 'mm/dd/yyyy')) AND
 				(credit_status = 2) AND (link_id = iLinkId) AND (unit_price > 0)
 			) yalo
-			LEFT OUTER JOIN ya_associate_commission_hist yach on yach.associate_id = iAssociateId
-				AND yach.valid_date = to_date(to_char(order_date, 'mm') || '/01/' || to_char(order_date, 'yyyy'), 'mm/dd/yyyy'),
-				(SELECT percentage  FROM ya_associate_commission_detail cd INNER JOIN
-				(SELECT comm_type_id, nc_max FROM ya_associate_commission_type ct WHERE ((nc_min <= iCustomer AND nc_max >= iCustomer) OR nc_max < iCustomer)) ct
+			LEFT OUTER JOIN YA_ASSOCIATE_COMMISSION_HIST yach ON yach.associate_id = iAssociateId
+				AND yach.valid_date = TO_DATE(TO_CHAR(order_date, 'mm') || '/01/' || TO_CHAR(order_date, 'yyyy'), 'mm/dd/yyyy'),
+				(SELECT percentage  FROM YA_ASSOCIATE_COMMISSION_DETAIL cd INNER JOIN
+				(SELECT comm_type_id, nc_max FROM YA_ASSOCIATE_COMMISSION_TYPE ct WHERE ((nc_min <= iCustomer AND nc_max >= iCustomer) OR nc_max < iCustomer)) ct
 				ON ct.comm_type_id =cd.comm_type_id
 				INNER JOIN
 					(SELECT commission_id, payment_option
-					FROM ya_associate
+					FROM YA_ASSOCIATE
 					WHERE associate_id=iAssociateId
 					) ya
 			ON cd.commission_id = ya.commission_id AND cd.payment_option = ya.payment_option
 			)t
-		GROUP BY to_number(to_char(order_date, 'fmmm')), to_number(to_char(order_date, 'yyyy')), comm_rate, t.percentage;
+		GROUP BY TO_NUMBER(TO_CHAR(order_date, 'fmmm')), TO_NUMBER(TO_CHAR(order_date, 'yyyy')), comm_rate, t.percentage;
 
-		IF (cur_out01 IS null) THEN
+		IF (cur_out01 IS NULL) THEN
 			cur_out01 := cur_temp13;
-		elsif (cur_out02 IS null) THEN
+		ELSIF (cur_out02 IS NULL) THEN
 			cur_out02 := cur_temp13;
-		elsif (cur_out03 IS null) THEN
+		ELSIF (cur_out03 IS NULL) THEN
 			cur_out03 := cur_temp13;
-		elsif (cur_out04 IS null) THEN
+		ELSIF (cur_out04 IS NULL) THEN
 			cur_out04 := cur_temp13;
-		elsif (cur_out05 IS null) THEN
+		ELSIF (cur_out05 IS NULL) THEN
 			cur_out05 := cur_temp13;
-		elsif (cur_out06 IS null) THEN
+		ELSIF (cur_out06 IS NULL) THEN
 			cur_out06 := cur_temp13;
-		elsif (cur_out07 IS null) THEN
+		ELSIF (cur_out07 IS NULL) THEN
 			cur_out07 := cur_temp13;
-		elsif (cur_out08 IS null) THEN
+		ELSIF (cur_out08 IS NULL) THEN
 			cur_out08 := cur_temp13;
-		elsif (cur_out09 IS null) THEN
+		ELSIF (cur_out09 IS NULL) THEN
 			cur_out09 := cur_temp13;
-		elsif (cur_out10 IS null) THEN
+		ELSIF (cur_out10 IS NULL) THEN
 			cur_out10 := cur_temp13;
-		elsif (cur_out11 IS null) THEN
+		ELSIF (cur_out11 IS NULL) THEN
 			cur_out11 := cur_temp13;
-		elsif (cur_out12 IS null) THEN
+		ELSIF (cur_out12 IS NULL) THEN
 			cur_out12 := cur_temp13;
-		elsif (cur_out13 IS null) THEN
+		ELSIF (cur_out13 IS NULL) THEN
 			cur_out13 := cur_temp13;
-		elsif (cur_out14 IS null) THEN
+		ELSIF (cur_out14 IS NULL) THEN
 			cur_out14 := cur_temp13;
 		ELSE
 			cur_out14 := cur_temp13;
@@ -3703,96 +3658,96 @@ IF (iNeedGroup = 0) THEN
 	END IF;
 END IF;
 
-OPEN cur_temp14 for
-SELECT link_id, '<B>' || site_name || '</B> (' || link_code || ')' AS site_name FROM ya_associate_link WHERE associate_id = iAssociateId;
-IF (cur_out01 IS null) THEN
+OPEN cur_temp14 FOR
+SELECT link_id, '<B>' || site_name || '</B> (' || link_code || ')' AS site_name FROM YA_ASSOCIATE_LINK WHERE associate_id = iAssociateId;
+IF (cur_out01 IS NULL) THEN
 	cur_out01 := cur_temp14;
-elsif (cur_out02 IS null) THEN
+ELSIF (cur_out02 IS NULL) THEN
 	cur_out02 := cur_temp14;
-elsif (cur_out03 IS null) THEN
+ELSIF (cur_out03 IS NULL) THEN
 	cur_out03 := cur_temp14;
-elsif (cur_out04 IS null) THEN
+ELSIF (cur_out04 IS NULL) THEN
 	cur_out04 := cur_temp14;
-elsif (cur_out05 IS null) THEN
+ELSIF (cur_out05 IS NULL) THEN
 	cur_out05 := cur_temp14;
-elsif (cur_out06 IS null) THEN
+ELSIF (cur_out06 IS NULL) THEN
 	cur_out06 := cur_temp14;
-elsif (cur_out07 IS null) THEN
+ELSIF (cur_out07 IS NULL) THEN
 	cur_out07 := cur_temp14;
-elsif (cur_out08 IS null) THEN
+ELSIF (cur_out08 IS NULL) THEN
 	cur_out08 := cur_temp14;
-elsif (cur_out09 IS null) THEN
+ELSIF (cur_out09 IS NULL) THEN
 	cur_out09 := cur_temp14;
-elsif (cur_out10 IS null) THEN
+ELSIF (cur_out10 IS NULL) THEN
 	cur_out10 := cur_temp14;
-elsif (cur_out11 IS null) THEN
+ELSIF (cur_out11 IS NULL) THEN
 	cur_out11 := cur_temp14;
-elsif (cur_out12 IS null) THEN
+ELSIF (cur_out12 IS NULL) THEN
 	cur_out12 := cur_temp14;
-elsif (cur_out13 IS null) THEN
+ELSIF (cur_out13 IS NULL) THEN
 	cur_out13 := cur_temp14;
-elsif (cur_out14 IS null) THEN
+ELSIF (cur_out14 IS NULL) THEN
 	cur_out14 := cur_temp14;
 ELSE
 	cur_out14 := cur_temp14;
 END IF;
-SELECT nvl(lang_id, 1) INTO iLangId FROM ya_associate_link WHERE associate_id = iAssociateId AND rownum=1;
+SELECT NVL(lang_id, 1) INTO iLangId FROM YA_ASSOCIATE_LINK WHERE associate_id = iAssociateId AND ROWNUM=1;
 
 
-IF (cur_out01 IS null) THEN
-	OPEN cur_out01 for
+IF (cur_out01 IS NULL) THEN
+	OPEN cur_out01 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out02 IS null) THEN
-	OPEN cur_out02 for
+IF (cur_out02 IS NULL) THEN
+	OPEN cur_out02 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out03 IS null) THEN
-	OPEN cur_out03 for
+IF (cur_out03 IS NULL) THEN
+	OPEN cur_out03 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out04 IS null) THEN
-	OPEN cur_out04 for
+IF (cur_out04 IS NULL) THEN
+	OPEN cur_out04 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out05 IS null) THEN
-	OPEN cur_out05 for
+IF (cur_out05 IS NULL) THEN
+	OPEN cur_out05 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out06 IS null) THEN
-	OPEN cur_out06 for
+IF (cur_out06 IS NULL) THEN
+	OPEN cur_out06 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out07 IS null) THEN
-	OPEN cur_out07 for
+IF (cur_out07 IS NULL) THEN
+	OPEN cur_out07 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out08 IS null) THEN
-	OPEN cur_out08 for
+IF (cur_out08 IS NULL) THEN
+	OPEN cur_out08 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out09 IS null) THEN
-	OPEN cur_out09 for
+IF (cur_out09 IS NULL) THEN
+	OPEN cur_out09 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out10 IS null) THEN
-	OPEN cur_out10 for
+IF (cur_out10 IS NULL) THEN
+	OPEN cur_out10 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out11 IS null) THEN
-	OPEN cur_out11 for
+IF (cur_out11 IS NULL) THEN
+	OPEN cur_out11 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out12 IS null) THEN
-	OPEN cur_out12 for
+IF (cur_out12 IS NULL) THEN
+	OPEN cur_out12 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out13 IS null) THEN
-	OPEN cur_out13 for
+IF (cur_out13 IS NULL) THEN
+	OPEN cur_out13 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
-IF (cur_out14 IS null) THEN
-	OPEN cur_out14 for
+IF (cur_out14 IS NULL) THEN
+	OPEN cur_out14 FOR
 	SELECT 'null_cursor' FROM dual;
 END IF;
 END sp_fe_asso_selOrderByLid;
@@ -3810,37 +3765,37 @@ BEGIN
   OPEN curPout_1 FOR
   SELECT
     l.creative_id AS creative_id,
-    l.location as location,
-    l.priority as priority
+    l.location AS location,
+    l.priority AS priority
   FROM
-    ya_cm_creative c,
-    ya_cm_creative_location l
+    YA_CM_CREATIVE c,
+    YA_CM_CREATIVE_LOCATION l
   WHERE
     l.file_id = iPpageId
     AND l.site_id = iPsiteId
     AND c.TYPE = 1
     AND c.status <> 3
-    AND c.enable = 'Y'
+    AND c.ENABLE = 'Y'
     AND c.creative_id = l.creative_id
   ORDER BY location,priority;
 
   OPEN curPout_2 FOR
   SELECT
     l.creative_id AS creative_id,
-    l.location as location,
-    l.priority as priority
+    l.location AS location,
+    l.priority AS priority
   FROM
-    ya_cm_creative c,
-    ya_cm_creative_location l
+    YA_CM_CREATIVE c,
+    YA_CM_CREATIVE_LOCATION l
   WHERE
     l.file_id = iPpageId
     AND l.site_id = iPsiteId
     AND c.TYPE IN (2, 3)
     AND c.status <> 3
-    AND c.enable = 'Y'
+    AND c.ENABLE = 'Y'
     AND c.creative_id = l.creative_id
   ORDER BY location,priority;
-  IF (curPout_1 IS null) THEN
+  IF (curPout_1 IS NULL) THEN
     curPout_1 := curPout_2;
   END IF;
 
@@ -3850,7 +3805,7 @@ BEGIN
     l.lot_location AS location,
     l.priority AS priority
   FROM
-    ya_product_lot l
+    YA_PRODUCT_LOT l
   WHERE
     l.file_id = iPpageId
   ORDER BY l.lot_location, l.priority;
@@ -3864,16 +3819,16 @@ BEGIN
     END;
   END IF;
 
-  IF (curPout_1 IS null) THEN
-  	OPEN curPout_1 for
+  IF (curPout_1 IS NULL) THEN
+  	OPEN curPout_1 FOR
 	  SELECT 'null_cursor' FROM dual;
   END IF;
-  IF (curPout_2 IS null) THEN
-    OPEN curPout_2 for
+  IF (curPout_2 IS NULL) THEN
+    OPEN curPout_2 FOR
     SELECT 'null_cursor' FROM dual;
   END IF;
-  IF (curPout_3 IS null) THEN
-    OPEN curPout_3 for
+  IF (curPout_3 IS NULL) THEN
+    OPEN curPout_3 FOR
     SELECT 'null_cursor' FROM dual;
   END IF;
 END sp_fe_asso_getContentPageInfo;
@@ -3892,17 +3847,17 @@ BEGIN
     c.creative_group_id,
     c.TYPE
   FROM
-    ya_cm_creative c,
-    ya_cm_creative_text_lang ctl
+    YA_CM_CREATIVE c,
+    YA_CM_CREATIVE_TEXT_LANG ctl
   WHERE
     ctl.lang_id = iPlangId
     AND c.creative_id = iPcreativeId
     AND c.creative_id = ctl.creative_id
-    AND c.enable='Y'
-    AND type = 1
+    AND c.ENABLE='Y'
+    AND TYPE = 1
     AND c.status<> 3;
-  IF (curPout_1 IS null) THEN
-    OPEN curPout_1 for
+  IF (curPout_1 IS NULL) THEN
+    OPEN curPout_1 FOR
     SELECT 'null_cursor' FROM dual;
   END IF;
 END sp_fe_asso_getCreativeText;
@@ -3923,19 +3878,19 @@ BEGIN
     cbl.alt AS alt,
     cbl.link_url AS link_url,
     c.creative_group_id AS creative_group_id,
-    c.type AS TYPE
+    c.TYPE AS TYPE
   FROM
-    ya_cm_creative c,
-    ya_cm_creative_button_lang cbl
+    YA_CM_CREATIVE c,
+    YA_CM_CREATIVE_BUTTON_LANG cbl
   WHERE
     cbl.lang_id = iPlangId
     AND c.creative_id = iPcreativeId
     AND c.creative_id = cbl.creative_id
-    AND c.enable='Y'
-    AND c.type in (2,3)
+    AND c.ENABLE='Y'
+    AND c.TYPE IN (2,3)
     AND c.status<> 3;
-  IF (curPout_1 IS null) THEN
-    OPEN curPout_1 for
+  IF (curPout_1 IS NULL) THEN
+    OPEN curPout_1 FOR
     SELECT 'null_cursor' FROM dual;
   END IF;
 END sp_fe_asso_getCreativeButton;
@@ -3952,15 +3907,14 @@ BEGIN
   SELECT
     pl.sku AS sku,
     pl.dept_id AS deptId
-  FROM ya_product_lot pl
+  FROM YA_PRODUCT_LOT pl
   WHERE
     pl.prod_lot_id = iPproductLotId;
-  IF (curPout_1 IS null) THEN
-    OPEN curPout_1 for
+  IF (curPout_1 IS NULL) THEN
+    OPEN curPout_1 FOR
     SELECT 'null_cursor' FROM dual;
   END IF;
 END sp_fe_asso_getProductLot;
 
 END Pkg_fe_asso;
 /
-
