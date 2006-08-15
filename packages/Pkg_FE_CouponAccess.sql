@@ -36,6 +36,13 @@ AS
     cPshopper_id IN CHAR,
     cPcoupon_code IN VARCHAR2
   );
+
+	/**/
+  PROCEDURE GetShopperCoupon (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    curPresult OUT refCur
+  );
 END Pkg_FE_CouponAccess;
 /
 create or replace PACKAGE BODY Pkg_FE_CouponAccess
@@ -190,5 +197,40 @@ AS
       (cPshopper_id, cPcoupon_code, 'YS New Customer Coupon 060711', 'YesStyle New Customer Coupon', 5, to_date('2006/09/30', 'yyyy/mm/dd'), 'O', 'N', 1, 10, 5);
 
   END CreateNewShopperCoupon;
+
+  PROCEDURE GetShopperCoupon (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT, 
+    curPresult OUT refCur
+	)
+  AS
+  BEGIN
+		OPEN curPresult FOR
+		SELECT c.coupon_code, c.coupon_description, c.expiration_date
+		FROM ya_coupon c
+		LEFT JOIN ya_coupon_user u ON c.coupon_code = u.coupon_code AND u.shopper_id = cPshopper_id
+		WHERE coupon_used <> 'Y'
+		AND c.expiration_date >= SYSDATE
+		AND (
+			c.shopper_id = cPshopper_id
+			OR
+			(
+				c.all_shoppers = 'G' AND u.shopper_id is not null AND NOT EXISTS (
+					SELECT 1 FROM OrderInfo o INNER JOIN BillingInfo b ON o.id = b.orderid WHERE b.coupon = u.coupon_code AND o.customerid = cPshopper_id
+				)
+			)
+		)
+		AND (((site_id = iPsite_id or site_id=99) and site_id in (1,7,10,99)) or site_id = iPsite_id)
+		union
+		select c.coupon_code, c.coupon_description, c.expiration_date from ya_coupon c where coupon_code = 'YESASIA' and 1 = (
+			select 1 from ya_shopper s
+			where shopper_id = cPshopper_id
+			and created_date < to_date('2006/07/14', 'yyyy/mm/dd')
+			and iPsite_id = 10
+			and not exists (select 1 from OrderInfo oi inner join BillingInfo bo on oi.id = bo.orderid where oi.customerid = s.shopper_id and bo.coupon = 'YESASIA')
+		)
+		ORDER BY expiration_date;
+	END GetShopperCoupon;
+
 END Pkg_FE_CouponAccess;
 /
