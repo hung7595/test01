@@ -220,7 +220,7 @@ AS
 				)
 			)
 		)
-		AND (((site_id = iPsite_id or site_id=99) and site_id in (1,7,10,99)) or site_id = iPsite_id)
+		AND (((site_id = iPsite_id or site_id=99) and site_id in (1,7,99)) or site_id = iPsite_id)
 		union
 		select c.coupon_code, c.coupon_description, c.expiration_date from ya_coupon c where coupon_code = 'YESASIA' and 1 = (
 			select 1 from ya_shopper s
