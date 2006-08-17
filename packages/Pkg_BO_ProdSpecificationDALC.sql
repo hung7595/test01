@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE Pkg_BO_ProdSpecificationDALC
+create or replace PACKAGE Pkg_BO_ProdSpecificationDALC
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -13,9 +13,7 @@ AS
 
 END Pkg_BO_ProdSpecificationDALC;
 /
-
-
-CREATE OR REPLACE PACKAGE BODY Pkg_BO_ProdSpecificationDALC
+create or replace PACKAGE BODY Pkg_BO_ProdSpecificationDALC
 IS
   PROCEDURE FillProductSpecification (
     iPsku INT,
@@ -39,6 +37,7 @@ IS
       YA_PROD_GRID_LANG pgl
     WHERE
       pgl.sku = iPsku
+    AND pgl.lang_id <= 5
     ORDER BY pgl.grid_id ASC, pgl.lang_id;
 
   END FillProductSpecification;
