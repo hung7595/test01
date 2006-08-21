@@ -3,7 +3,8 @@ RETURN NUMBER DETERMINISTIC
 IS
   iRating_ID        NUMBER:=0;
 BEGIN
-  SELECT pr.rating_id INTO iRating_ID
+  SELECT /*+ INDEX(R IX_REVIEW_2) */
+  pr.rating_id INTO iRating_ID
   FROM ya_product_rating pr,
   ya_prod_rating_lang rl,
   ya_review r
