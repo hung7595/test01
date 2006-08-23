@@ -1803,7 +1803,8 @@ AS
         oi.id = si.orderId
       INNER JOIN backend_adm.BillingInfo bi ON
         oi.id = bi.orderId
-    WHERE oi.id = iLorder_id;
+    WHERE 1=1 
+    AND oi.id = iLorder_id;
 
     RETURN;
   END GetOrderFromBackend;
