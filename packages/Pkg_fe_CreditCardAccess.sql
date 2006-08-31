@@ -1,6 +1,6 @@
-CREATE OR REPLACE package Pkg_fe_CreditCardAccess
+CREATE OR REPLACE PACKAGE Pkg_Fe_Creditcardaccess
 AS
-  TYPE refcur IS ref CURSOR;
+  TYPE refcur IS REF CURSOR;
   PROCEDURE GetShopperCreditCard (
     cPshopperId		IN	CHAR,
     iPsiteId		IN	INT,
@@ -17,10 +17,28 @@ AS
     cPlastname		IN	VARCHAR2,
     iPprofileId IN OUT INT
   );
-END Pkg_fe_CreditCardAccess;
+  PROCEDURE GetShopperCreditCardEncrypted (
+    cPshopperId		IN	CHAR,
+    iPsiteId		IN	INT,
+    curPresult	OUT	refcur
+  );
+  PROCEDURE CreateCCProfileEncrypted (
+    cPshopperId		IN	CHAR,
+    iPsiteId		IN	INT,
+    iPtypeId		IN	INT,
+    cPcardNumber	IN	VARCHAR2,
+    iPexpMonth		IN	INT,
+    iPexpYear		IN	INT,
+    cPfirstname		IN	VARCHAR2,
+    cPlastname		IN	VARCHAR2,
+    cPcardNumberEncrypted	IN	VARCHAR2,
+    cPencryptionKey  IN	INT,
+    iPprofileId IN OUT INT
+  );
+END Pkg_Fe_Creditcardaccess;
 /
 
-CREATE OR REPLACE package body Pkg_fe_CreditCardAccess
+CREATE OR REPLACE PACKAGE BODY Pkg_Fe_Creditcardaccess
 IS
   PROCEDURE GetShopperCreditCard (
     cPshopperId		IN	CHAR,
@@ -34,7 +52,7 @@ IS
         OPEN curPresult FOR
         SELECT profile_id, card_type_id, card_number,
           expiration_month, expiration_year, firstname_on_card, lastname_on_card
-        FROM ya_credit_card_profile
+        FROM YA_CREDIT_CARD_PROFILE
         WHERE shopper_id = cPshopperId
           AND card_type_id IN (1,2,3)
         ORDER BY preferred DESC nulls last;
@@ -44,7 +62,7 @@ IS
         OPEN curPresult FOR
         SELECT profile_id, card_type_id, card_number,
           expiration_month, expiration_year, firstname_on_card, lastname_on_card
-        FROM ya_credit_card_profile
+        FROM YA_CREDIT_CARD_PROFILE
         WHERE shopper_id = cPshopperId
           AND card_type_id IN (1,2,3,6)
         ORDER BY preferred DESC nulls last;
@@ -69,18 +87,18 @@ IS
     iLseq_diff INT;
   BEGIN
     IF iPprofileId IS NULL OR iPprofileId < 0 THEN
-      SELECT seq_credit_card_profile.nextval INTO iPprofileId FROM DUAL;
+      SELECT seq_credit_card_profile.NEXTVAL INTO iPprofileId FROM DUAL;
     ELSE
-      SELECT SEQ_credit_card_profile.nextval INTO iLseq_currval FROM dual;
+      SELECT SEQ_credit_card_profile.NEXTVAL INTO iLseq_currval FROM dual;
       iLseq_diff := iPprofileId - iLseq_currval;
       IF iLseq_diff <> 0 THEN
         EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_credit_card_profile INCREMENT BY ' || iLseq_diff;
-        SELECT SEQ_credit_card_profile.nextval INTO iLseq_currval FROM dual;
+        SELECT SEQ_credit_card_profile.NEXTVAL INTO iLseq_currval FROM dual;
         EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_credit_card_profile INCREMENT BY 1';
       END IF;
     END IF;
 
-    INSERT INTO ya_credit_card_profile
+    INSERT INTO YA_CREDIT_CARD_PROFILE
       (
       profile_id,
       shopper_id,
@@ -107,6 +125,97 @@ IS
     COMMIT;
   RETURN;
   END CreateCreditCardProfile;
-END Pkg_fe_CreditCardAccess;
-/
 
+  PROCEDURE GetShopperCreditCardEncrypted (
+    cPshopperId		IN	CHAR,
+    iPsiteId		IN	INT,
+    curPresult	OUT	refcur
+  )
+  AS
+  BEGIN
+    IF iPsiteId = 1 THEN
+      BEGIN
+        OPEN curPresult FOR
+        SELECT profile_id, card_type_id, card_number,
+          expiration_month, expiration_year, firstname_on_card, lastname_on_card, card_numberencrypted, encryptionkey
+        FROM YA_CREDIT_CARD_PROFILE
+        WHERE shopper_id = cPshopperId
+          AND card_type_id IN (1,2,3)
+        ORDER BY preferred DESC nulls last;
+      END;
+    ELSE
+      BEGIN
+        OPEN curPresult FOR
+        SELECT profile_id, card_type_id, card_number,
+          expiration_month, expiration_year, firstname_on_card, lastname_on_card, card_numberencrypted, encryptionkey
+        FROM YA_CREDIT_CARD_PROFILE
+        WHERE shopper_id = cPshopperId
+          AND card_type_id IN (1,2,3,6)
+        ORDER BY preferred DESC nulls last;
+      END;
+    END IF;
+    RETURN;
+  END GetShopperCreditCardEncrypted;
+
+  PROCEDURE CreateCCProfileEncrypted (
+    cPshopperId		IN	CHAR,
+    iPsiteId		IN	INT,
+    iPtypeId		IN	INT,
+    cPcardNumber	IN	VARCHAR2,
+    iPexpMonth		IN	INT,
+    iPexpYear		IN	INT,
+    cPfirstname		IN	VARCHAR2,
+    cPlastname		IN	VARCHAR2,
+    cPcardNumberEncrypted	IN	VARCHAR2,
+    cPencryptionKey  IN	INT,
+    iPprofileId IN OUT	INT
+  )
+  AS
+    iLseq_currval INT;
+    iLseq_diff INT;
+  BEGIN
+    IF iPprofileId IS NULL OR iPprofileId < 0 THEN
+      SELECT seq_credit_card_profile.NEXTVAL INTO iPprofileId FROM DUAL;
+    ELSE
+      SELECT SEQ_credit_card_profile.NEXTVAL INTO iLseq_currval FROM dual;
+      iLseq_diff := iPprofileId - iLseq_currval;
+      IF iLseq_diff <> 0 THEN
+        EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_credit_card_profile INCREMENT BY ' || iLseq_diff;
+        SELECT SEQ_credit_card_profile.NEXTVAL INTO iLseq_currval FROM dual;
+        EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_credit_card_profile INCREMENT BY 1';
+      END IF;
+    END IF;
+
+    INSERT INTO YA_CREDIT_CARD_PROFILE
+      (
+      profile_id,
+      shopper_id,
+      site_id,
+      card_type_id,
+      card_number,
+      expiration_month,
+      expiration_year,
+      firstname_on_card,
+      lastname_on_card, 
+      card_numberencrypted, 
+      encryptionkey
+      )
+    VALUES
+      (
+      iPprofileId,
+      cPshopperId,
+      iPsiteId,
+      iPtypeId,
+      cPcardNumber,
+      iPexpMonth,
+      iPexpYear,
+      cPfirstname,
+      cPlastname,
+      cPcardNumberEncrypted,
+      cPencryptionKey
+      );
+    COMMIT;
+  RETURN;
+  END CreateCCProfileEncrypted;
+END Pkg_Fe_Creditcardaccess;
+/
