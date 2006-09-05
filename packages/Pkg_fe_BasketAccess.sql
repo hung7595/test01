@@ -1,4 +1,4 @@
-create or replace PACKAGE Pkg_fe_BasketAccess
+CREATE OR REPLACE PACKAGE Pkg_fe_BasketAccess
 AS
   TYPE refCur IS REF CURSOR;
   PROCEDURE DeleteWarrantyItem (
@@ -141,7 +141,7 @@ AS
   );
 END Pkg_fe_BasketAccess;
 /
-create or replace PACKAGE BODY Pkg_fe_BasketAccess
+CREATE OR REPLACE PACKAGE BODY Pkg_fe_BasketAccess
 IS
 -- Body ---+
 ------------- AddItem
@@ -353,6 +353,7 @@ BEGIN
             AND shopper_id = cPshopperId
             AND type = iPtype
             AND sku = CAST(SUBSTR(cLskuCsv, iLstartSkuPos, iLendSkuPos - iLstartSkuPos) as INT);
+
             IF (iPtype = 0) THEN
             BEGIN
               DELETE FROM ya_warranty_basket
@@ -392,14 +393,14 @@ BEGIN
             AND type = iPtype
             AND sku = CAST(cLskuCsv as INT);
 
-            IF (iPtype = 0) THEN
-            BEGIN
-              DELETE FROM ya_warranty_basket
-              WHERE site_id = iPsiteId
-              AND shopper_id = cPshopperId
-              AND warrantee_sku = CAST(cLskuCsv as INT);
-            END;
-            END IF;
+          IF (iPtype = 0) THEN
+          BEGIN
+            DELETE FROM ya_warranty_basket
+            WHERE site_id = iPsiteId
+            AND shopper_id = cPshopperId
+            AND warrantee_sku = CAST(cLskuCsv as INT);
+          END;
+          END IF;
         END;
       END IF;
       COMMIT;
@@ -425,6 +426,7 @@ BEGIN
         AND site_id = iPsiteId
         AND sku = iPsku
         AND type = iPtype;
+
       IF (iPtype = 0) THEN
       BEGIN
         DELETE FROM ya_warranty_basket
@@ -461,6 +463,7 @@ BEGIN
     AND site_id = iPsiteId
     AND sku = iPsku
     AND type = iPtype;
+
   IF (iPtype = 0) THEN
   BEGIN
     DELETE FROM ya_warranty_basket
@@ -469,7 +472,6 @@ BEGIN
       AND warrantee_sku = iPsku;
   END;
   END IF ;
-
  --   EXCEPTION WHEN NO_DATA_FOUND THEN
  --     ROLLBACK;
   COMMIT;
@@ -512,7 +514,7 @@ BEGIN
   DELETE FROM ya_warranty_basket
   WHERE shopper_id = cPshopperId
   AND site_id = iPsiteId
-  AND warrantee_sku in (cPskuCSV);
+  AND warrantee_sku in (cPskuCSV)
 
   EXCEPTION WHEN NO_DATA_FOUND THEN ROLLBACK;
   WHEN OTHERS THEN ROLLBACK;
@@ -520,7 +522,6 @@ BEGIN
   COMMIT;
 --  EXCEPTION WHEN others THEN ROLLBACK;
 END;
-
 
   PROCEDURE GetBasketWithWarranty (
     cPshopperId IN CHAR,
@@ -611,8 +612,6 @@ END;
     );
 
   /* Inventory and Availability Info */
-  IF iPsiteId = 1 THEN
-  BEGIN
     IF iPcountryId = -1 THEN
       BEGIN
         OPEN curPgetBasket4 FOR
@@ -629,15 +628,14 @@ END;
           INNER JOIN ya_product p ON
             pt.sku = p.sku
           INNER JOIN backend_adm.productavailability pa ON p.sku = pa.productid
-          LEFT OUTER JOIN ya_availability_override o ON p.us_supplier_id = o.supplier_id
-            AND p.account_id = o.account_id AND SYSDATE() BETWEEN o.start_date AND o.end_date
-            AND pa.availability < o.availability_id
           INNER JOIN backend_adm.productRegion r ON
             pt.sku = r.productId
-            AND r.categoryId = 1
-            AND r.originId = 1
+            AND r.regionId = iPsiteId
             AND pa.productid = r.productid
             AND pa.regionid = r.regionid
+		  LEFT OUTER JOIN ya_availability_override o ON r.supplierid = o.supplier_id
+            AND p.account_id = o.account_id AND SYSDATE() BETWEEN o.start_date AND o.end_date
+            AND pa.availability < o.availability_id
           INNER JOIN
             (
               SELECT rp.productId productId, MIN(SEQUENCE) seq
@@ -651,63 +649,15 @@ END;
                 )
               WHERE
                 --default country ID
-                rp.originId = 1
-                AND categoryID = 1
+                rp.regionId = iPsiteId
               GROUP BY rp.productId
             ) t ON
             r.productId = t.productId
             AND r.sequence = t.seq
         WHERE
           pt.shopper_id = cPshopperId
-          AND pa.originid = 1
-          AND pa.category = 1
+          AND pa.regionId = iPsiteId
         ORDER BY p.sku;
-        /*
-        SELECT
-          p.sku,
-          -1,
-          case when pa.availability = 0 then 99 else 0 end,
-          cast(NVL(o.availability_id, pa.availability) as int)
-        FROM
-          ya_new_basket pt,
-          ya_product p,
-          productavailability pa,
-          ya_availability_override o,
-          productRegion r,
-          (
-            SELECT
-              rp.productId productId,
-              MIN(SEQUENCE) seq
-            FROM
-              productRegion rp,
-              ya_new_basket b
-            WHERE rp.productID = b.sku
-            AND b.shopper_id = cPshopperId
-            AND b.site_id = iPsiteid
-            AND b.type = iPtype
-            AND rp.originId = 1
-            AND categoryID = 1
-            GROUP BY rp.productId
-          ) t
-
-        WHERE pt.sku = p.sku
-          AND p.sku = pa.productid
-          AND p.us_supplier_id = o.supplier_id (+)
-          AND p.account_id = o.account_id(+)
-          AND SYSDATE BETWEEN o.start_date(+) AND o.end_date(+)
-          AND pa.availability < o.availability_id
-          AND pt.sku = r.productId
-          AND r.categoryId = 1
-          AND r.originId = 1
-          AND pa.productid = r.productid
-          AND pa.regionid = r.regionid
-          AND r.productId = t.productId
-          AND r.sequence = t.seq
-          AND pt.shopper_id = cPshopperId
-          AND pa.originid = 1
-          AND pa.category = 1
-          ORDER BY p.sku;
-          */
       END;
     ELSE
       BEGIN
@@ -724,17 +674,16 @@ END;
           ya_new_basket pt
           INNER JOIN ya_product p ON pt.sku = p.sku
           INNER JOIN backend_adm.productavailability pa ON p.sku = pa.productid
-          LEFT OUTER JOIN ya_availability_override o ON
-            p.us_supplier_id = o.supplier_id
+          INNER JOIN backend_adm.productRegion r ON
+            pt.sku = r.productId
+            AND r.regionId = iPsiteId
+            AND pa.productid = r.productid
+            AND pa.regionid = r.regionid
+		  LEFT OUTER JOIN ya_availability_override o ON
+            r.supplierid = o.supplier_id
             AND p.account_id = o.account_id
             AND SYSDATE() BETWEEN o.start_date AND o.end_date
             AND pa.availability < o.availability_id
-          INNER JOIN backend_adm.productRegion r ON
-            pt.sku = r.productId
-            AND r.categoryId = 1
-            AND r.originId = 1
-            AND pa.productid = r.productid
-            AND pa.regionid = r.regionid
           INNER JOIN
             (
               SELECT
@@ -750,282 +699,19 @@ END;
                 AND b.type = iPtype
               WHERE
                 rl.country_id = iPcountryId
-                AND rp.originId = 1
-                AND categoryID = 1
+                AND rp.regionId = iPsiteId
               GROUP BY rp.productId
             ) t ON
               r.productId = t.productId
               AND r.sequence = t.seq
           WHERE
             pt.shopper_id = cPshopperId
-            AND pa.originid = 1
-            AND pa.category = 1
+            AND pa.regionId = iPsiteId
           ORDER BY p.sku;
-        /*
-        SELECT
-          p.sku,
-          -1,
-          case when pa.availability = 0 then 99 else 0 end,
-          cast(NVL(o.availability_id, pa.availability) as int)
-        FROM
-          ya_new_basket pt,
-          ya_product p,
-          productavailability pa,
-          ya_availability_override o,
-          productRegion r,
-            (
-            SELECT
-              rp.productId productId,
-              MAX(SEQUENCE) seq
-            FROM
-              ya_country_region_rel rl,
-              productRegion rp,
-              ya_new_basket b
-            WHERE rl.region_id = rp.regionId
-            AND rp.productID = b.sku
-            AND b.shopper_id = cPshopperId
-            AND b.site_id = iPsiteid
-            AND b.type = iPtype
-            AND rl.country_id = iPcountryId
-            AND rp.originId = 1
-            AND categoryID = 1
-            GROUP BY rp.productId
-            ) t
 
-        WHERE pt.sku = p.sku
-          AND p.sku = pa.productid
-          AND p.us_supplier_id = o.supplier_id
-          AND p.account_id = o.account_id
-          AND SYSDATE BETWEEN o.start_date AND o.end_date
-          AND pa.availability < o.availability_id
-          AND pt.sku = r.productId
-          AND r.categoryId = 1
-          AND r.originId = 1
-          AND pa.productid = r.productid
-          AND pa.regionid = r.regionid
-          AND r.productId = t.productId
-          AND r.sequence = t.seq
-          AND pt.shopper_id = cPshopperId
-          AND pa.originid = 1
-          AND pa.category = 1
-          ORDER BY p.sku;
-          */
       END;
     END IF;
-  END;
-  ELSE
-    IF iPsiteId = 7 THEN
-    BEGIN
-      IF iPcountryId = -1 THEN
-        BEGIN
-          OPEN curPgetBasket4 FOR
-          SELECT
-            p.sku,
-            -1,
-            CASE
-              WHEN pa.availability = 0 THEN 99
-                ELSE 0
-            END,
-            NVL(o.availability_id, pa.availability)
-          FROM
-            ya_new_basket pt
-            INNER JOIN ya_product p ON
-              pt.sku = p.sku
-            INNER JOIN backend_adm.productavailability pa ON
-              p.sku = pa.productid
-            LEFT OUTER JOIN ya_availability_override o ON
-              p.us_supplier_id = o.supplier_id
-              AND p.account_id = o.account_id
-              AND SYSDATE() BETWEEN o.start_date AND o.end_date
-              AND pa.availability < o.availability_id
-            INNER JOIN backend_adm.productRegion r ON
-              pt.sku = r.productId
-              AND r.categoryId = 1
-              AND r.originId = 7
-              AND pa.productid = r.productid
-              AND pa.regionid = r.regionid
-            INNER JOIN
-              (
-                SELECT
-                  rp.productId productId,
-                  MIN(SEQUENCE) seq
-                FROM
-                  backend_adm.productRegion rp
-                  INNER JOIN ya_new_basket b ON
-                    rp.productID = b.sku
-                    AND b.shopper_id = cPshopperId
-                    AND b.site_id = iPsiteid
-                    AND b.type = iPtype
-                WHERE
-                  rp.originId = 7
-                  AND categoryID = 1
-                GROUP BY rp.productId
-              ) t ON
-                r.productId = t.productId
-                AND r.sequence = t.seq
-          WHERE
-            pt.shopper_id = cPshopperId
-            AND pa.originid = 7
-            AND pa.category = 1
-          ORDER BY p.sku;
-          /*
-          SELECT
-            p.sku,
-            -1,
-            case when pa.availability = 0 then 99 else 0 end,
-            cast(NVL(o.availability_id, pa.availability) as int)
-          FROM
-            ya_new_basket pt,
-            ya_product p,
-            productavailability pa,
-            ya_availability_override o,
-            productRegion r,
-            (
-            SELECT
-              rp.productId productId,
-              MIN(SEQUENCE) seq
-            FROM
-              productRegion rp,
-              ya_new_basket b
-            WHERE rp.productID = b.sku
-            AND b.shopper_id = cPshopperId
-            AND b.site_id = iPsiteid
-            AND b.type = iPtype
-            AND rp.originId = 7
-            AND categoryID = 1
-            GROUP BY rp.productId
-            ) t
 
-          WHERE pt.sku = p.sku
-          AND p.sku = pa.productid
-          AND p.us_supplier_id = o.supplier_id (+)
-          AND p.account_id = o.account_id
-          AND SYSDATE BETWEEN o.start_date AND o.end_date
-          AND pa.availability < o.availability_id
-          AND pt.sku = r.productId
-          AND r.categoryId = 1
-          AND r.originId = 7
-          AND pa.productid = r.productid
-          AND pa.regionid = r.regionid
-          AND r.productId = t.productId
-          AND r.sequence = t.seq
-          AND pt.shopper_id = cPshopperId
-          AND pa.originid = 7
-          AND pa.category = 1
-          ORDER BY p.sku;
-          */
-        END;
-      ELSE
-        BEGIN
-          OPEN curPgetBasket4 FOR
-          SELECT
-            p.sku,
-            -1,
-            CASE
-              WHEN pa.availability = 0 THEN 99
-              ELSE 0
-            END,
-            NVL(o.availability_id, pa.availability)
-          FROM
-            ya_new_basket pt
-            INNER JOIN ya_product p ON
-              pt.sku = p.sku
-            INNER JOIN backend_adm.productavailability pa ON
-              p.sku = pa.productid
-            LEFT OUTER JOIN ya_availability_override o ON
-              p.us_supplier_id = o.supplier_id
-              AND p.account_id = o.account_id
-              AND SYSDATE() BETWEEN o.start_date AND o.end_date
-              AND pa.availability < o.availability_id
-            INNER JOIN backend_adm.productRegion r ON
-              pt.sku = r.productId
-              AND r.categoryId = 1
-              AND r.originId = 7
-              AND pa.productid = r.productid
-              AND pa.regionid = r.regionid
-            INNER JOIN
-              (
-                SELECT
-                  rp.productId productId,
-                  MAX(SEQUENCE) seq
-                FROM
-                  ya_country_region_rel rl
-                  INNER JOIN backend_adm.productRegion rp ON
-                    rl.region_id = rp.regionId
-                  INNER JOIN ya_new_basket b ON
-                    (
-                      rp.productID = b.sku
-                      AND b.shopper_id = cPshopperId
-                      AND b.site_id = iPsiteid
-                      AND b.type = iPtype
-                    )
-                WHERE
-                  rl.country_id = iPcountryId
-                  AND rp.originId = 7
-                  AND categoryID = 1
-                GROUP BY rp.productId
-              ) t ON
-                r.productId = t.productId
-                AND r.sequence = t.seq
-          WHERE
-            pt.shopper_id = cPshopperId
-            AND pa.originid = 7
-            AND pa.category = 1
-          ORDER BY p.sku;
-          /*
-          SELECT
-            p.sku,
-            -1,
-            case when pa.availability = 0 then 99 else 0 end,
-            cast(NVL(o.availability_id, pa.availability) as int)
-          FROM
-            ya_new_basket pt,
-            ya_product p,
-            productavailability pa,
-            ya_availability_override o,
-            productRegion r,
-            (
-            SELECT
-              rp.productId productId,
-              MAX(SEQUENCE) seq
-            FROM
-              ya_country_region_rel rl,
-              productRegion rp,
-              ya_new_basket b
-            WHERE rl.region_id = rp.regionId
-            AND rp.productID = b.sku
-            AND b.shopper_id = cPshopperId
-            AND b.site_id = iPsiteid
-            AND b.type = iPtype
-            AND rl.country_id = iPcountryId
-            ANd rp.originId = 7
-            AND categoryID = 1
-            GROUP BY rp.productId
-            ) t
-
-          WHERE pt.sku = p.sku
-          AND p.sku = pa.productid
-          AND p.us_supplier_id = o.supplier_id (+)
-          AND p.account_id = o.account_id
-          AND SYSDATE BETWEEN o.start_date AND o.end_date
-          AND pa.availability < o.availability_id
-          AND pt.sku = r.productId
-          AND r.categoryId = 1
-          AND r.originId = 7
-          AND pa.productid = r.productid
-          AND pa.regionid = r.regionid
-          AND r.productId = t.productId
-          AND r.sequence = t.seq
-          AND pt.shopper_id = cPshopperId
-          AND pa.originid = 7
-          AND pa.category = 1
-          ORDER BY p.sku;
-          */
-        END;
-      END IF;
-    END;
-    END IF;
-  END IF;
 
 
   /* Campaign Code */
@@ -1179,7 +865,6 @@ END;
     shopper_id = cPshopperId
     AND site_id = iPsiteId;
   RETURN;
-
 END GetBasketWithWarranty;
 
   PROCEDURE GetBasket (
@@ -1270,8 +955,6 @@ END GetBasketWithWarranty;
     );
 
   /* Inventory and Availability Info */
-  IF iPsiteId = 1 THEN
-  BEGIN
     IF iPcountryId = -1 THEN
       BEGIN
         OPEN curPgetBasket4 FOR
@@ -1288,15 +971,14 @@ END GetBasketWithWarranty;
           INNER JOIN ya_product p ON
             pt.sku = p.sku
           INNER JOIN backend_adm.productavailability pa ON p.sku = pa.productid
-          LEFT OUTER JOIN ya_availability_override o ON p.us_supplier_id = o.supplier_id
-            AND p.account_id = o.account_id AND SYSDATE() BETWEEN o.start_date AND o.end_date
-            AND pa.availability < o.availability_id
           INNER JOIN backend_adm.productRegion r ON
             pt.sku = r.productId
-            AND r.categoryId = 1
-            AND r.originId = 1
+            AND r.regionId = iPsiteId
             AND pa.productid = r.productid
             AND pa.regionid = r.regionid
+		  LEFT OUTER JOIN ya_availability_override o ON r.supplierid = o.supplier_id
+            AND p.account_id = o.account_id AND SYSDATE() BETWEEN o.start_date AND o.end_date
+            AND pa.availability < o.availability_id
           INNER JOIN
             (
               SELECT rp.productId productId, MIN(SEQUENCE) seq
@@ -1310,63 +992,15 @@ END GetBasketWithWarranty;
                 )
               WHERE
                 --default country ID
-                rp.originId = 1
-                AND categoryID = 1
+                rp.regionId = iPsiteId
               GROUP BY rp.productId
             ) t ON
             r.productId = t.productId
             AND r.sequence = t.seq
         WHERE
           pt.shopper_id = cPshopperId
-          AND pa.originid = 1
-          AND pa.category = 1
+          AND pa.regionId = iPsiteId
         ORDER BY p.sku;
-        /*
-        SELECT
-          p.sku,
-          -1,
-          case when pa.availability = 0 then 99 else 0 end,
-          cast(NVL(o.availability_id, pa.availability) as int)
-        FROM
-          ya_new_basket pt,
-          ya_product p,
-          productavailability pa,
-          ya_availability_override o,
-          productRegion r,
-          (
-            SELECT
-              rp.productId productId,
-              MIN(SEQUENCE) seq
-            FROM
-              productRegion rp,
-              ya_new_basket b
-            WHERE rp.productID = b.sku
-            AND b.shopper_id = cPshopperId
-            AND b.site_id = iPsiteid
-            AND b.type = iPtype
-            AND rp.originId = 1
-            AND categoryID = 1
-            GROUP BY rp.productId
-          ) t
-
-        WHERE pt.sku = p.sku
-          AND p.sku = pa.productid
-          AND p.us_supplier_id = o.supplier_id (+)
-          AND p.account_id = o.account_id(+)
-          AND SYSDATE BETWEEN o.start_date(+) AND o.end_date(+)
-          AND pa.availability < o.availability_id
-          AND pt.sku = r.productId
-          AND r.categoryId = 1
-          AND r.originId = 1
-          AND pa.productid = r.productid
-          AND pa.regionid = r.regionid
-          AND r.productId = t.productId
-          AND r.sequence = t.seq
-          AND pt.shopper_id = cPshopperId
-          AND pa.originid = 1
-          AND pa.category = 1
-          ORDER BY p.sku;
-          */
       END;
     ELSE
       BEGIN
@@ -1383,17 +1017,16 @@ END GetBasketWithWarranty;
           ya_new_basket pt
           INNER JOIN ya_product p ON pt.sku = p.sku
           INNER JOIN backend_adm.productavailability pa ON p.sku = pa.productid
-          LEFT OUTER JOIN ya_availability_override o ON
-            p.us_supplier_id = o.supplier_id
+          INNER JOIN backend_adm.productRegion r ON
+            pt.sku = r.productId
+            AND r.regionId = iPsiteId
+            AND pa.productid = r.productid
+            AND pa.regionid = r.regionid
+		  LEFT OUTER JOIN ya_availability_override o ON
+            r.supplierid = o.supplier_id
             AND p.account_id = o.account_id
             AND SYSDATE() BETWEEN o.start_date AND o.end_date
             AND pa.availability < o.availability_id
-          INNER JOIN backend_adm.productRegion r ON
-            pt.sku = r.productId
-            AND r.categoryId = 1
-            AND r.originId = 1
-            AND pa.productid = r.productid
-            AND pa.regionid = r.regionid
           INNER JOIN
             (
               SELECT
@@ -1409,282 +1042,19 @@ END GetBasketWithWarranty;
                 AND b.type = iPtype
               WHERE
                 rl.country_id = iPcountryId
-                AND rp.originId = 1
-                AND categoryID = 1
+                AND rp.regionId = iPsiteId
               GROUP BY rp.productId
             ) t ON
               r.productId = t.productId
               AND r.sequence = t.seq
           WHERE
             pt.shopper_id = cPshopperId
-            AND pa.originid = 1
-            AND pa.category = 1
+            AND pa.regionId = iPsiteId
           ORDER BY p.sku;
-        /*
-        SELECT
-          p.sku,
-          -1,
-          case when pa.availability = 0 then 99 else 0 end,
-          cast(NVL(o.availability_id, pa.availability) as int)
-        FROM
-          ya_new_basket pt,
-          ya_product p,
-          productavailability pa,
-          ya_availability_override o,
-          productRegion r,
-            (
-            SELECT
-              rp.productId productId,
-              MAX(SEQUENCE) seq
-            FROM
-              ya_country_region_rel rl,
-              productRegion rp,
-              ya_new_basket b
-            WHERE rl.region_id = rp.regionId
-            AND rp.productID = b.sku
-            AND b.shopper_id = cPshopperId
-            AND b.site_id = iPsiteid
-            AND b.type = iPtype
-            AND rl.country_id = iPcountryId
-            AND rp.originId = 1
-            AND categoryID = 1
-            GROUP BY rp.productId
-            ) t
 
-        WHERE pt.sku = p.sku
-          AND p.sku = pa.productid
-          AND p.us_supplier_id = o.supplier_id
-          AND p.account_id = o.account_id
-          AND SYSDATE BETWEEN o.start_date AND o.end_date
-          AND pa.availability < o.availability_id
-          AND pt.sku = r.productId
-          AND r.categoryId = 1
-          AND r.originId = 1
-          AND pa.productid = r.productid
-          AND pa.regionid = r.regionid
-          AND r.productId = t.productId
-          AND r.sequence = t.seq
-          AND pt.shopper_id = cPshopperId
-          AND pa.originid = 1
-          AND pa.category = 1
-          ORDER BY p.sku;
-          */
       END;
     END IF;
-  END;
-  ELSE
-    IF iPsiteId = 7 THEN
-    BEGIN
-      IF iPcountryId = -1 THEN
-        BEGIN
-          OPEN curPgetBasket4 FOR
-          SELECT
-            p.sku,
-            -1,
-            CASE
-              WHEN pa.availability = 0 THEN 99
-                ELSE 0
-            END,
-            NVL(o.availability_id, pa.availability)
-          FROM
-            ya_new_basket pt
-            INNER JOIN ya_product p ON
-              pt.sku = p.sku
-            INNER JOIN backend_adm.productavailability pa ON
-              p.sku = pa.productid
-            LEFT OUTER JOIN ya_availability_override o ON
-              p.us_supplier_id = o.supplier_id
-              AND p.account_id = o.account_id
-              AND SYSDATE() BETWEEN o.start_date AND o.end_date
-              AND pa.availability < o.availability_id
-            INNER JOIN backend_adm.productRegion r ON
-              pt.sku = r.productId
-              AND r.categoryId = 1
-              AND r.originId = 7
-              AND pa.productid = r.productid
-              AND pa.regionid = r.regionid
-            INNER JOIN
-              (
-                SELECT
-                  rp.productId productId,
-                  MIN(SEQUENCE) seq
-                FROM
-                  backend_adm.productRegion rp
-                  INNER JOIN ya_new_basket b ON
-                    rp.productID = b.sku
-                    AND b.shopper_id = cPshopperId
-                    AND b.site_id = iPsiteid
-                    AND b.type = iPtype
-                WHERE
-                  rp.originId = 7
-                  AND categoryID = 1
-                GROUP BY rp.productId
-              ) t ON
-                r.productId = t.productId
-                AND r.sequence = t.seq
-          WHERE
-            pt.shopper_id = cPshopperId
-            AND pa.originid = 7
-            AND pa.category = 1
-          ORDER BY p.sku;
-          /*
-          SELECT
-            p.sku,
-            -1,
-            case when pa.availability = 0 then 99 else 0 end,
-            cast(NVL(o.availability_id, pa.availability) as int)
-          FROM
-            ya_new_basket pt,
-            ya_product p,
-            productavailability pa,
-            ya_availability_override o,
-            productRegion r,
-            (
-            SELECT
-              rp.productId productId,
-              MIN(SEQUENCE) seq
-            FROM
-              productRegion rp,
-              ya_new_basket b
-            WHERE rp.productID = b.sku
-            AND b.shopper_id = cPshopperId
-            AND b.site_id = iPsiteid
-            AND b.type = iPtype
-            AND rp.originId = 7
-            AND categoryID = 1
-            GROUP BY rp.productId
-            ) t
 
-          WHERE pt.sku = p.sku
-          AND p.sku = pa.productid
-          AND p.us_supplier_id = o.supplier_id (+)
-          AND p.account_id = o.account_id
-          AND SYSDATE BETWEEN o.start_date AND o.end_date
-          AND pa.availability < o.availability_id
-          AND pt.sku = r.productId
-          AND r.categoryId = 1
-          AND r.originId = 7
-          AND pa.productid = r.productid
-          AND pa.regionid = r.regionid
-          AND r.productId = t.productId
-          AND r.sequence = t.seq
-          AND pt.shopper_id = cPshopperId
-          AND pa.originid = 7
-          AND pa.category = 1
-          ORDER BY p.sku;
-          */
-        END;
-      ELSE
-        BEGIN
-          OPEN curPgetBasket4 FOR
-          SELECT
-            p.sku,
-            -1,
-            CASE
-              WHEN pa.availability = 0 THEN 99
-              ELSE 0
-            END,
-            NVL(o.availability_id, pa.availability)
-          FROM
-            ya_new_basket pt
-            INNER JOIN ya_product p ON
-              pt.sku = p.sku
-            INNER JOIN backend_adm.productavailability pa ON
-              p.sku = pa.productid
-            LEFT OUTER JOIN ya_availability_override o ON
-              p.us_supplier_id = o.supplier_id
-              AND p.account_id = o.account_id
-              AND SYSDATE() BETWEEN o.start_date AND o.end_date
-              AND pa.availability < o.availability_id
-            INNER JOIN backend_adm.productRegion r ON
-              pt.sku = r.productId
-              AND r.categoryId = 1
-              AND r.originId = 7
-              AND pa.productid = r.productid
-              AND pa.regionid = r.regionid
-            INNER JOIN
-              (
-                SELECT
-                  rp.productId productId,
-                  MAX(SEQUENCE) seq
-                FROM
-                  ya_country_region_rel rl
-                  INNER JOIN backend_adm.productRegion rp ON
-                    rl.region_id = rp.regionId
-                  INNER JOIN ya_new_basket b ON
-                    (
-                      rp.productID = b.sku
-                      AND b.shopper_id = cPshopperId
-                      AND b.site_id = iPsiteid
-                      AND b.type = iPtype
-                    )
-                WHERE
-                  rl.country_id = iPcountryId
-                  AND rp.originId = 7
-                  AND categoryID = 1
-                GROUP BY rp.productId
-              ) t ON
-                r.productId = t.productId
-                AND r.sequence = t.seq
-          WHERE
-            pt.shopper_id = cPshopperId
-            AND pa.originid = 7
-            AND pa.category = 1
-          ORDER BY p.sku;
-          /*
-          SELECT
-            p.sku,
-            -1,
-            case when pa.availability = 0 then 99 else 0 end,
-            cast(NVL(o.availability_id, pa.availability) as int)
-          FROM
-            ya_new_basket pt,
-            ya_product p,
-            productavailability pa,
-            ya_availability_override o,
-            productRegion r,
-            (
-            SELECT
-              rp.productId productId,
-              MAX(SEQUENCE) seq
-            FROM
-              ya_country_region_rel rl,
-              productRegion rp,
-              ya_new_basket b
-            WHERE rl.region_id = rp.regionId
-            AND rp.productID = b.sku
-            AND b.shopper_id = cPshopperId
-            AND b.site_id = iPsiteid
-            AND b.type = iPtype
-            AND rl.country_id = iPcountryId
-            ANd rp.originId = 7
-            AND categoryID = 1
-            GROUP BY rp.productId
-            ) t
-
-          WHERE pt.sku = p.sku
-          AND p.sku = pa.productid
-          AND p.us_supplier_id = o.supplier_id (+)
-          AND p.account_id = o.account_id
-          AND SYSDATE BETWEEN o.start_date AND o.end_date
-          AND pa.availability < o.availability_id
-          AND pt.sku = r.productId
-          AND r.categoryId = 1
-          AND r.originId = 7
-          AND pa.productid = r.productid
-          AND pa.regionid = r.regionid
-          AND r.productId = t.productId
-          AND r.sequence = t.seq
-          AND pt.shopper_id = cPshopperId
-          AND pa.originid = 7
-          AND pa.category = 1
-          ORDER BY p.sku;
-          */
-        END;
-      END IF;
-    END;
-    END IF;
-  END IF;
 
 
   /* Campaign Code */
@@ -1829,7 +1199,11 @@ END GetBasketWithWarranty;
     AND b.type = iPtype
     AND p.is_parent = 'N'
   ORDER BY b.created_datetime DESC, b.sku DESC;
+
+  RETURN;
+
 END GetBasket;
+
 
   PROCEDURE TransferBasket (
     cPfromShopperId IN CHAR,
@@ -1872,35 +1246,34 @@ END GetBasket;
       END;
     END IF;
     COMMIT;
-  END;
-
+  END TransferBasket;
 
   PROCEDURE FlyBasket (
     cPshopperId IN CHAR,
     iPfromSiteId IN INT,
     iPtoSiteId IN INT
   )
-AS
-BEGIN
-  DELETE FROM ya_new_basket
-  WHERE shopper_id = cPshopperId
-  AND site_id = iPtoSiteId;
+  AS
+  BEGIN
+    DELETE FROM ya_new_basket
+    WHERE shopper_id = cPshopperId
+    AND site_id = iPtoSiteId;
 
-  DELETE FROM ya_warranty_basket
-  WHERE shopper_id = cPshopperId
-  AND site_id = iPtoSiteId;
+    DELETE FROM ya_warranty_basket
+    WHERE shopper_id = cPshopperId
+    AND site_id = iPtoSiteId;
 
-  UPDATE ya_new_basket SET site_id = iPtoSiteId
-  WHERE shopper_id = cPshopperId
-  AND site_id = iPfromSiteId;
+    UPDATE ya_new_basket SET site_id = iPtoSiteId
+    WHERE shopper_id = cPshopperId
+    AND site_id = iPfromSiteId;
 
-  UPDATE ya_warranty_basket
-  SET site_id = iPtoSiteId
-  WHERE shopper_id = cPshopperId
-  AND site_id = iPfromSiteId;
+    UPDATE ya_warranty_basket
+    SET site_id = iPtoSiteId
+    WHERE shopper_id = cPshopperId
+    AND site_id = iPfromSiteId;
 
-  COMMIT;
-END;
+    COMMIT;
+  END FlyBasket;
 
 
 
@@ -2339,8 +1712,6 @@ END;
     RETURN;
   END GetBasketCSProductBase;
 
-
-
   PROCEDURE GetBasketCSProductDetail (
     iPlang_id IN INT,
     curPresult1 OUT refCur,
@@ -2475,7 +1846,7 @@ END;
     RETURN;
   END GetBasketCSProductDetail;
 
-  PROCEDURE AddWarrantyItem (
+ PROCEDURE AddWarrantyItem (
     cPshopperId IN CHAR,
     iPsiteId IN INT,
     iPwarranteeSku IN INT,
@@ -2540,6 +1911,7 @@ END;
 
     COMMIT;
   END DeleteWarrantyItem;
-  -- +--- Body
+-- +--- Body
 END Pkg_fe_BasketAccess;
 /
+
