@@ -86,8 +86,7 @@ AS
   );
 END Pkg_FE_EmailAccess;
 /
-
-CREATE OR REPLACE PACKAGE body Pkg_FE_EmailAccess
+CREATE OR REPLACE PACKAGE body Pkg_FE_EmailAccess
 IS
   /* proc_fe_email_InsertClickedEmail */
   PROCEDURE InsertClickedEmail (
@@ -347,6 +346,7 @@ IS
     iLend_pos INT := 1;
     vcLartist_id_csv VARCHAR2(1000);
     iLtemp INT;
+		iLcounter INT;
   BEGIN
     EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_email_int_table';
 
@@ -367,8 +367,11 @@ IS
           END;
         END LOOP;
 
-        INSERT INTO temp_email_int_table (column1)
-        VALUES (cast(vcLartist_id_csv AS INT));
+				SELECT count(*) INTO iLcounter FROM temp_email_int_table WHERE column1 = vcLartist_id_csv;
+				IF (iLcounter = 0) THEN
+	        INSERT INTO temp_email_int_table (column1)
+		      VALUES (cast(vcLartist_id_csv AS INT));
+				END IF;
       END;
     END IF;
 
@@ -386,7 +389,7 @@ IS
   	WHERE
       NOT EXISTS
         (
-          SELECT 0
+          SELECT 1
           FROM ya_email_shopper_sub_artist
           WHERE shopper_id = cPshopper_id
           AND artist_id = a.column1
