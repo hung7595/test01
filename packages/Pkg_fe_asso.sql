@@ -385,6 +385,7 @@ END Pkg_fe_asso;
 
 
 
+
 CREATE OR REPLACE PACKAGE BODY Pkg_fe_asso AS
 
 
@@ -632,7 +633,7 @@ PROCEDURE sp_fe_asso_insAsso
 	cSsnApproved CHAR(1);
 BEGIN
 
-SELECT COUNT(*) INTO iCount FROM YA_ASSOCIATE WHERE shopper_id=cShopperId and site_id=iSiteId;
+SELECT COUNT(*) INTO iCount FROM YA_ASSOCIATE WHERE shopper_id=cShopperId AND site_id=iSiteId;
 IF (iCount<1) THEN
 	cSsnApproved := 'N';
 
@@ -704,9 +705,9 @@ ELSE
 		news_pref = cNewsPref,
 		paypal_email = cPaypalEmail,
 		lang_id = iLangId
-  WHERE  
-    shopper_id =cShopperId 
-    and site_id=iSiteId;
+  WHERE
+    shopper_id =cShopperId
+    AND site_id=iSiteId;
 
 END IF;
 iRowAffected := SQL%ROWCOUNT;
@@ -892,8 +893,8 @@ BEGIN
   	news_pref = cNewsPref,
   	paypal_email = cPaypalEmail,
   	lang_id = iLangId
-	WHERE  
-    shopper_id=cShopperId 
+	WHERE
+    shopper_id=cShopperId
     AND site_id=ISiteID;
 
 SELECT associate_id INTO iAssociateId FROM YA_ASSOCIATE WHERE ((shopper_id = cShopperId)  AND (site_id=iSiteId));
@@ -1597,15 +1598,11 @@ cStartDate := TO_CHAR(dtDate, 'mm') || '/01/' || TO_CHAR(dtDate, 'yyyy');
 dtDate := ADD_MONTHS(dtDate, 1);
 cEndDate := TO_CHAR(dtDate, 'mm') || '/01/' || TO_CHAR(dtDate, 'yyyy');
 
-SELECT COUNT(customerId) INTO iCustomer
-FROM DM_NEW_SHOPPER
-WHERE DM_NEW_SHOPPER.validorder='Y'
-AND DM_NEW_SHOPPER.feorderid IN
-	(SELECT DISTINCT TO_CHAR(order_num) AS orderId
-	FROM YA_ASSOCIATE_LINK_ORDERS INNER JOIN
-		(SELECT link_id FROM YA_ASSOCIATE_LINK WHERE associate_id=iAssociateId) yal
-		ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
-	WHERE order_date >= TO_DATE(cStartDate, 'mm/dd/yyyy') AND order_date < TO_DATE(cEndDate, 'mm/dd/yyyy') AND credit_status <> 4);
+SELECT COUNT(DISTINCT ns.customerId) INTO iCustomer
+FROM datamining_adm.DM_NEWSHOPPER ns
+inner join YA_ASSOCIATE_LINK_ORDERS alo ON ns.feorderid = alo.origin_order_id 
+INNER JOIN (SELECT link_id FROM YA_ASSOCIATE_LINK WHERE associate_id=iAssociateId) al ON alo.link_id = al.link_id
+WHERE alo.order_date >= TO_DATE(cStartDate, 'mm/dd/yyyy') AND alo.order_date < TO_DATE(cEndDate, 'mm/dd/yyyy') AND alo.credit_status <> 4;
 
 dbms_output.put_line(iCustomer);
 
@@ -1754,21 +1751,11 @@ cEndDate := TO_CHAR(ADD_MONTHS(TO_DATE(cStartDate, 'mm/dd/yyyy'), 1), 'mm/dd/yyy
 cCutOffDate := '07/01/2005';
 
 
-SELECT COUNT(customerId) INTO iCustomer
-FROM DM_NEW_SHOPPER
-WHERE DM_NEW_SHOPPER.validOrder = 'Y'
-	AND DM_NEW_SHOPPER.feOrderId IN
-	(SELECT  DISTINCT TO_CHAR(order_num) AS orderId
-	FROM
-		(SELECT *
-		FROM YA_ASSOCIATE_LINK_ORDERS
-		WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)) YA_ASSOCIATE_LINK_ORDERS
-	INNER JOIN
-		(SELECT link_id
-		FROM YA_ASSOCIATE_LINK
-		WHERE associate_id=iAssociateId) yal
-	ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
-	WHERE order_date >= TO_DATE(cStartDate, 'mm/dd/yyyy') AND order_date < TO_DATE(cEndDate, 'mm/dd/yyyy') AND credit_status <> 4);
+SELECT COUNT(DISTINCT ns.customerId) INTO iCustomer
+FROM datamining_adm.DM_NEWSHOPPER ns
+inner join YA_ASSOCIATE_LINK_ORDERS alo ON ns.feorderid = alo.origin_order_id and sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+INNER JOIN (SELECT link_id FROM YA_ASSOCIATE_LINK WHERE associate_id=iAssociateId) al ON alo.link_id = al.link_id
+WHERE alo.order_date >= TO_DATE(cStartDate, 'mm/dd/yyyy') AND alo.order_date < TO_DATE(cEndDate, 'mm/dd/yyyy') AND alo.credit_status <> 4;
 
 
 IF (TO_DATE(cStartDate, 'mm/dd/yyyy') < TO_DATE(cCutOffDate, 'mm/dd/yyyy')) THEN
@@ -2809,21 +2796,11 @@ cStartDate := cMonth || '/01/' || cYear;
 cEndDate := TO_CHAR(ADD_MONTHS(TO_DATE(cStartDate, 'mm/dd/yyyy'), 1), 'mm/dd/yyyy');
 cCutOffDate := '07/01/2005';
 
-SELECT COUNT(customerId) INTO iCustomer
-FROM DM_NEW_SHOPPER
-WHERE DM_NEW_SHOPPER.validOrder = 'Y'
-	AND DM_NEW_SHOPPER.feOrderId IN
-	(SELECT  DISTINCT TO_CHAR(order_num) AS orderId
-	FROM
-		(SELECT *
-		FROM YA_ASSOCIATE_LINK_ORDERS
-		WHERE sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)) YA_ASSOCIATE_LINK_ORDERS
-	INNER JOIN
-		(SELECT link_id
-		FROM YA_ASSOCIATE_LINK
-		WHERE associate_id=iAssociateId) yal
-	ON YA_ASSOCIATE_LINK_ORDERS.link_id = yal.link_id
-	WHERE order_date >= TO_DATE(cStartDate, 'mm/dd/yyyy') AND order_date < TO_DATE(cEndDate, 'mm/dd/yyyy') AND credit_status <> 4);
+SELECT COUNT(DISTINCT ns.customerId) INTO iCustomer
+FROM datamining_adm.DM_NEWSHOPPER ns
+inner join YA_ASSOCIATE_LINK_ORDERS alo ON ns.feorderid = alo.origin_order_id and sku NOT IN (1001819827,1001819829,1001819831,1001819833,1001819834,1001819836)
+INNER JOIN (SELECT link_id FROM YA_ASSOCIATE_LINK WHERE associate_id=iAssociateId) al ON alo.link_id = al.link_id
+WHERE alo.order_date >= TO_DATE(cStartDate, 'mm/dd/yyyy') AND alo.order_date < TO_DATE(cEndDate, 'mm/dd/yyyy') AND alo.credit_status <> 4;
 
 
 IF (TO_DATE(cStartDate, 'mm/dd/yyyy') < TO_DATE(cCutOffDate, 'mm/dd/yyyy')) THEN
