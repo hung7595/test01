@@ -44,3 +44,4 @@ END Pkg_FE_CurrencyAccess;
 GRANT EXECUTE ON Pkg_FE_CurrencyAccess TO YA_WEB;
 GRANT EXECUTE ON Pkg_FE_CurrencyAccess TO YS_WEB;
 GRANT EXECUTE ON Pkg_FE_CurrencyAccess TO YS_STAGING;
+CREATE PUBLIC SYNONYM Pkg_FE_CurrencyAccess FOR Pkg_FE_CurrencyAccess;
