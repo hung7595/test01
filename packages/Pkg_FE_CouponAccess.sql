@@ -194,7 +194,7 @@ AS
    INSERT INTO ya_coupon
       (shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value,expiration_date, all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger)
    VALUES
-      (cPshopper_id, cPcoupon_code, 'YS New Customer Coupon 060711', 'YesStyle New Customer Coupon', 5, to_date('2007/09/30', 'yyyy/mm/dd'), 'O', 'N', 1, 10, 5);
+      (cPshopper_id, cPcoupon_code, 'YS New Customer Coupon 060711', 'YesStyle New Customer US$5 Coupon', 5, to_date('2007/09/30', 'yyyy/mm/dd'), 'O', 'N', 1, 10, 5);
    COMMIT;
   END CreateNewShopperCoupon;
 
@@ -220,7 +220,7 @@ AS
 				)
 			)
 		)
-		AND (((site_id = iPsite_id or site_id=99) and site_id in (1,7,99)) or site_id = iPsite_id)
+		AND (((site_id = iPsite_id or site_id=99) and iPsite_id not in (10)) or site_id = iPsite_id)
 		union
 		select c.coupon_code, c.coupon_description, c.expiration_date from ya_coupon c where coupon_code = 'YESASIA' and 1 = (
 			select 1 from ya_shopper s
@@ -229,7 +229,14 @@ AS
 			and iPsite_id = 10
 			and not exists (select 1 from OrderInfo oi inner join BillingInfo bo on oi.id = bo.orderid where oi.customerid = s.shopper_id and bo.coupon = 'YESASIA')
 		)
-		ORDER BY expiration_date;
+		union
+		select c.coupon_code, c.coupon_description, c.expiration_date from ya_coupon c where coupon_code = 'CTCZHGOKPZ' and 1 = (
+			select 1 from ya_shopper s
+			where shopper_id = cPshopper_id
+			and created_date <= to_date('2006/10/11', 'yyyy/mm/dd')
+			and iPsite_id = 10
+			and not exists (select 1 from OrderInfo oi inner join BillingInfo bo on oi.id = bo.orderid where oi.customerid = s.shopper_id and bo.coupon = 'CTCZHGOKPZ')
+		)		ORDER BY expiration_date;
 	END GetShopperCoupon;
 
 END Pkg_FE_CouponAccess;
