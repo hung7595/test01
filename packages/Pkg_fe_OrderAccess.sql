@@ -310,7 +310,8 @@ AS
     nvcPcard_firstname IN NVARCHAR2,
     nvcPcard_lastname IN NVARCHAR2,
     vcPcard_numberEncrypted IN VARCHAR2,
-    iPencryptionKey_id IN INT
+    iPencryptionKey_id IN INT,
+	cPcurrency IN CHAR DEFAULT 'USD'
   );
 
   /* proc_fe_UpdateShippingInfo */
@@ -359,7 +360,7 @@ AS
     iPbill_to_country_id IN INT,
     nvcPbill_to_email IN NVARCHAR2,
     iPaddress_id IN INT,
-    cPcurrency CHAR DEFAULT 'USD'
+    cPcurrency IN CHAR DEFAULT 'USD'
   );
 
   /* proc_fe_UpdateCreditCardPaymentInfo */
@@ -435,6 +436,13 @@ AS
     iPsite_id IN INT,
     deciPcredit_amount IN DECIMAL
   );
+  /*proc_fe_UpdateCheckOutCurrency*/
+  PROCEDURE UpdateCheckOutCurrency (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    cPcurrency IN CHAR 
+  );
+  
 END Pkg_Fe_Orderaccess;
 /
 
@@ -3522,7 +3530,8 @@ AS
     nvcPcard_firstname IN NVARCHAR2,
     nvcPcard_lastname IN NVARCHAR2,
     vcPcard_numberEncrypted IN VARCHAR2,
-    iPencryptionKey_id IN INT
+    iPencryptionKey_id IN INT,
+	cPcurrency IN CHAR DEFAULT 'USD'
   )
   AS
     iLship_method INT;
@@ -3549,7 +3558,7 @@ AS
       iLship_method := -1;
     END IF;
 
-    Pkg_Fe_Creditaccess.GetCurrentBalanceBySite(deciLcredit_amount, cPshopper_id, iPsite_id, 'USD');
+    Pkg_Fe_Creditaccess.GetCurrentBalanceBySite(deciLcredit_amount, cPshopper_id, iPsite_id, cPcurrency);
 
     DELETE FROM ya_checkout_data
     WHERE
@@ -3600,6 +3609,7 @@ AS
         last_updated_datetime, 
     	  cc_numberencrypted, 
     	  encryptionkey
+		  
       )
     VALUES
       (
@@ -3636,7 +3646,7 @@ AS
         iPcard_type_id,
         iPcard_exp_month,
         iPcard_exp_year,
-        'USD',
+        cPcurrency,
         iPbill_address_id,
         iPship_address_id,
         iPcard_profile_id,
@@ -3645,6 +3655,7 @@ AS
         SYSDATE,
         vcPcard_numberEncrypted,
         iPencryptionKey_id
+		
       );
     COMMIT;
   EXCEPTION WHEN OTHERS THEN
@@ -3916,7 +3927,7 @@ AS
     iPbill_to_country_id IN INT,
     nvcPbill_to_email IN NVARCHAR2,
     iPaddress_id IN INT,
-    cPcurrency CHAR DEFAULT 'USD'
+    cPcurrency IN CHAR DEFAULT 'USD'
   )
   AS
     iLsale_id INT;
@@ -4617,5 +4628,29 @@ AS
   EXCEPTION WHEN OTHERS THEN
     ROLLBACK;
   END UpdateApplicationCredit;
+  
+  PROCEDURE UpdateCheckOutCurrency (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    cPcurrency IN CHAR 
+  )
+  AS
+  BEGIN
+    Update ya_checkout_data
+    SET currency=cPcurrency
+	WHERE shopper_id=cPshopper_id and site_id=iPsite_id;
+
+    IF SQLCODE <> 0 THEN
+      BEGIN
+        ROLLBACK;
+      END;
+    ELSE
+      BEGIN
+        COMMIT;
+      END;
+    END IF;
+
+    RETURN;
+  END UpdateCheckOutCurrency;
 END Pkg_Fe_Orderaccess;
 /
