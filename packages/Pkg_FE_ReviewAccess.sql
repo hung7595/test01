@@ -233,6 +233,139 @@ PROCEDURE InsertReviewData1 (
     iProw_num IN INT,
     curPresult OUT refCur
   );
+	-- Editor Review -- BEGIN ---------------------------------------------------------------------------------------------------------------------------------------------
+	PROCEDURE GetEditorReviews (
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+    iPstart_index IN INT,
+    iPnum_record IN INT,
+    curPresult OUT refCur
+  );
+
+	PROCEDURE GetEditorReviewsBySku (
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+		iPsku IN INT,
+    iPstart_index IN INT,
+    iPnum_record IN INT,
+    curPresult OUT refCur
+  );
+
+	PROCEDURE GetEditorReviewsByShopperId (
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+		cPshopper_id IN CHAR,
+    iPstart_index IN INT,
+    iPnum_record IN INT,
+    curPresult OUT refCur
+  );
+
+	PROCEDURE GetEditorReviewsByPrdLn (
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+		iPprd_ln_id IN INT,
+    iPstart_index IN INT,
+    iPnum_record IN INT,
+    curPresult OUT refCur
+  );
+
+	PROCEDURE GetEditorReviewNumBySku (
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+		iPsku IN INT,
+    iPresult OUT INT
+  );
+
+	PROCEDURE GetEditorReviewNumByShopperId (
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+		cPshopper_id IN CHAR,
+    iPresult OUT INT
+  );
+	
+	PROCEDURE GetEditorReviewNumByPrdLn (
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+		iPprd_ln_id IN INT,
+    iPresult OUT INT
+  );
+
+	PROCEDURE GetProReviewsBySkus (
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+    iPstart_index IN INT,
+    iPnum_record IN INT,
+		iPget_share	IN INT,
+    curPresult OUT refCur,
+    iPsku1 IN	INT DEFAULT NULL,
+    iPsku2 IN	INT DEFAULT NULL,
+    iPsku3 IN	INT DEFAULT NULL,
+    iPsku4 IN	INT DEFAULT NULL,
+    iPsku5 IN	INT DEFAULT NULL,
+    iPsku6 IN	INT DEFAULT NULL,
+    iPsku7 IN	INT DEFAULT NULL,
+    iPsku8 IN	INT DEFAULT NULL,
+    iPsku9 IN	INT DEFAULT NULL,
+    iPsku10 IN	INT DEFAULT NULL,
+    iPsku11 IN	INT DEFAULT NULL,
+    iPsku12 IN	INT DEFAULT NULL,
+    iPsku13 IN	INT DEFAULT NULL,
+    iPsku14 IN	INT DEFAULT NULL,
+    iPsku15 IN	INT DEFAULT NULL,
+    iPsku16 IN	INT DEFAULT NULL,
+    iPsku17 IN	INT DEFAULT NULL,
+    iPsku18 IN	INT DEFAULT NULL,
+    iPsku19 IN	INT DEFAULT NULL,
+    iPsku20 IN	INT DEFAULT NULL
+  );
+
+	PROCEDURE GetProReviewsByPrdLn (
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+		iPprd_ln_id IN INT,
+    iPstart_index IN INT,
+    iPnum_record IN INT,
+    curPresult OUT refCur
+  );
+
+	PROCEDURE GetProReviewNumByPrdLn (
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+		iPprd_ln_id IN INT,
+    iPresult OUT INT
+  );
+
+	PROCEDURE IsEditorPickProduct (
+    iPsite_id IN INT,
+		iPsku IN INT,
+    curPresult OUT refCur
+  );
+
+	PROCEDURE IsEditorPickMultiProduct (
+    iPsite_id IN INT,
+    curPresult OUT refCur,
+    iPsku1 IN	INT DEFAULT NULL,
+    iPsku2 IN	INT DEFAULT NULL,
+    iPsku3 IN	INT DEFAULT NULL,
+    iPsku4 IN	INT DEFAULT NULL,
+    iPsku5 IN	INT DEFAULT NULL,
+    iPsku6 IN	INT DEFAULT NULL,
+    iPsku7 IN	INT DEFAULT NULL,
+    iPsku8 IN	INT DEFAULT NULL,
+    iPsku9 IN	INT DEFAULT NULL,
+    iPsku10 IN	INT DEFAULT NULL,
+    iPsku11 IN	INT DEFAULT NULL,
+    iPsku12 IN	INT DEFAULT NULL,
+    iPsku13 IN	INT DEFAULT NULL,
+    iPsku14 IN	INT DEFAULT NULL,
+    iPsku15 IN	INT DEFAULT NULL,
+    iPsku16 IN	INT DEFAULT NULL,
+    iPsku17 IN	INT DEFAULT NULL,
+    iPsku18 IN	INT DEFAULT NULL,
+    iPsku19 IN	INT DEFAULT NULL,
+    iPsku20 IN	INT DEFAULT NULL
+  );
+	-- Editor Review -- END ---------------------------------------------------------------------------------------------------------------------------------------------
 END Pkg_FE_ReviewAccess;
 /
 
@@ -2232,6 +2365,670 @@ PROCEDURE GetAllReviewsByShopperID (
 
     RETURN;
   END GetAllReviewsByShopperID;
+
+	-- Editor Review -- BEGIN ---------------------------------------------------------------------------------------------------------------------------------------------
+	-- Get Editor Review Count ---------------------------------------------------------------------------------------------------------------------------------------------
+	PROCEDURE GetEditorReviews (
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+    iPstart_index IN INT,
+    iPnum_record IN INT,
+    curPresult OUT refCur
+  )
+  AS    
+  BEGIN    
+    OPEN curPresult FOR
+		SELECT * FROM
+    (
+      SELECT innerQuery.*, rownum rnum from
+      (		
+				SELECT
+					prodRat.rating_id, rev.review_id, prodRat.sku,
+					cast(NVL(prodRat.product_rating, 0) AS int) AS product_rating,
+					prodRat.date_posted, prodRat.review_approved,
+					prodRat.shopper_id AS shopper_id,
+					prodRat.reviewer AS reviewer,
+					prodRat.reviewer_type,
+					cast(NVL(prodRatLang.lang_id, 1) AS int) AS lang_id,
+					prodRatLang.title AS title,
+					rev.review AS review,
+					rev.review_img_loc AS review_img_loc,
+					cast(NVL(rev.review_img_width, 0) AS int) AS review_img_width,
+					cast(NVL(rev.review_img_height, 0) AS int) AS review_img_height,
+					shopper.firstname AS firstname, shopper.lastname AS lastname, shopper.nickname AS nickname,
+					NVL(revName.display_mode, 0) AS display_mode
+				FROM
+				(
+					SELECT * FROM ya_product_rating
+					WHERE 1=1
+					AND (CASE WHEN (review_approved='Y' AND reviewer_type = 'EDITOR') THEN 'Y' ELSE NULL END) = 'Y'
+				) prodRat
+				LEFT JOIN ya_shopper shopper ON prodRat.shopper_id=shopper.shopper_id
+				LEFT JOIN ya_review_reviewerName revName ON prodRat.shopper_id=revName.shopper_id,
+				(
+					SELECT * FROM ya_prod_rating_lang WHERE (lang_id = iPlang_id)
+				) prodRatLang,
+				(
+					SELECT * FROM ya_review WHERE (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
+				) rev,
+				(
+					SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y' --  AND cansell = 'Y'
+				) prodReg
+				WHERE prodRat.rating_id = prodRatLang.rating_id
+				AND prodRatLang.us_review_id = rev.review_id
+				AND prodRat.sku = prodReg.productId
+				ORDER BY prodRat.date_posted desc
+      ) innerQuery
+      WHERE ROWNUM < (iPstart_index + iPnum_record + 1)
+    )
+    WHERE rnum > iPstart_index;
+
+    RETURN;
+  END GetEditorReviews;
+
+	PROCEDURE GetEditorReviewsBySku (
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+		iPsku IN INT,
+    iPstart_index IN INT,
+    iPnum_record IN INT,
+    curPresult OUT refCur
+  )
+  AS
+  BEGIN
+    OPEN curPresult FOR
+    SELECT * FROM
+    (
+      SELECT innerQuery.*, rownum rnum from
+      (
+				SELECT
+					prodRat.rating_id, rev.review_id, prodRat.sku,
+					cast(NVL(prodRat.product_rating, 0) AS int) AS product_rating,
+					prodRat.date_posted, prodRat.review_approved,
+					prodRat.shopper_id AS shopper_id,
+					prodRat.reviewer AS reviewer,
+					prodRat.reviewer_type,
+					cast(NVL(prodRatLang.lang_id, 1) AS int) AS lang_id,
+					prodRatLang.title AS title,
+					rev.review AS review,
+					rev.review_img_loc AS review_img_loc,
+					cast(NVL(rev.review_img_width, 0) AS int) AS review_img_width,
+					cast(NVL(rev.review_img_height, 0) AS int) AS review_img_height,
+					shopper.firstname AS firstname, shopper.lastname AS lastname, shopper.nickname AS nickname,
+					NVL(revName.display_mode, 0) AS display_mode
+				FROM
+				(
+					SELECT * FROM ya_product_rating
+					WHERE review_approved='Y'
+					AND reviewer_type = 'EDITOR'
+					AND sku = iPsku
+				) prodRat
+				LEFT JOIN ya_shopper shopper ON prodRat.shopper_id=shopper.shopper_id
+				LEFT JOIN ya_review_reviewerName revName ON prodRat.shopper_id=revName.shopper_id,
+				(
+					SELECT * FROM ya_prod_rating_lang WHERE (lang_id = iPlang_id)
+				) prodRatLang,
+				(
+					SELECT * FROM ya_review WHERE (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
+				) rev,
+				(
+					SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y' --  AND cansell = 'Y'
+				) prodReg
+				WHERE prodRat.rating_id = prodRatLang.rating_id
+				AND prodRatLang.us_review_id = rev.review_id
+				AND prodRat.sku = prodReg.productId				
+				ORDER BY prodRat.date_posted desc
+      ) innerQuery
+      WHERE ROWNUM < (iPstart_index + iPnum_record + 1)
+    )
+    WHERE rnum > iPstart_index;
+
+    RETURN;
+  END GetEditorReviewsBySku;
+
+	PROCEDURE GetEditorReviewsByShopperId (
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+		cPshopper_id IN CHAR,
+    iPstart_index IN INT,
+    iPnum_record IN INT,
+    curPresult OUT refCur
+  )
+  AS
+  BEGIN
+    OPEN curPresult FOR
+    SELECT * FROM
+    (
+      SELECT innerQuery.*, rownum rnum from
+      (				
+				SELECT
+					prodRat.rating_id, rev.review_id, prodRat.sku,
+					cast(NVL(prodRat.product_rating, 0) AS int) AS product_rating,
+					prodRat.date_posted, prodRat.review_approved,
+					prodRat.shopper_id AS shopper_id,
+					prodRat.reviewer AS reviewer,
+					prodRat.reviewer_type,
+					cast(NVL(prodRatLang.lang_id, 1) AS int) AS lang_id,
+					prodRatLang.title AS title,
+					rev.review AS review,
+					rev.review_img_loc AS review_img_loc,
+					cast(NVL(rev.review_img_width, 0) AS int) AS review_img_width,
+					cast(NVL(rev.review_img_height, 0) AS int) AS review_img_height,
+					shopper.firstname AS firstname, shopper.lastname AS lastname, shopper.nickname AS nickname,
+					NVL(revName.display_mode, 0) AS display_mode
+				FROM
+				(
+					SELECT * FROM ya_product_rating
+					WHERE review_approved='Y'
+					AND reviewer_type = 'EDITOR'
+					AND shopper_id = cPshopper_id
+				) prodRat
+				LEFT JOIN ya_shopper shopper ON prodRat.shopper_id=shopper.shopper_id
+				LEFT JOIN ya_review_reviewerName revName ON prodRat.shopper_id=revName.shopper_id,
+				(
+					SELECT * FROM ya_prod_rating_lang WHERE (lang_id = iPlang_id)
+				) prodRatLang,
+				(
+					SELECT * FROM ya_review WHERE (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
+				) rev,
+				(
+					SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y' --  AND cansell = 'Y'
+				) prodReg
+				WHERE prodRat.rating_id = prodRatLang.rating_id
+				AND prodRatLang.us_review_id =  rev.review_id
+				AND prodRat.sku = prodReg.productId
+				ORDER BY prodRat.date_posted desc
+      ) innerQuery
+      WHERE ROWNUM < (iPstart_index + iPnum_record + 1)
+    )
+    WHERE rnum > iPstart_index;
+
+    RETURN;
+  END GetEditorReviewsByShopperId;
+
+  PROCEDURE GetEditorReviewsByPrdLn (
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+		iPprd_ln_id IN INT,
+    iPstart_index IN INT,
+    iPnum_record IN INT,
+    curPresult OUT refCur
+  )
+  AS
+  BEGIN
+    OPEN curPresult FOR
+    SELECT * FROM
+    (
+      SELECT innerQuery.*, rownum rnum from
+      (
+				SELECT
+					prodRat.rating_id, rev.review_id, prodRat.sku,
+					cast(NVL(prodRat.product_rating, 0) AS int) AS product_rating,
+					prodRat.date_posted, prodRat.review_approved,
+					prodRat.shopper_id AS shopper_id,
+					prodRat.reviewer AS reviewer,
+					prodRat.reviewer_type,
+					cast(NVL(prodRatLang.lang_id, 1) AS int) AS lang_id,
+					prodRatLang.title AS title,
+					rev.review AS review,
+					rev.review_img_loc AS review_img_loc,
+					cast(NVL(rev.review_img_width, 0) AS int) AS review_img_width,
+					cast(NVL(rev.review_img_height, 0) AS int) AS review_img_height,
+					shopper.firstname AS firstname, shopper.lastname AS lastname, shopper.nickname AS nickname,
+					NVL(revName.display_mode, 0) AS display_mode
+				FROM
+				(
+					SELECT m.* FROM ya_product_rating m
+					INNER JOIN ya_product n ON m.sku = n.sku AND account_id in (select account_id from ya_emag_prod_line_account where prod_line_id = iPprd_ln_id)
+					WHERE 1=1
+					AND (CASE WHEN (review_approved='Y' AND reviewer_type = 'EDITOR') THEN 'Y' ELSE NULL END) = 'Y'
+				) prodRat
+				LEFT JOIN ya_shopper shopper ON prodRat.shopper_id=shopper.shopper_id
+				LEFT JOIN ya_review_reviewerName revName ON prodRat.shopper_id=revName.shopper_id,
+				(
+					SELECT * FROM ya_prod_rating_lang WHERE (lang_id = iPlang_id)
+				) prodRatLang,
+				(
+					SELECT * FROM ya_review WHERE (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
+				) rev,
+				(
+					SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y' --  AND cansell = 'Y'
+				) prodReg
+				WHERE prodRat.rating_id = prodRatLang.rating_id
+				AND prodRatLang.us_review_id =  rev.review_id
+				AND prodRat.sku = prodReg.productId		
+				ORDER BY prodRat.date_posted desc
+      ) innerQuery
+      WHERE ROWNUM < (iPstart_index + iPnum_record + 1)
+    )
+    WHERE rnum > iPstart_index;
+
+    RETURN;
+  END GetEditorReviewsByPrdLn;
+
+	-- Get Editor Review Count ---------------------------------------------------------------------------------------------------------------------------------------------
+	PROCEDURE GetEditorReviewNumBySku (
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+		iPsku IN INT,
+    iPresult OUT INT
+  )
+  AS
+  BEGIN
+		SELECT COUNT(*) INTO iPresult
+		FROM
+		(
+			SELECT sku, rating_id FROM ya_product_rating
+			--WHERE review_approved='Y'
+			--AND reviewer_type = 'EDITOR'
+			WHERE 1=1
+			AND (CASE WHEN (review_approved='Y' AND reviewer_type = 'EDITOR') THEN 'Y' ELSE NULL END) = 'Y'		
+			AND sku = iPsku
+		) prodRat,
+		(
+			SELECT rating_id, us_review_id FROM ya_prod_rating_lang WHERE (lang_id = iPlang_id)
+		) prodRatLang,
+		(
+			SELECT review_id FROM ya_review WHERE (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
+		) rev,
+		(
+			SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y' --  AND cansell = 'Y'
+		) prodReg
+		WHERE prodRat.rating_id = prodRatLang.rating_id
+		AND prodRatLang.us_review_id =  rev.review_id
+		AND prodRat.sku = prodReg.productId;
+
+		RETURN;
+  END GetEditorReviewNumBySku;
+
+	PROCEDURE GetEditorReviewNumByShopperId (
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+		cPshopper_id IN CHAR,
+    iPresult OUT INT
+  )
+  AS
+  BEGIN
+		SELECT COUNT(*) INTO iPresult       
+		FROM
+		(
+			SELECT sku, rating_id FROM ya_product_rating
+--			WHERE review_approved='Y'
+--			AND reviewer_type = 'EDITOR'
+			WHERE 1=1
+			AND (CASE WHEN (review_approved='Y' AND reviewer_type = 'EDITOR') THEN 'Y' ELSE NULL END) = 'Y'
+			AND shopper_id = cPshopper_id
+		) prodRat,
+		(
+			SELECT rating_id, us_review_id FROM ya_prod_rating_lang WHERE (lang_id = iPlang_id)
+		) prodRatLang,
+		(
+			SELECT review_id FROM ya_review WHERE (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
+		) rev,
+		(
+			SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y' --  AND cansell = 'Y'
+		) prodReg
+		WHERE prodRat.rating_id = prodRatLang.rating_id
+		AND prodRatLang.us_review_id = rev.review_id
+		AND prodRat.sku = prodReg.productId;
+
+		RETURN;
+  END GetEditorReviewNumByShopperId;
+
+	PROCEDURE GetEditorReviewNumByPrdLn (
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+		iPprd_ln_id IN INT,
+    iPresult OUT INT
+  )
+  AS
+  BEGIN
+		SELECT COUNT(*) INTO iPresult
+		FROM
+		(
+			SELECT m.sku, m.rating_id FROM ya_product_rating m
+			INNER JOIN ya_product n ON m.sku = n.sku AND account_id in (select account_id from ya_emag_prod_line_account where prod_line_id = iPprd_ln_id)
+--			WHERE review_approved='Y'
+--			AND reviewer_type = 'EDITOR'
+			WHERE 1=1
+			AND (CASE WHEN (review_approved='Y' AND reviewer_type = 'EDITOR') THEN 'Y' ELSE NULL END) = 'Y'
+		) prodRat,
+		(
+			SELECT rating_id, us_review_id FROM ya_prod_rating_lang WHERE (lang_id = iPlang_id)
+		) prodRatLang,
+		(
+			SELECT review_id FROM ya_review WHERE (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
+		) rev,
+		(
+			SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y' --  AND cansell = 'Y'
+		) prodReg
+		WHERE prodRat.rating_id = prodRatLang.rating_id
+		AND prodRatLang.us_review_id = rev.review_id
+		AND prodRat.sku = prodReg.productId;
+
+		RETURN;
+  END GetEditorReviewNumByPrdLn;
+
+	-- Get Professional Review ---------------------------------------------------------------------------------------------------------------------------------------------
+	PROCEDURE GetProReviewsBySkus (
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+    iPstart_index IN INT,
+    iPnum_record IN INT,
+		iPget_share	IN INT,
+    curPresult OUT refCur,
+    iPsku1 IN	INT DEFAULT NULL,
+    iPsku2 IN	INT DEFAULT NULL,
+    iPsku3 IN	INT DEFAULT NULL,
+    iPsku4 IN	INT DEFAULT NULL,
+    iPsku5 IN	INT DEFAULT NULL,
+    iPsku6 IN	INT DEFAULT NULL,
+    iPsku7 IN	INT DEFAULT NULL,
+    iPsku8 IN	INT DEFAULT NULL,
+    iPsku9 IN	INT DEFAULT NULL,
+    iPsku10 IN	INT DEFAULT NULL,
+    iPsku11 IN	INT DEFAULT NULL,
+    iPsku12 IN	INT DEFAULT NULL,
+    iPsku13 IN	INT DEFAULT NULL,
+    iPsku14 IN	INT DEFAULT NULL,
+    iPsku15 IN	INT DEFAULT NULL,
+    iPsku16 IN	INT DEFAULT NULL,
+    iPsku17 IN	INT DEFAULT NULL,
+    iPsku18 IN	INT DEFAULT NULL,
+    iPsku19 IN	INT DEFAULT NULL,
+    iPsku20 IN	INT DEFAULT NULL
+  )
+	  AS
+    dtLoldest_date_posted DATE;
+  BEGIN
+    dtLoldest_date_posted := to_date('2000-08-01', 'YYYY-MM-DD');
+		OPEN curPresult FOR
+    SELECT * FROM
+    (
+      SELECT innerQuery.*, rownum rnum from
+      (
+				SELECT
+					prodRat.rating_id, rev.review_id, prodRat.sku,
+					cast(NVL(prodRat.product_rating, 0) AS int) AS product_rating,
+					NVL(prodRat.date_posted, dtLoldest_date_posted), prodRat.review_approved,
+					prodRat.shopper_id AS shopper_id,
+					prodRat.reviewer AS reviewer,
+					prodRat.reviewer_type,
+					cast(NVL(prodRatLang.lang_id, 1) AS int) AS lang_id,
+					prodRatLang.title AS title,
+					rev.review AS review,
+					rev.review_img_loc AS review_img_loc,
+					cast(NVL(rev.review_img_width, 0) AS int) AS review_img_width,
+					cast(NVL(rev.review_img_height, 0) AS int) AS review_img_height,
+					shopper.firstname AS firstname, shopper.lastname AS lastname, shopper.nickname AS nickname,
+					NVL(revName.display_mode, 0) AS display_mode
+				FROM
+				(
+					SELECT tmp_prodRat.* FROM ya_product_rating tmp_prodRat, ya_review_share_proReview tmp_prodShare
+					WHERE tmp_prodRat.sku = tmp_prodShare.parent_sku
+					AND reviewer_type = 'EDITORIAL'
+					AND review_approved='Y'
+					AND tmp_prodShare.child_sku in (
+						iPsku1,
+						iPsku2,
+						iPsku3,
+						iPsku4,
+						iPsku5,
+						iPsku6,
+						iPsku7,
+						iPsku8,
+						iPsku9,
+						iPsku10,
+						iPsku11,
+						iPsku12,
+						iPsku13,
+						iPsku14,
+						iPsku15,
+						iPsku16,
+						iPsku17,
+						iPsku18,
+						iPsku19,
+						iPsku20
+					)	
+					AND iPget_share = 1
+					UNION
+					SELECT m.* FROM ya_product_rating m					
+					WHERE review_approved='Y' 
+					AND reviewer_type = 'EDITORIAL'
+					AND sku in (
+						iPsku1,
+						iPsku2,
+						iPsku3,
+						iPsku4,
+						iPsku5,
+						iPsku6,
+						iPsku7,
+						iPsku8,
+						iPsku9,
+						iPsku10,
+						iPsku11,
+						iPsku12,
+						iPsku13,
+						iPsku14,
+						iPsku15,
+						iPsku16,
+						iPsku17,
+						iPsku18,
+						iPsku19,
+						iPsku20
+					)
+				) prodRat
+				LEFT JOIN ya_shopper shopper ON prodRat.shopper_id=shopper.shopper_id
+				LEFT JOIN ya_review_reviewerName revName ON prodRat.shopper_id=revName.shopper_id,
+				(
+					SELECT * FROM ya_prod_rating_lang WHERE lang_id = iPlang_id
+				)prodRatLang,
+				(
+					SELECT * FROM ya_review WHERE (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
+				) rev,
+				(
+					SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y' --  AND cansell = 'Y'
+				) prodReg
+				WHERE	prodRat.rating_id = prodRatLang.rating_id
+				AND prodRatLang.us_review_id  =  rev.review_id
+				AND prodRat.sku = prodReg.productId		
+				ORDER BY prodRat.date_posted desc
+      ) innerQuery
+      WHERE ROWNUM < (iPstart_index + iPnum_record + 1)
+    )
+    WHERE rnum > iPstart_index;
+
+    RETURN;
+  END GetProReviewsBySkus;
+	
+	PROCEDURE GetProReviewsByPrdLn (
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+		iPprd_ln_id IN INT,
+    iPstart_index IN INT,
+    iPnum_record IN INT,
+    curPresult OUT refCur
+  )
+  AS
+    dtLoldest_date_posted DATE;
+  BEGIN
+    dtLoldest_date_posted := to_date('2000-08-01', 'YYYY-MM-DD');
+		OPEN curPresult FOR
+    SELECT * FROM
+    (
+      SELECT innerQuery.*, rownum rnum from
+      (
+				SELECT
+					prodRat.rating_id, rev.review_id, prodRat.sku,
+					cast(NVL(prodRat.product_rating, 0) AS int) AS product_rating,
+					NVL(prodRat.date_posted, dtLoldest_date_posted), prodRat.review_approved,
+					prodRat.shopper_id AS shopper_id,
+					prodRat.reviewer AS reviewer,
+					prodRat.reviewer_type,
+					cast(NVL(prodRatLang.lang_id, 1) AS int) AS lang_id,
+					prodRatLang.title AS title,
+					rev.review AS review,
+					rev.review_img_loc AS review_img_loc,
+					cast(NVL(rev.review_img_width, 0) AS int) AS review_img_width,
+					cast(NVL(rev.review_img_height, 0) AS int) AS review_img_height,
+					shopper.firstname AS firstname, shopper.lastname AS lastname, shopper.nickname AS nickname,
+					NVL(revName.display_mode, 0) AS display_mode
+				FROM
+				(
+					SELECT m.* FROM ya_product_rating m
+					INNER JOIN ya_product n ON m.sku = n.sku 
+					AND account_id in (select account_id from ya_emag_prod_line_account where prod_line_id = iPprd_ln_id)
+					WHERE review_approved='Y' 
+					AND reviewer_type = 'EDITORIAL'
+					AND m.date_posted >= 
+						case 
+							when iPprd_ln_id = 1 then sysdate - 365
+							when iPprd_ln_id = 2 then sysdate - 365
+							when iPprd_ln_id = 3 then sysdate - 365
+							when iPprd_ln_id = 4 then sysdate - 730
+							when iPprd_ln_id = 5 then sysdate - 365
+							when iPprd_ln_id = 6 then sysdate - 365
+							when iPprd_ln_id = 7 then sysdate - 365
+							when iPprd_ln_id = 8 then sysdate - 730
+							when iPprd_ln_id = 9 then sysdate - 1095
+							else sysdate - 365
+						end
+					AND n.sku in (SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y')
+				) prodRat
+				LEFT JOIN ya_shopper shopper ON prodRat.shopper_id=shopper.shopper_id
+				LEFT JOIN ya_review_reviewerName revName ON prodRat.shopper_id=revName.shopper_id,
+				(
+					SELECT * FROM ya_prod_rating_lang WHERE lang_id = iPlang_id
+				)prodRatLang,
+				(
+					SELECT * FROM ya_review WHERE (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
+				) rev
+				WHERE	prodRat.rating_id = prodRatLang.rating_id
+				AND prodRatLang.us_review_id  =  rev.review_id
+				--AND prodRat.sku = prodReg.productId		
+				ORDER BY prodRat.date_posted desc
+      ) innerQuery
+      WHERE ROWNUM < (iPstart_index + iPnum_record + 1)
+    )
+    WHERE rnum > iPstart_index;
+
+    RETURN;
+  END GetProReviewsByPrdLn;
+
+	-- Get Professional Review Count ---------------------------------------------------------------------------------------------------------------------------------------------
+  PROCEDURE GetProReviewNumByPrdLn (
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+		iPprd_ln_id IN INT,
+    iPresult OUT INT
+  )
+  AS
+  BEGIN
+			SELECT count(1) INTO iPresult    
+			FROM
+			ya_product_rating m, ya_product p, ya_prod_rating_lang prl, ya_review r
+			WHERE 1=1
+			AND p.sku = m.sku
+			AND m.rating_id = prl.rating_id
+			AND prl.us_review_id = r.review_id
+			AND (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
+			AND prl.lang_id = iPlang_id
+			AND p.account_id in (select account_id from ya_emag_prod_line_account where prod_line_id = iPprd_ln_id)
+			AND p.sku in (SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y')
+			AND m.review_approved='Y' 
+			AND m.reviewer_type = 'EDITORIAL'			
+			AND m.date_posted >= 
+				case 
+					when iPprd_ln_id = 1 then sysdate - 365
+					when iPprd_ln_id = 2 then sysdate - 365
+					when iPprd_ln_id = 3 then sysdate - 365
+					when iPprd_ln_id = 4 then sysdate - 730
+					when iPprd_ln_id = 5 then sysdate - 365
+					when iPprd_ln_id = 6 then sysdate - 365
+					when iPprd_ln_id = 7 then sysdate - 365
+					when iPprd_ln_id = 8 then sysdate - 730
+					when iPprd_ln_id = 9 then sysdate - 1095
+					else sysdate - 365
+				end
+			;
+		RETURN;
+  END GetProReviewNumByPrdLn;
+
+	-- Sku is Editor Pick? ---------------------------------------------------------------------------------------------------------------------------------------------
+	PROCEDURE IsEditorPickProduct (
+    iPsite_id IN INT,
+		iPsku IN INT,
+    curPresult OUT refCur
+  )
+	AS
+  BEGIN
+    OPEN curPresult FOR
+			SELECT prodRat.sku, prodRatLang.lang_id
+			FROM ya_product_rating prodRat
+			INNER JOIN ya_prod_rating_lang prodRatLang ON prodRat.rating_id = prodRatLang.rating_id
+			INNER JOIN productRegion prodReg ON prodRat.sku = prodReg.productid AND prodReg.originId = iPsite_id AND prodReg.regionId = iPsite_id AND prodReg.categoryId = 1 AND prodReg.enable = 'Y' --AND prodReg.cansell = 'Y'
+			WHERE prodRat.reviewer_type = 'EDITOR' 
+			AND prodRat.sku = iPsku
+			GROUP BY prodRat.sku, prodRatLang.lang_id;
+  END IsEditorPickProduct;
+
+	PROCEDURE IsEditorPickMultiProduct (
+    iPsite_id IN INT,
+    curPresult OUT refCur,
+    iPsku1 IN	INT DEFAULT NULL,
+    iPsku2 IN	INT DEFAULT NULL,
+    iPsku3 IN	INT DEFAULT NULL,
+    iPsku4 IN	INT DEFAULT NULL,
+    iPsku5 IN	INT DEFAULT NULL,
+    iPsku6 IN	INT DEFAULT NULL,
+    iPsku7 IN	INT DEFAULT NULL,
+    iPsku8 IN	INT DEFAULT NULL,
+    iPsku9 IN	INT DEFAULT NULL,
+    iPsku10 IN	INT DEFAULT NULL,
+    iPsku11 IN	INT DEFAULT NULL,
+    iPsku12 IN	INT DEFAULT NULL,
+    iPsku13 IN	INT DEFAULT NULL,
+    iPsku14 IN	INT DEFAULT NULL,
+    iPsku15 IN	INT DEFAULT NULL,
+    iPsku16 IN	INT DEFAULT NULL,
+    iPsku17 IN	INT DEFAULT NULL,
+    iPsku18 IN	INT DEFAULT NULL,
+    iPsku19 IN	INT DEFAULT NULL,
+    iPsku20 IN	INT DEFAULT NULL
+  )
+	AS
+  BEGIN
+    OPEN curPresult FOR
+			SELECT prodRat.sku, prodRatLang.lang_id
+			FROM ya_product_rating prodRat
+			INNER JOIN ya_prod_rating_lang prodRatLang ON prodRat.rating_id = prodRatLang.rating_id
+			INNER JOIN productRegion prodReg ON prodRat.sku = prodReg.productid AND prodReg.originId = iPsite_id AND prodReg.regionId = iPsite_id AND prodReg.categoryId = 1 AND prodReg.enable = 'Y' --AND prodReg.cansell = 'Y'
+			WHERE prodRat.reviewer_type = 'EDITOR' 
+			AND prodRat.sku IN(
+					iPsku1,
+					iPsku2,
+					iPsku3,
+					iPsku4,
+					iPsku5,
+					iPsku6,
+					iPsku7,
+					iPsku8,
+					iPsku9,
+					iPsku10,
+					iPsku11,
+					iPsku12,
+					iPsku13,
+					iPsku14,
+					iPsku15,
+					iPsku16,
+					iPsku17,
+					iPsku18,
+					iPsku19,
+					iPsku20
+			)
+			GROUP BY prodRat.sku, prodRatLang.lang_id;
+  END IsEditorPickMultiProduct;
+
+	-- Editor Review -- END ---------------------------------------------------------------------------------------------------------------------------------------------
 END Pkg_FE_ReviewAccess;
 /
-

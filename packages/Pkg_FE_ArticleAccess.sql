@@ -62,6 +62,19 @@ AS
     iPlangId IN INT,
     curPresult OUT refCur
   );
+
+  PROCEDURE GetArticleCountByLangId (
+    iPlangId IN INT,
+    oPcount OUT INT
+  );
+
+  PROCEDURE GetArticlesByLangId (
+    iPlang_Id IN INT,
+    iPstart_rec IN INT,
+    iProw_num IN INT,
+    curPresult OUT refCur
+  );
+
 END Pkg_FE_ArticleAccess;
 /
 
@@ -505,6 +518,70 @@ AS
       a.article_id ASC;
     RETURN;
   END GetProductArticleByArtistID;
+
+  PROCEDURE GetArticleCountByLangId (
+    iPlangId IN INT,
+    oPcount OUT INT
+  )
+  AS
+  BEGIN
+    SELECT COUNT(*) AS num INTO oPcount
+      FROM
+      (
+        SELECT
+          *
+        FROM
+          ya_article_lang lang,
+          ya_article article
+        WHERE lang.article_id = article.article_id
+        AND lang.lang_id = iPlangId
+        AND article.enable = 'Y'
+        AND article.status = 8
+      );
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        oPcount := 0;
+  END GetArticleCountByLangId;
+
+  PROCEDURE GetArticlesByLangId (
+    iPlang_Id IN INT,
+    iPstart_rec IN INT,
+    iProw_num IN INT,
+    curPresult OUT refCur
+  )
+  AS
+  BEGIN
+    /* get the article */
+    OPEN curPresult FOR
+    SELECT * FROM
+    (
+      SELECT innerQuery.*, rownum rnum
+      from
+      (
+        SELECT
+          NVL(article.product_group_sku,0) product_group_sku,
+          lang.title title,
+          lang.author author,
+          lang.parsed_body parsed_body,
+          lang.banner_image banner_image,
+          article.in_tracking_no in_tracking_no,
+          article.out_tracking_no out_tracking_no,
+          NVL(article.article_id,0) article_id,
+          lang.submission_date submission_date
+        FROM
+          ya_article_lang lang,
+          ya_article article
+        WHERE lang.article_id = article.article_id
+        AND lang.lang_id = iPlang_Id
+        AND article.enable = 'Y'
+        AND article.status = 8
+        ORDER BY lang.submission_date DESC
+      ) innerQuery
+      WHERE ROWNUM < (iPstart_rec + iProw_num + 1)
+    )
+    WHERE rnum > iPstart_rec;
+  END GetArticlesByLangId;
+
 END Pkg_FE_ArticleAccess;
 /
 
