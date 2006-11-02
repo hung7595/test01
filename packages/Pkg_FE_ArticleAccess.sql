@@ -75,6 +75,17 @@ AS
     curPresult OUT refCur
   );
 
+  PROCEDURE GetNewArticleByArticleId (
+    iParticle_id IN INT,
+    iPlang_id IN INT,
+    iPoriginId IN INT,
+    curPgetArticle1 OUT refCur,
+    curPgetArticle2 OUT refCur,
+    curPgetArticle3 OUT refCur,
+    curPgetArticle4 OUT refCur,
+    curPgetArticle5 OUT refCur
+  );
+
 END Pkg_FE_ArticleAccess;
 /
 
@@ -581,6 +592,142 @@ AS
     )
     WHERE rnum > iPstart_rec;
   END GetArticlesByLangId;
+
+  /* proc_fe_GetNewArticleByArticleId */
+  PROCEDURE GetNewArticleByArticleId (
+    iParticle_id IN INT,
+    iPlang_id IN INT,
+    iPoriginId IN INT,
+    curPgetArticle1 OUT refCur,
+    curPgetArticle2 OUT refCur,
+    curPgetArticle3 OUT refCur,
+    curPgetArticle4 OUT refCur,
+    curPgetArticle5 OUT refCur
+    )
+  AS
+  BEGIN
+    /* get the article */
+    OPEN curPgetArticle1 FOR
+    SELECT
+      NVL(article.product_group_sku,0) product_group_sku,
+      lang.title title,
+      lang.author author,
+      lang.parsed_body parsed_body,
+      lang.banner_image banner_image,
+      article.in_tracking_no in_tracking_no,
+      article.out_tracking_no out_tracking_no,
+      NVL(article.article_id,0) article_id,
+      lang.submission_date submission_date
+    FROM
+      ya_article_lang lang,
+      ya_article article
+    WHERE lang.article_id = article.article_id
+    AND lang.article_id = iParticle_id
+    AND lang.lang_id = iPlang_id
+    AND article.enable = 'Y'
+    AND article.status = 8;
+
+    /* the mentioned products */
+    OPEN curPgetArticle2 FOR
+    SELECT
+      NVL(lang.sku,0) sku,
+      lang.prod_name_u prod_name,
+      prod.cover_img_loc cover_img_loc,
+      pa.availability
+    FROM
+      ya_article_rel rel,
+      ya_article article,
+      ya_product prod,
+      ya_prod_lang lang,
+      ProductAvailability pa
+    WHERE
+      article.article_id = rel.article_id
+      AND rel.rel_id = prod.sku
+      AND rel.rel_id = lang.sku
+      AND rel.lang_id = lang.lang_id
+      AND rel.rel_id = pa.productId
+      AND rel.article_id = iParticle_id
+      AND rel.enable = 'Y'
+      AND rel.rel_type = 1
+      AND lang.lang_id = iPlang_id
+      AND article.enable = 'Y'
+      AND article.status = 8
+      AND pa.originId = iPoriginId
+      AND pa.category = 1
+      AND pa.regionid = iPoriginId
+    ORDER BY rel.priority ASC;
+
+    /* get the mentioned artists */
+    OPEN curPgetArticle3 FOR
+    SELECT
+      NVL(artist.artist_id,0) artist_id,
+      NVL2
+        (
+          akaname_u,
+          akaname_u || ' ' || artist.lastname_u,
+          artist.lastname_u || ' ' || artist.firstname_u
+        ) lastname
+    FROM
+      ya_artist_lang artist,
+      ya_article_rel rel,
+      ya_article article
+    WHERE artist.artist_id = rel.rel_id
+    AND rel.lang_id = artist.lang_id
+    AND article.article_id = rel.article_id
+    AND article.enable = 'Y'
+    AND article.status = 8
+    AND rel.enable = 'Y'
+    AND rel.article_id = iParticle_id
+    AND rel.rel_type = 4
+    AND artist.lang_id = iPlang_id
+    ORDER BY rel.priority ASC;
+
+    /* get the mentioned director */
+    OPEN curPgetArticle4 FOR
+    SELECT
+      NVL(artist.artist_id,0) artist_id,
+      NVL2
+        (
+          akaname_u,
+          akaname_u || ' ' || artist.lastname_u,
+          artist.lastname_u || ' ' || artist.firstname_u
+        ) lastname
+    FROM
+      ya_artist_lang artist,
+      ya_article_rel rel,
+      ya_article article
+    WHERE artist.artist_id = rel.rel_id
+    AND rel.lang_id = artist.lang_id
+    AND article.article_id = rel.article_id
+    AND article.enable = 'Y'
+    AND article.status = 8
+    AND rel.enable = 'Y'
+    AND rel.article_id = iParticle_id
+    AND rel.rel_type = 5
+    AND artist.lang_id = iPlang_id
+    ORDER BY rel.priority ASC;
+
+    /* get the categories */
+    OPEN curPgetArticle5 FOR
+    SELECT
+      NVL(dept.dept_id,0) dept_id,
+      dept.dept_name_u dept_name
+    FROM
+      ya_article_rel rel,
+      ya_dept_lang dept,
+      ya_article article
+    WHERE rel.rel_id = dept.dept_id
+    AND dept.lang_id = rel.lang_id
+    AND rel.article_id = article.article_id
+    AND article.enable = 'Y'
+    AND article.status = 8
+    AND rel.enable = 'Y'
+    AND rel.article_id = iParticle_id
+    AND (rel.rel_type = 2 OR rel.rel_type = 3)
+    AND dept.lang_id = iPlang_id
+    ORDER BY rel.priority ASC;
+  RETURN;
+  END;
 
 END Pkg_FE_ArticleAccess;
 /
