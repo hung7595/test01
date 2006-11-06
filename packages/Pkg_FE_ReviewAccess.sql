@@ -365,6 +365,19 @@ PROCEDURE InsertReviewData1 (
     iPsku19 IN	INT DEFAULT NULL,
     iPsku20 IN	INT DEFAULT NULL
   );
+
+	PROCEDURE UpdateReview (
+		iPrating_id IN INT,
+		iPlang_id IN INT,
+		cPtitle IN VARCHAR2,
+    cPcontent IN CLOB
+  );
+
+	PROCEDURE UpdateReviewApproveStatus (
+		iPrating_id IN INT,
+		cPapprove IN CHAR
+  );
+
 	-- Editor Review -- END ---------------------------------------------------------------------------------------------------------------------------------------------
 END Pkg_FE_ReviewAccess;
 /
@@ -2619,8 +2632,6 @@ PROCEDURE GetAllReviewsByShopperID (
 		FROM
 		(
 			SELECT sku, rating_id FROM ya_product_rating
-			--WHERE review_approved='Y'
-			--AND reviewer_type = 'EDITOR'
 			WHERE 1=1
 			AND (CASE WHEN (review_approved='Y' AND reviewer_type = 'EDITOR') THEN 'Y' ELSE NULL END) = 'Y'		
 			AND sku = iPsku
@@ -2653,8 +2664,6 @@ PROCEDURE GetAllReviewsByShopperID (
 		FROM
 		(
 			SELECT sku, rating_id FROM ya_product_rating
---			WHERE review_approved='Y'
---			AND reviewer_type = 'EDITOR'
 			WHERE 1=1
 			AND (CASE WHEN (review_approved='Y' AND reviewer_type = 'EDITOR') THEN 'Y' ELSE NULL END) = 'Y'
 			AND shopper_id = cPshopper_id
@@ -2688,8 +2697,6 @@ PROCEDURE GetAllReviewsByShopperID (
 		(
 			SELECT m.sku, m.rating_id FROM ya_product_rating m
 			INNER JOIN ya_product n ON m.sku = n.sku AND account_id in (select account_id from ya_emag_prod_line_account where prod_line_id = iPprd_ln_id)
---			WHERE review_approved='Y'
---			AND reviewer_type = 'EDITOR'
 			WHERE 1=1
 			AND (CASE WHEN (review_approved='Y' AND reviewer_type = 'EDITOR') THEN 'Y' ELSE NULL END) = 'Y'
 		) prodRat,
@@ -2825,13 +2832,13 @@ PROCEDURE GetAllReviewsByShopperID (
 				)prodRatLang,
 				(
 					SELECT * FROM ya_review WHERE (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
-				) rev,
-				(
-					SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y' --  AND cansell = 'Y'
-				) prodReg
+				) rev
+--				(
+--					SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y' --  AND cansell = 'Y'
+--				) prodReg
 				WHERE	prodRat.rating_id = prodRatLang.rating_id
 				AND prodRatLang.us_review_id  =  rev.review_id
-				AND prodRat.sku = prodReg.productId		
+--				AND prodRat.sku = prodReg.productId		
 				ORDER BY prodRat.date_posted desc
       ) innerQuery
       WHERE ROWNUM < (iPstart_index + iPnum_record + 1)
@@ -2858,6 +2865,49 @@ PROCEDURE GetAllReviewsByShopperID (
     (
       SELECT innerQuery.*, rownum rnum from
       (
+	    select 
+	    prodRat.rating_id, prodRat.review_id, prodRat.sku,
+			cast(NVL(prodRat.product_rating, 0) AS int) AS product_rating,
+			NVL(prodRat.date_posted, dtLoldest_date_posted),
+			prodRat.review_approved,
+			prodRat.shopper_id AS shopper_id,
+			prodRat.reviewer AS reviewer,
+			prodRat.reviewer_type,
+			cast(NVL(prodRat.lang_id, 1) AS int) AS lang_id,
+			prodRat.title AS title,
+			prodRat.review AS review,
+			prodRat.review_img_loc AS review_img_loc,
+			cast(NVL(prodRat.review_img_width, 0) AS int) AS review_img_width,
+			cast(NVL(prodRat.review_img_height, 0) AS int) AS review_img_height,
+			shopper.firstname AS firstname, shopper.lastname AS lastname, shopper.nickname AS nickname,
+			NVL(revName.display_mode, 0) AS display_mode
+			from vw_FE_ReviewAccess prodRat
+			INNER JOIN ya_emag_prod_line_record_limit eplr ON eplr.prod_line_id = iPprd_ln_id
+			LEFT JOIN ya_shopper shopper ON prodRat.shopper_id=shopper.shopper_id
+			LEFT JOIN ya_review_reviewerName revName ON prodRat.shopper_id=revName.shopper_id
+			WHERE 1=1
+			AND prodRat.lang_id = 1
+			AND prodRat.account_id in (select account_id from ya_emag_prod_line_account where prod_line_id = 1)
+--			AND prodRat.sku in (SELECT productId FROM productRegion WHERE originId = 1 AND regionId = 1 AND categoryId = 1 AND enable = 'Y')
+			AND	prodRat.date_posted >= sysdate - eplr.start_date
+/*
+			AND prodRat.date_posted >= 
+			case 
+				when 1 = 1 then sysdate - 365
+				when 1 = 2 then sysdate - 365
+				when 1 = 3 then sysdate - 365
+				when 1 = 4 then sysdate - 730
+				when 1 = 5 then sysdate - 365
+				when 1 = 6 then sysdate - 365
+				when 1 = 7 then sysdate - 365
+				when 1 = 8 then sysdate - 730
+				when 1 = 9 then sysdate - 1095
+				else sysdate - 365
+			end
+*/
+			ORDER BY prodRat.date_posted desc
+      
+/*      
 				SELECT
 					prodRat.rating_id, rev.review_id, prodRat.sku,
 					cast(NVL(prodRat.product_rating, 0) AS int) AS product_rating,
@@ -2893,7 +2943,9 @@ PROCEDURE GetAllReviewsByShopperID (
 							when iPprd_ln_id = 9 then sysdate - 1095
 							else sysdate - 365
 						end
-					AND n.sku in (SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y')
+--					AND m.date_posted >= sysdate - 365
+--					AND n.sku in (SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y')
+--					AND n.sku in (SELECT productId FROM productRegion WHERE originId = iPsite_id AND enable = 'Y')
 				) prodRat
 				LEFT JOIN ya_shopper shopper ON prodRat.shopper_id=shopper.shopper_id
 				LEFT JOIN ya_review_reviewerName revName ON prodRat.shopper_id=revName.shopper_id,
@@ -2907,6 +2959,7 @@ PROCEDURE GetAllReviewsByShopperID (
 				AND prodRatLang.us_review_id  =  rev.review_id
 				--AND prodRat.sku = prodReg.productId		
 				ORDER BY prodRat.date_posted desc
+*/				
       ) innerQuery
       WHERE ROWNUM < (iPstart_index + iPnum_record + 1)
     )
@@ -2924,6 +2977,32 @@ PROCEDURE GetAllReviewsByShopperID (
   )
   AS
   BEGIN
+	
+	select count(1) INTO iPresult    
+	from vw_FE_ReviewAccess v
+	INNER JOIN ya_emag_prod_line_record_limit eplr ON eplr.prod_line_id = iPprd_ln_id
+	WHERE 1=1
+	AND v.lang_id = 1
+	AND v.account_id in (select account_id from ya_emag_prod_line_account where prod_line_id = 1)
+--	AND v.sku in (SELECT productId FROM productRegion WHERE originId = 1 AND regionId = 1 AND categoryId = 1 AND enable = 'Y')
+ 	AND	v.date_posted >= sysdate - eplr.start_date;
+/*
+	AND v.date_posted >= 
+	case 
+		when 1 = 1 then sysdate - 365
+		when 1 = 2 then sysdate - 365
+		when 1 = 3 then sysdate - 365
+		when 1 = 4 then sysdate - 730
+		when 1 = 5 then sysdate - 365
+		when 1 = 6 then sysdate - 365
+		when 1 = 7 then sysdate - 365
+		when 1 = 8 then sysdate - 730
+		when 1 = 9 then sysdate - 1095
+		else sysdate - 365
+	end
+;  
+*/
+/*  
 			SELECT count(1) INTO iPresult    
 			FROM
 			ya_product_rating m, ya_product p, ya_prod_rating_lang prl, ya_review r
@@ -2934,7 +3013,7 @@ PROCEDURE GetAllReviewsByShopperID (
 			AND (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
 			AND prl.lang_id = iPlang_id
 			AND p.account_id in (select account_id from ya_emag_prod_line_account where prod_line_id = iPprd_ln_id)
-			AND p.sku in (SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y')
+--			AND p.sku in (SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y')
 			AND m.review_approved='Y' 
 			AND m.reviewer_type = 'EDITORIAL'			
 			AND m.date_posted >= 
@@ -2951,6 +3030,7 @@ PROCEDURE GetAllReviewsByShopperID (
 					else sysdate - 365
 				end
 			;
+*/		
 		RETURN;
   END GetProReviewNumByPrdLn;
 
@@ -3028,6 +3108,44 @@ PROCEDURE GetAllReviewsByShopperID (
 			)
 			GROUP BY prodRat.sku, prodRatLang.lang_id;
   END IsEditorPickMultiProduct;
+
+	-- Update Review ---------------------------------------------------------------------------------------------------------------------------------------------
+	PROCEDURE UpdateReview (
+		iPrating_id IN INT,
+		iPlang_id IN INT,
+		cPtitle IN VARCHAR2,
+    cPcontent IN CLOB
+  )
+	AS
+    iLreview_id INT;
+	BEGIN				
+		SELECT us_review_id INTO iLreview_id
+		FROM ya_prod_rating_lang
+		WHERE rating_id = iPrating_id AND lang_id = iPlang_id;
+
+		UPDATE ya_prod_rating_lang 
+		SET title = cPtitle 
+		WHERE rating_id = iPrating_id AND lang_id = iPlang_id;
+
+		UPDATE ya_review 
+		SET review = cPcontent 
+		WHERE review_id = iLreview_id;
+		
+		RETURN;
+	END UpdateReview;
+
+	PROCEDURE UpdateReviewApproveStatus (
+		iPrating_id IN INT,
+		cPapprove IN CHAR
+  )
+	AS
+	BEGIN				
+		UPDATE ya_product_rating
+		SET review_approved = cPapprove
+		WHERE rating_id = iPrating_id;
+	
+		RETURN;
+	END UpdateReviewApproveStatus;
 
 	-- Editor Review -- END ---------------------------------------------------------------------------------------------------------------------------------------------
 END Pkg_FE_ReviewAccess;
