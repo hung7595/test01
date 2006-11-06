@@ -2865,101 +2865,32 @@ PROCEDURE GetAllReviewsByShopperID (
     (
       SELECT innerQuery.*, rownum rnum from
       (
-	    select 
-	    prodRat.rating_id, prodRat.review_id, prodRat.sku,
-			cast(NVL(prodRat.product_rating, 0) AS int) AS product_rating,
-			NVL(prodRat.date_posted, dtLoldest_date_posted),
-			prodRat.review_approved,
-			prodRat.shopper_id AS shopper_id,
-			prodRat.reviewer AS reviewer,
-			prodRat.reviewer_type,
-			cast(NVL(prodRat.lang_id, 1) AS int) AS lang_id,
-			prodRat.title AS title,
-			prodRat.review AS review,
-			prodRat.review_img_loc AS review_img_loc,
-			cast(NVL(prodRat.review_img_width, 0) AS int) AS review_img_width,
-			cast(NVL(prodRat.review_img_height, 0) AS int) AS review_img_height,
-			shopper.firstname AS firstname, shopper.lastname AS lastname, shopper.nickname AS nickname,
-			NVL(revName.display_mode, 0) AS display_mode
-			from vw_FE_ReviewAccess prodRat
-			INNER JOIN ya_emag_prod_line_record_limit eplr ON eplr.prod_line_id = iPprd_ln_id
-			LEFT JOIN ya_shopper shopper ON prodRat.shopper_id=shopper.shopper_id
-			LEFT JOIN ya_review_reviewerName revName ON prodRat.shopper_id=revName.shopper_id
-			WHERE 1=1
-			AND prodRat.lang_id = 1
-			AND prodRat.account_id in (select account_id from ya_emag_prod_line_account where prod_line_id = 1)
---			AND prodRat.sku in (SELECT productId FROM productRegion WHERE originId = 1 AND regionId = 1 AND categoryId = 1 AND enable = 'Y')
-			AND	prodRat.date_posted >= sysdate - eplr.start_date
-/*
-			AND prodRat.date_posted >= 
-			case 
-				when 1 = 1 then sysdate - 365
-				when 1 = 2 then sysdate - 365
-				when 1 = 3 then sysdate - 365
-				when 1 = 4 then sysdate - 730
-				when 1 = 5 then sysdate - 365
-				when 1 = 6 then sysdate - 365
-				when 1 = 7 then sysdate - 365
-				when 1 = 8 then sysdate - 730
-				when 1 = 9 then sysdate - 1095
-				else sysdate - 365
-			end
-*/
-			ORDER BY prodRat.date_posted desc
-      
-/*      
-				SELECT
-					prodRat.rating_id, rev.review_id, prodRat.sku,
-					cast(NVL(prodRat.product_rating, 0) AS int) AS product_rating,
-					NVL(prodRat.date_posted, dtLoldest_date_posted), prodRat.review_approved,
-					prodRat.shopper_id AS shopper_id,
-					prodRat.reviewer AS reviewer,
-					prodRat.reviewer_type,
-					cast(NVL(prodRatLang.lang_id, 1) AS int) AS lang_id,
-					prodRatLang.title AS title,
-					rev.review AS review,
-					rev.review_img_loc AS review_img_loc,
-					cast(NVL(rev.review_img_width, 0) AS int) AS review_img_width,
-					cast(NVL(rev.review_img_height, 0) AS int) AS review_img_height,
-					shopper.firstname AS firstname, shopper.lastname AS lastname, shopper.nickname AS nickname,
-					NVL(revName.display_mode, 0) AS display_mode
-				FROM
-				(
-					SELECT m.* FROM ya_product_rating m
-					INNER JOIN ya_product n ON m.sku = n.sku 
-					AND account_id in (select account_id from ya_emag_prod_line_account where prod_line_id = iPprd_ln_id)
-					WHERE review_approved='Y' 
-					AND reviewer_type = 'EDITORIAL'
-					AND m.date_posted >= 
-						case 
-							when iPprd_ln_id = 1 then sysdate - 365
-							when iPprd_ln_id = 2 then sysdate - 365
-							when iPprd_ln_id = 3 then sysdate - 365
-							when iPprd_ln_id = 4 then sysdate - 730
-							when iPprd_ln_id = 5 then sysdate - 365
-							when iPprd_ln_id = 6 then sysdate - 365
-							when iPprd_ln_id = 7 then sysdate - 365
-							when iPprd_ln_id = 8 then sysdate - 730
-							when iPprd_ln_id = 9 then sysdate - 1095
-							else sysdate - 365
-						end
---					AND m.date_posted >= sysdate - 365
---					AND n.sku in (SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y')
---					AND n.sku in (SELECT productId FROM productRegion WHERE originId = iPsite_id AND enable = 'Y')
-				) prodRat
+				select 
+				prodRat.rating_id, prodRat.review_id, prodRat.sku,
+				cast(NVL(prodRat.product_rating, 0) AS int) AS product_rating,
+				NVL(prodRat.date_posted, dtLoldest_date_posted),
+				prodRat.review_approved,
+				prodRat.shopper_id AS shopper_id,
+				prodRat.reviewer AS reviewer,
+				prodRat.reviewer_type,
+				cast(NVL(prodRat.lang_id, 1) AS int) AS lang_id,
+				prodRat.title AS title,
+				prodRat.review AS review,
+				prodRat.review_img_loc AS review_img_loc,
+				cast(NVL(prodRat.review_img_width, 0) AS int) AS review_img_width,
+				cast(NVL(prodRat.review_img_height, 0) AS int) AS review_img_height,
+				shopper.firstname AS firstname, shopper.lastname AS lastname, shopper.nickname AS nickname,
+				NVL(revName.display_mode, 0) AS display_mode
+				from vw_FE_ReviewAccess prodRat
+				INNER JOIN ya_emag_prod_line_record_limit eplr ON eplr.prod_line_id = iPprd_ln_id
 				LEFT JOIN ya_shopper shopper ON prodRat.shopper_id=shopper.shopper_id
-				LEFT JOIN ya_review_reviewerName revName ON prodRat.shopper_id=revName.shopper_id,
-				(
-					SELECT * FROM ya_prod_rating_lang WHERE lang_id = iPlang_id
-				)prodRatLang,
-				(
-					SELECT * FROM ya_review WHERE (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
-				) rev
-				WHERE	prodRat.rating_id = prodRatLang.rating_id
-				AND prodRatLang.us_review_id  =  rev.review_id
-				--AND prodRat.sku = prodReg.productId		
-				ORDER BY prodRat.date_posted desc
-*/				
+				LEFT JOIN ya_review_reviewerName revName ON prodRat.shopper_id=revName.shopper_id
+				WHERE 1=1
+				AND prodRat.lang_id = 1
+				AND prodRat.account_id in (select account_id from ya_emag_prod_line_account where prod_line_id = iPprd_ln_id)
+--				AND prodRat.sku in (SELECT productId FROM productRegion WHERE originId = 1 AND regionId = 1 AND categoryId = 1 AND enable = 'Y')
+				AND	prodRat.date_posted >= sysdate - eplr.start_date
+				ORDER BY prodRat.date_posted desc      			
       ) innerQuery
       WHERE ROWNUM < (iPstart_index + iPnum_record + 1)
     )
@@ -2978,59 +2909,15 @@ PROCEDURE GetAllReviewsByShopperID (
   AS
   BEGIN
 	
-	select count(1) INTO iPresult    
-	from vw_FE_ReviewAccess v
-	INNER JOIN ya_emag_prod_line_record_limit eplr ON eplr.prod_line_id = iPprd_ln_id
-	WHERE 1=1
-	AND v.lang_id = 1
-	AND v.account_id in (select account_id from ya_emag_prod_line_account where prod_line_id = 1)
---	AND v.sku in (SELECT productId FROM productRegion WHERE originId = 1 AND regionId = 1 AND categoryId = 1 AND enable = 'Y')
- 	AND	v.date_posted >= sysdate - eplr.start_date;
-/*
-	AND v.date_posted >= 
-	case 
-		when 1 = 1 then sysdate - 365
-		when 1 = 2 then sysdate - 365
-		when 1 = 3 then sysdate - 365
-		when 1 = 4 then sysdate - 730
-		when 1 = 5 then sysdate - 365
-		when 1 = 6 then sysdate - 365
-		when 1 = 7 then sysdate - 365
-		when 1 = 8 then sysdate - 730
-		when 1 = 9 then sysdate - 1095
-		else sysdate - 365
-	end
-;  
-*/
-/*  
-			SELECT count(1) INTO iPresult    
-			FROM
-			ya_product_rating m, ya_product p, ya_prod_rating_lang prl, ya_review r
-			WHERE 1=1
-			AND p.sku = m.sku
-			AND m.rating_id = prl.rating_id
-			AND prl.us_review_id = r.review_id
-			AND (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
-			AND prl.lang_id = iPlang_id
-			AND p.account_id in (select account_id from ya_emag_prod_line_account where prod_line_id = iPprd_ln_id)
---			AND p.sku in (SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y')
-			AND m.review_approved='Y' 
-			AND m.reviewer_type = 'EDITORIAL'			
-			AND m.date_posted >= 
-				case 
-					when iPprd_ln_id = 1 then sysdate - 365
-					when iPprd_ln_id = 2 then sysdate - 365
-					when iPprd_ln_id = 3 then sysdate - 365
-					when iPprd_ln_id = 4 then sysdate - 730
-					when iPprd_ln_id = 5 then sysdate - 365
-					when iPprd_ln_id = 6 then sysdate - 365
-					when iPprd_ln_id = 7 then sysdate - 365
-					when iPprd_ln_id = 8 then sysdate - 730
-					when iPprd_ln_id = 9 then sysdate - 1095
-					else sysdate - 365
-				end
-			;
-*/		
+		select count(1) INTO iPresult    
+		from vw_FE_ReviewAccess v
+		INNER JOIN ya_emag_prod_line_record_limit eplr ON eplr.prod_line_id = iPprd_ln_id
+		WHERE 1=1
+		AND v.lang_id = 1
+		AND v.account_id in (select account_id from ya_emag_prod_line_account where prod_line_id = iPprd_ln_id)
+--		AND v.sku in (SELECT productId FROM productRegion WHERE originId = 1 AND regionId = 1 AND categoryId = 1 AND enable = 'Y')
+		AND	v.date_posted >= sysdate - eplr.start_date;
+
 		RETURN;
   END GetProReviewNumByPrdLn;
 
