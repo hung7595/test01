@@ -2882,15 +2882,15 @@ PROCEDURE GetAllReviewsByShopperID (
 					shopper.firstname AS firstname, shopper.lastname AS lastname, shopper.nickname AS nickname,
 					NVL(revName.display_mode, 0) AS display_mode
 				from vw_FE_ReviewAccess prodRat
-				INNER JOIN ya_emag_prod_line_record_limit eplr ON eplr.prod_line_id = iPprd_ln_id
+--				INNER JOIN ya_emag_prod_line_record_limit eplr ON eplr.prod_line_id = iPprd_ln_id
 				LEFT JOIN ya_shopper shopper ON prodRat.shopper_id=shopper.shopper_id
 				LEFT JOIN ya_review_reviewerName revName ON prodRat.shopper_id=revName.shopper_id
 				WHERE 1=1
 				AND prodRat.lang_id = iPlang_id
 				AND prodRat.account_id in (select account_id from ya_emag_prod_line_account where prod_line_id = iPprd_ln_id)
 --				AND prodRat.sku in (SELECT productId FROM productRegion WHERE originId = 1 AND regionId = 1 AND categoryId = 1 AND enable = 'Y')
-				AND	prodRat.date_posted >= sysdate - eplr.start_date
-				ORDER BY prodRat.date_posted desc      			
+--				AND	prodRat.date_posted >= sysdate - eplr.start_date
+				ORDER BY prodRat.date_posted desc
       ) innerQuery
       WHERE ROWNUM < (iPstart_index + iPnum_record + 1)
     )
@@ -2911,12 +2911,12 @@ PROCEDURE GetAllReviewsByShopperID (
 	
 		select count(1) INTO iPresult    
 		from vw_FE_ReviewAccess v
-		INNER JOIN ya_emag_prod_line_record_limit eplr ON eplr.prod_line_id = iPprd_ln_id
+--		INNER JOIN ya_emag_prod_line_record_limit eplr ON eplr.prod_line_id = iPprd_ln_id
 		WHERE 1=1
 		AND v.lang_id = iPlang_id
-		AND v.account_id in (select account_id from ya_emag_prod_line_account where prod_line_id = iPprd_ln_id)
+		AND v.account_id in (select account_id from ya_emag_prod_line_account where prod_line_id = iPprd_ln_id);
 --		AND v.sku in (SELECT productId FROM productRegion WHERE originId = 1 AND regionId = 1 AND categoryId = 1 AND enable = 'Y')
-		AND	v.date_posted >= sysdate - eplr.start_date;
+--		AND	v.date_posted >= sysdate - eplr.start_date;
 
 		RETURN;
   END GetProReviewNumByPrdLn;
