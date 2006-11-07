@@ -2866,27 +2866,27 @@ PROCEDURE GetAllReviewsByShopperID (
       SELECT innerQuery.*, rownum rnum from
       (
 				select 
-				prodRat.rating_id, prodRat.review_id, prodRat.sku,
-				cast(NVL(prodRat.product_rating, 0) AS int) AS product_rating,
-				NVL(prodRat.date_posted, dtLoldest_date_posted),
-				prodRat.review_approved,
-				prodRat.shopper_id AS shopper_id,
-				prodRat.reviewer AS reviewer,
-				prodRat.reviewer_type,
-				cast(NVL(prodRat.lang_id, 1) AS int) AS lang_id,
-				prodRat.title AS title,
-				prodRat.review AS review,
-				prodRat.review_img_loc AS review_img_loc,
-				cast(NVL(prodRat.review_img_width, 0) AS int) AS review_img_width,
-				cast(NVL(prodRat.review_img_height, 0) AS int) AS review_img_height,
-				shopper.firstname AS firstname, shopper.lastname AS lastname, shopper.nickname AS nickname,
-				NVL(revName.display_mode, 0) AS display_mode
+					prodRat.rating_id, prodRat.review_id, prodRat.sku,
+					cast(NVL(prodRat.product_rating, 0) AS int) AS product_rating,
+					NVL(prodRat.date_posted, dtLoldest_date_posted),
+					prodRat.review_approved,
+					prodRat.shopper_id AS shopper_id,
+					prodRat.reviewer AS reviewer,
+					prodRat.reviewer_type,
+					cast(NVL(prodRat.lang_id, 1) AS int) AS lang_id,
+					prodRat.title AS title,
+					prodRat.review AS review,
+					prodRat.review_img_loc AS review_img_loc,
+					cast(NVL(prodRat.review_img_width, 0) AS int) AS review_img_width,
+					cast(NVL(prodRat.review_img_height, 0) AS int) AS review_img_height,
+					shopper.firstname AS firstname, shopper.lastname AS lastname, shopper.nickname AS nickname,
+					NVL(revName.display_mode, 0) AS display_mode
 				from vw_FE_ReviewAccess prodRat
 				INNER JOIN ya_emag_prod_line_record_limit eplr ON eplr.prod_line_id = iPprd_ln_id
 				LEFT JOIN ya_shopper shopper ON prodRat.shopper_id=shopper.shopper_id
 				LEFT JOIN ya_review_reviewerName revName ON prodRat.shopper_id=revName.shopper_id
 				WHERE 1=1
-				AND prodRat.lang_id = 1
+				AND prodRat.lang_id = iPlang_id
 				AND prodRat.account_id in (select account_id from ya_emag_prod_line_account where prod_line_id = iPprd_ln_id)
 --				AND prodRat.sku in (SELECT productId FROM productRegion WHERE originId = 1 AND regionId = 1 AND categoryId = 1 AND enable = 'Y')
 				AND	prodRat.date_posted >= sysdate - eplr.start_date
@@ -2913,7 +2913,7 @@ PROCEDURE GetAllReviewsByShopperID (
 		from vw_FE_ReviewAccess v
 		INNER JOIN ya_emag_prod_line_record_limit eplr ON eplr.prod_line_id = iPprd_ln_id
 		WHERE 1=1
-		AND v.lang_id = 1
+		AND v.lang_id = iPlang_id
 		AND v.account_id in (select account_id from ya_emag_prod_line_account where prod_line_id = iPprd_ln_id)
 --		AND v.sku in (SELECT productId FROM productRegion WHERE originId = 1 AND regionId = 1 AND categoryId = 1 AND enable = 'Y')
 		AND	v.date_posted >= sysdate - eplr.start_date;
