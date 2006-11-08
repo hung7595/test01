@@ -40,6 +40,8 @@ AS
     iPcoupon_amount	IN NUMBER,
     iPcredit_amount	IN NUMBER,
     cPcurrency		IN CHAR,
+    cPcc_numberEncrypted	IN CHAR,
+    iPencryption_key		IN INT,
 
     iPlog_id		IN OUT INT
   );
@@ -90,7 +92,8 @@ is
 		auth_code, avs_code, request_id, firstname, lastname, email, phone,
 		address1, address2, city, state_code, state, zip, country,
 		cc_type, cc_number, cc_exp_month, cc_exp_year,
-		coupon_code, coupon_amount, credit_amount, currency
+		coupon_code, coupon_amount, credit_amount, currency,
+		cc_numberencrypted, encryptionkey
     FROM ya_customerupdate_payment_log
     WHERE status = 1;
     RETURN;
@@ -139,6 +142,8 @@ is
     iPcoupon_amount	IN NUMBER,
     iPcredit_amount	IN NUMBER,
 		cPcurrency		IN CHAR,
+    cPcc_numberEncrypted	IN CHAR,
+    iPencryption_key		IN INT,
 
 		iPlog_id		IN OUT INT
   )
@@ -163,14 +168,16 @@ is
 				auth_code, avs_code, request_id, firstname, lastname, email, phone,
         address1, address2, city, state_code, state, zip, country,
         cc_type, cc_number, cc_exp_month, cc_exp_year,
-				coupon_code, coupon_amount, credit_amount, currency
+				coupon_code, coupon_amount, credit_amount, currency, 
+				cc_numberencrypted, encryptionkey
 
     )VALUES(
         iPayment_log_id, cPshopper_id, iPstatus, iPorder_id, dPupdated_date, iPpayment_method,
 				nvcPauth_code, nvcPavs_code, nvcPrequest_id, nvcPfirstname, nvcPlastname, nvcPemail, nvcPphone,
         nvcPaddress1, nvcPaddress2, nvcPcity, iPstate_code, nvcPstate, nvcPzip, iPcountry,
         iPcc_type, cPcc_number, cPcc_exp_month, cPcc_exp_year,
-        cPcoupon_code, iPcoupon_amount, iPcredit_amount, cPcurrency
+        cPcoupon_code, iPcoupon_amount, iPcredit_amount, cPcurrency,
+        cPcc_numberEncrypted, iPencryption_key
     );
   END InsertPendingRequest;
 
