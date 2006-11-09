@@ -222,14 +222,6 @@ AS
 		)
 		AND (((site_id = iPsite_id or site_id=99) and iPsite_id not in (10)) or site_id = iPsite_id)
 		union
-		select c.coupon_code, c.coupon_description, c.expiration_date from ya_coupon c where coupon_code = 'YESASIA' and 1 = (
-			select 1 from ya_shopper s
-			where shopper_id = cPshopper_id
-			and created_date < to_date('2006/07/14', 'yyyy/mm/dd')
-			and iPsite_id = 10
-			and not exists (select 1 from OrderInfo oi inner join BillingInfo bo on oi.id = bo.orderid where oi.customerid = s.shopper_id and bo.coupon = 'YESASIA')
-		)
-		union
 		select c.coupon_code, c.coupon_description, c.expiration_date from ya_coupon c where coupon_code = 'CTCZHGOKPZ' and 1 = (
 			select 1 from ya_shopper s
 			where shopper_id = cPshopper_id
