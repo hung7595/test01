@@ -127,6 +127,18 @@ AS
     curPgetFrontpage OUT refCur
   );
 
+  PROCEDURE GetFPProdLotsWOSite (
+    iPfileId		IN	INT,
+    iPlangId		IN	INT,
+    curPgetFrontpage	OUT	refCur
+  );
+
+  PROCEDURE GetFPProdLotsWOSite_Mirror (
+    iPfileId IN INT,
+    iPlangId IN INT,
+    curPgetFrontpage OUT refCur
+  );
+
   PROCEDURE GetProductVideosInformation (
     iPsku		IN	INT,
     curPgetProduct	OUT	refCur
@@ -1119,6 +1131,73 @@ BEGIN
       ORDER BY pl.lot_location, pl.priority;
 RETURN;
 END;
+
+	PROCEDURE GetFPProdLotsWOSite (
+    iPfileId		IN	INT,
+    iPlangId		IN	INT,
+    curPgetFrontpage	OUT	refCur
+  )
+	AS
+BEGIN
+  OPEN curPgetFrontpage FOR
+      SELECT
+        pl.sku,
+        pl.lot_location,
+        pll.description,
+        pl.dept_id,
+        PLI.desc_img_loc,
+        NVL(PLI.desc_img_width,0),
+        NVL(PLI.desc_img_height,0),
+        NULL, --dl.dept_name,
+        -1, --NVL(ps.dept_id, -1),
+        pll.remark
+      FROM
+        YA_PRODUCT_LOT pl
+        LEFT OUTER JOIN YA_PROD_LOT_LANG pll ON
+          pl.prod_lot_id = pll.prod_lot_id
+          AND pll.lang_id = iPlangId
+        LEFT OUTER JOIN YA_PROD_LOT_LANG PLI ON
+          PLI.prod_lot_id = pl.prod_lot_id
+          AND PLI.preferred_flag = 'Y'
+      WHERE
+        pl.file_id = iPfileId
+      ORDER BY pl.lot_location, pl.priority;
+RETURN;
+END;
+
+  PROCEDURE GetFPProdLotsWOSite_Mirror (
+    iPfileId IN INT,
+    iPlangId IN INT,
+    curPgetFrontpage OUT refCur
+  )
+	AS
+BEGIN
+	OPEN curPgetFrontpage FOR
+      SELECT
+        pl.sku,
+        pl.lot_location,
+        pll.description,
+        pl.dept_id,
+        PLI.desc_img_loc,
+        NVL(PLI.desc_img_width,0),
+        NVL(PLI.desc_img_height,0),
+        NULL, --dl.dept_name,
+        -1, --NVL(ps.dept_id, -1),
+        pll.remark
+      FROM
+        ya_mirror_product_lot pl
+        LEFT OUTER JOIN ya_mirror_prod_lot_lang pll ON
+          pl.prod_lot_id = pll.prod_lot_id
+          AND pll.lang_id = iPlangId
+        LEFT OUTER JOIN ya_mirror_prod_lot_lang PLI ON
+          PLI.prod_lot_id = pl.prod_lot_id
+          AND PLI.preferred_flag = 'Y'
+      WHERE
+        pl.file_id = iPfileId
+      ORDER BY pl.lot_location, pl.priority;
+RETURN;
+END;
+
 
 /* proc_fe_get_product_video_info */
   PROCEDURE GetProductVideosInformation (

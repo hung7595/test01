@@ -2839,7 +2839,7 @@ PROCEDURE GetAllReviewsByShopperID (
 				WHERE	prodRat.rating_id = prodRatLang.rating_id
 				AND prodRatLang.us_review_id  =  rev.review_id
 --				AND prodRat.sku = prodReg.productId		
-				ORDER BY prodRat.date_posted desc
+				ORDER BY prodRat.date_posted desc NULLS LAST
       ) innerQuery
       WHERE ROWNUM < (iPstart_index + iPnum_record + 1)
     )
@@ -2890,7 +2890,7 @@ PROCEDURE GetAllReviewsByShopperID (
 				AND prodRat.account_id in (select account_id from ya_emag_prod_line_account where prod_line_id = iPprd_ln_id)
 --				AND prodRat.sku in (SELECT productId FROM productRegion WHERE originId = 1 AND regionId = 1 AND categoryId = 1 AND enable = 'Y')
 --				AND	prodRat.date_posted >= sysdate - eplr.start_date
-				ORDER BY prodRat.date_posted desc
+				ORDER BY prodRat.date_posted desc NULLS LAST
       ) innerQuery
       WHERE ROWNUM < (iPstart_index + iPnum_record + 1)
     )
