@@ -71,6 +71,16 @@ AS
     iPlangId IN INT,
     curPresult OUT refcur
   );
+
+  /* For the E-Mag GuestBook */
+  PROCEDURE GetGuestBookBySkuAndLangId (
+    iPsku IN INT,
+    iPsiteId IN INT,
+    iPlangId IN INT, 
+    curPgetThemestore1 OUT refCur,
+    curPgetThemestore2 OUT refCur
+  );
+
 END Pkg_fe_ThemeStoreAccess;
 /
 
@@ -438,6 +448,64 @@ END GetGuestBookBySku;
        AND tvl.lang_id (+) = iPlangId
        AND tvr.item_id  = tv.item_id;
   END GetVoteResult;
+
+  PROCEDURE GetGuestBookBySkuAndLangId (
+    iPsku IN INT,
+    iPsiteId IN INT,
+    iPlangId IN INT,
+    curPgetThemestore1 OUT refCur,
+    curPgetThemestore2 OUT refCur
+  )
+  AS
+  BEGIN
+    open curPgetThemestore1 FOR
+    SELECT
+      sum(actual_count) AS actual_count,
+      avg(average_rating) AS average_rating,
+      sku
+    FROM
+      ya_review_summary
+    WHERE
+      sku = iPsku
+      AND site_id = iPsiteId
+      AND (lang_id = 1 OR lang_id=iPlangId)
+    GROUP BY
+      sku;
+  
+    open curPgetThemestore2 FOR
+    SELECT a.rating_id,
+      c.review_id,
+      a.sku,
+      cast(NVL(a.product_rating, 0) AS INT) AS product_rating,
+      a.date_posted,
+      a.review_approved,
+      a.shopper_id AS shopper_id,
+      NVL(a.reviewer, 'Anonymous') AS reviewer,
+      a.reviewer_type,
+      cast(NVL(b.lang_id, 1) AS INT) AS lang_id,
+      b.title AS title,
+      c.review AS review,
+      c.review_img_loc AS review_img_loc,
+      cast(NVL(c.review_img_width, 0) AS INT) AS review_img_width,
+      cast(NVL(c.review_img_height, 0) AS INT) AS review_img_height
+    FROM
+      ya_product_rating a,
+      ya_prod_rating_lang b,
+      ya_review c
+    WHERE
+      a.rating_id = b.rating_id
+      AND (b.us_review_id = c.review_id OR
+           b.hk_review_id = c.review_id OR
+           b.jp_review_id = c.review_id OR
+           b.tw_review_id = c.review_id)
+      AND b.us_review_id = c.review_id
+      AND a.sku = iPsku
+      AND a.reviewer_type = 'USER'
+      AND review_approved = 'Y'
+      AND (lang_id = 1 OR lang_id = iPlangId)
+    ORDER BY a.date_posted DESC;
+    RETURN;
+  END GetGuestBookBySkuAndLangId;
 
 END Pkg_fe_ThemeStoreAccess;
 /
