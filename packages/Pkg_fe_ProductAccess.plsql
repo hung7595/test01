@@ -1917,7 +1917,14 @@ END;
 																	(INSTR(p.manu_part_num, 'ESCB')=1) OR
 																	(INSTR(p.manu_part_num, 'SMCL')=1) OR
 																	(INSTR(p.manu_part_num, 'AICP')=1) OR
-																	(INSTR(p.manu_part_num, 'DFCZ')=1)
+																	(INSTR(p.manu_part_num, 'DFCZ')=1) OR
+																	(INSTR(p.manu_part_num, 'SQEX')=1) OR
+																	(INSTR(p.manu_part_num, 'QQCL')=1) OR
+																	(INSTR(p.manu_part_num, 'VVCL')=1) OR
+																	(INSTR(p.manu_part_num, 'MHCL')=1) OR
+																	(INSTR(p.manu_part_num, 'VCCM')=1) OR
+																	(INSTR(p.manu_part_num, 'BSCH')=1) OR
+																	(INSTR(p.manu_part_num, 'KDSD')=1)
 																)
 																AND NOT(
 																	(p.sku = 1004530006) OR
