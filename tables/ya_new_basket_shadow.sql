@@ -14,11 +14,14 @@ CREATE TABLE ya_new_basket_shadow (
 
 ALTER TABLE ya_new_basket_shadow
 ADD CONSTRAINT pk_new_basket_shadow PRIMARY KEY (paypal_uid,shopper_id,site_id) 
-USING INDEX TABLESPACE FESTORAGE_INDEX
+USING INDEX TABLESPACE SSCOMMERCESERVER_INDEX
 /
 
-CREATE INDEX ix_new_basket_shadow_1 on ya_new_basket_shadow (SHOPPER_ID, SITE_ID) TABLESPACE FESTORAGE_INDEX
+CREATE INDEX ix_new_basket_shadow_1 on ya_new_basket_shadow (SHOPPER_ID, SITE_ID) TABLESPACE SSCOMMERCESERVER_INDEX
 /
 
 CREATE PUBLIC SYNONYM ya_new_basket_shadow FOR ya_new_basket_shadow
 /
+
+grant all on ya_new_basket_shadow to ya_secure ;
+
