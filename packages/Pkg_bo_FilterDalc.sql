@@ -57,8 +57,7 @@ IS
 --            FROM YA_PROD_DEPT pd
 --                  WHERE pd.dept_id IN (106, 168, 5, 7448)
 --                  WHERE dept_id > 10793 and dept_id < 10861
---WHERE dept_id IN (10864,11118)
-
+--									WHERE dept_id IN (10864,11118)
 --          );
 
         iLlower_sku := iLupper_sku;
@@ -80,10 +79,10 @@ IS
 --          AND sku IN
 --            (
 --              SELECT pd.sku
- --             FROM YA_PROD_DEPT pd
+--              FROM YA_PROD_DEPT pd
 --                  WHERE pd.dept_id IN (106, 168, 5, 7448)
 --                  WHERE dept_id > 10793 and dept_id < 10861
---WHERE dept_id IN (10864,11118)
+--									WHERE dept_id IN (10864,11118)
 --            )
         ORDER BY sku
       ) r
@@ -106,10 +105,10 @@ IS
 --              AND sku IN
 --                (
 --                  SELECT pd.sku
- --                 FROM YA_PROD_DEPT pd
+--                  FROM YA_PROD_DEPT pd
 --                  WHERE pd.dept_id IN (106, 168, 5, 7448)
 --                  WHERE dept_id > 10793 and dept_id < 10861
---WHERE dept_id IN (10864,11118)
+--									WHERE dept_id IN (10864,11118)
 --                )
             ORDER BY sku DESC
           ) r
@@ -134,8 +133,7 @@ IS
     WHERE
       pa.sku IN (SELECT t.sku FROM TEMP_SKU t)
       AND pa.attribute_id IN
-        (
-		
+        (		
 113, 117, 118, 119, 120, 121, 122, 123, 124, 156, 157, 189, 190, 191, 192, 193,
 194, 195, 196, 197, 198, 199, 200, 360, 4, 510, 511, 512, 513, 772, 773, 78372,
 78959, 80350, 80413, 80467, 80637, 80677, 80679, 80685, 80702, 80703, 80704,
@@ -153,16 +151,17 @@ IS
 81025, 81026, 81010, 81011, 81012, 81013, 81014, 80883, 80863, 80986, 80987,
 80988, 80989, 80990, 80991, 80992, 80993, 80994, 80995, 80996,
 -- Electronics Revamp 2006 March
-
-
 -- Yes Style Start --
 81491,81492,81493,81494,81495,81496,81497,81498,
 81500,81501,81502,81503,81504,81505,81601,81602,
 --Stone--
 81506,81507,81508,81509,81511,81524,81528,81539,
 81541,81514,81634,81537,81612,81531,81512,81521,
-81522,81654
+81522,81654,
 -- Yes Style End --
+-- Video Format Start --
+81681, 81682
+-- Video Format End --
         )
     ORDER BY pa.sku DESC;
 
@@ -175,8 +174,7 @@ IS
     WHERE
       pa.sku IN (SELECT t.sku FROM TEMP_SKU t)
       AND pa.attribute_id IN
-        (
-		
+        (		
 113, 117, 118, 119, 120, 121, 122, 123, 124, 156, 157, 189, 190, 191, 192, 193,
 194, 195, 196, 197, 198, 199, 200, 360, 4, 510, 511, 512, 513, 772, 773, 78372,
 78959, 80350, 80413, 80467, 80637, 80677, 80679, 80685, 80702, 80703, 80704,
@@ -194,16 +192,17 @@ IS
 81025, 81026, 81010, 81011, 81012, 81013, 81014, 80883, 80863, 80986, 80987,
 80988, 80989, 80990, 80991, 80992, 80993, 80994, 80995, 80996,
 -- Electronics Revamp 2006 March
-
-
 -- Yes Style Start --
 81491,81492,81493,81494,81495,81496,81497,81498,
 81500,81501,81502,81503,81504,81505,81601,81602,
 --Stone--
 81506,81507,81508,81509,81511,81524,81528,81539,
 81541,81514,81634,81537,81612,81531,81512,81521,
-81522,81654
+81522,81654,
 -- Yes Style End --
+-- Video Format Start --
+81681, 81682
+-- Video Format End --
         );
 
     /* reset the queue if no more item need to be updated */
