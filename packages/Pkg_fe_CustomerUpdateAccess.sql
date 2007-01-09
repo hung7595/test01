@@ -19,6 +19,7 @@ AS
     dPupdated_date	IN DATE,
     iPpayment_method	IN INT,
     nvcPauth_code	IN NVARCHAR2,
+    iPauth_amount	IN NUMBER,
     nvcPavs_code	IN NVARCHAR2,
     nvcPrequest_id	IN NVARCHAR2,
     nvcPfirstname	IN NVARCHAR2,
@@ -90,10 +91,10 @@ is
     SELECT
 		payment_log_id, shopper_id, status, order_id, updated_date, payment_method,
 		auth_code, avs_code, request_id, firstname, lastname, email, phone,
-		address1, address2, city, state_code, state, zip, country,
-		cc_type, cc_number, cc_exp_month, cc_exp_year,
-		coupon_code, coupon_amount, credit_amount, currency,
-		cc_numberencrypted, encryptionkey
+		address1, address2, city, nvl(state_code, 0) as state_code, state, zip, nvl(country, 0) as country,
+		nvl(cc_type, 0) as cc_type, cc_number, cc_exp_month, cc_exp_year,
+		coupon_code, nvl(coupon_amount, 0) as coupon_amount, nvl(credit_amount, 0) as credit_amount, currency,
+		cc_numberencrypted, encryptionkey, auth_amount
     FROM ya_customerupdate_payment_log
     WHERE status = 1;
     RETURN;
@@ -121,6 +122,7 @@ is
     dPupdated_date	IN DATE,
     iPpayment_method	IN INT,
     nvcPauth_code	IN NVARCHAR2,
+    iPauth_amount	IN NUMBER,
     nvcPavs_code	IN NVARCHAR2,
     nvcPrequest_id	IN NVARCHAR2,
     nvcPfirstname	IN NVARCHAR2,
@@ -154,13 +156,14 @@ is
     IF iPlog_id IS NULL OR iPlog_id < 0 THEN
       SELECT SEQ_customerupdate_payment_log.nextval INTO iPlog_id FROM DUAL;
     ELSE
-      SELECT SEQ_order.nextval INTO iLseq_currval FROM DUAL;
+			iPlog_id := iPayment_log_id;
+      SELECT SEQ_customerupdate_payment_log.nextval INTO iLseq_currval FROM DUAL;
       iLseq_diff := iPlog_id - iLseq_currval;
       IF iLseq_diff <> 0 THEN
         EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_customerupdate_payment_log INCREMENT BY ' || iLseq_diff;
-        SELECT SEQ_order.nextval INTO iLseq_currval FROM dual;
+        SELECT SEQ_customerupdate_payment_log.nextval INTO iLseq_currval FROM dual;
         EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_customerupdate_payment_log INCREMENT BY 1';
-      END IF;
+      END IF;			
     END IF;
 
     INSERT INTO ya_customerupdate_payment_log(
@@ -169,15 +172,15 @@ is
         address1, address2, city, state_code, state, zip, country,
         cc_type, cc_number, cc_exp_month, cc_exp_year,
 				coupon_code, coupon_amount, credit_amount, currency, 
-				cc_numberencrypted, encryptionkey
+				cc_numberencrypted, encryptionkey, auth_amount
 
     )VALUES(
-        iPayment_log_id, cPshopper_id, iPstatus, iPorder_id, dPupdated_date, iPpayment_method,
+        iPlog_id, cPshopper_id, iPstatus, iPorder_id, dPupdated_date, iPpayment_method,
 				nvcPauth_code, nvcPavs_code, nvcPrequest_id, nvcPfirstname, nvcPlastname, nvcPemail, nvcPphone,
         nvcPaddress1, nvcPaddress2, nvcPcity, iPstate_code, nvcPstate, nvcPzip, iPcountry,
         iPcc_type, cPcc_number, cPcc_exp_month, cPcc_exp_year,
         cPcoupon_code, iPcoupon_amount, iPcredit_amount, cPcurrency,
-        cPcc_numberEncrypted, iPencryption_key
+        cPcc_numberEncrypted, iPencryption_key, iPauth_amount
     );
   END InsertPendingRequest;
 
