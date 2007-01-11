@@ -1896,59 +1896,61 @@ END;
 		INNER JOIN YA_PROD_GALLERY_SECTION b ON b.section_id=c.section_id AND b.lang_id = iPlangId
 		INNER JOIN YA_PROD_GALLERY_DESC d ON c.image_id=d.image_id AND d.lang_id = iPlangId
 		INNER JOIN YA_PRODUCT p ON a.sku = p.sku 
-																AND (p.account_id = 49 OR p.account_id = 50)
-																AND (
-																	(INSTR(p.manu_part_num, 'TRAK')=1) OR
-																	(INSTR(p.manu_part_num, 'DFCL')=1) OR
-																	(INSTR(p.manu_part_num, 'KSCL')=1) OR
-																	(INSTR(p.manu_part_num, 'AICL')=1) OR
-																	(INSTR(p.manu_part_num, 'ESCL')=1) OR
-																	(INSTR(p.manu_part_num, 'SRCL')=1) OR
-																	(INSTR(p.manu_part_num, 'SECL')=1) OR
-																	(INSTR(p.manu_part_num, 'SICC')=1) OR
-																	(INSTR(p.manu_part_num, 'AIBL')=1) OR
-																	(INSTR(p.manu_part_num, 'DFBL')=1) OR
-																	(INSTR(p.manu_part_num, 'KSBL')=1) OR
-																	(INSTR(p.manu_part_num, 'SEBL')=1) OR
-																	(INSTR(p.manu_part_num, 'ESBL')=1) OR
-																	(INSTR(p.manu_part_num, 'SRBL')=1) OR		
-																	(INSTR(p.manu_part_num, 'SVWC')=1) OR
-																	(INSTR(p.manu_part_num, 'KSC2')=1) OR
-																	(INSTR(p.manu_part_num, 'ESCB')=1) OR
-																	(INSTR(p.manu_part_num, 'SMCL')=1) OR
-																	(INSTR(p.manu_part_num, 'AICP')=1) OR
-																	(INSTR(p.manu_part_num, 'DFCZ')=1) OR
-																	(INSTR(p.manu_part_num, 'SQEX')=1) OR
-																	(INSTR(p.manu_part_num, 'QQCL')=1) OR
-																	(INSTR(p.manu_part_num, 'VVCL')=1) OR
-																	(INSTR(p.manu_part_num, 'MHCL')=1) OR
-																	(INSTR(p.manu_part_num, 'VCCM')=1) OR
-																	(INSTR(p.manu_part_num, 'BSCH')=1) OR
-																	(INSTR(p.manu_part_num, 'KDSD')=1)
-																)
-																AND NOT(
-																	(p.sku = 1004530006) OR
-																	(p.sku = 1004538153) OR
-																	(p.sku = 1004538151) OR
-																	(p.sku = 1004529988) OR
-																	(p.sku = 1004537530) OR
-																	(p.sku = 1004537531) OR
-																	(p.sku = 1004537543) OR
-																	(p.sku = 1004538278) OR
-																	(p.sku = 1004538279) OR
-																	(p.sku = 1004538413) OR
-																	(p.sku = 1004496908) OR
-																	(p.sku = 1004496927) OR
-																	(p.sku = 1004538307) OR
-																	(p.sku = 1004538283) OR
-																	(p.sku = 1004560562) OR
-																	(p.sku = 1004566733) OR
-																	-- 2007/01/05
-																	(p.sku = 1004598078) OR
-																	(p.sku = 1004598080) OR
-																	(p.sku = 1004562080) OR
-																	(p.sku = 1004560563) OR
-																	(p.sku = 1004604284)
+																AND NOT (
+																	(p.account_id = 49 OR p.account_id = 50)
+																	AND (
+																		(INSTR(p.manu_part_num, 'TRAK')=1) OR
+																		(INSTR(p.manu_part_num, 'DFCL')=1) OR
+																		(INSTR(p.manu_part_num, 'KSCL')=1) OR
+																		(INSTR(p.manu_part_num, 'AICL')=1) OR
+																		(INSTR(p.manu_part_num, 'ESCL')=1) OR
+																		(INSTR(p.manu_part_num, 'SRCL')=1) OR
+																		(INSTR(p.manu_part_num, 'SECL')=1) OR
+																		(INSTR(p.manu_part_num, 'SICC')=1) OR
+																		(INSTR(p.manu_part_num, 'AIBL')=1) OR
+																		(INSTR(p.manu_part_num, 'DFBL')=1) OR
+																		(INSTR(p.manu_part_num, 'KSBL')=1) OR
+																		(INSTR(p.manu_part_num, 'SEBL')=1) OR
+																		(INSTR(p.manu_part_num, 'ESBL')=1) OR
+																		(INSTR(p.manu_part_num, 'SRBL')=1) OR		
+																		(INSTR(p.manu_part_num, 'SVWC')=1) OR
+																		(INSTR(p.manu_part_num, 'KSC2')=1) OR
+																		(INSTR(p.manu_part_num, 'ESCB')=1) OR
+																		(INSTR(p.manu_part_num, 'SMCL')=1) OR
+																		(INSTR(p.manu_part_num, 'AICP')=1) OR
+																		(INSTR(p.manu_part_num, 'DFCZ')=1) OR
+																		(INSTR(p.manu_part_num, 'SQEX')=1) OR
+																		(INSTR(p.manu_part_num, 'QQCL')=1) OR
+																		(INSTR(p.manu_part_num, 'VVCL')=1) OR
+																		(INSTR(p.manu_part_num, 'MHCL')=1) OR
+																		(INSTR(p.manu_part_num, 'VCCM')=1) OR
+																		(INSTR(p.manu_part_num, 'BSCH')=1) OR
+																		(INSTR(p.manu_part_num, 'KDSD')=1)
+																	)
+																	AND NOT(
+																		(p.sku = 1004530006) OR
+																		(p.sku = 1004538153) OR
+																		(p.sku = 1004538151) OR
+																		(p.sku = 1004529988) OR
+																		(p.sku = 1004537530) OR
+																		(p.sku = 1004537531) OR
+																		(p.sku = 1004537543) OR
+																		(p.sku = 1004538278) OR
+																		(p.sku = 1004538279) OR
+																		(p.sku = 1004538413) OR
+																		(p.sku = 1004496908) OR
+																		(p.sku = 1004496927) OR
+																		(p.sku = 1004538307) OR
+																		(p.sku = 1004538283) OR
+																		(p.sku = 1004560562) OR
+																		(p.sku = 1004566733) OR
+																		-- 2007/01/05
+																		(p.sku = 1004598078) OR
+																		(p.sku = 1004598080) OR
+																		(p.sku = 1004562080) OR
+																		(p.sku = 1004560563) OR
+																		(p.sku = 1004604284)
+																	)
 																)
     WHERE a.sku = iPsku;
 
