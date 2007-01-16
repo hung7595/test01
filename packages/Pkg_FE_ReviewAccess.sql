@@ -1,3 +1,29 @@
+DROP TABLE temp_spotlight_review_report CASCADE CONSTRAINTS
+/
+CREATE GLOBAL TEMPORARY table temp_spotlight_review_report
+(
+	id INT NOT NULL,
+	positive INT DEFAULT 0 NOT NULL,
+	total INT DEFAULT 0 NOT NULL,
+	perc INT DEFAULT 0 NOT NULL,
+	sku INT NOT NULL,
+	prod_name_u NVARCHAR2(300) NULL,
+	date_posted DATE,
+	review_id INT,
+	review CLOB,
+	reviewer NVARCHAR2(100),
+	shopper_id CHAR(32),
+	email VARCHAR2(255),
+	rating_id INT,
+	title VARCHAR2(200),
+	status NVARCHAR2(50),
+	lang_id INT,
+	reviewer_type VARCHAR2(100),
+	PRIMARY KEY (id)
+)
+ON COMMIT PRESERVE ROWS
+/
+
 CREATE OR REPLACE package Pkg_FE_ReviewAccess
 AS
   TYPE refCur IS REF CURSOR;
@@ -112,11 +138,27 @@ AS
     iPrating_id IN OUT INT
   );
   /* proc_fe_write_review_1 */
-PROCEDURE InsertReviewData1 (
+  PROCEDURE InsertReviewData1 (
     iPsku IN INT,
     iPrating IN INT,
     cPtitle IN VARCHAR2,
     cPreview IN VARCHAR2,
+    cPshopperID IN CHAR,
+    cPshopperName IN VARCHAR2,
+    iPlangID IN INT,
+    cPapproved IN CHAR,
+    cPreviewerType IN VARCHAR2,
+    cPactionType IN VARCHAR2,
+    cPremark IN CLOB,
+    iPreview_id IN OUT INT,
+    iPrating_id IN OUT INT
+  );
+  /* proc_fe_write_review_1 - revise data type */
+  PROCEDURE InsertReviewData2 (
+    iPsku IN INT,
+    iPrating IN INT,
+    cPtitle IN VARCHAR2,
+    cPreview IN CLOB,
     cPshopperID IN CHAR,
     cPshopperName IN VARCHAR2,
     iPlangID IN INT,
@@ -365,7 +407,9 @@ PROCEDURE InsertReviewData1 (
     iPsku19 IN	INT DEFAULT NULL,
     iPsku20 IN	INT DEFAULT NULL
   );
+	-- Editor Review -- END ---------------------------------------------------------------------------------------------------------------------------------------------
 
+	-- Review Update -- BEGIN ---------------------------------------------------------------------------------------------------------------------------------------------
 	PROCEDURE UpdateReview (
 		iPrating_id IN INT,
 		iPlang_id IN INT,
@@ -375,10 +419,126 @@ PROCEDURE InsertReviewData1 (
 
 	PROCEDURE UpdateReviewApproveStatus (
 		iPrating_id IN INT,
-		cPapprove IN CHAR
+		cPapprove IN CHAR,
+		iProwAffect OUT INT
+  );
+	-- Review Update -- END ---------------------------------------------------------------------------------------------------------------------------------------------	
+	
+	-- Spotlight Review -- BEGIN ---------------------------------------------------------------------------------------------------------------------------------------------
+	PROCEDURE UpdateSpotlightReview (
+		iPrating_id IN INT,
+		iProwAffect OUT INT
   );
 
-	-- Editor Review -- END ---------------------------------------------------------------------------------------------------------------------------------------------
+	PROCEDURE AddExcludeList (
+		iPreview_id IN INT
+  );
+
+	PROCEDURE GetPagedSpotlightReviewBySKU (
+		iPsku IN INT,
+		iPpage_number IN INT,
+		iPpage_size IN INT,
+		iPnum_record OUT INT,
+    curPresult OUT refCur	
+	);
+
+	PROCEDURE GetPagedSpotlightReviewByDate (
+		iPtotal_vote INT,
+		iPpositive_vote INT,
+		iPlang_id INT,
+		dPstart_date DATE,
+		dPend_date DATE,
+		iPpage_number IN INT,
+		iPpage_size IN INT,
+		iPnum_record OUT INT,
+    curPresult OUT refCur	
+	);
+	-- Spotlight Review -- END ---------------------------------------------------------------------------------------------------------------------------------------------
+
+	-- Report This -- START -----------------------------------------------------------------------------------------------------------------------------------------------
+	PROCEDURE GetReviewReportByReviewId (
+		iPreview_id IN INT,
+    curPresult OUT refCur	
+  );
+
+	PROCEDURE DeleteReviewReport (
+		iPreport_id IN INT,
+		iProwAffect OUT INT
+  );
+
+	PROCEDURE AddReviewActionLog (
+		iPrating_id IN INT,
+		iPaction_type IN VARCHAR2,
+		iPremark IN NVARCHAR2
+  );
+
+	PROCEDURE AddReviewApprove (
+		iPrating_id IN INT
+  );
+
+	PROCEDURE GetReviewReportByReportCount (
+		iPreport_count IN INT,
+		iPpage_number IN INT,
+		iPpage_size IN INT,
+		iPnum_record OUT INT,
+		curPresult OUT refCur	
+  );
+
+	PROCEDURE GetReviewReportBySKU (
+		iPsku IN INT,
+		iPpage_number IN INT,
+		iPpage_size IN INT,
+		iPnum_record OUT INT,
+    curPresult OUT refCur	
+  );
+
+	PROCEDURE GetReviewReportByDateRange (
+		iPlang_id IN INT,
+		dPstart_date IN DATE,
+		dPend_date IN DATE,
+		iPpage_number IN INT,
+		iPpage_size IN INT,
+		iPnum_record OUT INT,
+    curPresult OUT refCur	
+  );
+	-- Report This -- END -----------------------------------------------------------------------------------------------------------------------------------------------
+
+	-- Review Approval -- Start -----------------------------------------------------------------------------------------------------------------------------------------------
+	/* proc_fe_review_getReviewKey */
+	PROCEDURE GetReviewKey (
+		curPresult OUT refCur
+  );
+
+	/* proc_fe_getNewReview */
+	PROCEDURE GetNewReview (
+		curPresult OUT refCur
+  );
+
+	/* proc_fe_getNewReviewCount */
+	PROCEDURE GetNewReviewCount (
+		curPresult OUT refCur
+  );
+
+	/* proc_fe_review_deleteReviewApprovalSystemKey */
+	PROCEDURE DeleteReviewApprovalSystemKey;
+
+	/* proc_fe_review_addReviewApprovalSystemKey */
+	PROCEDURE AddReviewApprovalSystemKey (
+		iPrreview_id IN INT,  
+		iPrating_id IN INT,  
+		cPreview_key IN NCLOB,  
+		dPdate_posted IN DATE
+  );
+
+	/* proc_fe_updateReviewStatus */
+	PROCEDURE UpdateReviewStatus (
+		iPrating_id IN INT,                  
+		cPstatus IN CHAR,                  
+		cPaction_type IN VARCHAR2,
+		cPremark IN NVARCHAR2
+  );
+
+	-- Review Approval -- END -----------------------------------------------------------------------------------------------------------------------------------------------
 END Pkg_FE_ReviewAccess;
 /
 
@@ -1666,7 +1826,173 @@ PROCEDURE InsertReviewData (
     RETURN;
   END InsertReviewData1;
 
+  PROCEDURE InsertReviewData2 (
+    iPsku IN INT,
+    iPrating IN INT,
+    cPtitle IN VARCHAR2,
+    cPreview IN CLOB,
+    cPshopperID IN CHAR,
+    cPshopperName IN VARCHAR2,
+    iPlangID IN INT,
+    cPapproved IN CHAR,
+    cPreviewerType IN VARCHAR2,
+    cPactionType IN VARCHAR2,
+    cPremark IN CLOB,
+    iPreview_id IN OUT INT,
+    iPrating_id IN OUT INT
+  )
+  AS
+    iLseq_currval INT;
+    iLseq_diff INT;
+  BEGIN
+    IF iPreview_id IS NULL OR iPreview_id < 0 THEN
+      SELECT SEQ_review.nextval INTO iPreview_id FROM dual;
+    ELSE
+      SELECT SEQ_review.nextval INTO iLseq_currval FROM dual;
+      iLseq_diff := iPreview_id - iLseq_currval;
+      IF iLseq_diff <> 0 THEN
+        EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_review INCREMENT BY ' || iLseq_diff;
+        SELECT SEQ_review.nextval INTO iLseq_currval FROM dual;
+        EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_review INCREMENT BY 1';
+      END IF;
+    END IF;
 
+    INSERT INTO ya_review
+      (
+        review,
+        REVIEW_ID
+      )
+    VALUES
+      (
+        cPreview,
+        iPreview_id
+      );
+
+    IF SQLCODE <> 0 THEN
+      BEGIN
+        ROLLBACK;
+        iPreview_id := -1;
+        RETURN;
+      END;
+    END IF;
+
+    IF iPrating_id IS NULL OR iPrating_id < 0 THEN
+      SELECT SEQ_ya_product_rating.nextval INTO iPrating_id FROM DUAL;
+    ELSE
+      SELECT SEQ_ya_product_rating.nextval INTO iLseq_currval FROM dual;
+      iLseq_diff := iPrating_id - iLseq_currval;
+      IF iLseq_diff <> 0 THEN
+         EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_ya_product_rating INCREMENT BY ' || iLseq_diff;
+         SELECT SEQ_ya_product_rating.nextval INTO iLseq_currval FROM dual;
+         EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_ya_product_rating INCREMENT BY 1';
+       END IF;
+     END IF;
+
+    INSERT INTO ya_product_rating
+      (
+        sku,
+        product_rating,
+        date_posted,
+        shopper_id,
+        review_approved,
+        reviewer_type,
+        reviewer,
+        RATING_ID
+      )
+    VALUES
+      (
+        iPsku,
+        iPrating,
+        SYSDATE,
+        cPshopperID,
+        cPapproved,
+        cPreviewerType,
+        cPshopperName,
+        iPrating_id
+      );
+
+    IF SQLCODE <> 0 THEN
+      BEGIN
+        ROLLBACK;
+        iPrating_id := -1;
+        RETURN;
+      END;
+    END IF;
+
+    INSERT INTO ya_prod_rating_lang
+      (
+        rating_id,
+        lang_id,
+        title,
+        us_review_id,
+        jp_review_id,
+        hk_review_id,
+        tw_review_id,
+        preferred_flag
+      )
+    VALUES
+      (
+        iPrating_id,
+        iPlangID,
+        cPtitle,
+        iPreview_id,
+        iPreview_id,
+        iPreview_id,
+        iPreview_id,
+        'Y'
+      );
+
+    IF SQLCODE <> 0 THEN
+      BEGIN
+        ROLLBACK;
+        iPrating_id := -1;
+        iPreview_id := -1;
+        RETURN;
+      END;
+    END IF;
+
+    IF (cPapproved <>'Y' OR cPapproved <>'N') THEN
+			-- data use in review approval system  
+			BEGIN
+				INSERT INTO ya_review_tmp_newReviewList(review_id, review, rating_id, date_posted, shopper_id, reviewer, title, lang_id)  
+				VALUES(iPreview_id, cPreview, iPrating_id, SYSDATE, cPshopperID, cPshopperName, cPtitle, iPlangID);
+			END;
+		END IF;
+
+    IF SQLCODE <> 0 THEN
+      BEGIN
+        ROLLBACK;
+        iPrating_id := -1;
+        iPreview_id := -1;
+        RETURN;
+      END;
+    END IF;
+
+    If cPapproved <>'N' THEN
+      BEGIN
+				IF cPapproved ='Y' THEN
+					BEGIN
+						insert into ya_product_review_approve(rating_id, approved_datetime)
+						values(iPrating_id, sysdate);
+					END;
+				END IF;
+				insert into ya_review_action_log(rating_id, action_type, remark, updated_datetime)
+				values(iPrating_id, cPactionType , cPremark, sysdate)  ;
+      END;
+    END IF;
+
+		IF SQLCODE <> 0 THEN
+			BEGIN
+				ROLLBACK;
+				iPrating_id := -1;
+				iPreview_id := -1;
+				RETURN;
+			END;
+		END IF;
+
+    COMMIT;
+    RETURN;
+  END InsertReviewData2;
 
   PROCEDURE InserHelpfulReviewData (
     iPreview_id IN INT,
@@ -2997,6 +3323,7 @@ PROCEDURE GetAllReviewsByShopperID (
   END IsEditorPickMultiProduct;
 
 	-- Update Review ---------------------------------------------------------------------------------------------------------------------------------------------
+
 	PROCEDURE UpdateReview (
 		iPrating_id IN INT,
 		iPlang_id IN INT,
@@ -3018,22 +3345,922 @@ PROCEDURE GetAllReviewsByShopperID (
 		SET review = cPcontent 
 		WHERE review_id = iLreview_id;
 		
+    COMMIT;
 		RETURN;
 	END UpdateReview;
 
 	PROCEDURE UpdateReviewApproveStatus (
 		iPrating_id IN INT,
-		cPapprove IN CHAR
+		cPapprove IN CHAR,
+		iProwAffect OUT INT
   )
 	AS
+		iLrating_count INT;
 	BEGIN				
 		UPDATE ya_product_rating
 		SET review_approved = cPapprove
 		WHERE rating_id = iPrating_id;
 	
+		iProwAffect := sql%rowcount;
+
+		IF cPapprove = 'R' THEN
+			SELECT count(*) INTO iLrating_count FROM ya_product_review_approve WHERE rating_id = iPrating_id;
+			IF (iLrating_count > 0) THEN
+					UPDATE ya_product_review_approve 
+					SET approved_datetime=SYSDATE() WHERE rating_id=iPrating_id;				
+			ELSE
+				Insert into ya_product_review_approve (rating_id) values (iPrating_id);
+			END IF;
+		END IF;
+
+		COMMIT;
 		RETURN;
 	END UpdateReviewApproveStatus;
 
-	-- Editor Review -- END ---------------------------------------------------------------------------------------------------------------------------------------------
+	-- Spotlight Review -----------------------------------------------------------------------------------------------------------------------------------------------
+	PROCEDURE UpdateSpotlightReview (
+		iPrating_id IN INT,
+		iProwAffect OUT INT
+  )
+	AS
+	BEGIN				
+		UPDATE ya_product_rating
+		SET reviewer_type = 'WINNER'
+		WHERE rating_id = iPrating_id;
+
+		iProwAffect := sql%rowcount;
+	
+    COMMIT;
+		RETURN;
+	END UpdateSpotlightReview;
+
+	PROCEDURE AddExcludeList (
+		iPreview_id IN INT
+  )
+	AS
+	BEGIN
+		INSERT INTO ya_review_exclude_list(review_id, exclude_for)  
+		VALUES(iPreview_id, 'S');
+
+    COMMIT;
+		RETURN;
+	END AddExcludeList;
+
+	PROCEDURE GetPagedSpotlightReviewBySKU (
+		iPsku IN INT,
+		iPpage_number IN INT,
+		iPpage_size IN INT,
+		iPnum_record OUT INT,
+    curPresult OUT refCur	
+	)
+	AS
+    -- range of records to extract for the specified page
+    iLfrom_id INT;
+    iLto_id INT;
+	BEGIN
+		-- Empty temp table
+		EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_spotlight_review_report';
+
+		INSERT INTO temp_spotlight_review_report
+		(			
+			id,
+			positive,
+			total,
+			perc,
+			sku,
+			prod_name_u,
+			date_posted,
+			review_id,
+			review,
+			reviewer,
+			shopper_id,
+			email,
+			rating_id,
+			title,
+			status,
+			lang_id,
+			reviewer_type
+		)
+		SELECT ROWNUM, 		
+		Y, total, perc, sku, prod_name_u, date_posted, review_id, review,
+		reivewer, shopper_id, email, rating_id, title, status, lang_id, reviewer_type
+		FROM
+		(
+			select
+			nvl(summary.Y, 0) as Y, nvl(summary.total, 0) as total, nvl(summary.perc, 0) as perc, pr.sku, pn.prod_name_u, date_posted, r.review_id, review, 
+			nvl(
+				nvl(
+					LTrim(
+						(
+						SELECT
+							CASE display_mode
+								WHEN 0 THEN s.nickname
+								WHEN 1 THEN s.firstname
+								WHEN 2 THEN s.firstname || ' ' || s.lastname
+								WHEN 3 THEN s.lastname || ' ' || s.firstname
+							end
+						FROM ya_review_reviewerName rn 
+						inner join ya_shopper s on rn.shopper_id=s.shopper_id
+						WHERE rn.shopper_id=pr.shopper_id)
+					), 
+					ltrim(nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname))
+				), 'Anonymous'
+			) as reivewer,
+			pr.shopper_id,s.email,pr.rating_id,prl.title,(case review_approved when 'Y' then 'Approved' end) as status,prl.lang_id,reviewer_type
+			from 
+			(
+				select 
+				rh.review_id, 
+				sum(case rh.review_helpful when 'Y' then 1 else 0 end) as Y, 
+				(sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)  ) as total,
+				cast(round(sum(case rh.review_helpful when 'Y' then 1 else 0 end) / cast((sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)) as float) * 100,0) as int) as perc
+				from ya_review_helpful rh
+				group by rh.review_id
+			)  summary 
+			right join  ya_review r on summary.review_id =r.review_id
+			inner join ya_prod_rating_lang prl on prl.us_review_id=r.review_id
+			inner join ya_product_rating pr on pr.rating_id=prl.rating_id
+			left join ya_shopper s on s.shopper_id=pr.shopper_id
+			inner join ya_prod_lang pn on (pn.sku=pr.sku)
+			WHERE	review_approved='Y' 
+--			and pn.lang_id=1 
+			and (reviewer_type='USER' or reviewer_type='WINNER')
+			and	r.review_id not in (select review_id from ya_review_exclude_list where exclude_for='S')
+			and pr.sku = iPsku
+			order by date_posted desc
+		) inner_table;
+
+    --Return Total Record count
+    SELECT count(1) INTO iPnum_record From temp_spotlight_review_report;
+		
+    -- calculate the first and last ID of the range of topics we need
+		iLfrom_id := ((iPpage_number - 1) * iPpage_size) + 1;
+    iLto_id := iPpage_number * iPpage_size;
+		
+		-- select the page of records
+
+		OPEN curPresult	FOR
+			SELECT * FROM
+			(
+				SELECT innerQuery.*, rownum AS rnum 
+				from(
+					SELECT * FROM temp_spotlight_review_report order by ID
+				) innerQuery
+				WHERE ROWNUM <= iLto_id
+			)
+			WHERE rnum >= iLfrom_id;
+
+    COMMIT;
+		RETURN;
+	END GetPagedSpotlightReviewBySKU;
+
+	PROCEDURE GetPagedSpotlightReviewByDate (
+		iPtotal_vote INT,
+		iPpositive_vote INT,
+		iPlang_id INT,
+		dPstart_date DATE,
+		dPend_date DATE,
+		iPpage_number IN INT,
+		iPpage_size IN INT,
+		iPnum_record OUT INT,
+    curPresult OUT refCur	
+	)
+	AS
+    -- range of records to extract for the specified page
+    iLfrom_id INT;
+    iLto_id INT;
+		iLtmp_table_id INT;
+	BEGIN
+		-- Empty temp table
+		EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_spotlight_review_report';
+
+		INSERT INTO temp_spotlight_review_report
+		(				
+			id,
+			positive,
+			total,
+			perc,
+			sku,
+			prod_name_u,
+			date_posted,
+			review_id,
+			review,
+			reviewer,
+			shopper_id,
+			email,
+			rating_id,
+			title,
+			status,
+			lang_id,
+			reviewer_type
+		)
+		SELECT ROWNUM, 		
+		Y, total, perc, sku, prod_name_u, date_posted, review_id, review,
+		reivewer, shopper_id, email, rating_id, title, status, lang_id, reviewer_type
+		FROM
+		(
+			select
+			nvl(summary.Y, 0) as Y, nvl(summary.total, 0) as total, nvl(summary.perc, 0) as perc, pr.sku, pn.prod_name_u, date_posted, r.review_id, review, 
+			nvl(
+				nvl(
+					LTrim(
+						(
+						SELECT
+							CASE display_mode
+								WHEN 0 THEN s.nickname
+								WHEN 1 THEN s.firstname
+								WHEN 2 THEN s.firstname || ' ' || s.lastname
+								WHEN 3 THEN s.lastname || ' ' || s.firstname
+							end
+						FROM ya_review_reviewerName rn 
+						inner join ya_shopper s on rn.shopper_id=s.shopper_id
+						WHERE rn.shopper_id=pr.shopper_id)
+					), 
+					ltrim(nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname))
+				), 'Anonymous'
+			) as reivewer,
+			pr.shopper_id,s.email,pr.rating_id,prl.title,(case review_approved when 'Y' then 'Approved' end) as status,prl.lang_id,reviewer_type
+			from 
+			(
+				select 
+				rh.review_id, 
+				sum(case rh.review_helpful when 'Y' then 1 else 0 end) as Y, 
+				(sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)  ) as total,
+				cast(round(sum(case rh.review_helpful when 'Y' then 1 else 0 end) / cast((sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)) as float) * 100,0) as int) as perc
+				from ya_review_helpful rh
+				group by rh.review_id
+			)  summary 
+			right join ya_review r on summary.review_id = r.review_id
+			inner join ya_prod_rating_lang prl on prl.us_review_id=r.review_id
+			inner join ya_product_rating pr on pr.rating_id=prl.rating_id
+			left join ya_shopper s on s.shopper_id=pr.shopper_id
+			inner join ya_prod_lang pn on (pn.sku=pr.sku)
+			WHERE	review_approved='Y' 
+			and (pn.lang_id = iPlang_id OR iPlang_id = 0)
+			and (reviewer_type='USER')-- or reviewer_type='WINNER')
+			and  r.review_id in(
+				select review_id 
+				from ya_review_helpful rh 
+				group by review_id 
+				having sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)>=iPtotal_vote
+				and	cast(round(sum(case rh.review_helpful when 'Y' then 1 else 0 end) / cast((sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)) as float) * 100,0) as int)>=iPpositive_vote
+			)
+			and	(pr.date_posted >= dPstart_date AND pr.date_posted <= dPend_date)
+			and	r.review_id not in (select review_id from ya_review_exclude_list where exclude_for='S')
+			order by date_posted desc
+		) inner_table;
+
+		SELECT COUNT(*) INTO iLtmp_table_id FROM temp_spotlight_review_report;
+
+		INSERT INTO temp_spotlight_review_report
+		(			
+			id,
+			positive,
+			total,
+			perc,
+			sku,
+			prod_name_u,
+			date_posted,
+			review_id,
+			review,
+			reviewer,
+			shopper_id,
+			email,
+			rating_id,
+			title,
+			status,
+			lang_id
+		)
+		SELECT iLtmp_table_id + ROWNUM, 		
+		Y, total, perc, sku, prod_name_u, date_posted, review_id, review,
+		reivewer, shopper_id, email, rating_id, title, status, lang_id
+		FROM
+		(
+			select 
+			nvl(summary.Y, 0) as Y, nvl(summary.total, 0) as total, nvl(summary.perc, 0) as perc, pr.sku, pn.prod_name_u, date_posted, r.review_id, review, 
+			nvl(ltrim(nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname)), 'Anonymous') as reivewer,
+			pr.shopper_id,s.email,pr.rating_id,prl.title,(case review_approved when 'Y' then 'Approved' end) as status,prl.lang_id
+			from 
+			(
+				select 
+				rh.review_id, 
+				sum(case rh.review_helpful when 'Y' then 1 else 0 end) as Y, 
+				(sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)  ) as total,
+				cast(round(sum(case rh.review_helpful when 'Y' then 1 else 0 end) / cast((sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)) as float) * 100,0) as int) as perc
+				from ya_review_helpful rh
+				group by rh.review_id
+			)  summary 
+			left join ya_review r on summary.review_id = r.review_id
+			inner join ya_prod_rating_lang prl on prl.us_review_id=r.review_id
+			inner join ya_product_rating pr on pr.rating_id=prl.rating_id
+			left join ya_shopper s on s.shopper_id=pr.shopper_id
+			inner join ya_prod_lang pn on (pn.sku=pr.sku)
+			WHERE review_approved='Y'
+			and pn.lang_id=1 
+			and prl.lang_id=iPlang_id
+			and reviewer_type='USER'		
+			and r.review_id in 
+			(
+				select review_id 
+				from ya_review_helpful rh 
+				group by review_id 
+				having sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)>=iPtotal_vote
+				and cast(round(sum(case rh.review_helpful when 'Y' then 1 else 0 end) / cast((sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)) as float) * 100,0) as int)>=iPpositive_vote
+			) 
+	--		and	(convert(varchar2,pr.date_posted,112) <= convert(varchar2,dPend_date,112) AND convert(varchar2,pr.date_posted,112)>= convert(varchar2,dPstart_date,112))
+			and	(pr.date_posted >= dPstart_date AND pr.date_posted <= dPend_date)
+			and	r.review_id not in (select review_id from ya_review_exclude_list where exclude_for='S') 
+			order by date_posted desc
+		) inner_table;
+
+    --Return Total Record count
+    SELECT count(1) INTO iPnum_record From temp_spotlight_review_report;
+		
+    -- calculate the first and last ID of the range of topics we need
+		iLfrom_id := ((iPpage_number - 1) * iPpage_size) + 1;
+    iLto_id := iPpage_number * iPpage_size;
+
+    -- select the page of records
+		OPEN curPresult	FOR
+			SELECT * FROM
+			(
+				SELECT innerQuery.*, rownum AS rnum 
+				from(
+					SELECT * FROM temp_spotlight_review_report
+				) innerQuery
+				WHERE ROWNUM <= iLto_id
+			)
+			WHERE rnum >= iLfrom_id;
+
+    COMMIT;
+		RETURN;
+	END GetPagedSpotlightReviewByDate;
+
+	-- Report This -----------------------------------------------------------------------------------------------------------------------------------------------
+	PROCEDURE GetReviewReportByReviewId (
+		iPreview_id IN INT,
+    curPresult OUT refCur	
+  )
+	AS
+	BEGIN
+		OPEN curPresult	FOR
+			select  
+			trim(
+				nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname)
+			) as reporter,
+			s.email, rr.report_id, rr.shopper_id, rr.reason, rr.report_content, rr.created_datetime, rr.updated_datetime  
+			FROM ya_review_report rr  
+			left join ya_shopper s on (s.shopper_id=rr.shopper_id)  
+			where	rr.review_id = iPreview_id
+			order by created_datetime desc;
+			
+		RETURN;
+	END GetReviewReportByReviewId;
+
+	PROCEDURE DeleteReviewReport (
+		iPreport_id IN INT,
+		iProwAffect OUT INT
+  )
+	AS
+	BEGIN				
+		delete from ya_review_report where report_id = iPreport_id;
+		iProwAffect := sql%rowcount;
+  
+    IF sqlcode = 0 THEN
+      COMMIT;
+    ELSE
+      ROLLBACK;
+		END IF;
+  
+		RETURN;
+	END DeleteReviewReport;
+
+	PROCEDURE AddReviewActionLog (
+		iPrating_id IN INT,
+		iPaction_type IN VARCHAR2,
+		iPremark IN NVARCHAR2
+  )
+	AS
+	BEGIN		
+		INSERT INTO ya_review_action_log  
+		(  
+			rating_id,  
+			action_type,  
+			remark,  
+			updated_datetime  
+		)  
+		VALUES  
+		(  
+			iPrating_id,  
+			iPaction_type,  
+			iPremark,  
+			SYSDATE()  
+		);
+	END AddReviewActionLog;
+
+	PROCEDURE AddReviewApprove (
+		iPrating_id IN INT
+  )
+	AS
+	BEGIN		
+
+		UPDATE ya_product_review_approve SET approved_datetime = SYSDATE()
+		WHERE rating_id = iPrating_id;
+
+	END AddReviewApprove;
+
+	PROCEDURE GetReviewReportByReportCount (
+		iPreport_count IN INT,
+		iPpage_number IN INT,
+		iPpage_size IN INT,
+		iPnum_record OUT INT,
+		curPresult OUT refCur	
+  )
+	AS
+    -- range of records to extract for the specified page
+    iLfrom_id INT;
+    iLto_id INT;
+	BEGIN
+		-- Empty temp table
+		EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_spotlight_review_report';
+
+    INSERT INTO temp_spotlight_review_report  
+    (  
+			id,
+--			positive,
+--			total,
+--			perc,
+			sku,
+			prod_name_u,
+			date_posted,
+			review_id,
+			review,
+			reviewer,
+			shopper_id,
+			email,
+			rating_id,
+			title,
+			status,
+			lang_id
+    )  
+		SELECT ROWNUM,
+    sku, prod_name_u, date_posted, review_id, review,
+		reivewer, shopper_id, email, rating_id, title, status, lang_id--, reviewer_type
+		FROM
+		(
+			select
+			pr.sku, pn.prod_name_u, date_posted, r.review_id, review, 
+			nvl(
+				nvl(
+					LTrim(
+						(
+						SELECT
+							CASE display_mode
+								WHEN 0 THEN s.nickname
+								WHEN 1 THEN s.firstname
+								WHEN 2 THEN s.firstname || ' ' || s.lastname
+								WHEN 3 THEN s.lastname || ' ' || s.firstname
+							end
+						FROM ya_review_reviewerName rn 
+						inner join ya_shopper s on rn.shopper_id=s.shopper_id
+						WHERE rn.shopper_id=pr.shopper_id)
+					), 
+					ltrim(nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname))
+				), 'Anonymous'
+			) as reivewer,
+			pr.shopper_id,s.email,pr.rating_id,prl.title,(case review_approved when 'Y' then 'Approved' end) as status,prl.lang_id
+			FROM ya_product_rating pr  
+			inner join ya_prod_rating_lang prl ON (pr.rating_id = prl.rating_id)  
+			inner join ya_review r ON (r.review_id = prl.us_review_id)  
+			left join ya_shopper s ON (s.shopper_id=pr.shopper_id)  
+			inner join ya_prod_lang pn ON (pn.sku=pr.sku)  
+			WHERE	review_approved='Y' 
+			and pn.lang_id=1 
+			and (reviewer_type='USER' or reviewer_type='WINNER')
+			and r.review_id in (select review_id from ya_review_report group by review_id having count(review_id) >= iPreport_count)  
+			order by date_posted desc   
+		) inner_table;
+  
+	  --Return Total Record count
+    SELECT count(1) INTO iPnum_record From temp_spotlight_review_report;
+		
+    -- calculate the first and last ID of the range of topics we need
+		iLfrom_id := ((iPpage_number - 1) * iPpage_size) + 1;
+    iLto_id := iPpage_number * iPpage_size;
+		
+		-- select the page of records
+		OPEN curPresult	FOR
+			SELECT * FROM
+			(
+				SELECT innerQuery.*, rownum AS rnum 
+				from(
+					SELECT * FROM temp_spotlight_review_report order by ID
+				) innerQuery
+				WHERE ROWNUM <= iLto_id
+			)
+			WHERE rnum >= iLfrom_id;
+
+    COMMIT;
+		RETURN;
+	END GetReviewReportByReportCount;
+  
+	PROCEDURE GetReviewReportBySKU (
+		iPsku IN INT,
+		iPpage_number IN INT,
+		iPpage_size IN INT,
+		iPnum_record OUT INT,
+    curPresult OUT refCur	
+  )
+	AS
+    -- range of records to extract for the specified page
+    iLfrom_id INT;
+    iLto_id INT;
+	BEGIN
+		-- Empty temp table
+		EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_spotlight_review_report';
+
+    INSERT INTO temp_spotlight_review_report  
+    (  
+			id,
+--			positive,
+--			total,
+--			perc,
+			sku,
+			prod_name_u,
+			date_posted,
+			review_id,
+			review,
+			reviewer,
+			shopper_id,
+			email,
+			rating_id,
+			title,
+			status,
+			lang_id
+		)  
+		SELECT ROWNUM,
+    sku, prod_name_u, date_posted, review_id, review,
+		reivewer, shopper_id, email, rating_id, title, status, lang_id--, reviewer_type
+		FROM
+		(
+			select
+			pr.sku, pn.prod_name_u, date_posted, r.review_id, review, 
+			nvl(
+				nvl(
+					LTrim(
+						(
+						SELECT
+							CASE display_mode
+								WHEN 0 THEN s.nickname
+								WHEN 1 THEN s.firstname
+								WHEN 2 THEN s.firstname || ' ' || s.lastname
+								WHEN 3 THEN s.lastname || ' ' || s.firstname
+							end
+						FROM ya_review_reviewerName rn 
+						inner join ya_shopper s on rn.shopper_id=s.shopper_id
+						WHERE rn.shopper_id=pr.shopper_id)
+					), 
+					ltrim(nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname))
+				), 'Anonymous'
+			) as reivewer,
+			pr.shopper_id,s.email,pr.rating_id,prl.title,(case review_approved when 'Y' then 'Approved' end) as status,prl.lang_id
+			FROM ya_product_rating pr  
+			inner join ya_prod_rating_lang prl ON (pr.rating_id = prl.rating_id)  
+			inner join ya_review r ON (r.review_id = prl.us_review_id)  
+			left join ya_shopper s ON (s.shopper_id=pr.shopper_id)  
+			inner join ya_prod_lang pn ON (pn.sku=pr.sku)  
+			WHERE	review_approved='Y' 
+			and pn.lang_id=1 
+			and (reviewer_type='USER' or reviewer_type='WINNER')
+			and r.review_id in (
+				select distinct us_review_id from ya_product_rating pr inner join ya_prod_rating_lang prl on pr.rating_id=prl.rating_id where pr.sku = iPsku
+			)
+			order by date_posted desc   
+		) inner_table;
+  
+	  --Return Total Record count
+    SELECT count(1) INTO iPnum_record From temp_spotlight_review_report;
+		
+    -- calculate the first and last ID of the range of topics we need
+		iLfrom_id := ((iPpage_number - 1) * iPpage_size) + 1;
+    iLto_id := iPpage_number * iPpage_size;
+		
+		-- select the page of records
+		OPEN curPresult	FOR
+			SELECT * FROM
+			(
+				SELECT innerQuery.*, rownum AS rnum 
+				from(
+					SELECT * FROM temp_spotlight_review_report order by ID
+				) innerQuery
+				WHERE ROWNUM <= iLto_id
+			)
+			WHERE rnum >= iLfrom_id;
+
+    COMMIT;
+		RETURN;
+	END GetReviewReportBySKU;
+
+	PROCEDURE GetReviewReportByDateRange (
+		iPlang_id IN INT,
+		dPstart_date IN DATE,
+		dPend_date IN DATE,
+		iPpage_number IN INT,
+		iPpage_size IN INT,
+		iPnum_record OUT INT,
+    curPresult OUT refCur	
+  )
+	AS
+    -- range of records to extract for the specified page
+    iLfrom_id INT;
+    iLto_id INT;
+	BEGIN
+		-- Empty temp table
+		EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_spotlight_review_report';
+
+    INSERT INTO temp_spotlight_review_report  
+    (  
+			id,
+--			positive,
+--			total,
+--			perc,
+			sku,
+			prod_name_u,
+			date_posted,
+			review_id,
+			review,
+			reviewer,
+			shopper_id,
+			email,
+			rating_id,
+			title,
+			status,
+			lang_id
+    )  
+		SELECT ROWNUM,
+    sku, prod_name_u, date_posted, review_id, review,
+		reivewer, shopper_id, email, rating_id, title, status, lang_id--, reviewer_type
+		FROM
+		(
+			select
+			pr.sku, pn.prod_name_u, date_posted, r.review_id, review, 
+			nvl(
+				nvl(
+					LTrim(
+						(
+						SELECT
+							CASE display_mode
+								WHEN 0 THEN s.nickname
+								WHEN 1 THEN s.firstname
+								WHEN 2 THEN s.firstname || ' ' || s.lastname
+								WHEN 3 THEN s.lastname || ' ' || s.firstname
+							end
+						FROM ya_review_reviewerName rn 
+						inner join ya_shopper s on rn.shopper_id=s.shopper_id
+						WHERE rn.shopper_id=pr.shopper_id)
+					), 
+					ltrim(nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname))
+				), 'Anonymous'
+			) as reivewer,
+			pr.shopper_id,s.email,pr.rating_id,prl.title,(case review_approved when 'Y' then 'Approved' end) as status,prl.lang_id
+			FROM ya_product_rating pr  
+			inner join ya_prod_rating_lang prl ON (pr.rating_id = prl.rating_id)  
+			inner join ya_review r ON (r.review_id = prl.us_review_id)  
+			left join ya_shopper s ON (s.shopper_id=pr.shopper_id)  
+			inner join ya_prod_lang pn ON (pn.sku=pr.sku)  
+			WHERE	review_approved='Y' 
+			and (pn.lang_id=iPlang_id OR iPlang_id = 0)
+			and (reviewer_type='USER' or reviewer_type='WINNER')
+			and r.review_id in (
+				select distinct review_id from ya_review_report rr
+				where (rr.created_datetime >= dPstart_date AND rr.created_datetime <= dPend_date)
+			)
+			order by date_posted desc   
+		) inner_table;
+  
+	  --Return Total Record count
+    SELECT count(1) INTO iPnum_record From temp_spotlight_review_report;
+		
+    -- calculate the first and last ID of the range of topics we need
+		iLfrom_id := ((iPpage_number - 1) * iPpage_size) + 1;
+    iLto_id := iPpage_number * iPpage_size;
+		
+		-- select the page of records
+		OPEN curPresult	FOR
+			SELECT * FROM
+			(
+				SELECT innerQuery.*, rownum AS rnum 
+				from(
+					SELECT * FROM temp_spotlight_review_report order by ID
+				) innerQuery
+				WHERE ROWNUM <= iLto_id
+			)
+			WHERE rnum >= iLfrom_id;
+
+    COMMIT;
+		RETURN;
+	END GetReviewReportByDateRange;
+
+	-- Review Approval -- Start -----------------------------------------------------------------------------------------------------------------------------------------------
+	/* proc_fe_review_getReviewKey */
+	PROCEDURE GetReviewKey (
+		curPresult OUT refCur
+  )
+	AS
+		dLcutoff_date date;
+		dLlastcreated_date date;
+		iLrating_count INT;
+	BEGIN	
+		dLcutoff_date := SYSDATE - 1;
+		dLlastcreated_date := dLcutoff_date;
+
+		SELECT COUNT(*) INTO iLrating_count FROM ya_review_approval_system_key;
+
+		IF (iLrating_count > 0) THEN
+			select created_date INTO dLlastcreated_date
+			from ya_review_approval_system_key
+			WHERE ROWNUM<=1
+			order by date_posted desc;
+		END IF;
+
+		--print dLcutoff_date;
+		--print dLlastcreated_date;
+  
+		IF (dLlastcreated_date - dLcutoff_date < 0)  THEN
+			dLcutoff_date := dLlastcreated_date - 1;
+		END IF;
+
+		--print dLcutoff_date; 
+
+		OPEN curPresult FOR
+			select review_id, rating_id, review_key, date_posted
+			from ya_review_approval_system_key  
+			WHERE date_posted >= dLcutoff_date;
+
+		RETURN;
+	END GetReviewKey;
+
+	/* proc_fe_getNewReview */
+	PROCEDURE GetNewReview (
+		curPresult OUT refCur
+  )
+	AS
+	BEGIN
+		OPEN curPresult FOR
+			select 
+			a.review_id as reviewId,  --0            
+			nvl(a.review, ' ') as content,            
+			a.lang_id as langId,
+			nvl(a.title, ' ') as title,
+			a.rating_id as ratingId,  --4            
+			a.date_posted as datePosted,             
+			nvl(a.shopper_id, ' ') as shopperId,
+			nvl(a.reviewer, ' ') as reviewerName            
+			from ya_review_tmp_newReviewList a
+			/*  
+			inner join ya_product_rating b on a.rating_id = b.rating_id  
+			where review_approved ='N'  
+			*/
+			WHERE rownum <=512;
+
+			RETURN;
+	END GetNewReview;
+
+	/* proc_fe_getNewReviewCount */
+	PROCEDURE GetNewReviewCount (
+		curPresult OUT refCur
+  )
+	AS
+	BEGIN
+		-- same logic as proc_fe_getNewReview          
+		-- return the number of reviews which haven't been processed yet,          
+		-- instead of reviews          
+		OPEN curPresult FOR
+			select count(*)	from ya_review_tmp_newReviewList;
+			/*  
+			inner join ya_product_rating b on a.rating_id = b.rating_id  
+			where review_approved ='N'  
+			*/
+
+		RETURN;
+	END GetNewReviewCount;
+
+	/* proc_fe_review_deleteReviewApprovalSystemKey */
+	PROCEDURE DeleteReviewApprovalSystemKey
+	AS
+	BEGIN
+		DELETE FROM ya_review_approval_system_key;
+
+		IF SQLCODE <> 0 THEN
+      BEGIN
+        ROLLBACK;
+      END;
+		ELSE
+			BEGIN
+	      COMMIT;
+			END;
+    END IF;
+    RETURN;
+	END DeleteReviewApprovalSystemKey;
+
+	/* proc_fe_review_addReviewApprovalSystemKey */
+	PROCEDURE AddReviewApprovalSystemKey (
+		iPrreview_id IN INT,
+		iPrating_id IN INT,
+		cPreview_key IN NCLOB,
+		dPdate_posted IN DATE
+  )
+	AS
+	BEGIN
+    INSERT INTO ya_review_approval_system_key(review_id, rating_id, review_key, date_posted)
+    VALUES(iPrreview_id, iPrating_id, cPreview_key, dPdate_posted);
+
+		IF SQLCODE <> 0 THEN
+      BEGIN
+        ROLLBACK;
+      END;
+		ELSE
+			BEGIN
+	      COMMIT;
+			END;
+    END IF;
+    RETURN;
+	END AddReviewApprovalSystemKey;
+
+	/* proc_fe_updateReviewStatus */
+	PROCEDURE UpdateReviewStatus (
+		iPrating_id IN INT,                  
+		cPstatus IN CHAR,                  
+		cPaction_type IN VARCHAR2,
+		cPremark IN NVARCHAR2   
+  )
+	AS
+		iLrating_count INT;
+	BEGIN
+		UPDATE ya_product_rating 
+		SET review_approved = cPstatus
+		WHERE rating_id = iPrating_id;
+
+    IF SQLCODE <> 0 THEN
+      BEGIN
+        ROLLBACK;
+        RETURN;
+      END;
+    END IF;
+  
+		IF (cPstatus = 'Y') THEN
+			SELECT COUNT(*) INTO iLrating_count FROM ya_product_review_approve WHERE rating_id = iPrating_id;
+			IF (iLrating_count <= 0) THEN
+				INSERT INTO ya_product_review_approve(rating_id, approved_datetime)
+				VALUES(iPrating_id, SYSDATE);
+			END IF;
+		END IF;
+  
+    IF SQLCODE <> 0 THEN
+      BEGIN
+        ROLLBACK;
+        RETURN;
+      END;
+    END IF;
+
+		select COUNT(*) INTO iLrating_count from ya_review_action_log where rating_id = iPrating_id;
+		IF (iLrating_count <= 0) THEN             
+			insert into ya_review_action_log(rating_id, action_type, remark, updated_datetime)    
+			values(iPrating_id, cPaction_type, cPremark, SYSDATE);
+		else  
+			select COUNT(*) INTO iLrating_count from ya_review_action_log where rating_id = iPrating_id;
+			if (iLrating_count > 1)  THEN
+				update ya_review_action_log   
+				set action_type = cPaction_type,  
+				remark = cPremark,  
+				updated_datetime = SYSDATE
+				where rating_id = iPrating_id 
+				and action_type= 'Instant Review Approval System';
+			else  
+				update ya_review_action_log   
+				set action_type = cPaction_type,
+				remark = cPremark,
+				updated_datetime = SYSDATE
+				where rating_id = iPrating_id;
+			END IF;
+		END IF;
+  
+		delete from ya_review_tmp_newReviewList where rating_id = iPrating_id;
+
+		IF SQLCODE <> 0 THEN
+      BEGIN
+        ROLLBACK;
+        RETURN;
+      END;
+		ELSE
+			BEGIN
+	      COMMIT;
+	      RETURN;
+			END;
+    END IF;
+	END UpdateReviewStatus;
+
+	-- Review Approval -- END -----------------------------------------------------------------------------------------------------------------------------------------------
+
 END Pkg_FE_ReviewAccess;
 /
