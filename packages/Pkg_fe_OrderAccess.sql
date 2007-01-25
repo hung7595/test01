@@ -800,7 +800,12 @@ AS
     SELECT INSTR(vcPqty_csv, ',') INTO iLqty_pointer FROM DUAL;
     vcLsku_csv := vcPsku_csv;
     vcLqty_csv := vcPqty_csv;
+
     iLlast_record := 0;
+    
+    IF (iLsku_pointer = 0) THEN 
+    	iLlast_record := 1;
+    END IF;
 
     WHILE (iLsku_pointer > 0 OR iLlast_record = 1) LOOP
       BEGIN
