@@ -1118,14 +1118,6 @@ AS
         clobPorder_xml
       );
 
-    INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
-    SELECT iPorder_num, -1, nb.sku, nb.quantity, c.campaign_code
-    FROM ya_new_basket nb
-    INNER JOIN ya_campaign c on nb.sku = c.sku
-    WHERE nb.shopper_id = cPshopper_id
-      AND nb.site_id = iPsite_id
-      AND nb.TYPE = 0;
-      
     -- ORDER sales information
     SELECT COUNT(1)
     INTO iLexist
@@ -1367,15 +1359,7 @@ AS
             vcPcoupon_code,
             clobPorder_xml
           );
-
-    INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
-    SELECT iPorder_num, -1, nb.sku, nb.quantity, c.campaign_code
-    FROM ya_new_basket nb
-    INNER JOIN ya_campaign c on nb.sku = c.sku
-    WHERE nb.shopper_id = cPshopper_id
-      AND nb.site_id = iPsite_id
-      AND nb.TYPE = 0;
-      
+     
         SELECT COUNT(1)
         INTO iLexist
         FROM
@@ -1945,14 +1929,6 @@ AS
         iPencryptionKey_id
       );
     
-    INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
-    SELECT iPorder_num, -1, nb.sku, nb.quantity, c.campaign_code
-    FROM ya_new_basket nb
-    INNER JOIN ya_campaign c on nb.sku = c.sku
-    WHERE nb.shopper_id = cPshopper_id
-      AND nb.site_id = iPsite_id
-      AND nb.TYPE = 0;
-
     -- ORDER sales information
     SELECT COUNT(1)
     INTO iLexist
@@ -2179,14 +2155,6 @@ AS
           END IF;
         END IF;
 
-    INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
-    SELECT iPorder_num, -1, nb.sku, nb.quantity, c.campaign_code
-    FROM ya_new_basket nb
-    INNER JOIN ya_campaign c on nb.sku = c.sku
-    WHERE nb.shopper_id = cPshopper_id
-      AND nb.site_id = iPsite_id
-      AND nb.TYPE = 0;
-      
         INSERT INTO ya_order
           (
             ORDER_NUM,
@@ -2463,14 +2431,6 @@ AS
           END IF;
         END IF;
 
-    INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
-    SELECT iPorder_num, -1, nb.sku, nb.quantity, c.campaign_code
-    FROM ya_new_basket nb
-    INNER JOIN ya_campaign c on nb.sku = c.sku
-    WHERE nb.shopper_id = cPshopper_id
-      AND nb.site_id = iPsite_id
-      AND nb.TYPE = 0;
-      
         INSERT INTO ya_order
           (
             ORDER_NUM,
