@@ -1359,7 +1359,7 @@ AS
             vcPcoupon_code,
             clobPorder_xml
           );
-     
+
         SELECT COUNT(1)
         INTO iLexist
         FROM
@@ -1910,7 +1910,7 @@ AS
       END IF;
     END IF;
 
-    INSERT INTO ya_order    
+    INSERT INTO ya_order
       (
         ORDER_NUM,
         shopper_id,
@@ -1928,7 +1928,7 @@ AS
         clobPorder_xml,
         iPencryptionKey_id
       );
-    
+
     -- ORDER sales information
     SELECT COUNT(1)
     INTO iLexist
@@ -3349,6 +3349,7 @@ PROCEDURE GetShadowOrderWithWarranty (
           SELECT originOrderId
           FROM Backend_adm.OrderInfo
           WHERE customerId = cPshopper_id
+					AND length(trim(originOrderId)) > 1
         );
 
     iPcount := iLFE_count + iLBE_count;
