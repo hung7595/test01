@@ -255,30 +255,12 @@ AS
 			c.shopper_id = cPshopper_id
 			OR
 			(
-				c.all_shoppers = 'G' AND u.shopper_id is not null AND NOT EXISTS (
+				(c.coupon_code = 'FEB14' OR (c.all_shoppers = 'G' AND u.shopper_id is not null)) AND NOT EXISTS (
 					SELECT 1 FROM OrderInfo o INNER JOIN BillingInfo b ON o.id = b.orderid WHERE b.coupon = u.coupon_code AND o.customerid = cPshopper_id
 				)
 			)
 		)
-		AND (((site_id = iPsite_id or site_id=99) and iPsite_id not in (10)) or site_id = iPsite_id)
-		union
-		select c.coupon_code, c.coupon_description, c.expiration_date from ya_coupon c where coupon_code = 'EKDWROGCKL' and 1 = (
-			select 1 from ya_shopper s
-			where shopper_id = cPshopper_id
-			and created_date <= to_date('2006/11/10', 'yyyy/mm/dd')
-			and iPsite_id = 10
-			and c.coupon_used = 'N'
-			and not exists (select 1 from OrderInfo oi inner join BillingInfo bo on oi.id = bo.orderid where oi.customerid = s.shopper_id and bo.coupon = 'EKDWROGCKL')
-		)
-		union
-		select c.coupon_code, c.coupon_description, c.expiration_date from ya_coupon c where coupon_code = 'CTCZHGOKPZ' and 1 = (
-			select 1 from ya_shopper s
-			where shopper_id = cPshopper_id
-			and created_date <= to_date('2006/10/11', 'yyyy/mm/dd')
-			and iPsite_id = 10
-			and c.coupon_used = 'N'
-			and not exists (select 1 from OrderInfo oi inner join BillingInfo bo on oi.id = bo.orderid where oi.customerid = s.shopper_id and bo.coupon = 'CTCZHGOKPZ')
-		)		ORDER BY expiration_date;
+		AND (((site_id = iPsite_id or site_id=99) and iPsite_id not in (10)) or site_id = iPsite_id);
 	END GetShopperCoupon;
 
 END Pkg_FE_CouponAccess;
