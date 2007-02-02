@@ -3203,6 +3203,7 @@ PROCEDURE GetShadowOrderWithWarranty (
       ol.relativeDeliveryDay
     FROM backend_adm.OrderLine ol
     WHERE ol.orderId = iLorder_id
+	AND (parentid=-1 or parentid=productid)
     ORDER BY ol.id;
 
     OPEN curPresult3 FOR
@@ -3337,8 +3338,7 @@ PROCEDURE GetShadowOrderWithWarranty (
     SELECT COUNT(originOrderId)
     INTO iLBE_count
     FROM Backend_adm.OrderInfo
-    WHERE customerId = cPshopper_id
-		AND length(trim(originOrderId)) > 1;
+    WHERE customerId = cPshopper_id;
 
     SELECT COUNT(order_num)
     INTO iLFE_count
