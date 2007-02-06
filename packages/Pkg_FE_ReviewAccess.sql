@@ -1951,7 +1951,7 @@ PROCEDURE InsertReviewData (
       END;
     END IF;
 
-    IF (cPapproved <>'Y' OR cPapproved <>'N') THEN
+    IF ((cPapproved <>'Y' AND cPapproved <>'N') AND (cPreviewerType <> 'EDITORIAL')) THEN
 			-- data use in review approval system  
 			BEGIN
 				INSERT INTO ya_review_tmp_newReviewList(review_id, review, rating_id, date_posted, shopper_id, reviewer, title, lang_id)  
