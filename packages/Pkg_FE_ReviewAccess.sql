@@ -1951,7 +1951,7 @@ PROCEDURE InsertReviewData (
       END;
     END IF;
 
-    IF ((cPapproved <>'Y' AND cPapproved <>'N') AND (cPreviewerType <> 'EDITORIAL')) THEN
+    IF (cPapproved <>'Y' OR cPapproved <>'N') THEN
 			-- data use in review approval system  
 			BEGIN
 				INSERT INTO ya_review_tmp_newReviewList(review_id, review, rating_id, date_posted, shopper_id, reviewer, title, lang_id)  
@@ -3481,7 +3481,7 @@ PROCEDURE GetAllReviewsByShopperID (
 			inner join ya_prod_rating_lang prl on prl.us_review_id=r.review_id
 			inner join ya_product_rating pr on pr.rating_id=prl.rating_id
 			left join ya_shopper s on s.shopper_id=pr.shopper_id
-			inner join ya_prod_lang pn on (pn.sku=pr.sku)
+			inner join ya_prod_lang pn on pn.sku=pr.sku and pn.lang_id=prl.lang_id
 			WHERE	review_approved='Y' 
 --			and pn.lang_id=1 
 			and (reviewer_type='USER' or reviewer_type='WINNER')
@@ -3594,7 +3594,7 @@ PROCEDURE GetAllReviewsByShopperID (
 			inner join ya_prod_rating_lang prl on prl.us_review_id=r.review_id
 			inner join ya_product_rating pr on pr.rating_id=prl.rating_id
 			left join ya_shopper s on s.shopper_id=pr.shopper_id
-			inner join ya_prod_lang pn on (pn.sku=pr.sku)
+			inner join ya_prod_lang pn on pn.sku=pr.sku and pn.lang_id=prl.lang_id
 			WHERE	review_approved='Y' 
 			and (pn.lang_id = iPlang_id OR iPlang_id = 0)
 			and (reviewer_type='USER')-- or reviewer_type='WINNER')
@@ -3654,7 +3654,7 @@ PROCEDURE GetAllReviewsByShopperID (
 			inner join ya_prod_rating_lang prl on prl.us_review_id=r.review_id
 			inner join ya_product_rating pr on pr.rating_id=prl.rating_id
 			left join ya_shopper s on s.shopper_id=pr.shopper_id
-			inner join ya_prod_lang pn on (pn.sku=pr.sku)
+			inner join ya_prod_lang pn on pn.sku=pr.sku and pn.lang_id=prl.lang_id
 			WHERE review_approved='Y'
 			and pn.lang_id=1 
 			and prl.lang_id=iPlang_id
@@ -3833,7 +3833,7 @@ PROCEDURE GetAllReviewsByShopperID (
 			inner join ya_prod_rating_lang prl ON (pr.rating_id = prl.rating_id)  
 			inner join ya_review r ON (r.review_id = prl.us_review_id)  
 			left join ya_shopper s ON (s.shopper_id=pr.shopper_id)  
-			inner join ya_prod_lang pn ON (pn.sku=pr.sku)  
+			inner join ya_prod_lang pn ON pn.sku=pr.sku and pn.lang_id=prl.lang_id
 			WHERE	review_approved='Y' 
 			and pn.lang_id=1 
 			and (reviewer_type='USER' or reviewer_type='WINNER')
@@ -3928,7 +3928,7 @@ PROCEDURE GetAllReviewsByShopperID (
 			inner join ya_prod_rating_lang prl ON (pr.rating_id = prl.rating_id)  
 			inner join ya_review r ON (r.review_id = prl.us_review_id)  
 			left join ya_shopper s ON (s.shopper_id=pr.shopper_id)  
-			inner join ya_prod_lang pn ON (pn.sku=pr.sku)  
+			inner join ya_prod_lang pn ON pn.sku=pr.sku and pn.lang_id=prl.lang_id
 			WHERE	review_approved='Y' 
 			and pn.lang_id=1 
 			and (reviewer_type='USER' or reviewer_type='WINNER')
@@ -4027,7 +4027,7 @@ PROCEDURE GetAllReviewsByShopperID (
 			inner join ya_prod_rating_lang prl ON (pr.rating_id = prl.rating_id)  
 			inner join ya_review r ON (r.review_id = prl.us_review_id)  
 			left join ya_shopper s ON (s.shopper_id=pr.shopper_id)  
-			inner join ya_prod_lang pn ON (pn.sku=pr.sku)  
+			inner join ya_prod_lang pn ON pn.sku=pr.sku and pn.lang_id=prl.lang_id
 			WHERE	review_approved='Y' 
 			and (pn.lang_id=iPlang_id OR iPlang_id = 0)
 			and (reviewer_type='USER' or reviewer_type='WINNER')
