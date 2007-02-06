@@ -3656,7 +3656,6 @@ PROCEDURE GetAllReviewsByShopperID (
 			left join ya_shopper s on s.shopper_id=pr.shopper_id
 			inner join ya_prod_lang pn on pn.sku=pr.sku and pn.lang_id=prl.lang_id
 			WHERE review_approved='Y'
-			and pn.lang_id=1 
 			and prl.lang_id=iPlang_id
 			and reviewer_type='USER'		
 			and r.review_id in 
@@ -3835,7 +3834,6 @@ PROCEDURE GetAllReviewsByShopperID (
 			left join ya_shopper s ON (s.shopper_id=pr.shopper_id)  
 			inner join ya_prod_lang pn ON pn.sku=pr.sku and pn.lang_id=prl.lang_id
 			WHERE	review_approved='Y' 
-			and pn.lang_id=1 
 			and (reviewer_type='USER' or reviewer_type='WINNER')
 			and r.review_id in (select review_id from ya_review_report group by review_id having count(review_id) >= iPreport_count)  
 			order by date_posted desc   
@@ -3930,7 +3928,6 @@ PROCEDURE GetAllReviewsByShopperID (
 			left join ya_shopper s ON (s.shopper_id=pr.shopper_id)  
 			inner join ya_prod_lang pn ON pn.sku=pr.sku and pn.lang_id=prl.lang_id
 			WHERE	review_approved='Y' 
-			and pn.lang_id=1 
 			and (reviewer_type='USER' or reviewer_type='WINNER')
 			and r.review_id in (
 				select distinct us_review_id from ya_product_rating pr inner join ya_prod_rating_lang prl on pr.rating_id=prl.rating_id where pr.sku = iPsku
