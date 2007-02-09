@@ -219,6 +219,12 @@ AS
     iPcount OUT INT
   );
 
+  PROCEDURE GetGroupIdByAccountId(
+    iPaccountId IN INT,
+    iPdivisionId IN INT,
+    iPgroupId out INT
+  );
+
   -- YesStyle
   PROCEDURE GetPublisherProductGroup (
     iPpublisherId IN INT,
@@ -2027,6 +2033,17 @@ END;
       WHEN NO_DATA_FOUND THEN
         iPcount := 0;
   END GetProductCountByDepartment;
+
+  PROCEDURE GetGroupIdByAccountId(
+    iPaccountId IN INT,
+    iPdivisionId IN INT,
+    iPgroupId out INT
+  )
+  AS
+  BEGIN
+    SELECT group_id into iPgroupId FROM ya_group WHERE account_id = iPaccountId and division_id = iPdivisionId; 
+    return;
+  END GetGroupIdByAccountId;
 
   PROCEDURE GetPublisherProductGroup (
     iPpublisherId IN INT,
