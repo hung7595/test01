@@ -1,6 +1,12 @@
 CREATE OR REPLACE PACKAGE Pkg_fe_PromotionAccess
 AS
   TYPE refcur IS ref CURSOR;
+   PROCEDURE GetShadowPromotionItems (
+    cPshopper_id	IN	CHAR,
+	cPpayPal_uid	IN  CHAR,
+    iPsite_id		IN	INT,
+    curPgetPromotion	OUT	refcur
+  );
   /* proc_fe_GetPromotionItems */
   PROCEDURE GetPromotionItems (
     cPshopper_id	IN	CHAR,
@@ -31,6 +37,38 @@ END Pkg_fe_PromotionAccess;
 
 CREATE OR REPLACE PACKAGE body Pkg_fe_PromotionAccess
 IS
+  PROCEDURE GetShadowPromotionItems (
+    cPshopper_id	IN	CHAR,
+	cPpayPal_uid	IN  CHAR,
+    iPsite_id		IN	INT,
+    curPgetPromotion	OUT	refcur
+  )
+  AS
+  BEGIN
+
+    OPEN curPgetPromotion FOR
+    SELECT
+      CASE
+        WHEN p.sku IS NOT NULL THEN 1008
+        ELSE c.campaign_code
+      END,
+      b.sku
+    FROM
+      ya_new_basket_shadow b
+      LEFT OUTER JOIN ya_campaign c ON
+        b.sku = c.sku
+      LEFT OUTER JOIN ya_product p ON
+        b.sku = p.sku
+        AND p.account_id IN (23,39,48,56)
+    WHERE
+      b.shopper_id = cPshopper_id
+      AND b.site_id = iPsite_id
+	  AND b.paypal_uid=cPpayPal_uid
+      AND (c.sku IS NOT NULL OR p.sku IS NOT NULL)
+      AND b.type = 0;
+
+  RETURN;
+  END GetShadowPromotionItems;
   PROCEDURE GetPromotionItems (
     cPshopper_id	IN	CHAR,
     iPsite_id		IN	INT,
