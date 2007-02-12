@@ -110,7 +110,7 @@ PROCEDURE sp_fe_asso_insAsso
 	cNewsPref IN VARCHAR2,
 	cPaypalEmail IN VARCHAR2,
 	iLangId IN INT,
-	iAssociateId IN INT,
+	iAssociateId IN OUT INT,
 	iRowAffected OUT INT
 );
 PROCEDURE sp_fe_asso_insAssoHitsRaw
@@ -120,7 +120,7 @@ PROCEDURE sp_fe_asso_insAssoHitsRaw
 );
 PROCEDURE sp_fe_asso_insLink
 (
-	iLinkId IN INT,
+	iLinkId IN OUT INT,
 	iAssociateId IN INT,
 	cSiteName IN VARCHAR2,
 	iLinkType IN INT,
@@ -625,17 +625,23 @@ PROCEDURE sp_fe_asso_insAsso
 	cNewsPref IN VARCHAR2,
 	cPaypalEmail IN VARCHAR2,
 	iLangId IN INT,
-	iAssociateId IN INT,
+	iAssociateId in out INT,
 	iRowAffected OUT INT
 ) IS
 	iCount INT;
 	oriPaymentOption INT;
 	cSsnApproved CHAR(1);
+  iLassociateId int;
 BEGIN
 
 SELECT COUNT(*) INTO iCount FROM YA_ASSOCIATE WHERE shopper_id=cShopperId AND site_id=iSiteId;
+iLassociateId := iAssociateId;
 IF (iCount<1) THEN
 	cSsnApproved := 'N';
+  
+  if (iLassociateId<1) then
+    select SEQ_ASSOCIATE.nextval into iLassociateId from dual;
+  end if;
 
 	INSERT INTO YA_ASSOCIATE
 	(
@@ -673,7 +679,7 @@ IF (iCount<1) THEN
 		iPaymentOption, iCommLang,
 		cNewsPref, (SYSDATE),
 		cPaypalEmail, cSsnApproved,
-		iLangId, iAssociateId
+		iLangId, iLassociateId
 	);
 
 ELSE
@@ -710,6 +716,7 @@ ELSE
     AND site_id=iSiteId;
 
 END IF;
+iAssociateId := iLassociateId;
 iRowAffected := SQL%ROWCOUNT;
 
 IF (iRowAffected>0) AND (SQLCODE=0) THEN
@@ -721,7 +728,11 @@ END IF;
 END sp_fe_asso_insAsso;
 
 
-PROCEDURE sp_fe_asso_insAssoHitsRaw(cCode IN VARCHAR2, iRowAffected OUT INT) IS
+PROCEDURE sp_fe_asso_insAssoHitsRaw
+(
+  cCode IN VARCHAR2, 
+  iRowAffected OUT INT
+) IS
 	iLinkId INT;
 BEGIN
 
@@ -741,7 +752,7 @@ END sp_fe_asso_insAssoHitsRaw;
 
 PROCEDURE sp_fe_asso_insLink
 (
-	iLinkId IN INT,
+	iLinkId IN OUT INT,
 	iAssociateId IN INT,
 	cSiteName IN VARCHAR2,
 	iLinkType IN INT,
@@ -764,7 +775,13 @@ PROCEDURE sp_fe_asso_insLink
 	iLangId IN INT,
 	iRowAffected OUT INT
 ) IS
+  iLlinkId int;
 BEGIN
+
+iLlinkId := iLinkId;
+if (iLlinkId<1) then
+  select SEQ_ASSOCIATE_LINK.nextval into iLlinkId from dual;
+end if;
 
 INSERT INTO YA_ASSOCIATE_LINK
 (
@@ -818,8 +835,10 @@ VALUES
 	iHitsType,
 	(SYSDATE),
 	iLangId,
-	iLinkId
+	iLlinkId
 );
+iLinkId := iLlinkId;
+
 iRowAffected := SQL%ROWCOUNT;
 
 IF (iRowAffected>0) AND (SQLCODE=0) THEN
@@ -1038,6 +1057,7 @@ FROM YA_ASSOCIATE_HITS_SUMMARY ah
 	ON al.link_id = ah.link_id
 GROUP BY al.link_id;
 
+/*
 OPEN cur_out2 FOR
 SELECT a.associate_id, al.site_name, al.link_id, ar.credit_status, NVL(SUM(ar.credit_amount),0) AS credit, al.link_code,
 NVL(ah.total_credit,0) AS total
@@ -1045,6 +1065,31 @@ NVL(ah.total_credit,0) AS total
 	INNER JOIN YA_ASSOCIATE_LINK al ON a.associate_id = al.associate_id AND al.link_status > 1
 	LEFT OUTER JOIN YA_ASSOCIATE_LEGACY_HISTORY ah ON ah.link_id = al.link_id
 	 LEFT OUTER JOIN YA_ASSOCIATE_LINK_ORDERS ar ON ar.link_id = al.link_id AND ar.credit_status IS NOT NULL
+GROUP BY a.associate_id, al.link_id, ar.credit_status, al.site_name, al.link_code, ah.total_credit
+ORDER BY al.link_id DESC;
+*/
+
+OPEN cur_out2 FOR
+SELECT 
+  a.associate_id, 
+  al.site_name, 
+  al.link_id, 
+  ar.credit_status, 
+  TO_NUMBER(TO_CHAR(SUM(NVL(ar.credit_amount, 0)), '999999999.99')) AS credit, 
+  al.link_code,
+  NVL(ah.total_credit,0) AS total
+FROM 
+  (SELECT * FROM YA_ASSOCIATE WHERE shopper_id = cShopperId AND site_id = iSiteId) a 
+  inner join YA_ASSOCIATE_LINK al ON a.associate_id = al.associate_id AND al.link_status > 1
+  left join 
+  (
+    SELECT lo.link_id, lo.credit_status, NVL(lo.credit_amount, NVL(ch.comm_rate, 0)*lo.quantity*lo.unit_price) AS credit_amount, lo.last_change_date
+	FROM YA_ASSOCIATE_LINK l
+	inner join YA_ASSOCIATE_COMMISSION_HIST ch ON l.associate_id = ch.associate_id
+	inner join YA_ASSOCIATE_LINK_ORDERS lo ON lo.link_id = l.link_id AND TO_CHAR(lo.order_date, 'yyyy') = TO_CHAR(ch.valid_date, 'yyyy') AND TO_CHAR(lo.order_date, 'mm') = TO_CHAR(ch.valid_date, 'mm') 
+  ) ar
+  ON ar.link_id = al.link_id
+  LEFT OUTER JOIN YA_ASSOCIATE_LEGACY_HISTORY ah ON ah.link_id = al.link_id
 GROUP BY a.associate_id, al.link_id, ar.credit_status, al.site_name, al.link_code, ah.total_credit
 ORDER BY al.link_id DESC;
 
@@ -1649,8 +1694,8 @@ ON TO_CHAR(o.last_change_date, 'mm') = TO_CHAR(c.valid_date, 'mm')
   AND TO_CHAR(o.last_change_date, 'yyyy') = TO_CHAR(c.valid_date, 'yyyy') 
   AND l.associate_id = c.associate_id
 WHERE 
-  o.last_change_date >= TO_DATE('01/01/2007', 'mm/dd/yyyy') 
-  AND o.last_change_date < TO_DATE('02/01/2007', 'mm/dd/yyyy')
+  o.last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy') 
+  AND o.last_change_date < TO_DATE(cEndDate, 'mm/dd/yyyy')
   AND o.credit_status = 2
   AND l.associate_id = iAssociateId; 
   
