@@ -192,7 +192,7 @@ AS
     iLtemp INT := 0;
   BEGIN
     BEGIN
-      SELECT 1 INTO iLtemp FROM ya_shopper WHERE email = cPemail;
+      SELECT 1 INTO iLtemp FROM ya_shopper WHERE lower(email) = lower(cPemail);
     EXCEPTION
       WHEN NO_DATA_FOUND THEN
         iLtemp := 0;
