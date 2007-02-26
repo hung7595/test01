@@ -212,7 +212,13 @@ AS
     iPlangId IN INT,
     curPgetStoryBoard OUT refCur
   );
-
+  
+  PROCEDURE GetPSFirstGalleryImages (
+    iPsku IN INT,
+    iPlangId IN INT,
+    curPgetPS OUT refCur
+  );
+  
   PROCEDURE GetProductGalleryImagesCount (
     iPsku IN INT,
     iPlangId IN INT,
@@ -1871,6 +1877,37 @@ END;
     RETURN;
   END;
 
+  PROCEDURE GetPSFirstGalleryImages (
+    iPsku IN INT,
+    iPlangId IN INT,
+    curPgetPS OUT refCur
+  )
+  AS
+  BEGIN
+    /* Get product group child product's first image from image gallery*/
+    OPEN curPgetPS FOR
+	SELECT
+      a.sku,b.section_id, b.section_name, c.image_id, c.image_path, c.thumb_path,
+      d.description, c.priority AS priority, b.priority AS section_priority
+    FROM
+      YA_PROD_GALLERY a,
+      YA_PROD_GALLERY_SECTION b,
+      YA_PROD_GALLERY_IMAGE c,
+      YA_PROD_GALLERY_DESC d
+    WHERE
+      a.gallery_id=c.gallery_id
+      AND b.section_id=c.section_id
+      AND c.image_id=d.image_id
+      AND b.lang_id = iPlangId
+      AND d.lang_id = iPlangId
+      AND c.priority = 0
+      AND a.sku in (SELECT pr.sku FROM ya_prod_rel pr WHERE pr.parent_sku = iPsku)
+    ORDER BY
+      section_priority, b.section_id, c.priority, c.image_id;
+    
+    RETURN;
+  END;
+  
   PROCEDURE GetProductGalleryImagesCount (
     iPsku IN INT,
     iPlangId IN INT,
@@ -1993,25 +2030,7 @@ END;
 																		(p.sku = 1004620821) OR
 																		(p.sku = 1004606734) OR
 																		(p.sku = 1004614063) OR
-																		(p.sku = 1004613997) OR
-																		-- 2007/02/26
-																		(p.sku = 1004614302) OR
-																		(p.sku = 1004631315) OR
-																		(p.sku = 1004614303) OR
-																		(p.sku = 1004610416) OR
-																		(p.sku = 1004610417) OR
-																		(p.sku = 1004620801) OR
-																		(p.sku = 1004614590) OR
-																		(p.sku = 1004623732) OR
-																		(p.sku = 1004612143) OR
-																		(p.sku = 1004614316) OR
-																		(p.sku = 1004614454) OR
-																		(p.sku = 1004613980) OR
-																		(p.sku = 1004632066) OR
-																		(p.sku = 1004612262) OR
-																		(p.sku = 1004612263) OR
-																		(p.sku = 1004614300) OR
-																		(p.sku = 1004613976)
+																		(p.sku = 1004613997)
 																	)
 																)
     WHERE a.sku = iPsku;
