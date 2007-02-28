@@ -62,9 +62,15 @@ AS
 		iPorder_id IN NVARCHAR2
 	);
 
+	-- Out-dated
 	PROCEDURE GetPaidAmount (
 		dPpaid_amount OUT NUMBER,
 		iPorder_id IN NVARCHAR2
+	);
+
+	PROCEDURE GetPaidAmount_new (
+		iPorder_id IN NVARCHAR2,
+		curPresult OUT refCur
 	);
 
 	PROCEDURE GetOrderStatus (
@@ -226,6 +232,7 @@ is
 		AND originOrderId = iPorder_id;
 	END GetOrderAmount;
 
+	-- Out-dated
 	PROCEDURE GetPaidAmount (
 		dPpaid_amount OUT NUMBER,
 		iPorder_id IN NVARCHAR2
@@ -238,6 +245,22 @@ is
 		AND b.type=2 AND (c.status=1 OR c.status=3)
 		AND a.originOrderId = iPorder_id;
 	END GetPaidAmount;
+
+	PROCEDURE GetPaidAmount_new (
+		iPorder_id IN NVARCHAR2,
+		curPresult OUT refCur
+	)
+	AS
+	BEGIN		
+		OPEN curPresult FOR
+			SELECT nvl(sum(dd.amount),0), d.currency
+			FROM OrderInfo o, Deposit d, DepositDetail dd
+			WHERE o.id = dd.orderId AND d.id = dd.depositId
+			AND d.paymentType NOT IN (10 /*STORE CREDIT*/, 11 /*COUPON*/) 
+			AND dd.status IN (1 /*HOLD FOR ORDER*/,3 /*USED*/,5 /*HOLD FOR AR*/)
+			AND o.originOrderId = iPorder_id
+			GROUP BY d.currency;
+	END GetPaidAmount_new;
 
 	PROCEDURE GetOrderStatus (
 		iPstatus OUT NUMBER,
