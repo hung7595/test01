@@ -1,4 +1,5 @@
-CREATE OR REPLACE PACKAGE Pkg_fe_BasketAccess
+
+  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_BASKETACCESS" 
 AS
   TYPE refCur IS REF CURSOR;
   PROCEDURE DeleteWarrantyItem (
@@ -74,7 +75,7 @@ AS
     curPgetBasket6 OUT refCur,
     curPgetBasket7 OUT refCur
     );
-	
+
   PROCEDURE GetBasketWithWarranty (
     cPshopperId IN CHAR,
     iPsiteId IN INT,
@@ -156,8 +157,7 @@ AS
   );
 END Pkg_fe_BasketAccess;
 /
-
-CREATE OR REPLACE PACKAGE BODY Pkg_fe_BasketAccess
+CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_BASKETACCESS" 
 IS
 -- Body ---+
 ------------- AddItem
@@ -831,7 +831,7 @@ END;
                 iPcountryId <> -1
                 AND rl.country_id = iPcountryId
                 AND rp.originId = iPsiteId
-                AND categoryID = 1
+                AND rp.categoryID = 1
               GROUP BY rp.productId
             ) s
             INNER JOIN
@@ -851,7 +851,7 @@ END;
                   --default country ID
                   iPcountryId <> -1
                   AND rp.originId = iPsiteId
-                  AND categoryID = 1
+                  AND rp.categoryID = 1
                 GROUP BY rp.productId
               ) t ON
               s.productId = t.productId
@@ -872,13 +872,13 @@ END;
               --default country ID
               iPcountryId = -1
               AND rp.originId = iPsiteId
-              AND categoryID = 1
+              AND rp.categoryID = 1
             GROUP BY rp.productId
       ) t ON
     r.productId = t.productId
     AND r.sequence = t.seq
-  WHERE categoryID = 1 --not wholesale
-    AND originId = iPsiteId
+  WHERE r.categoryID = 1 --not wholesale
+    AND r.originId = iPsiteId
     AND b.shopper_id = cPshopperId
     AND b.site_id = iPsiteId
     AND b.type = iPtype
@@ -1180,7 +1180,7 @@ END GetShadowBasketWithWarranty;
                 iPcountryId <> -1
                 AND rl.country_id = iPcountryId
                 AND rp.originId = iPsiteId
-                AND categoryID = 1
+                AND rp.categoryID = 1
               GROUP BY rp.productId
             ) s
             INNER JOIN
@@ -1199,7 +1199,7 @@ END GetShadowBasketWithWarranty;
                   --default country ID
                   iPcountryId <> -1
                   AND rp.originId = iPsiteId
-                  AND categoryID = 1
+                  AND rp.categoryID = 1
                 GROUP BY rp.productId
               ) t ON
               s.productId = t.productId
@@ -1219,13 +1219,13 @@ END GetShadowBasketWithWarranty;
               --default country ID
               iPcountryId = -1
               AND rp.originId = iPsiteId
-              AND categoryID = 1
+              AND rp.categoryID = 1
             GROUP BY rp.productId
       ) t ON
     r.productId = t.productId
     AND r.sequence = t.seq
-  WHERE categoryID = 1 --not wholesale
-    AND originId = iPsiteId
+  WHERE r.categoryID = 1 --not wholesale
+    AND r.originId = iPsiteId
     AND b.shopper_id = cPshopperId
     AND b.site_id = iPsiteId
     AND b.type = iPtype
@@ -1523,7 +1523,7 @@ END GetBasketWithWarranty;
                 iPcountryId <> -1
                 AND rl.country_id = iPcountryId
                 AND rp.originId = iPsiteId
-                AND categoryID = 1
+                AND rp.categoryID = 1
               GROUP BY rp.productId
             ) s
             INNER JOIN
@@ -1542,7 +1542,7 @@ END GetBasketWithWarranty;
                   --default country ID
                   iPcountryId <> -1
                   AND rp.originId = iPsiteId
-                  AND categoryID = 1
+                  AND rp.categoryID = 1
                 GROUP BY rp.productId
               ) t ON
               s.productId = t.productId
@@ -1562,13 +1562,13 @@ END GetBasketWithWarranty;
               --default country ID
               iPcountryId = -1
               AND rp.originId = iPsiteId
-              AND categoryID = 1
+              AND rp.categoryID = 1
             GROUP BY rp.productId
       ) t ON
     r.productId = t.productId
     AND r.sequence = t.seq
-  WHERE categoryID = 1 --not wholesale
-    AND originId = iPsiteId
+  WHERE r.categoryID = 1 --not wholesale
+    AND r.originId = iPsiteId
     AND b.shopper_id = cPshopperId
     AND b.site_id = iPsiteId
     AND b.type = iPtype
@@ -2289,4 +2289,3 @@ END GetBasket;
 -- +--- Body
 END Pkg_fe_BasketAccess;
 /
-
