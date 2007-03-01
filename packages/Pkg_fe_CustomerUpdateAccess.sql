@@ -1,4 +1,4 @@
-CREATE OR REPLACE package Pkg_fe_CustomerUpdateAccess
+  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_CUSTOMERUPDATEACCESS" 
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -85,8 +85,7 @@ AS
 
 END Pkg_FE_CustomerUpdateAccess;
 /
-
-CREATE OR REPLACE package body Pkg_FE_CustomerUpdateAccess
+CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_CUSTOMERUPDATEACCESS" 
 is
   PROCEDURE GetPendingRequest (
     curPresult OUT refCur
@@ -169,7 +168,7 @@ is
         EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_customerupdate_payment_log INCREMENT BY ' || iLseq_diff;
         SELECT SEQ_customerupdate_payment_log.nextval INTO iLseq_currval FROM dual;
         EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_customerupdate_payment_log INCREMENT BY 1';
-      END IF;			
+      END IF;
     END IF;
 
     INSERT INTO ya_customerupdate_payment_log(
@@ -177,7 +176,7 @@ is
 				auth_code, avs_code, request_id, firstname, lastname, email, phone,
         address1, address2, city, state_code, state, zip, country,
         cc_type, cc_number, cc_exp_month, cc_exp_year,
-				coupon_code, coupon_amount, credit_amount, currency, 
+				coupon_code, coupon_amount, credit_amount, currency,
 				cc_numberencrypted, encryptionkey, auth_amount
 
     )VALUES(
@@ -229,7 +228,7 @@ is
 		FROM OrderInfo a, OrderLine  b, OrderLineDetail c
 		WHERE a.id = b.orderId AND b.id = c.orderLineId
 		AND (c.status <> 8 AND c.status <>9)
-		AND originOrderId = iPorder_id;
+		AND a.originOrderId = iPorder_id;
 	END GetOrderAmount;
 
 	-- Out-dated
@@ -251,12 +250,12 @@ is
 		curPresult OUT refCur
 	)
 	AS
-	BEGIN		
+	BEGIN
 		OPEN curPresult FOR
 			SELECT nvl(sum(dd.amount),0), d.currency
 			FROM OrderInfo o, Deposit d, DepositDetail dd
 			WHERE o.id = dd.orderId AND d.id = dd.depositId
-			AND d.paymentType NOT IN (10 /*STORE CREDIT*/, 11 /*COUPON*/) 
+			AND d.paymentType NOT IN (10 /*STORE CREDIT*/, 11 /*COUPON*/)
 			AND dd.status IN (1 /*HOLD FOR ORDER*/,3 /*USED*/,5 /*HOLD FOR AR*/)
 			AND o.originOrderId = iPorder_id
 			GROUP BY d.currency;
@@ -295,4 +294,3 @@ is
 
 END Pkg_FE_CustomerUpdateAccess;
 /
-
