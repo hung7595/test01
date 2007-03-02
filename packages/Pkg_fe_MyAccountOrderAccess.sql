@@ -1,4 +1,5 @@
-CREATE OR REPLACE PACKAGE Pkg_Fe_Myaccountorderaccess
+
+  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_MYACCOUNTORDERACCESS" 
 AS
   TYPE curGorder IS REF CURSOR;
   TYPE curGinvoice IS REF CURSOR;
@@ -11,52 +12,53 @@ AS
 
   PROCEDURE GetOrder (
     cPshopper_id IN VARCHAR2,
-    iLlang_id INT,
-    cPorder_id VARCHAR2,
+    iLlang_id IN INT,
+    cPorder_id IN VARCHAR2,
     curPorder OUT curGorder
   );
 
   PROCEDURE GetShopperInvoiceId (
     cPshopper_id IN VARCHAR2,
-    cPorder_id VARCHAR2,
+    cPorder_id IN VARCHAR2,
     curPinvoice_id OUT curGinvoice_id
   );
 
   PROCEDURE GetInvoice (
     cPshopper_id IN VARCHAR2,
-    iLlang_id INT,
-    iLinvoice_id VARCHAR2,
+    iLlang_id IN INT,
+    iLinvoice_id IN VARCHAR2,
     curPinvoice OUT curGinvoice
   );
 
   PROCEDURE GetItemShippingAmount (
-    iLshipment_unit INT,
-    iLcountry_id INT,
-    iLship_method INT,
+    iLshipment_unit IN INT,
+    iLcountry_id IN INT,
+    iLship_method IN INT,
     nLshipment_amount OUT NUMBER
   );
 
   PROCEDURE GetOrderEncrypted (
     cPshopper_id IN VARCHAR2,
-    iLlang_id INT,
-    cPorder_id VARCHAR2,
+    iLlang_id IN INT,
+    cPorder_id IN VARCHAR2,
     curPorder OUT curGorder
   );
 
   PROCEDURE GetInvoiceEncrypted (
     cPshopper_id IN VARCHAR2,
-    iLlang_id INT,
-    iLinvoice_id VARCHAR2,
+    iLlang_id IN INT,
+    iLinvoice_id IN VARCHAR2,
     curPinvoice OUT curGinvoice
   );
 
 END Pkg_Fe_Myaccountorderaccess;
 /
-
-
-CREATE OR REPLACE PACKAGE BODY Pkg_Fe_Myaccountorderaccess
+CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_MYACCOUNTORDERACCESS" 
 AS
-  FUNCTION GetOrderLineStatus(iLproduct_id INT, iLorder_id INT) RETURN INT IS
+  FUNCTION GetOrderLineStatus(
+    iLproduct_id INT, 
+    iLorder_id INT
+  ) RETURN INT IS
     iLnew_status INT;
     iLstatus_count INT;
   BEGIN
@@ -79,8 +81,8 @@ AS
 
   PROCEDURE GetOrder (
     cPshopper_id IN VARCHAR2,
-    iLlang_id INT,
-    cPorder_id VARCHAR2,
+    iLlang_id IN INT,
+    cPorder_id IN VARCHAR2,
     curPorder OUT curGorder
   )
   AS
@@ -92,15 +94,15 @@ AS
          WHEN ol.parentId = ol.productId THEN Pkg_fe_MyAccountOrderAccess.GetOrderLineStatus(ol.productId, o.id)
          ELSE ld.status END AS lineStatus
       , ol.quantity AS quantity, b.coupon, b.couponAmt, b.credit, b.creditAmt, b.shipmentAmt
-      , b.handlingAmt, b.tax, b.amount, o.splitShipment, b.handlingAmt, specialHandling, b.ccNum, b.firstname AS b_firstname, b.lastname AS b_lastname
+      , b.handlingAmt, b.tax, b.amount, o.splitShipment, b.handlingAmt, b.specialHandling, b.ccNum, b.firstname AS b_firstname, b.lastname AS b_lastname
       , b.method AS paymentType, b.address1 AS b_address1, b.address2 AS b_address2, b.city AS b_city, b.state AS b_state, b.zip AS b_zip, b.phone AS b_phone
       , s.firstname AS s_firstname, s.lastname AS s_lastname, s.email AS s_email, s.dayPhone AS s_dayPhone, s.address1 AS s_address1, s.address2 AS s_address2
       , s.city AS s_city, s.state AS s_state, s.zip AS s_zip, s.method AS shipMethodId, s.country AS ship_country_id, pl.prod_name AS prod_name, pe.prod_name AS prod_ename
-      , cast(miscinfo AS VARCHAR2(4000)) AS miscInfo, pr.preorder AS preorder, pr.preorderstart AS preorder_start, pr.preorderend AS preorder_end
+      , cast(ol.miscinfo AS VARCHAR2(4000)) AS miscInfo, pr.preorder AS preorder, pr.preorderstart AS preorder_start, pr.preorderend AS preorder_end
       , bbl.meaning AS cardType, bpl.meaning AS paymentMethod, bcl.meaning AS bill_country, scl.meaning AS ship_country, sml.meaning AS shipMethod
       , b.method, '' AS prod_name_img_loc, o.status, o.hold, pd.account_id, pe.prod_subtitle_aka
     FROM OrderInfo o
-      INNER JOIN OrderLine ol ON o.id = ol.orderId AND (ol.parentId = -1 OR ol.parentId = productId)
+      INNER JOIN OrderLine ol ON o.id = ol.orderId AND (ol.parentId = -1 OR ol.parentId = ol.productId)
       INNER JOIN OrderLineDetail ld ON ol.orderId = ld.orderId AND ol.id = ld.orderLineId
       INNER JOIN BillingInfo b ON o.id = b.orderId
       INNER JOIN ShippingInfo s ON o.id = s.orderId
@@ -121,7 +123,7 @@ AS
 
   PROCEDURE GetShopperInvoiceId (
     cPshopper_id IN VARCHAR2,
-    cPorder_id VARCHAR2,
+    cPorder_id IN VARCHAR2,
     curPinvoice_id OUT curGinvoice_id
   )
   AS
@@ -138,8 +140,8 @@ AS
 
   PROCEDURE GetInvoice (
     cPshopper_id IN VARCHAR2,
-    iLlang_id INT,
-    iLinvoice_id VARCHAR2,
+    iLlang_id IN INT,
+    iLinvoice_id IN VARCHAR2,
     curPinvoice OUT curGinvoice
   )
   AS
@@ -175,9 +177,9 @@ AS
   END GetInvoice;
 
   PROCEDURE GetItemShippingAmount (
-    iLshipment_unit INT,
-    iLcountry_id INT,
-    iLship_method INT,
+    iLshipment_unit IN INT,
+    iLcountry_id IN INT,
+    iLship_method IN INT,
     nLshipment_amount OUT NUMBER
   )
   AS
@@ -192,8 +194,8 @@ AS
 
   PROCEDURE GetOrderEncrypted (
     cPshopper_id IN VARCHAR2,
-    iLlang_id INT,
-    cPorder_id VARCHAR2,
+    iLlang_id IN INT,
+    cPorder_id IN VARCHAR2,
     curPorder OUT curGorder
   )
   AS
@@ -205,16 +207,16 @@ AS
          WHEN ol.parentId = ol.productId THEN Pkg_Fe_Myaccountorderaccess.GetOrderLineStatus(ol.productId, o.id)
          ELSE ld.status END AS lineStatus
       , ol.quantity AS quantity, b.coupon, b.couponAmt, b.credit, b.creditAmt, b.shipmentAmt
-      , b.handlingAmt, b.tax, b.amount, o.splitShipment, b.handlingAmt, specialHandling, b.ccNum, b.firstname AS b_firstname, b.lastname AS b_lastname
+      , b.handlingAmt, b.tax, b.amount, o.splitShipment, b.handlingAmt, b.specialHandling, b.ccNum, b.firstname AS b_firstname, b.lastname AS b_lastname
       , b.method AS paymentType, b.address1 AS b_address1, b.address2 AS b_address2, b.city AS b_city, b.state AS b_state, b.zip AS b_zip, b.phone AS b_phone
       , s.firstname AS s_firstname, s.lastname AS s_lastname, s.email AS s_email, s.dayPhone AS s_dayPhone, s.address1 AS s_address1, s.address2 AS s_address2
       , s.city AS s_city, s.state AS s_state, s.zip AS s_zip, s.method AS shipMethodId, s.country AS ship_country_id, pl.prod_name AS prod_name, pe.prod_name AS prod_ename
-      , cast(miscinfo AS VARCHAR2(4000)) AS miscInfo, pr.preorder AS preorder, pr.preorderstart AS preorder_start, pr.preorderend AS preorder_end
+      , cast(ol.miscinfo AS VARCHAR2(4000)) AS miscInfo, pr.preorder AS preorder, pr.preorderstart AS preorder_start, pr.preorderend AS preorder_end
       , bbl.meaning AS cardType, bpl.meaning AS paymentMethod, bcl.meaning AS bill_country, scl.meaning AS ship_country, sml.meaning AS shipMethod
       , b.method, '' AS prod_name_img_loc, o.status, o.hold, pd.account_id, pe.prod_subtitle_aka,
 	  b.ccNumEncrypted AS card_numberEncrypted, b.encryptionKey
     FROM OrderInfo o
-      INNER JOIN OrderLine ol ON o.id = ol.orderId AND (ol.parentId = -1 OR ol.parentId = productId)
+      INNER JOIN OrderLine ol ON o.id = ol.orderId AND (ol.parentId = -1 OR ol.parentId = ol.productId)
       INNER JOIN OrderLineDetail ld ON ol.orderId = ld.orderId AND ol.id = ld.orderLineId
       INNER JOIN BillingInfo b ON o.id = b.orderId
       INNER JOIN ShippingInfo s ON o.id = s.orderId
@@ -235,8 +237,8 @@ AS
 
   PROCEDURE GetInvoiceEncrypted (
     cPshopper_id IN VARCHAR2,
-    iLlang_id INT,
-    iLinvoice_id VARCHAR2,
+    iLlang_id IN INT,
+    iLinvoice_id IN VARCHAR2,
     curPinvoice OUT curGinvoice
   )
   AS
@@ -274,4 +276,3 @@ AS
 
 END Pkg_Fe_Myaccountorderaccess;
 /
-
