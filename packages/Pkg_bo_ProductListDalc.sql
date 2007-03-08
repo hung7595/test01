@@ -1,4 +1,7 @@
-create or replace package Pkg_bo_ProductListDalc
+
+REM START SS_ADM PKG_BO_PRODUCTLISTDALC
+
+  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_BO_PRODUCTLISTDALC" 
 AS
   TYPE refcur IS ref CURSOR;
 
@@ -351,7 +354,7 @@ AS
   );
 END Pkg_bo_ProductListDalc;
 /
-create or replace package body Pkg_bo_ProductListDalc
+CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_BO_PRODUCTLISTDALC" 
 IS
   PROCEDURE GetBargainHighlightProdList (
     iPdeptId IN INT,
@@ -1325,7 +1328,7 @@ IS
                 AND (pd.dept_id = iPdept_id
                 AND pr.enable = 'Y'
                 AND p.is_parent = 'N'
-                AND (TO_DATE(preorder_deadline) + ( 1 * - 1 ) )  >= (SYSDATE))
+                AND (TO_DATE(p.preorder_deadline) + ( 1 * - 1 ) )  >= (SYSDATE))
               ORDER BY
                 pr.displaypriority DESC,
                 p.preorder_deadline,
@@ -1492,7 +1495,7 @@ IS
             AND pd.dept_id = iPdept_id
             AND pr.enable = 'Y'
             AND p.is_parent = 'N'
-            AND (TO_DATE(preorder_deadline) + ( 1 * - 1 ) )  >= SYSDATE
+            AND (TO_DATE(p.preorder_deadline) + ( 1 * - 1 ) )  >= SYSDATE
           ORDER BY
             pr.displaypriority DESC,
             p.preorder_deadline,
@@ -3432,3 +3435,5 @@ IS
 
 END Pkg_bo_ProductListDalc;
 /
+ 
+REM END SS_ADM PKG_BO_PRODUCTLISTDALC
