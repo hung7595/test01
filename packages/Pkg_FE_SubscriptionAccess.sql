@@ -1,4 +1,7 @@
-CREATE OR REPLACE package Pkg_FE_SubscriptionAccess
+
+REM START SS_ADM PKG_FE_SUBSCRIPTIONACCESS
+
+  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_SUBSCRIPTIONACCESS" 
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -13,8 +16,7 @@ AS
 
 END Pkg_FE_SubscriptionAccess;
 /
-
-CREATE OR REPLACE package body Pkg_FE_SubscriptionAccess
+CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_SUBSCRIPTIONACCESS" 
 is
   PROCEDURE GetSubscriptionProduct (
     iPsubscriptionSku IN INT,
@@ -33,8 +35,8 @@ is
   /* get first issue sku */
     begin
       select  sku,start_date into numLFirstIssueSku,datLStartDate  from (select sku,start_date from ya_product_subscription,
-productAvailability pa,productRegion where ya_product_subscription.sku=pa.productId and pa.availability=0 and pa.originid=iPSiteId and pa.category=1
-and ya_product_subscription.sku=productRegion.productid and categoryId=1 and productRegion.originid=iPsiteId and  productRegion.cansell='Y' and  productRegion.enable='Y'
+productAvailability pa, productRegion pr where ya_product_subscription.sku=pa.productId and pa.availability=0 and pa.originid=iPSiteId and pa.category=1
+and ya_product_subscription.sku=pr.productid and pr.categoryId=1 and pr.originid=iPsiteId and  pr.cansell='Y' and  pr.enable='Y'
 and subscription_sku=iPsubscriptionSku and start_date >= sysdate order by start_date desc)
 where rownum<2;
     EXCEPTION WHEN NO_DATA_FOUND THEN
@@ -55,8 +57,8 @@ where rownum<2;
 	begin
          /* get first issue sku */
          select  sku,start_date into numLFirstIssueSku,datLStartDate from (select sku,start_date from ya_product_subscription,
-         productAvailability pa,productRegion where ya_product_subscription.sku=pa.productId and          pa.originid=iPSiteId and pa.availability=0 and pa.category=1
-         and ya_product_subscription.sku=productRegion.productid and categoryId=1 and 	 productRegion.originid=iPsiteId and subscription_sku=iPsubscriptionSku and productRegion.cansell='Y' and  productRegion.enable='Y'
+         productAvailability pa, productRegion pr where ya_product_subscription.sku=pa.productId and          pa.originid=iPSiteId and pa.availability=0 and pa.category=1
+         and ya_product_subscription.sku=pr.productid and pr.categoryId=1 and 	 pr.originid=iPsiteId and subscription_sku=iPsubscriptionSku and pr.cansell='Y' and  pr.enable='Y'
          and start_date < sysdate order by start_date desc) where rownum<2;
        EXCEPTION WHEN NO_DATA_FOUND THEN
          BEGIN
@@ -73,7 +75,7 @@ where rownum<2;
       /* get first issue sku */
       begin
         select  sku,start_date into numLFirstIssueSku,datLStartDate from (select sku,start_date from ya_product_subscription,
-        productAvailability pa,productRegion where ya_product_subscription.sku=pa.productId and pa.category=1 and         pa.originid=iPSiteId and ya_product_subscription.sku=productRegion.productid and categoryId=1 and            productRegion.originid=iPsiteId and subscription_sku=iPsubscriptionSku and start_date > sysdate order by start_date) where rownum<2;
+        productAvailability pa, productRegion pr where ya_product_subscription.sku=pa.productId and pa.category=1 and pa.originid=iPSiteId and ya_product_subscription.sku=pr.productid and pr.categoryId=1 and pr.originid=iPsiteId and subscription_sku=iPsubscriptionSku and start_date > sysdate order by start_date) where rownum<2;
       EXCEPTION WHEN NO_DATA_FOUND THEN
         BEGIN
           numLFirstIssueSku := -1;
@@ -103,4 +105,5 @@ return;
 
 END Pkg_FE_SubscriptionAccess;
 /
-
+ 
+REM END SS_ADM PKG_FE_SUBSCRIPTIONACCESS
