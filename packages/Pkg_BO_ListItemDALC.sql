@@ -1,29 +1,45 @@
-CREATE OR REPLACE PACKAGE Pkg_BO_ListItemDALC
+
+REM START SS_ADM PKG_BO_LISTITEMDALC
+
+  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_BO_LISTITEMDALC" 
 AS
   TYPE refCur IS REF CURSOR;
 
-  /* proc_bo_GetBaseItemBatch */
-	PROCEDURE GetBatch (
-    cPserver_id IN VARCHAR2,
-    rcPresult1 OUT refCur,
-    rcPresult2 OUT refCur,
-    rcPresult3 OUT refCur,
-    rcPresult4 OUT refCur,
-    rcPresult5 OUT refCur
+  /* proc_bo_invalidate_cache */
+  PROCEDURE InvalidateCache (  
+    iPsku IN INT
   );
 
-END Pkg_BO_ListItemDALC;
-/
-
-CREATE OR REPLACE PACKAGE BODY Pkg_BO_ListItemDALC
-IS
+  /* proc_bo_GetBaseItemBatch */
   PROCEDURE GetBatch (
     cPserver_id IN VARCHAR2,
     rcPresult1 OUT refCur,
     rcPresult2 OUT refCur,
     rcPresult3 OUT refCur,
-    rcPresult4 OUT refCur,
-    rcPresult5 OUT refCur
+    rcPresult4 OUT refCur
+  );
+
+END Pkg_BO_ListItemDALC;
+/
+CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_BO_LISTITEMDALC" 
+IS
+  PROCEDURE InvalidateCache (  
+    iPsku IN INT
+  )
+  AS
+  BEGIN
+    INSERT INTO ya_cache_invalidate (sku, server_id, created_datetime, process_flag)   
+    VALUES (iPsku, 'YA-CACHE1', SYSDATE, 'N');
+--    SELECT iPsku, server_id, SYSDATE, 'N' FROM ya_cache_server;
+    RETURN;
+  END InvalidateCache;  
+  
+  PROCEDURE GetBatch (
+    cPserver_id IN VARCHAR2,
+    rcPresult1 OUT refCur,
+    rcPresult2 OUT refCur,
+    rcPresult3 OUT refCur,
+    rcPresult4 OUT refCur
   )
   AS
     iLupper_sku INT;
@@ -34,15 +50,10 @@ IS
     iLCOUNT_ADV INT;
     iLnew_count INT;
     iLtemp INT;
-    iLmax_sku INT;
-    iLmin_sku INT;
   BEGIN
 
     EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_table_sku';
-    EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_table_baseItem_tmp';
-
-    select 1004241308 into iLmin_sku from dual;
-    select 1004246126 into iLmax_sku from dual;
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_table_baseitem';
 
     BEGIN
       SELECT
@@ -62,6 +73,7 @@ IS
         iLupper_sku := -1;
         iLlower_sku := -1;
         iLCOUNT_ADV := 500;
+        --COMMIT;
       END;
     END;
 
@@ -69,25 +81,21 @@ IS
       BEGIN
         SELECT MAX(sku)
         INTO iLupper_sku
-        FROM ya_product
-        WHERE sku <= iLmax_sku;
+        FROM ya_product;
 
         iLlower_sku := iLupper_sku;
 
         UPDATE ya_base_item_log
         SET last_batch_end_datetime = SYSDATE
         WHERE server_id = cPserver_id;
+
+--        COMMIT;
       END;
     END IF;
 
     -- initialize sku queue
     -- INSERT INTO temp_table_sku VALUES (iLupper_sku);
     -- INSERT INTO temp_table_sku VALUES (iLlower_sku);
-
---		INSERT INTO temp_table_sku
---    SELECT sku
---    FROM ya_product
---		WHERE sku in (1004103318, 1004103317, 1004107686, 1004088945, 1004094587, 1004188971, 1004135852, 0000003358, 1001845585, 1001803259);
 
     INSERT INTO temp_table_sku
     SELECT r.sku
@@ -96,7 +104,6 @@ IS
       SELECT sku
       FROM ya_product
       WHERE sku > iLupper_sku
-      and sku <= iLmax_sku
       ORDER BY sku
     ) r
     WHERE
@@ -115,7 +122,6 @@ IS
           SELECT sku
           FROM ya_product
           WHERE sku < iLlower_sku
-          and sku >= iLmin_sku
           ORDER BY sku DESC
         ) r
         WHERE
@@ -131,8 +137,9 @@ IS
     INTO iLnew_lower
     FROM temp_table_sku;
 
+
     /* update the sku within the range */
-    INSERT INTO temp_table_baseItem_tmp
+    INSERT INTO temp_table_baseItem
     SELECT
       p.sku,
       p.release_date,
@@ -140,30 +147,23 @@ IS
       pr1.enable AS us_enabled,
       pr2.cansell AS tw_cansell,
       pr2.enable AS tw_enabled,
-      nvl(pr3.cansell, 'N') AS ys_cansell,
-      nvl(pr3.enable, 'N') AS ys_enabled,
-      p.us_launch_date,
       p.us_launch_date,
       p.us_launch_date,
       pr1.displaypriority as us_priority,
       pr2.displaypriority as tw_priority,
-			pr3.displaypriority as ys_priority,
       a.sku AS adult_sku,
       p.is_parent,
       NVL(ps1.sales_quantity_sum, 0),
       NVL(ps2.sales_quantity_sum, 0),
-			NVL(ps3.sales_quantity_sum, 0),
       NVL(ps1.rank, 0),
       NVL(ps2.rank, 0),
-			NVL(ps3.rank, 0),
       pl.prod_name,
       NVL(p.num_children, 0)
     FROM
       temp_table_sku s
       INNER JOIN ya_product p ON p.sku = s.sku
-      LEFT JOIN productregion pr1 ON pr1.productId=s.sku AND pr1.regionId=1
-      LEFT JOIN productregion pr2 ON pr2.productId=s.sku AND pr2.regionId=7
-      LEFT JOIN productregion pr3 ON pr3.productId=s.sku AND pr3.regionId=10
+	  LEFT JOIN productregion pr1 ON pr1.productId=s.sku AND pr1.regionId=1
+	  LEFT JOIN productregion pr2 ON pr2.productId=s.sku AND pr2.regionId=7
       LEFT OUTER JOIN ya_adult_product a ON p.sku = a.sku
       LEFT OUTER JOIN ya_prod_score ps1 ON
         p.sku = ps1.sku
@@ -171,9 +171,6 @@ IS
       LEFT OUTER JOIN ya_prod_score ps2 ON
         p.sku = ps2.sku
         AND ps2.siteid = 7
-			LEFT OUTER JOIN ya_prod_score ps3 ON
-        p.sku = ps3.sku
-        AND ps2.siteid = 10
       LEFT OUTER JOIN ya_prod_lang pl ON
         pl.sku = p.sku
         AND pl.lang_id = 1
@@ -181,7 +178,7 @@ IS
 
     OPEN rcPresult1 FOR
     SELECT *
-    FROM temp_table_baseItem_tmp;
+    FROM temp_table_baseItem;
 
     OPEN rcPresult2 FOR
     SELECT
@@ -193,9 +190,9 @@ IS
       b.productid IN
         (
           SELECT t.sku
-          FROM temp_table_baseItem_tmp t
+          FROM temp_table_baseItem t
         )
-      AND b.regionid IN (1, 7, 10)
+      AND b.regionid IN (1, 7)
       AND b.category = 1;
 
     -- MC - Asian Film Award
@@ -204,7 +201,7 @@ IS
       sku,
       COUNT(award_definition_id)
     FROM ya_product_award
-    WHERE sku IN (SELECT t.sku FROM temp_table_baseItem_tmp t)
+    WHERE sku IN (SELECT t.sku FROM temp_table_baseItem t)
     GROUP BY sku;
 
     -- VBE phrase 2
@@ -219,26 +216,12 @@ IS
       pr1.regionid
     FROM backend_adm.productregion pr1
     WHERE
-      pr1.productid IN (SELECT t.sku FROM temp_table_baseItem_tmp t)
-      AND pr1.regionid IN (1,7, 10)
+      pr1.productid IN (SELECT t.sku FROM temp_table_baseItem t)
+      AND pr1.regionid IN (1,7)
       AND pr1.categoryId = 1;
 
-    -- Product Title
-    OPEN rcPresult5 FOR
-			SELECT product_title_parent_sku as sku, product_title_parent_sku
-			FROM ya_product_title_rel
-			WHERE (
-				product_title_parent_sku IN (SELECT t.sku FROM temp_table_baseItem_tmp t)
-			)
-			UNION
-			SELECT product_title_child_sku, product_title_parent_sku
-			FROM ya_product_title_rel
-			WHERE (
-				product_title_child_sku IN (SELECT t.sku FROM temp_table_baseItem_tmp t)
-			);
-
     -- reset the queue if no more item need to be udpated
-    SELECT COUNT(1) INTO iLtemp FROM temp_table_baseItem_tmp;
+    SELECT COUNT(1) INTO iLtemp FROM temp_table_baseItem;
 
     IF (iLtemp = 0) THEN
       BEGIN
@@ -286,3 +269,5 @@ IS
   END GetBatch;
 END Pkg_BO_ListItemDALC;
 /
+ 
+REM END SS_ADM PKG_BO_LISTITEMDALC

@@ -1,4 +1,7 @@
-CREATE OR REPLACE PACKAGE Pkg_Fe_Orderaccess
+
+REM START SS_ADM PKG_FE_ORDERACCESS
+
+  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_ORDERACCESS" 
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -462,7 +465,7 @@ PROCEDURE InsertPaypalOrderXml (
     iPsite_id IN INT,
     vcPcoupon_code IN VARCHAR2
   );
- 
+
   /* proc_fe_UpdateAppliedCredit */
   PROCEDURE UpdateApplicationCredit (
     cPshopper_id IN CHAR,
@@ -473,14 +476,12 @@ PROCEDURE InsertPaypalOrderXml (
   PROCEDURE UpdateCheckOutCurrency (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
-    cPcurrency IN CHAR 
+    cPcurrency IN CHAR
   );
-  
+
 END Pkg_Fe_Orderaccess;
 /
-
-
-CREATE OR REPLACE PACKAGE BODY Pkg_Fe_Orderaccess
+CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_ORDERACCESS" 
 AS
   PROCEDURE InsertSaleCode (
     iPorder_num IN INT,
@@ -802,8 +803,8 @@ AS
     vcLqty_csv := vcPqty_csv;
 
     iLlast_record := 0;
-    
-    IF (iLsku_pointer = 0) THEN 
+
+    IF (iLsku_pointer = 0) THEN
     	iLlast_record := 1;
     END IF;
 
@@ -1142,7 +1143,7 @@ AS
         SELECT
           iPorder_num,
           b.sku,
-          availability
+          pa.availability
         FROM
           YA_NEW_BASKET b
           INNER JOIN YA_BARGAIN_PRODUCT p ON
@@ -1383,7 +1384,7 @@ AS
             SELECT
               iPorder_num,
               b.sku,
-              availability
+              pa.availability
             FROM
               YA_NEW_BASKET b
               INNER JOIN YA_BARGAIN_PRODUCT p ON
@@ -1953,7 +1954,7 @@ AS
         SELECT
           iPorder_num,
           b.sku,
-          availability
+          pa.availability
         FROM
           YA_NEW_BASKET b
           INNER JOIN YA_BARGAIN_PRODUCT p ON
@@ -2198,7 +2199,7 @@ AS
             SELECT
               iPorder_num,
               b.sku,
-              availability
+              pa.availability
             FROM
               YA_NEW_BASKET_SHADOW b
               INNER JOIN YA_BARGAIN_PRODUCT p ON
@@ -2234,7 +2235,7 @@ AS
           shopper_id = cPshopper_id
           AND site_id = iPsite_id
 		  AND paypal_uid=cPguid;
-		
+
         DELETE FROM YA_NEW_BASKET
         WHERE
           shopper_id = cPshopper_id
@@ -2361,7 +2362,7 @@ AS
     RETURN;
   END InsertPaypalOrderXml;
 
-  
+
 --can be removed later
   PROCEDURE InsertPaypalOrderXmlEncrypted (
     cPshopper_id IN CHAR,
@@ -2473,7 +2474,7 @@ AS
             SELECT
               iPorder_num,
               b.sku,
-              availability
+              pa.availability
             FROM
               YA_NEW_BASKET b
               INNER JOIN YA_BARGAIN_PRODUCT p ON
@@ -2490,7 +2491,7 @@ AS
           END;
         END IF;
 
-		
+
         DELETE FROM YA_NEW_BASKET
         WHERE
           shopper_id = cPshopper_id
@@ -2783,8 +2784,8 @@ PROCEDURE GetShadowOrderWithWarranty (
       content,
       font,
       colour,
-      lang, 
-  	  cc_numberencrypted, 
+      lang,
+  	  cc_numberencrypted,
   	  encryptionkey
     FROM
       ya_checkout_data_shadow c
@@ -2961,8 +2962,8 @@ PROCEDURE GetShadowOrderWithWarranty (
       content,
       font,
       colour,
-      lang, 
-  	  cc_numberencrypted, 
+      lang,
+  	  cc_numberencrypted,
   	  encryptionkey
     FROM
       ya_checkout_data c
@@ -3135,8 +3136,8 @@ PROCEDURE GetShadowOrderWithWarranty (
       content,
       font,
       colour,
-      lang, 
-  	  cc_numberencrypted, 
+      lang,
+  	  cc_numberencrypted,
   	  encryptionkey
     FROM
       ya_checkout_data c
@@ -3203,7 +3204,7 @@ PROCEDURE GetShadowOrderWithWarranty (
       ol.relativeDeliveryDay
     FROM backend_adm.OrderLine ol
     WHERE ol.orderId = iLorder_id
-	AND (parentid=-1 or parentid=productid)
+	AND (ol.parentid=-1 or ol.parentid=ol.productid)
     ORDER BY ol.id;
 
     OPEN curPresult3 FOR
@@ -3258,13 +3259,13 @@ PROCEDURE GetShadowOrderWithWarranty (
       bi.coupon,
       bi.couponAmt,
       bi.creditAmt,
-      oi."COMMENT",
+      oi.COMMENT,
       oi.originVersion,
       oi.splitShipment,
       bi.phone,
       bi.shipmentAmt,
       bi.handlingAmt,
-      specialHandling,
+      bi.specialHandling,
       bi.tax,
       bi.currency,
       bi.encryptionKey,
@@ -3972,8 +3973,8 @@ PROCEDURE GetShadowOrderWithWarranty (
           expiration_month,
           expiration_year,
           firstname_on_card,
-          lastname_on_card, 
-    		  card_numberencrypted, 
+          lastname_on_card,
+    		  card_numberencrypted,
     		  encryptionkey
         FROM YA_CREDIT_CARD_PROFILE
         WHERE
@@ -4104,10 +4105,10 @@ PROCEDURE GetShadowOrderWithWarranty (
         cc_profile_id,
         credit_amount,
         created_datetime,
-        last_updated_datetime, 
-    	  cc_numberencrypted, 
+        last_updated_datetime,
+    	  cc_numberencrypted,
     	  encryptionkey
-		  
+
       )
     VALUES
       (
@@ -4153,7 +4154,7 @@ PROCEDURE GetShadowOrderWithWarranty (
         SYSDATE,
         vcPcard_numberEncrypted,
         iPencryptionKey_id
-		
+
       );
     COMMIT;
   EXCEPTION WHEN OTHERS THEN
@@ -5108,7 +5109,7 @@ PROCEDURE GetShadowOrderWithWarranty (
   EXCEPTION WHEN OTHERS THEN
     ROLLBACK;
   END UpdateCouponCode;
-  
+
 
   PROCEDURE UpdateApplicationCredit (
     cPshopper_id IN CHAR,
@@ -5126,11 +5127,11 @@ PROCEDURE GetShadowOrderWithWarranty (
   EXCEPTION WHEN OTHERS THEN
     ROLLBACK;
   END UpdateApplicationCredit;
-  
+
   PROCEDURE UpdateCheckOutCurrency (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
-    cPcurrency IN CHAR 
+    cPcurrency IN CHAR
   )
   AS
   BEGIN
@@ -5152,3 +5153,5 @@ PROCEDURE GetShadowOrderWithWarranty (
   END UpdateCheckOutCurrency;
 END Pkg_Fe_Orderaccess;
 /
+ 
+REM END SS_ADM PKG_FE_ORDERACCESS
