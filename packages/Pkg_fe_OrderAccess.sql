@@ -1898,6 +1898,7 @@ AS
     iLdebit_credit_return INT;
     iLseq_currval INT;
     iLseq_diff INT;
+    iLbuffer_code INT;
   BEGIN
     IF iPorder_num IS NULL OR iPorder_num < 0 THEN
       SELECT SEQ_order.NEXTVAL INTO iPorder_num FROM DUAL;
@@ -1970,6 +1971,30 @@ AS
           AND b.TYPE = 0;
       END;
     END IF;
+
+    -- update buffer campaign
+    IF iPsite_id = 1 THEN
+      iLbuffer_code := 50001;
+    ELSIF iPsite_id = 7 THEN
+      iLbuffer_code := 50002;
+    ELSIF iPsite_id = 10 THEN
+      iLbuffer_code := 50003;
+    END IF;
+
+    INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
+    SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, iLbuffer_code 
+    FROM ya_new_basket nb
+      INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code in (133)
+    WHERE nb.shopper_id = cPshopper_id
+      AND nb.type = 0
+      AND nb.site_id = iPsite_id
+      AND EXISTS (
+        SELECT 1 
+        FROM ya_limited_quantity lq 
+        WHERE lq.sku = nb.sku AND ((lq.site_id <> 10 AND lq.site_id IN (99, iPsite_id)) OR (lq.site_id = iPsite_id AND iPsite_id = 10)) 
+        AND lq.frontend_quantity > 0
+      );
+
 
     -- remove basket's items
     DELETE FROM YA_NEW_BASKET
@@ -2185,7 +2210,7 @@ AS
         WHERE
           b.shopper_id = cPshopper_id
           AND b.site_id = iPsite_id
-		  AND b.paypal_uid=cPguid
+		      AND b.paypal_uid=cPguid
           AND b.TYPE = 0;
 
         IF iLexist > 0 THEN
@@ -2388,6 +2413,7 @@ AS
     iLdebit_credit_return INT;
     iLseq_currval INT;
     iLseq_diff INT;
+    iLbuffer_code INT;
   BEGIN
     BEGIN
       SELECT paypal_uid
@@ -2491,6 +2517,29 @@ AS
           END;
         END IF;
 
+
+        -- update buffer campaign
+        IF iPsite_id = 1 THEN
+          iLbuffer_code := 50001;
+        ELSIF iPsite_id = 7 THEN
+          iLbuffer_code := 50002;
+        ELSIF iPsite_id = 10 THEN
+          iLbuffer_code := 50003;
+        END IF;
+
+        INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
+        SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, iLbuffer_code 
+        FROM ya_new_basket nb
+          INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code in (133)
+        WHERE nb.shopper_id = cPshopper_id
+          AND nb.type = 0
+          AND nb.site_id = iPsite_id
+          AND EXISTS (
+            SELECT 1 
+            FROM ya_limited_quantity lq 
+            WHERE lq.sku = nb.sku AND ((lq.site_id <> 10 AND lq.site_id IN (99, iPsite_id)) OR (lq.site_id = iPsite_id AND iPsite_id = 10)) 
+            AND lq.frontend_quantity > 0
+          );
 
         DELETE FROM YA_NEW_BASKET
         WHERE
