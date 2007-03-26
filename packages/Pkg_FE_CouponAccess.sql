@@ -1,4 +1,7 @@
-create or replace PACKAGE Pkg_FE_CouponAccess
+
+REM START SS_ADM PKG_FE_COUPONACCESS
+
+  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_COUPONACCESS" 
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -51,7 +54,7 @@ AS
   );
 END Pkg_FE_CouponAccess;
 /
-create or replace PACKAGE BODY Pkg_FE_CouponAccess
+CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_COUPONACCESS" 
 AS
   PROCEDURE GetCoupon (
     cPcode IN VARCHAR2,
@@ -143,11 +146,11 @@ AS
                       (
                         SELECT 1
                         FROM
-                          billinginfo b,
-                          orderinfo o
+                          billing_info b,
+                          order_info o
                         WHERE
-                          b.orderid = o.id
-                          AND o.customerId = cPshopper_id
+                          b.order_info_id = o.id
+                          AND o.cust_id = cPshopper_id
                           AND b.coupon = c.coupon_code
                       )
                   )
@@ -218,7 +221,7 @@ AS
 		-- Make sure unique coupon code
 		SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
 		WHILE (iLcount = 1)
-			LOOP     
+			LOOP
 					SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO iLcoupon_code FROM dual;
 					SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
 			END LOOP;
@@ -256,7 +259,7 @@ AS
 			OR
 			(
 				(c.coupon_code = 'FEB14' OR (c.all_shoppers = 'G' AND u.shopper_id is not null)) AND NOT EXISTS (
-					SELECT 1 FROM OrderInfo o INNER JOIN BillingInfo b ON o.id = b.orderid WHERE b.coupon = u.coupon_code AND o.customerid = cPshopper_id
+					SELECT 1 FROM order_info o INNER JOIN billing_info b ON o.id = b.order_info_id WHERE b.coupon = u.coupon_code AND o.cust_id = cPshopper_id
 				)
 			)
 		)
@@ -265,3 +268,5 @@ AS
 
 END Pkg_FE_CouponAccess;
 /
+ 
+REM END SS_ADM PKG_FE_COUPONACCESS
