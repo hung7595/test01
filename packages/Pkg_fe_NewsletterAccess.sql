@@ -1,4 +1,7 @@
-CREATE OR REPLACE PACKAGE Pkg_fe_NewsletterAccess
+
+REM START SS_ADM PKG_FE_NEWSLETTERACCESS
+
+  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_NEWSLETTERACCESS" 
 AS
   TYPE curGgetNews IS REF CURSOR;
   PROCEDURE GetNewsletterTopic (
@@ -33,8 +36,7 @@ AS
 
 END Pkg_fe_NewsletterAccess;
 /
-
-CREATE OR REPLACE PACKAGE BODY Pkg_fe_NewsletterAccess
+CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_NEWSLETTERACCESS" 
 IS
 /* GetNewsletterTopic */
   PROCEDURE GetNewsletterTopic (
@@ -336,4 +338,5 @@ END;
   END SubscribeNewsletterByEmail;
 END Pkg_fe_NewsletterAccess;
 /
-
+ 
+REM END SS_ADM PKG_FE_NEWSLETTERACCESS

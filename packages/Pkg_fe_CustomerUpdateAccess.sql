@@ -1,3 +1,6 @@
+
+REM START SS_ADM PKG_FE_CUSTOMERUPDATEACCESS
+
   CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_CUSTOMERUPDATEACCESS" 
 AS
   TYPE refCur IS REF CURSOR;
@@ -224,11 +227,11 @@ is
 	)
 	AS
 	BEGIN
-		SELECT nvl(sum(c.quantity * b.unitPrice), 0) INTO dPamount
-		FROM OrderInfo a, OrderLine  b, OrderLineDetail c
-		WHERE a.id = b.orderId AND b.id = c.orderLineId
-		AND (c.status <> 8 AND c.status <>9)
-		AND a.originOrderId = iPorder_id;
+		SELECT nvl(sum(c.qnty * b.unit_price), 0) INTO dPamount
+		FROM order_info a, order_line  b, order_line_dtl c
+		WHERE a.id = b.order_info_id AND b.id = c.order_line_id
+		AND (c.sts <> 8 AND c.sts <>9)
+		AND a.origin_order_id = iPorder_id;
 	END GetOrderAmount;
 
 	-- Out-dated
@@ -239,10 +242,10 @@ is
 	AS
 	BEGIN
 		SELECT nvl(sum(c.amount), 0) INTO dPpaid_amount
-		FROM OrderInfo a, CreditInfo  b, CreditInfoDetail c
+		FROM order_info a, CreditInfo  b, CreditInfoDetail c
 		WHERE a.id = b.orderId AND b.id = c.creditInfoId
 		AND b.type=2 AND (c.status=1 OR c.status=3)
-		AND a.originOrderId = iPorder_id;
+		AND a.origin_order_id = iPorder_id;
 	END GetPaidAmount;
 
 	PROCEDURE GetPaidAmount_new (
@@ -252,12 +255,12 @@ is
 	AS
 	BEGIN
 		OPEN curPresult FOR
-			SELECT nvl(sum(dd.amount),0), d.currency
-			FROM OrderInfo o, Deposit d, DepositDetail dd
-			WHERE o.id = dd.orderId AND d.id = dd.depositId
-			AND d.paymentType NOT IN (10 /*STORE CREDIT*/, 11 /*COUPON*/)
-			AND dd.status IN (1 /*HOLD FOR ORDER*/,3 /*USED*/,5 /*HOLD FOR AR*/)
-			AND o.originOrderId = iPorder_id
+			SELECT nvl(sum(dd.amt),0), d.currency
+			FROM order_info o, deposit d, deposit_dtl dd
+			WHERE o.id = dd.order_info_id AND d.id = dd.deposit_id
+			AND d.pymt_type NOT IN (10 /*STORE CREDIT*/, 11 /*COUPON*/)
+			AND dd.sts IN (1 /*HOLD FOR ORDER*/,3 /*USED*/,5 /*HOLD FOR AR*/)
+			AND o.origin_order_id = iPorder_id
 			GROUP BY d.currency;
 	END GetPaidAmount_new;
 
@@ -267,9 +270,9 @@ is
 	)
 	AS
 	BEGIN
-		SELECT status INTO iPstatus
-		FROM OrderInfo
-		WHERE originOrderId = iPorder_id;
+		SELECT sts INTO iPstatus
+		FROM order_info
+		WHERE origin_order_id = iPorder_id;
 
 	END GetOrderStatus;
 
@@ -286,11 +289,13 @@ is
 		10-STORE Credit, 11-Coupon
 		*/
 		SELECT count(*) INTO iPresult
-		FROM OrderInfo o
-		INNER JOIN DepositDetail dd ON o.id = dd.orderId AND dd.status IN (1, 3, 5)
-		INNER JOIN Deposit d ON d.id = dd.depositId AND d.paymentType NOT IN (10, 11)
-		WHERE o.originOrderId = iPorder_id;
+		FROM order_info o
+		INNER JOIN deposit_dtl dd ON o.id = dd.order_info_id AND dd.sts IN (1, 3, 5)
+		INNER JOIN deposit d ON d.id = dd.deposit_id AND d.pymt_type NOT IN (10, 11)
+		WHERE o.origin_order_id = iPorder_id;
 	END IsOrderPaid;
 
 END Pkg_FE_CustomerUpdateAccess;
 /
+ 
+REM END SS_ADM PKG_FE_CUSTOMERUPDATEACCESS

@@ -35,8 +35,8 @@ is
   /* get first issue sku */
     begin
       select  sku,start_date into numLFirstIssueSku,datLStartDate  from (select sku,start_date from ya_product_subscription,
-productAvailability pa, productRegion pr where ya_product_subscription.sku=pa.productId and pa.availability=0 and pa.originid=iPSiteId and pa.category=1
-and ya_product_subscription.sku=pr.productid and pr.categoryId=1 and pr.originid=iPsiteId and  pr.cansell='Y' and  pr.enable='Y'
+prod_avlb pa, prod_region pr where ya_product_subscription.sku=pa.prod_id and pa.avlb=0 and pa.origin_id=iPSiteId and pa.category=1
+and ya_product_subscription.sku=pr.prod_id and pr.category_id=1 and pr.origin_id=iPsiteId and  pr.is_can_sell='Y' and  pr.is_enabled='Y'
 and subscription_sku=iPsubscriptionSku and start_date >= sysdate order by start_date desc)
 where rownum<2;
     EXCEPTION WHEN NO_DATA_FOUND THEN
@@ -57,8 +57,8 @@ where rownum<2;
 	begin
          /* get first issue sku */
          select  sku,start_date into numLFirstIssueSku,datLStartDate from (select sku,start_date from ya_product_subscription,
-         productAvailability pa, productRegion pr where ya_product_subscription.sku=pa.productId and          pa.originid=iPSiteId and pa.availability=0 and pa.category=1
-         and ya_product_subscription.sku=pr.productid and pr.categoryId=1 and 	 pr.originid=iPsiteId and subscription_sku=iPsubscriptionSku and pr.cansell='Y' and  pr.enable='Y'
+         prod_avlb pa, prod_region pr where ya_product_subscription.sku=pa.prod_id and          pa.origin_id=iPSiteId and pa.avlb=0 and pa.category=1
+         and ya_product_subscription.sku=pr.prod_id and pr.category_id=1 and 	 pr.origin_id=iPsiteId and subscription_sku=iPsubscriptionSku and pr.is_can_sell='Y' and  pr.is_enabled='Y'
          and start_date < sysdate order by start_date desc) where rownum<2;
        EXCEPTION WHEN NO_DATA_FOUND THEN
          BEGIN
@@ -75,7 +75,7 @@ where rownum<2;
       /* get first issue sku */
       begin
         select  sku,start_date into numLFirstIssueSku,datLStartDate from (select sku,start_date from ya_product_subscription,
-        productAvailability pa, productRegion pr where ya_product_subscription.sku=pa.productId and pa.category=1 and pa.originid=iPSiteId and ya_product_subscription.sku=pr.productid and pr.categoryId=1 and pr.originid=iPsiteId and subscription_sku=iPsubscriptionSku and start_date > sysdate order by start_date) where rownum<2;
+        prod_avlb pa, prod_region pr where ya_product_subscription.sku=pa.prod_id and pa.category=1 and pa.origin_id=iPSiteId and ya_product_subscription.sku=pr.prod_id and pr.category_id=1 and pr.origin_id=iPsiteId and subscription_sku=iPsubscriptionSku and start_date > sysdate order by start_date) where rownum<2;
       EXCEPTION WHEN NO_DATA_FOUND THEN
         BEGIN
           numLFirstIssueSku := -1;

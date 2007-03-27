@@ -1143,15 +1143,15 @@ AS
         SELECT
           iPorder_num,
           b.sku,
-          pa.availability
+          pa.avlb
         FROM
           YA_NEW_BASKET b
           INNER JOIN YA_BARGAIN_PRODUCT p ON
             b.sku = p.sku
             AND p.site_id = iPsite_id
-          INNER JOIN backend_adm.productavailability pa ON
-            b.sku = pa.productid
-            AND pa.regionid = iPsite_id
+          INNER JOIN backend_adm.prod_avlb pa ON
+            b.sku = pa.prod_id
+            AND pa.region_id = iPsite_id
             AND pa.category = 1
         WHERE
           b.shopper_id = cPshopper_id
@@ -1384,15 +1384,15 @@ AS
             SELECT
               iPorder_num,
               b.sku,
-              pa.availability
+              pa.avlb
             FROM
               YA_NEW_BASKET b
               INNER JOIN YA_BARGAIN_PRODUCT p ON
                 b.sku = p.sku
                 AND p.site_id = iPsite_id
-              INNER JOIN backend_adm.productavailability pa ON
-                b.sku = pa.productid
-                AND pa.regionid = iPsite_id
+              INNER JOIN backend_adm.prod_avlb pa ON
+                b.sku = pa.prod_id
+                AND pa.region_id = iPsite_id
                 AND pa.category = 1
             WHERE
               b.shopper_id = cPshopper_id
@@ -1955,15 +1955,15 @@ AS
         SELECT
           iPorder_num,
           b.sku,
-          pa.availability
+          pa.avlb
         FROM
           YA_NEW_BASKET b
           INNER JOIN YA_BARGAIN_PRODUCT p ON
             b.sku = p.sku
             AND p.site_id = iPsite_id
-          INNER JOIN backend_adm.productavailability pa ON
-            b.sku = pa.productid
-            AND pa.regionid = iPsite_id
+          INNER JOIN backend_adm.prod_avlb pa ON
+            b.sku = pa.prod_id
+            AND pa.region_id = iPsite_id
             AND pa.category = 1
         WHERE
           b.shopper_id = cPshopper_id
@@ -2224,15 +2224,15 @@ AS
             SELECT
               iPorder_num,
               b.sku,
-              pa.availability
+              pa.avlb
             FROM
               YA_NEW_BASKET_SHADOW b
               INNER JOIN YA_BARGAIN_PRODUCT p ON
                 b.sku = p.sku
                 AND p.site_id = iPsite_id
-              INNER JOIN backend_adm.productavailability pa ON
-                b.sku = pa.productid
-                AND pa.regionid = iPsite_id
+              INNER JOIN backend_adm.prod_avlb pa ON
+                b.sku = pa.prod_id
+                AND pa.region_id = iPsite_id
                 AND pa.category = 1
             WHERE
               b.shopper_id = cPshopper_id
@@ -2500,15 +2500,15 @@ AS
             SELECT
               iPorder_num,
               b.sku,
-              pa.availability
+              pa.avlb
             FROM
               YA_NEW_BASKET b
               INNER JOIN YA_BARGAIN_PRODUCT p ON
                 b.sku = p.sku
                 AND p.site_id = iPsite_id
-              INNER JOIN backend_adm.productavailability pa ON
-                b.sku = pa.productid
-                AND pa.regionid = iPsite_id
+              INNER JOIN backend_adm.prod_avlb pa ON
+                b.sku = pa.prod_id
+                AND pa.region_id = iPsite_id
                 AND pa.category = 1
             WHERE
               b.shopper_id = cPshopper_id
@@ -3228,103 +3228,103 @@ PROCEDURE GetShadowOrderWithWarranty (
     BEGIN
       SELECT id
       INTO iLorder_id
-      FROM backend_adm.OrderInfo
-      WHERE originOrderId = TO_CHAR(iPorder_num);
+      FROM backend_adm.order_info
+      WHERE origin_order_id = TO_CHAR(iPorder_num);
     EXCEPTION WHEN NO_DATA_FOUND THEN
       iLorder_id := -1;
     END;
 
     OPEN curPresult1 FOR
-    SELECT originId
-    FROM backend_adm.OrderInfo
+    SELECT origin_id
+    FROM backend_adm.order_info
     WHERE id = iLorder_id;
 
     OPEN curPresult2 FOR
     SELECT
       ol.id,
-      ol.productId,
-      ol.quantity,
-      ol.unitPrice,
-      ol.parentId,
-      ol.shipmentUnit,
-      ol.miscInfo,
-      ol.availability,
-      ol.preOrder,
-      ol.relativeDeliveryDay
-    FROM backend_adm.OrderLine ol
-    WHERE ol.orderId = iLorder_id
-	AND (ol.parentid=-1 or ol.parentid=ol.productid)
+      ol.prod_id,
+      ol.qnty,
+      ol.unit_price,
+      ol.parent_id,
+      ol.shipment_unit,
+      ol.misc_info,
+      ol.avlb,
+      ol.is_preorder,
+      ol.relative_delivery_day
+    FROM backend_adm.order_line ol
+    WHERE ol.order_info_id = iLorder_id
+	AND (ol.parent_id=-1 or ol.parent_id=ol.prod_id)
     ORDER BY ol.id;
 
     OPEN curPresult3 FOR
     SELECT
-      oi.originorderid,
-      oi.salesId,
-      oi.originId,
+      oi.origin_order_id,
+      oi.sales_id,
+      oi.origin_id,
       oi.category,
-      oi.orderDate,
-      oi.customerId,
-      oi.customerFirstname,
-      oi.customerLastname,
-      oi.customerEmail,
+      oi.order_dt,
+      oi.cust_id,
+      oi.cust_first_name,
+      oi.cust_last_name,
+      oi.cust_email,
       si.method,
-      si.firstname,
-      si.lastname,
-      si.address1,
-      si.address2,
+      si.first_name,
+      si.last_name,
+      si.addr_1,
+      si.addr_2,
       si.city,
-      si.stateCode,
+      si.state_code,
       si.state,
       si.zip,
       si.country,
-      si.dayPhone,
-      si.eveningPhone,
+      si.day_phone,
+      si.evening_phone,
       si.fax,
       si.mobile,
       si.email,
       bi.method,
-      bi.firstname,
-      bi.lastname,
-      bi.address1,
-      bi.address2,
+      bi.first_name,
+      bi.last_name,
+      bi.addr_1,
+      bi.addr_2,
       bi.city,
-      bi.statecode,
+      bi.state_code,
       bi.state,
       bi.zip,
       bi.country,
       bi.email,
-      bi.authCode,
-      bi.authAmt,
-      bi.avsCode,
-      bi.ccNum,
-      bi.ccType,
-      bi.ccExpMo,
-      bi.ccExpYear,
-      bi.bankName,
-      bi.bankPhone,
-      oi.customerComment,
-      bi.refId,
-      oi.refId,
+      bi.auth_code,
+      bi.auth_amt,
+      bi.avs_code,
+      bi.cc_num,
+      bi.cc_type,
+      bi.cc_exp_month,
+      bi.cc_exp_year,
+      bi.bank_name,
+      bi.bank_phone,
+      oi.cust_cmt,
+      bi.ref_id,
+      oi.ref_id,
       bi.coupon,
-      bi.couponAmt,
-      bi.creditAmt,
-      oi.COMMENT,
-      oi.originVersion,
-      oi.splitShipment,
+      bi.coupon_amt,
+      bi.credit_amt,
+      oi.cmt,
+      oi.origin_version,
+      oi.split_shipment,
       bi.phone,
-      bi.shipmentAmt,
-      bi.handlingAmt,
-      bi.specialHandling,
+      bi.shipment_amt,
+      bi.handling_amt,
+      bi.special_handling,
       bi.tax,
       bi.currency,
-      bi.encryptionKey,
-      bi.ccNumEncrypted
+      bi.encryption_key,
+      bi.cc_num_encrypted
     FROM
-      backend_adm.OrderInfo oi
-      INNER JOIN backend_adm.ShippingInfo si ON
-        oi.id = si.orderId
-      INNER JOIN backend_adm.BillingInfo bi ON
-        oi.id = bi.orderId
+      backend_adm.order_info oi
+      INNER JOIN backend_adm.shipping_info si ON
+        oi.id = si.order_info_id
+      INNER JOIN backend_adm.billing_info bi ON
+        oi.id = bi.order_info_id
     WHERE oi.id = iLorder_id;
 
     RETURN;
@@ -3385,10 +3385,10 @@ PROCEDURE GetShadowOrderWithWarranty (
     iLBE_count INT;
     iLFE_count INT;
   BEGIN
-    SELECT COUNT(originOrderId)
+    SELECT COUNT(origin_order_id)
     INTO iLBE_count
-    FROM Backend_adm.OrderInfo
-    WHERE customerId = cPshopper_id;
+    FROM Backend_adm.order_info
+    WHERE cust_id = cPshopper_id;
 
     SELECT COUNT(order_num)
     INTO iLFE_count
@@ -3397,10 +3397,10 @@ PROCEDURE GetShadowOrderWithWarranty (
       shopper_id = cPshopper_id
       AND order_num NOT IN
         (
-          SELECT originOrderId
-          FROM Backend_adm.OrderInfo
-          WHERE customerId = cPshopper_id
-					AND length(trim(originOrderId)) > 1
+          SELECT origin_order_id
+          FROM Backend_adm.order_info
+          WHERE cust_id = cPshopper_id
+					AND length(trim(origin_order_id)) > 1
         );
 
     iPcount := iLFE_count + iLBE_count;
@@ -3449,7 +3449,7 @@ PROCEDURE GetShadowOrderWithWarranty (
       END;
     END;
 
-    -- Payment Method Lookup
+    -- Payment Method lookup
     --  UNKNOWN = -1
     --  CREDIT_CARD = 1
     --  MONEY_ORDER = 2
@@ -3464,7 +3464,7 @@ PROCEDURE GetShadowOrderWithWarranty (
       END;
     END IF;
 
-    -- Credit Card Type Lookup
+    -- Credit Card Type lookup
     --  VISA = 1
     --  MASTER = 2
     --  AMEX = 3
@@ -3844,7 +3844,7 @@ PROCEDURE GetShadowOrderWithWarranty (
       END;
     END;
 
-    -- Payment Method Lookup
+    -- Payment Method lookup
     --  UNKNOWN = -1
     --  CREDIT_CARD = 1
     --  MONEY_ORDER = 2
@@ -3859,7 +3859,7 @@ PROCEDURE GetShadowOrderWithWarranty (
       END;
     END IF;
 
-    -- Credit Card Type Lookup
+    -- Credit Card Type lookup
     --  VISA = 1
     --  MASTER = 2
     --  AMEX = 3

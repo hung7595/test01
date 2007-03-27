@@ -1,4 +1,7 @@
-CREATE OR REPLACE PACKAGE Pkg_FE_ArticleAccess
+
+REM START SS_ADM PKG_FE_ARTICLEACCESS
+
+  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_ARTICLEACCESS" 
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -88,8 +91,7 @@ AS
 
 END Pkg_FE_ArticleAccess;
 /
-
-CREATE OR REPLACE PACKAGE BODY Pkg_FE_ArticleAccess
+CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_ARTICLEACCESS" 
 AS
   /* proc_fe_GetArticleByArticleId */
   PROCEDURE GetArticleByArticleId (
@@ -129,28 +131,28 @@ AS
       NVL(lang.sku,0) sku,
       lang.prod_name_u prod_name,
       prod.cover_img_loc cover_img_loc,
-      pa.availability
+      pa.avlb
     FROM
       ya_article_rel rel,
       ya_article article,
       ya_product prod,
       ya_prod_lang lang,
-      ProductAvailability pa
+      prod_avlb pa
     WHERE
       article.article_id = rel.article_id
       AND rel.rel_id = prod.sku
       AND rel.rel_id = lang.sku
       AND rel.lang_id = lang.lang_id
-      AND rel.rel_id = pa.productId
+      AND rel.rel_id = pa.prod_id
       AND rel.article_id = iParticle_id
       AND rel.enable = 'Y'
       AND rel.rel_type = 1
       AND lang.lang_id = iPlang_id
       AND article.enable = 'Y'
       AND article.status = 8
-      AND pa.originId = iPoriginId
+      AND pa.origin_id = iPoriginId
       AND pa.category = 1
-      AND pa.regionid = iPoriginId
+      AND pa.region_id = iPoriginId
     ORDER BY rel.priority ASC;
 
     /* get the mentioned artists */
@@ -260,24 +262,24 @@ AS
       NVL(lang.sku,0) sku,
       lang.prod_name_u prod_name,
       prod.cover_img_loc cover_img_loc,
-      pa.availability
+      pa.avlb
     FROM
       ya_article_rel rel,
       ya_article article,
       ya_product prod,
       ya_prod_lang lang,
-      ProductAvailability pa
+      prod_avlb pa
     WHERE article.article_id = rel.article_id
     AND rel.rel_id = prod.sku
     AND rel.rel_id = lang.sku
     AND rel.lang_id = lang.lang_id
-    AND rel.rel_id = pa.productId
+    AND rel.rel_id = pa.prod_id
     AND rel.article_id = iParticle_id
     AND rel.rel_type = 1
     AND lang.lang_id = iPlang_id
-    AND pa.originId = iPoriginId
+    AND pa.origin_id = iPoriginId
     AND pa.category = 1
-    AND pa.regionid = iPoriginId
+    AND pa.region_id = iPoriginId
     ORDER BY rel.priority asc;
 
     /* get the mentioned artists */
@@ -633,28 +635,28 @@ AS
       NVL(lang.sku,0) sku,
       lang.prod_name_u prod_name,
       prod.cover_img_loc cover_img_loc,
-      pa.availability
+      pa.avlb
     FROM
       ya_article_rel rel,
       ya_article article,
       ya_product prod,
       ya_prod_lang lang,
-      ProductAvailability pa
+      prod_avlb pa
     WHERE
       article.article_id = rel.article_id
       AND rel.rel_id = prod.sku
       AND rel.rel_id = lang.sku
       AND rel.lang_id = lang.lang_id
-      AND rel.rel_id = pa.productId
+      AND rel.rel_id = pa.prod_id
       AND rel.article_id = iParticle_id
       AND rel.enable = 'Y'
       AND rel.rel_type = 1
       AND lang.lang_id = iPlang_id
       AND article.enable = 'Y'
       AND article.status = 8
-      AND pa.originId = iPoriginId
+      AND pa.origin_id = iPoriginId
       AND pa.category = 1
-      AND pa.regionid = iPoriginId
+      AND pa.region_id = iPoriginId
     ORDER BY rel.priority ASC;
 
     /* get the mentioned artists */
@@ -731,4 +733,5 @@ AS
 
 END Pkg_FE_ArticleAccess;
 /
-
+ 
+REM END SS_ADM PKG_FE_ARTICLEACCESS

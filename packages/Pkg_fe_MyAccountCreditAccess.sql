@@ -1,4 +1,7 @@
-CREATE OR REPLACE package Pkg_fe_MyAccountCreditAccess
+
+REM START SS_ADM PKG_FE_MYACCOUNTCREDITACCESS
+
+  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_MYACCOUNTCREDITACCESS" 
 As
   TYPE curGcredit_history IS REF CURSOR;
 
@@ -41,8 +44,7 @@ As
   );
 END Pkg_fe_MyAccountCreditAccess;
 /
-
-CREATE OR REPLACE package body Pkg_fe_MyAccountCreditAccess
+CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_MYACCOUNTCREDITACCESS" 
 IS
   PROCEDURE TransferCredit2 (
     cPemail IN VARCHAR2,
@@ -301,4 +303,5 @@ IS
   END TransferCredit;
 END Pkg_fe_MyAccountCreditAccess;
 /
-
+ 
+REM END SS_ADM PKG_FE_MYACCOUNTCREDITACCESS

@@ -1,30 +1,7 @@
-DROP TABLE temp_spotlight_review_report CASCADE CONSTRAINTS
-/
-CREATE GLOBAL TEMPORARY table temp_spotlight_review_report
-(
-	id INT NOT NULL,
-	positive INT DEFAULT 0 NOT NULL,
-	total INT DEFAULT 0 NOT NULL,
-	perc INT DEFAULT 0 NOT NULL,
-	sku INT NOT NULL,
-	prod_name_u NVARCHAR2(300) NULL,
-	date_posted DATE,
-	review_id INT,
-	review CLOB,
-	reviewer NVARCHAR2(100),
-	shopper_id CHAR(32),
-	email VARCHAR2(255),
-	rating_id INT,
-	title VARCHAR2(200),
-	status NVARCHAR2(50),
-	lang_id INT,
-	reviewer_type VARCHAR2(100),
-	PRIMARY KEY (id)
-)
-ON COMMIT PRESERVE ROWS
-/
 
-CREATE OR REPLACE package Pkg_FE_ReviewAccess
+REM START SS_ADM PKG_FE_REVIEWACCESS
+
+  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_REVIEWACCESS" 
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -324,7 +301,7 @@ AS
 		cPshopper_id IN CHAR,
     iPresult OUT INT
   );
-	
+
 	PROCEDURE GetEditorReviewNumByPrdLn (
     iPsite_id IN INT,
     iPlang_id IN INT,
@@ -422,8 +399,8 @@ AS
 		cPapprove IN CHAR,
 		iProwAffect OUT INT
   );
-	-- Review Update -- END ---------------------------------------------------------------------------------------------------------------------------------------------	
-	
+	-- Review Update -- END ---------------------------------------------------------------------------------------------------------------------------------------------
+
 	-- Spotlight Review -- BEGIN ---------------------------------------------------------------------------------------------------------------------------------------------
 	PROCEDURE UpdateSpotlightReview (
 		iPrating_id IN INT,
@@ -439,7 +416,7 @@ AS
 		iPpage_number IN INT,
 		iPpage_size IN INT,
 		iPnum_record OUT INT,
-    curPresult OUT refCur	
+    curPresult OUT refCur
 	);
 
 	PROCEDURE GetPagedSpotlightReviewByDate (
@@ -451,14 +428,14 @@ AS
 		iPpage_number IN INT,
 		iPpage_size IN INT,
 		iPnum_record OUT INT,
-    curPresult OUT refCur	
+    curPresult OUT refCur
 	);
 	-- Spotlight Review -- END ---------------------------------------------------------------------------------------------------------------------------------------------
 
 	-- Report This -- START -----------------------------------------------------------------------------------------------------------------------------------------------
 	PROCEDURE GetReviewReportByReviewId (
 		iPreview_id IN INT,
-    curPresult OUT refCur	
+    curPresult OUT refCur
   );
 
 	PROCEDURE DeleteReviewReport (
@@ -481,7 +458,7 @@ AS
 		iPpage_number IN INT,
 		iPpage_size IN INT,
 		iPnum_record OUT INT,
-		curPresult OUT refCur	
+		curPresult OUT refCur
   );
 
 	PROCEDURE GetReviewReportBySKU (
@@ -489,7 +466,7 @@ AS
 		iPpage_number IN INT,
 		iPpage_size IN INT,
 		iPnum_record OUT INT,
-    curPresult OUT refCur	
+    curPresult OUT refCur
   );
 
 	PROCEDURE GetReviewReportByDateRange (
@@ -499,7 +476,7 @@ AS
 		iPpage_number IN INT,
 		iPpage_size IN INT,
 		iPnum_record OUT INT,
-    curPresult OUT refCur	
+    curPresult OUT refCur
   );
 	-- Report This -- END -----------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -524,16 +501,16 @@ AS
 
 	/* proc_fe_review_addReviewApprovalSystemKey */
 	PROCEDURE AddReviewApprovalSystemKey (
-		iPrreview_id IN INT,  
-		iPrating_id IN INT,  
-		cPreview_key IN NCLOB,  
+		iPrreview_id IN INT,
+		iPrating_id IN INT,
+		cPreview_key IN NCLOB,
 		dPdate_posted IN DATE
   );
 
 	/* proc_fe_updateReviewStatus */
 	PROCEDURE UpdateReviewStatus (
-		iPrating_id IN INT,                  
-		cPstatus IN CHAR,                  
+		iPrating_id IN INT,
+		cPstatus IN CHAR,
 		cPaction_type IN VARCHAR2,
 		cPremark IN NVARCHAR2
   );
@@ -541,8 +518,7 @@ AS
 	-- Review Approval -- END -----------------------------------------------------------------------------------------------------------------------------------------------
 END Pkg_FE_ReviewAccess;
 /
-
-CREATE OR REPLACE package body Pkg_FE_ReviewAccess
+CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_REVIEWACCESS" 
 is
   PROCEDURE GetUserReviewsBySku (
     iPsku IN INT,
@@ -673,7 +649,7 @@ is
             a.rating_id = b.rating_id
             AND b.us_review_id =  c.review_id
 						AND a.sku in (
-							SELECT productId FROM productRegion WHERE enable = 'Y' AND categoryid = 1 AND (regionid <> 10 OR originid <> 10)
+        			SELECT prod_id as productid FROM prod_region WHERE (region_id <> 10 OR origin_id <> 10) AND category_id = 1 AND is_enabled = 'Y' --  AND cansell = 'Y'
 						)
           ORDER BY
             a.date_posted DESC , a.rating_id DESC
@@ -748,7 +724,7 @@ is
       WHERE a.rating_id = b.rating_id
       AND b.us_review_id = c.review_id
 			AND a.sku in (
-				SELECT productId FROM productRegion WHERE enable = 'Y' AND categoryid = 1 AND (regionid <> 10 AND originid <> 10)
+        SELECT prod_id as productid FROM prod_region WHERE (region_id <> 10 OR origin_id <> 10) AND category_id = 1 AND is_enabled = 'Y' --  AND cansell = 'Y'
 			)
       AND
       (
@@ -1447,7 +1423,7 @@ is
       a.rating_id=b.rating_id
       AND b.us_review_id = c.review_id
 			AND a.sku in (
-				SELECT productId FROM productRegion WHERE enable = 'Y' AND (regionid <> 10 OR originid <> 10) AND categoryid = 1			
+        SELECT prod_id as productid FROM prod_region WHERE (region_id <> 10 OR origin_id <> 10) AND category_id = 1 AND is_enabled = 'Y' --  AND cansell = 'Y'
 			)
     GROUP BY b.lang_id, a.reviewer_type;
     RETURN;
@@ -1470,14 +1446,14 @@ is
       ya_prod_rating_lang b,
       ya_review c,
       ya_review_helpful d,
-			productRegion h
+			prod_region h
     WHERE
       a.rating_id = b.rating_id
       AND a.shopper_id = cPshopper_id
       AND b.us_review_id =  c.review_id
       AND c.review_id = d.review_id
-			AND a.sku = h.productid
-			AND h.enable = 'Y' AND (h.regionid <> 10 OR h.originid <> 10) AND categoryid = 1
+			AND a.sku = h.prod_id
+			AND h.is_enabled = 'Y' AND (h.region_id <> 10 OR h.origin_id <> 10) AND category_id = 1
     GROUP BY d.review_helpful;
   END GetHelpfulCountByShopperId;
 
@@ -1952,9 +1928,9 @@ PROCEDURE InsertReviewData (
     END IF;
 
     IF ((cPapproved <>'Y' OR cPapproved <>'N') AND (cPreviewerType <> 'EDITORIAL' AND cPreviewerType <> 'EDITOR')) THEN
-			-- data use in review approval system  
+			-- data use in review approval system
 			BEGIN
-				INSERT INTO ya_review_tmp_newReviewList(review_id, review, rating_id, date_posted, shopper_id, reviewer, title, lang_id)  
+				INSERT INTO ya_review_tmp_newReviewList(review_id, review, rating_id, date_posted, shopper_id, reviewer, title, lang_id)
 				VALUES(iPreview_id, cPreview, iPrating_id, SYSDATE, cPshopperID, cPshopperName, cPtitle, iPlangID);
 			END;
 		END IF;
@@ -2378,7 +2354,7 @@ PROCEDURE GetShopperReviewCount (
 
 		RETURN;
 	END GetProductShareReviewRating;
-	
+
  PROCEDURE GetReviewsBySkuWithNoLang (
     iPsku IN INT,
     iPsite_id IN INT,
@@ -2598,9 +2574,9 @@ PROCEDURE GetAllReviewsByShopperID (
               SELECT * FROM ya_product_rating WHERE review_approved='Y'
               AND shopper_id = cPshopper_id
               AND (reviewer_type = 'USER' OR reviewer_type = 'WINNER')
-            ) a, 
+            ) a,
 						(
-							SELECT * FROM productRegion WHERE enable = 'Y' AND regionid = iPsite_id AND originid = iPsite_id AND categoryid = 1			
+        			SELECT * FROM prod_region WHERE region_id = iPsite_id AND origin_id = iPsite_id AND category_id = 1 AND is_enabled = 'Y' --  AND cansell = 'Y'
 						) h ,
             (
               SELECT * FROM ya_prod_rating_lang --WHERE lang_id = iPlang_id
@@ -2611,7 +2587,7 @@ PROCEDURE GetAllReviewsByShopperID (
           WHERE
             a.rating_id = b.rating_id
             AND b.us_review_id =  c.review_id
-						AND a.sku = h.productid
+						AND a.sku = h.prod_id
           ORDER BY
             a.date_posted DESC , a.rating_id DESC
         ) x
@@ -2665,8 +2641,8 @@ PROCEDURE GetAllReviewsByShopperID (
       LEFT JOIN ya_shopper d ON a.shopper_id=d.shopper_id
       LEFT JOIN ya_review_reviewerName e ON a.shopper_id=e.shopper_id,
 			(
-				SELECT productid FROM productRegion WHERE enable = 'Y' AND regionid = iPsite_id AND originid = iPsite_id AND categoryid = 1			
-			) h, 
+        SELECT prod_id as productid FROM prod_region WHERE region_id = iPsite_id AND origin_id = iPsite_id AND category_id = 1 AND is_enabled = 'Y' --  AND cansell = 'Y'
+			) h,
 			(
         SELECT * FROM ya_prod_rating_lang --WHERE lang_id = iPlang_id
       ) b,
@@ -2714,13 +2690,13 @@ PROCEDURE GetAllReviewsByShopperID (
     iPnum_record IN INT,
     curPresult OUT refCur
   )
-  AS    
-  BEGIN    
+  AS
+  BEGIN
     OPEN curPresult FOR
 		SELECT * FROM
     (
       SELECT innerQuery.*, rownum rnum from
-      (		
+      (
 				SELECT
 					prodRat.rating_id, rev.review_id, prodRat.sku,
 					cast(NVL(prodRat.product_rating, 0) AS int) AS product_rating,
@@ -2751,11 +2727,11 @@ PROCEDURE GetAllReviewsByShopperID (
 					SELECT * FROM ya_review WHERE (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
 				) rev,
 				(
-					SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y' --  AND cansell = 'Y'
+        	SELECT prod_id as productId FROM prod_region WHERE region_id = iPsite_id AND origin_id = iPsite_id AND category_id = 1 AND is_enabled = 'Y' --  AND cansell = 'Y'
 				) prodReg
 				WHERE prodRat.rating_id = prodRatLang.rating_id
 				AND prodRatLang.us_review_id = rev.review_id
-				AND prodRat.sku = prodReg.productId
+				AND prodRat.sku = prodReg.productid
 				ORDER BY prodRat.date_posted desc
       ) innerQuery
       WHERE ROWNUM < (iPstart_index + iPnum_record + 1)
@@ -2811,11 +2787,11 @@ PROCEDURE GetAllReviewsByShopperID (
 					SELECT * FROM ya_review WHERE (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
 				) rev,
 				(
-					SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y' --  AND cansell = 'Y'
+        	SELECT prod_id as productId FROM prod_region WHERE region_id = iPsite_id AND origin_id = iPsite_id AND category_id = 1 AND is_enabled = 'Y' --  AND cansell = 'Y'
 				) prodReg
 				WHERE prodRat.rating_id = prodRatLang.rating_id
 				AND prodRatLang.us_review_id = rev.review_id
-				AND prodRat.sku = prodReg.productId				
+				AND prodRat.sku = prodReg.productId
 				ORDER BY prodRat.date_posted desc
       ) innerQuery
       WHERE ROWNUM < (iPstart_index + iPnum_record + 1)
@@ -2839,7 +2815,7 @@ PROCEDURE GetAllReviewsByShopperID (
     SELECT * FROM
     (
       SELECT innerQuery.*, rownum rnum from
-      (				
+      (
 				SELECT
 					prodRat.rating_id, rev.review_id, prodRat.sku,
 					cast(NVL(prodRat.product_rating, 0) AS int) AS product_rating,
@@ -2871,7 +2847,7 @@ PROCEDURE GetAllReviewsByShopperID (
 					SELECT * FROM ya_review WHERE (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
 				) rev,
 				(
-					SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y' --  AND cansell = 'Y'
+        	SELECT prod_id as productid FROM prod_region WHERE region_id = iPsite_id AND origin_id = iPsite_id AND category_id = 1 AND is_enabled = 'Y' --  AND cansell = 'Y'
 				) prodReg
 				WHERE prodRat.rating_id = prodRatLang.rating_id
 				AND prodRatLang.us_review_id =  rev.review_id
@@ -2931,11 +2907,11 @@ PROCEDURE GetAllReviewsByShopperID (
 					SELECT * FROM ya_review WHERE (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
 				) rev,
 				(
-					SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y' --  AND cansell = 'Y'
+        	SELECT prod_id as productid FROM prod_region WHERE region_id = iPsite_id AND origin_id = iPsite_id AND category_id = 1 AND is_enabled = 'Y' --  AND cansell = 'Y'
 				) prodReg
 				WHERE prodRat.rating_id = prodRatLang.rating_id
 				AND prodRatLang.us_review_id =  rev.review_id
-				AND prodRat.sku = prodReg.productId		
+				AND prodRat.sku = prodReg.productId
 				ORDER BY prodRat.date_posted desc
       ) innerQuery
       WHERE ROWNUM < (iPstart_index + iPnum_record + 1)
@@ -2959,7 +2935,7 @@ PROCEDURE GetAllReviewsByShopperID (
 		(
 			SELECT sku, rating_id FROM ya_product_rating
 			WHERE 1=1
-			AND (CASE WHEN (review_approved='Y' AND reviewer_type = 'EDITOR') THEN 'Y' ELSE NULL END) = 'Y'		
+			AND (CASE WHEN (review_approved='Y' AND reviewer_type = 'EDITOR') THEN 'Y' ELSE NULL END) = 'Y'
 			AND sku = iPsku
 		) prodRat,
 		(
@@ -2969,7 +2945,7 @@ PROCEDURE GetAllReviewsByShopperID (
 			SELECT review_id FROM ya_review WHERE (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
 		) rev,
 		(
-			SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y' --  AND cansell = 'Y'
+      SELECT prod_id as productid FROM prod_region WHERE region_id = iPsite_id AND origin_id = iPsite_id AND category_id = 1 AND is_enabled = 'Y' --  AND cansell = 'Y'
 		) prodReg
 		WHERE prodRat.rating_id = prodRatLang.rating_id
 		AND prodRatLang.us_review_id =  rev.review_id
@@ -2986,7 +2962,7 @@ PROCEDURE GetAllReviewsByShopperID (
   )
   AS
   BEGIN
-		SELECT COUNT(*) INTO iPresult       
+		SELECT COUNT(*) INTO iPresult
 		FROM
 		(
 			SELECT sku, rating_id FROM ya_product_rating
@@ -3001,7 +2977,7 @@ PROCEDURE GetAllReviewsByShopperID (
 			SELECT review_id FROM ya_review WHERE (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
 		) rev,
 		(
-			SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y' --  AND cansell = 'Y'
+      SELECT prod_id as productid FROM prod_region WHERE region_id = iPsite_id AND origin_id = iPsite_id AND category_id = 1 AND is_enabled = 'Y' --  AND cansell = 'Y'
 		) prodReg
 		WHERE prodRat.rating_id = prodRatLang.rating_id
 		AND prodRatLang.us_review_id = rev.review_id
@@ -3033,7 +3009,7 @@ PROCEDURE GetAllReviewsByShopperID (
 			SELECT review_id FROM ya_review WHERE (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
 		) rev,
 		(
-			SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y' --  AND cansell = 'Y'
+      SELECT prod_id as productid FROM prod_region WHERE region_id = iPsite_id AND origin_id = iPsite_id AND category_id = 1 AND is_enabled = 'Y' --  AND cansell = 'Y'
 		) prodReg
 		WHERE prodRat.rating_id = prodRatLang.rating_id
 		AND prodRatLang.us_review_id = rev.review_id
@@ -3122,11 +3098,11 @@ PROCEDURE GetAllReviewsByShopperID (
 						iPsku18,
 						iPsku19,
 						iPsku20
-					)	
+					)
 					AND iPget_share = 1
 					UNION
-					SELECT m.* FROM ya_product_rating m					
-					WHERE review_approved='Y' 
+					SELECT m.* FROM ya_product_rating m
+					WHERE review_approved='Y'
 					AND reviewer_type = 'EDITORIAL'
 					AND sku in (
 						iPsku1,
@@ -3160,11 +3136,11 @@ PROCEDURE GetAllReviewsByShopperID (
 					SELECT * FROM ya_review WHERE (((review IS NOT NULL) AND (LENGTH(review)>0)) OR ((review_img_loc IS NOT NULL) AND (LENGTH(review_img_loc)>0)))
 				) rev
 --				(
---					SELECT productId FROM productRegion WHERE originId = iPsite_id AND regionId = iPsite_id AND categoryId = 1 AND enable = 'Y' --  AND cansell = 'Y'
+--      		SELECT prod_id as productid FROM prod_region WHERE region_id = iPsite_id AND origin_id = iPsite_id AND category_id = 1 AND is_enabled = 'Y' --  AND cansell = 'Y'
 --				) prodReg
 				WHERE	prodRat.rating_id = prodRatLang.rating_id
 				AND prodRatLang.us_review_id  =  rev.review_id
---				AND prodRat.sku = prodReg.productId		
+--				AND prodRat.sku = prodReg.productId
 				ORDER BY prodRat.date_posted desc NULLS LAST
       ) innerQuery
       WHERE ROWNUM < (iPstart_index + iPnum_record + 1)
@@ -3173,7 +3149,7 @@ PROCEDURE GetAllReviewsByShopperID (
 
     RETURN;
   END GetProReviewsBySkus;
-	
+
 	PROCEDURE GetProReviewsByPrdLn (
     iPsite_id IN INT,
     iPlang_id IN INT,
@@ -3191,7 +3167,7 @@ PROCEDURE GetAllReviewsByShopperID (
     (
       SELECT innerQuery.*, rownum rnum from
       (
-				select 
+				select
 					prodRat.rating_id, prodRat.review_id, prodRat.sku,
 					cast(NVL(prodRat.product_rating, 0) AS int) AS product_rating,
 					NVL(prodRat.date_posted, dtLoldest_date_posted),
@@ -3214,7 +3190,7 @@ PROCEDURE GetAllReviewsByShopperID (
 				WHERE 1=1
 				AND prodRat.lang_id = iPlang_id
 				AND prodRat.account_id in (select account_id from ya_emag_prod_line_account where prod_line_id = iPprd_ln_id)
---				AND prodRat.sku in (SELECT productId FROM productRegion WHERE originId = 1 AND regionId = 1 AND categoryId = 1 AND enable = 'Y')
+--				AND prodRat.sku in (SELECT prod_id as productId FROM prod_region WHERE origin_id = 1 AND region_id = 1 AND category_id = 1 AND is_enabled = 'Y')
 --				AND	prodRat.date_posted >= sysdate - eplr.start_date
 				ORDER BY prodRat.date_posted desc NULLS LAST
       ) innerQuery
@@ -3234,14 +3210,14 @@ PROCEDURE GetAllReviewsByShopperID (
   )
   AS
   BEGIN
-	
-		select count(1) INTO iPresult    
+
+		select count(1) INTO iPresult
 		from vw_FE_ReviewAccess v
 --		INNER JOIN ya_emag_prod_line_record_limit eplr ON eplr.prod_line_id = iPprd_ln_id
 		WHERE 1=1
 		AND v.lang_id = iPlang_id
 		AND v.account_id in (select account_id from ya_emag_prod_line_account where prod_line_id = iPprd_ln_id);
---		AND v.sku in (SELECT productId FROM productRegion WHERE originId = 1 AND regionId = 1 AND categoryId = 1 AND enable = 'Y')
+--		AND v.sku in (SELECT prod_id FROM prod_region WHERE origin_id = 1 AND region_id = 1 AND category_id = 1 AND is_enabled = 'Y')
 --		AND	v.date_posted >= sysdate - eplr.start_date;
 
 		RETURN;
@@ -3259,8 +3235,8 @@ PROCEDURE GetAllReviewsByShopperID (
 			SELECT prodRat.sku, prodRatLang.lang_id
 			FROM ya_product_rating prodRat
 			INNER JOIN ya_prod_rating_lang prodRatLang ON prodRat.rating_id = prodRatLang.rating_id
-			INNER JOIN productRegion prodReg ON prodRat.sku = prodReg.productid AND prodReg.originId = iPsite_id AND prodReg.regionId = iPsite_id AND prodReg.categoryId = 1 AND prodReg.enable = 'Y' --AND prodReg.cansell = 'Y'
-			WHERE prodRat.reviewer_type = 'EDITOR' 
+			INNER JOIN prod_region prodReg ON prodRat.sku = prodReg.prod_id AND prodReg.origin_id = iPsite_id AND prodReg.region_id = iPsite_id AND prodReg.category_id = 1 AND prodReg.is_enabled = 'Y' --AND prodReg.cansell = 'Y'
+			WHERE prodRat.reviewer_type = 'EDITOR'
 			AND prodRat.sku = iPsku
 			GROUP BY prodRat.sku, prodRatLang.lang_id;
   END IsEditorPickProduct;
@@ -3295,8 +3271,8 @@ PROCEDURE GetAllReviewsByShopperID (
 			SELECT prodRat.sku, prodRatLang.lang_id
 			FROM ya_product_rating prodRat
 			INNER JOIN ya_prod_rating_lang prodRatLang ON prodRat.rating_id = prodRatLang.rating_id
-			INNER JOIN productRegion prodReg ON prodRat.sku = prodReg.productid AND prodReg.originId = iPsite_id AND prodReg.regionId = iPsite_id AND prodReg.categoryId = 1 AND prodReg.enable = 'Y' --AND prodReg.cansell = 'Y'
-			WHERE prodRat.reviewer_type = 'EDITOR' 
+			INNER JOIN prod_region prodReg ON prodRat.sku = prodReg.prod_id AND prodReg.origin_id = iPsite_id AND prodReg.region_id = iPsite_id AND prodReg.category_id = 1 AND prodReg.is_enabled = 'Y' --AND prodReg.cansell = 'Y'
+			WHERE prodRat.reviewer_type = 'EDITOR'
 			AND prodRat.sku IN(
 					iPsku1,
 					iPsku2,
@@ -3332,19 +3308,19 @@ PROCEDURE GetAllReviewsByShopperID (
   )
 	AS
     iLreview_id INT;
-	BEGIN				
+	BEGIN
 		SELECT us_review_id INTO iLreview_id
 		FROM ya_prod_rating_lang
 		WHERE rating_id = iPrating_id AND lang_id = iPlang_id;
 
-		UPDATE ya_prod_rating_lang 
-		SET title = cPtitle 
+		UPDATE ya_prod_rating_lang
+		SET title = cPtitle
 		WHERE rating_id = iPrating_id AND lang_id = iPlang_id;
 
-		UPDATE ya_review 
-		SET review = cPcontent 
+		UPDATE ya_review
+		SET review = cPcontent
 		WHERE review_id = iLreview_id;
-		
+
     COMMIT;
 		RETURN;
 	END UpdateReview;
@@ -3356,18 +3332,18 @@ PROCEDURE GetAllReviewsByShopperID (
   )
 	AS
 		iLrating_count INT;
-	BEGIN				
+	BEGIN
 		UPDATE ya_product_rating
 		SET review_approved = cPapprove
 		WHERE rating_id = iPrating_id;
-	
+
 		iProwAffect := sql%rowcount;
 
 		IF cPapprove = 'R' THEN
 			SELECT count(*) INTO iLrating_count FROM ya_product_review_approve WHERE rating_id = iPrating_id;
 			IF (iLrating_count > 0) THEN
-					UPDATE ya_product_review_approve 
-					SET approved_datetime=SYSDATE() WHERE rating_id=iPrating_id;				
+					UPDATE ya_product_review_approve
+					SET approved_datetime=SYSDATE() WHERE rating_id=iPrating_id;
 			ELSE
 				Insert into ya_product_review_approve (rating_id) values (iPrating_id);
 			END IF;
@@ -3383,13 +3359,13 @@ PROCEDURE GetAllReviewsByShopperID (
 		iProwAffect OUT INT
   )
 	AS
-	BEGIN				
+	BEGIN
 		UPDATE ya_product_rating
 		SET reviewer_type = 'WINNER'
 		WHERE rating_id = iPrating_id;
 
 		iProwAffect := sql%rowcount;
-	
+
     COMMIT;
 		RETURN;
 	END UpdateSpotlightReview;
@@ -3399,7 +3375,7 @@ PROCEDURE GetAllReviewsByShopperID (
   )
 	AS
 	BEGIN
-		INSERT INTO ya_review_exclude_list(review_id, exclude_for)  
+		INSERT INTO ya_review_exclude_list(review_id, exclude_for)
 		VALUES(iPreview_id, 'S');
 
     COMMIT;
@@ -3411,7 +3387,7 @@ PROCEDURE GetAllReviewsByShopperID (
 		iPpage_number IN INT,
 		iPpage_size IN INT,
 		iPnum_record OUT INT,
-    curPresult OUT refCur	
+    curPresult OUT refCur
 	)
 	AS
     -- range of records to extract for the specified page
@@ -3422,7 +3398,7 @@ PROCEDURE GetAllReviewsByShopperID (
 		EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_spotlight_review_report';
 
 		INSERT INTO temp_spotlight_review_report
-		(			
+		(
 			id,
 			positive,
 			total,
@@ -3441,13 +3417,13 @@ PROCEDURE GetAllReviewsByShopperID (
 			lang_id,
 			reviewer_type
 		)
-		SELECT ROWNUM, 		
+		SELECT ROWNUM,
 		Y, total, perc, sku, prod_name_u, date_posted, review_id, review,
 		reivewer, shopper_id, email, rating_id, title, status, lang_id, reviewer_type
 		FROM
 		(
 			select
-			nvl(summary.Y, 0) as Y, nvl(summary.total, 0) as total, nvl(summary.perc, 0) as perc, pr.sku, pn.prod_name_u, date_posted, r.review_id, review, 
+			nvl(summary.Y, 0) as Y, nvl(summary.total, 0) as total, nvl(summary.perc, 0) as perc, pr.sku, pn.prod_name_u, date_posted, r.review_id, review,
 			nvl(
 				nvl(
 					LTrim(
@@ -3459,30 +3435,30 @@ PROCEDURE GetAllReviewsByShopperID (
 								WHEN 2 THEN s.firstname || ' ' || s.lastname
 								WHEN 3 THEN s.lastname || ' ' || s.firstname
 							end
-						FROM ya_review_reviewerName rn 
+						FROM ya_review_reviewerName rn
 						inner join ya_shopper s on rn.shopper_id=s.shopper_id
 						WHERE rn.shopper_id=pr.shopper_id)
-					), 
+					),
 					ltrim(nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname))
 				), 'Anonymous'
 			) as reivewer,
 			pr.shopper_id,s.email,pr.rating_id,prl.title,(case review_approved when 'Y' then 'Approved' end) as status,prl.lang_id,reviewer_type
-			from 
+			from
 			(
-				select 
-				rh.review_id, 
-				sum(case rh.review_helpful when 'Y' then 1 else 0 end) as Y, 
+				select
+				rh.review_id,
+				sum(case rh.review_helpful when 'Y' then 1 else 0 end) as Y,
 				(sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)  ) as total,
 				cast(round(sum(case rh.review_helpful when 'Y' then 1 else 0 end) / cast((sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)) as float) * 100,0) as int) as perc
 				from ya_review_helpful rh
 				group by rh.review_id
-			)  summary 
+			)  summary
 			right join  ya_review r on summary.review_id =r.review_id
 			inner join ya_prod_rating_lang prl on prl.us_review_id=r.review_id
 			inner join ya_product_rating pr on pr.rating_id=prl.rating_id
 			left join ya_shopper s on s.shopper_id=pr.shopper_id
 			inner join ya_prod_lang pn on pn.sku=pr.sku and pn.lang_id=prl.lang_id
-			WHERE	review_approved='Y' 
+			WHERE	review_approved='Y'
 			and (reviewer_type='USER' or reviewer_type='WINNER')
 			and	r.review_id not in (select review_id from ya_review_exclude_list where exclude_for='S')
 			and pr.sku = iPsku
@@ -3491,17 +3467,17 @@ PROCEDURE GetAllReviewsByShopperID (
 
     --Return Total Record count
     SELECT count(1) INTO iPnum_record From temp_spotlight_review_report;
-		
+
     -- calculate the first and last ID of the range of topics we need
 		iLfrom_id := ((iPpage_number - 1) * iPpage_size) + 1;
     iLto_id := iPpage_number * iPpage_size;
-		
+
 		-- select the page of records
 
 		OPEN curPresult	FOR
 			SELECT * FROM
 			(
-				SELECT innerQuery.*, rownum AS rnum 
+				SELECT innerQuery.*, rownum AS rnum
 				from(
 					SELECT * FROM temp_spotlight_review_report order by ID
 				) innerQuery
@@ -3522,7 +3498,7 @@ PROCEDURE GetAllReviewsByShopperID (
 		iPpage_number IN INT,
 		iPpage_size IN INT,
 		iPnum_record OUT INT,
-    curPresult OUT refCur	
+    curPresult OUT refCur
 	)
 	AS
     -- range of records to extract for the specified page
@@ -3534,7 +3510,7 @@ PROCEDURE GetAllReviewsByShopperID (
 		EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_spotlight_review_report';
 
 		INSERT INTO temp_spotlight_review_report
-		(				
+		(
 			id,
 			positive,
 			total,
@@ -3553,13 +3529,13 @@ PROCEDURE GetAllReviewsByShopperID (
 			lang_id,
 			reviewer_type
 		)
-		SELECT ROWNUM, 		
+		SELECT ROWNUM,
 		Y, total, perc, sku, prod_name_u, date_posted, review_id, review,
 		reivewer, shopper_id, email, rating_id, title, status, lang_id, reviewer_type
 		FROM
 		(
 			select
-			nvl(summary.Y, 0) as Y, nvl(summary.total, 0) as total, nvl(summary.perc, 0) as perc, pr.sku, pn.prod_name_u, date_posted, r.review_id, review, 
+			nvl(summary.Y, 0) as Y, nvl(summary.total, 0) as total, nvl(summary.perc, 0) as perc, pr.sku, pn.prod_name_u, date_posted, r.review_id, review,
 			nvl(
 				nvl(
 					LTrim(
@@ -3571,36 +3547,36 @@ PROCEDURE GetAllReviewsByShopperID (
 								WHEN 2 THEN s.firstname || ' ' || s.lastname
 								WHEN 3 THEN s.lastname || ' ' || s.firstname
 							end
-						FROM ya_review_reviewerName rn 
+						FROM ya_review_reviewerName rn
 						inner join ya_shopper s on rn.shopper_id=s.shopper_id
 						WHERE rn.shopper_id=pr.shopper_id)
-					), 
+					),
 					ltrim(nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname))
 				), 'Anonymous'
 			) as reivewer,
 			pr.shopper_id,s.email,pr.rating_id,prl.title,(case review_approved when 'Y' then 'Approved' end) as status,prl.lang_id,reviewer_type
-			from 
+			from
 			(
-				select 
-				rh.review_id, 
-				sum(case rh.review_helpful when 'Y' then 1 else 0 end) as Y, 
+				select
+				rh.review_id,
+				sum(case rh.review_helpful when 'Y' then 1 else 0 end) as Y,
 				(sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)  ) as total,
 				cast(round(sum(case rh.review_helpful when 'Y' then 1 else 0 end) / cast((sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)) as float) * 100,0) as int) as perc
 				from ya_review_helpful rh
 				group by rh.review_id
-			)  summary 
+			)  summary
 			right join ya_review r on summary.review_id = r.review_id
 			inner join ya_prod_rating_lang prl on prl.us_review_id=r.review_id
 			inner join ya_product_rating pr on pr.rating_id=prl.rating_id
 			left join ya_shopper s on s.shopper_id=pr.shopper_id
 			inner join ya_prod_lang pn on pn.sku=pr.sku and pn.lang_id=prl.lang_id
-			WHERE	review_approved='Y' 
+			WHERE	review_approved='Y'
 			and (pn.lang_id = iPlang_id OR iPlang_id = 0)
 			and (reviewer_type='USER')-- or reviewer_type='WINNER')
 			and  r.review_id in(
-				select review_id 
-				from ya_review_helpful rh 
-				group by review_id 
+				select review_id
+				from ya_review_helpful rh
+				group by review_id
 				having sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)>=iPtotal_vote
 				and	cast(round(sum(case rh.review_helpful when 'Y' then 1 else 0 end) / cast((sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)) as float) * 100,0) as int)>=iPpositive_vote
 			)
@@ -3612,7 +3588,7 @@ PROCEDURE GetAllReviewsByShopperID (
 		SELECT COUNT(*) INTO iLtmp_table_id FROM temp_spotlight_review_report;
 
 		INSERT INTO temp_spotlight_review_report
-		(			
+		(
 			id,
 			positive,
 			total,
@@ -3630,25 +3606,25 @@ PROCEDURE GetAllReviewsByShopperID (
 			status,
 			lang_id
 		)
-		SELECT iLtmp_table_id + ROWNUM, 		
+		SELECT iLtmp_table_id + ROWNUM,
 		Y, total, perc, sku, prod_name_u, date_posted, review_id, review,
 		reivewer, shopper_id, email, rating_id, title, status, lang_id
 		FROM
 		(
-			select 
-			nvl(summary.Y, 0) as Y, nvl(summary.total, 0) as total, nvl(summary.perc, 0) as perc, pr.sku, pn.prod_name_u, date_posted, r.review_id, review, 
+			select
+			nvl(summary.Y, 0) as Y, nvl(summary.total, 0) as total, nvl(summary.perc, 0) as perc, pr.sku, pn.prod_name_u, date_posted, r.review_id, review,
 			nvl(ltrim(nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname)), 'Anonymous') as reivewer,
 			pr.shopper_id,s.email,pr.rating_id,prl.title,(case review_approved when 'Y' then 'Approved' end) as status,prl.lang_id
-			from 
+			from
 			(
-				select 
-				rh.review_id, 
-				sum(case rh.review_helpful when 'Y' then 1 else 0 end) as Y, 
+				select
+				rh.review_id,
+				sum(case rh.review_helpful when 'Y' then 1 else 0 end) as Y,
 				(sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)  ) as total,
 				cast(round(sum(case rh.review_helpful when 'Y' then 1 else 0 end) / cast((sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)) as float) * 100,0) as int) as perc
 				from ya_review_helpful rh
 				group by rh.review_id
-			)  summary 
+			)  summary
 			left join ya_review r on summary.review_id = r.review_id
 			inner join ya_prod_rating_lang prl on prl.us_review_id=r.review_id
 			inner join ya_product_rating pr on pr.rating_id=prl.rating_id
@@ -3656,24 +3632,24 @@ PROCEDURE GetAllReviewsByShopperID (
 			inner join ya_prod_lang pn on pn.sku=pr.sku and pn.lang_id=prl.lang_id
 			WHERE review_approved='Y'
 			and prl.lang_id=iPlang_id
-			and reviewer_type='USER'		
-			and r.review_id in 
+			and reviewer_type='USER'
+			and r.review_id in
 			(
-				select review_id 
-				from ya_review_helpful rh 
-				group by review_id 
+				select review_id
+				from ya_review_helpful rh
+				group by review_id
 				having sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)>=iPtotal_vote
 				and cast(round(sum(case rh.review_helpful when 'Y' then 1 else 0 end) / cast((sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)) as float) * 100,0) as int)>=iPpositive_vote
-			) 
+			)
 	--		and	(convert(varchar2,pr.date_posted,112) <= convert(varchar2,dPend_date,112) AND convert(varchar2,pr.date_posted,112)>= convert(varchar2,dPstart_date,112))
 			and	(pr.date_posted >= dPstart_date AND pr.date_posted <= dPend_date)
-			and	r.review_id not in (select review_id from ya_review_exclude_list where exclude_for='S') 
+			and	r.review_id not in (select review_id from ya_review_exclude_list where exclude_for='S')
 			order by date_posted desc
 		) inner_table;
 
     --Return Total Record count
     SELECT count(1) INTO iPnum_record From temp_spotlight_review_report;
-		
+
     -- calculate the first and last ID of the range of topics we need
 		iLfrom_id := ((iPpage_number - 1) * iPpage_size) + 1;
     iLto_id := iPpage_number * iPpage_size;
@@ -3682,7 +3658,7 @@ PROCEDURE GetAllReviewsByShopperID (
 		OPEN curPresult	FOR
 			SELECT * FROM
 			(
-				SELECT innerQuery.*, rownum AS rnum 
+				SELECT innerQuery.*, rownum AS rnum
 				from(
 					SELECT * FROM temp_spotlight_review_report
 				) innerQuery
@@ -3697,21 +3673,21 @@ PROCEDURE GetAllReviewsByShopperID (
 	-- Report This -----------------------------------------------------------------------------------------------------------------------------------------------
 	PROCEDURE GetReviewReportByReviewId (
 		iPreview_id IN INT,
-    curPresult OUT refCur	
+    curPresult OUT refCur
   )
 	AS
 	BEGIN
 		OPEN curPresult	FOR
-			select  
+			select
 			trim(
 				nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname)
 			) as reporter,
-			s.email, rr.report_id, rr.shopper_id, rr.reason, rr.report_content, rr.created_datetime, rr.updated_datetime  
-			FROM ya_review_report rr  
-			left join ya_shopper s on (s.shopper_id=rr.shopper_id)  
+			s.email, rr.report_id, rr.shopper_id, rr.reason, rr.report_content, rr.created_datetime, rr.updated_datetime
+			FROM ya_review_report rr
+			left join ya_shopper s on (s.shopper_id=rr.shopper_id)
 			where	rr.review_id = iPreview_id
 			order by created_datetime desc;
-			
+
 		RETURN;
 	END GetReviewReportByReviewId;
 
@@ -3720,16 +3696,16 @@ PROCEDURE GetAllReviewsByShopperID (
 		iProwAffect OUT INT
   )
 	AS
-	BEGIN				
+	BEGIN
 		delete from ya_review_report where report_id = iPreport_id;
 		iProwAffect := sql%rowcount;
-  
+
     IF sqlcode = 0 THEN
       COMMIT;
     ELSE
       ROLLBACK;
 		END IF;
-  
+
 		RETURN;
 	END DeleteReviewReport;
 
@@ -3739,20 +3715,20 @@ PROCEDURE GetAllReviewsByShopperID (
 		iPremark IN NVARCHAR2
   )
 	AS
-	BEGIN		
-		INSERT INTO ya_review_action_log  
-		(  
-			rating_id,  
-			action_type,  
-			remark,  
-			updated_datetime  
-		)  
-		VALUES  
-		(  
-			iPrating_id,  
-			iPaction_type,  
-			iPremark,  
-			SYSDATE()  
+	BEGIN
+		INSERT INTO ya_review_action_log
+		(
+			rating_id,
+			action_type,
+			remark,
+			updated_datetime
+		)
+		VALUES
+		(
+			iPrating_id,
+			iPaction_type,
+			iPremark,
+			SYSDATE()
 		);
 	END AddReviewActionLog;
 
@@ -3760,7 +3736,7 @@ PROCEDURE GetAllReviewsByShopperID (
 		iPrating_id IN INT
   )
 	AS
-	BEGIN		
+	BEGIN
 
 		UPDATE ya_product_review_approve SET approved_datetime = SYSDATE()
 		WHERE rating_id = iPrating_id;
@@ -3772,7 +3748,7 @@ PROCEDURE GetAllReviewsByShopperID (
 		iPpage_number IN INT,
 		iPpage_size IN INT,
 		iPnum_record OUT INT,
-		curPresult OUT refCur	
+		curPresult OUT refCur
   )
 	AS
     -- range of records to extract for the specified page
@@ -3782,8 +3758,8 @@ PROCEDURE GetAllReviewsByShopperID (
 		-- Empty temp table
 		EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_spotlight_review_report';
 
-    INSERT INTO temp_spotlight_review_report  
-    (  
+    INSERT INTO temp_spotlight_review_report
+    (
 			id,
 --			positive,
 --			total,
@@ -3800,14 +3776,14 @@ PROCEDURE GetAllReviewsByShopperID (
 			title,
 			status,
 			lang_id
-    )  
+    )
 		SELECT ROWNUM,
     sku, prod_name_u, date_posted, review_id, review,
 		reivewer, shopper_id, email, rating_id, title, status, lang_id--, reviewer_type
 		FROM
 		(
 			select
-			pr.sku, pn.prod_name_u, date_posted, r.review_id, review, 
+			pr.sku, pn.prod_name_u, date_posted, r.review_id, review,
 			nvl(
 				nvl(
 					LTrim(
@@ -3819,37 +3795,37 @@ PROCEDURE GetAllReviewsByShopperID (
 								WHEN 2 THEN s.firstname || ' ' || s.lastname
 								WHEN 3 THEN s.lastname || ' ' || s.firstname
 							end
-						FROM ya_review_reviewerName rn 
+						FROM ya_review_reviewerName rn
 						inner join ya_shopper s on rn.shopper_id=s.shopper_id
 						WHERE rn.shopper_id=pr.shopper_id)
-					), 
+					),
 					ltrim(nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname))
 				), 'Anonymous'
 			) as reivewer,
 			pr.shopper_id,s.email,pr.rating_id,prl.title,(case review_approved when 'Y' then 'Approved' end) as status,prl.lang_id
-			FROM ya_product_rating pr  
-			inner join ya_prod_rating_lang prl ON (pr.rating_id = prl.rating_id)  
-			inner join ya_review r ON (r.review_id = prl.us_review_id)  
-			left join ya_shopper s ON (s.shopper_id=pr.shopper_id)  
+			FROM ya_product_rating pr
+			inner join ya_prod_rating_lang prl ON (pr.rating_id = prl.rating_id)
+			inner join ya_review r ON (r.review_id = prl.us_review_id)
+			left join ya_shopper s ON (s.shopper_id=pr.shopper_id)
 			inner join ya_prod_lang pn ON pn.sku=pr.sku and pn.lang_id=prl.lang_id
-			WHERE	review_approved='Y' 
+			WHERE	review_approved='Y'
 			and (reviewer_type='USER' or reviewer_type='WINNER')
-			and r.review_id in (select review_id from ya_review_report group by review_id having count(review_id) >= iPreport_count)  
-			order by date_posted desc   
+			and r.review_id in (select review_id from ya_review_report group by review_id having count(review_id) >= iPreport_count)
+			order by date_posted desc
 		) inner_table;
-  
+
 	  --Return Total Record count
     SELECT count(1) INTO iPnum_record From temp_spotlight_review_report;
-		
+
     -- calculate the first and last ID of the range of topics we need
 		iLfrom_id := ((iPpage_number - 1) * iPpage_size) + 1;
     iLto_id := iPpage_number * iPpage_size;
-		
+
 		-- select the page of records
 		OPEN curPresult	FOR
 			SELECT * FROM
 			(
-				SELECT innerQuery.*, rownum AS rnum 
+				SELECT innerQuery.*, rownum AS rnum
 				from(
 					SELECT * FROM temp_spotlight_review_report order by ID
 				) innerQuery
@@ -3860,13 +3836,13 @@ PROCEDURE GetAllReviewsByShopperID (
     COMMIT;
 		RETURN;
 	END GetReviewReportByReportCount;
-  
+
 	PROCEDURE GetReviewReportBySKU (
 		iPsku IN INT,
 		iPpage_number IN INT,
 		iPpage_size IN INT,
 		iPnum_record OUT INT,
-    curPresult OUT refCur	
+    curPresult OUT refCur
   )
 	AS
     -- range of records to extract for the specified page
@@ -3876,8 +3852,8 @@ PROCEDURE GetAllReviewsByShopperID (
 		-- Empty temp table
 		EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_spotlight_review_report';
 
-    INSERT INTO temp_spotlight_review_report  
-    (  
+    INSERT INTO temp_spotlight_review_report
+    (
 			id,
 --			positive,
 --			total,
@@ -3894,14 +3870,14 @@ PROCEDURE GetAllReviewsByShopperID (
 			title,
 			status,
 			lang_id
-		)  
+		)
 		SELECT ROWNUM,
     sku, prod_name_u, date_posted, review_id, review,
 		reivewer, shopper_id, email, rating_id, title, status, lang_id--, reviewer_type
 		FROM
 		(
 			select
-			pr.sku, pn.prod_name_u, date_posted, r.review_id, review, 
+			pr.sku, pn.prod_name_u, date_posted, r.review_id, review,
 			nvl(
 				nvl(
 					LTrim(
@@ -3913,39 +3889,39 @@ PROCEDURE GetAllReviewsByShopperID (
 								WHEN 2 THEN s.firstname || ' ' || s.lastname
 								WHEN 3 THEN s.lastname || ' ' || s.firstname
 							end
-						FROM ya_review_reviewerName rn 
+						FROM ya_review_reviewerName rn
 						inner join ya_shopper s on rn.shopper_id=s.shopper_id
 						WHERE rn.shopper_id=pr.shopper_id)
-					), 
+					),
 					ltrim(nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname))
 				), 'Anonymous'
 			) as reivewer,
 			pr.shopper_id,s.email,pr.rating_id,prl.title,(case review_approved when 'Y' then 'Approved' end) as status,prl.lang_id
-			FROM ya_product_rating pr  
-			inner join ya_prod_rating_lang prl ON (pr.rating_id = prl.rating_id)  
-			inner join ya_review r ON (r.review_id = prl.us_review_id)  
-			left join ya_shopper s ON (s.shopper_id=pr.shopper_id)  
+			FROM ya_product_rating pr
+			inner join ya_prod_rating_lang prl ON (pr.rating_id = prl.rating_id)
+			inner join ya_review r ON (r.review_id = prl.us_review_id)
+			left join ya_shopper s ON (s.shopper_id=pr.shopper_id)
 			inner join ya_prod_lang pn ON pn.sku=pr.sku and pn.lang_id=prl.lang_id
-			WHERE	review_approved='Y' 
+			WHERE	review_approved='Y'
 			and (reviewer_type='USER' or reviewer_type='WINNER')
 			and r.review_id in (
 				select distinct us_review_id from ya_product_rating pr inner join ya_prod_rating_lang prl on pr.rating_id=prl.rating_id where pr.sku = iPsku
 			)
-			order by date_posted desc   
+			order by date_posted desc
 		) inner_table;
-  
+
 	  --Return Total Record count
     SELECT count(1) INTO iPnum_record From temp_spotlight_review_report;
-		
+
     -- calculate the first and last ID of the range of topics we need
 		iLfrom_id := ((iPpage_number - 1) * iPpage_size) + 1;
     iLto_id := iPpage_number * iPpage_size;
-		
+
 		-- select the page of records
 		OPEN curPresult	FOR
 			SELECT * FROM
 			(
-				SELECT innerQuery.*, rownum AS rnum 
+				SELECT innerQuery.*, rownum AS rnum
 				from(
 					SELECT * FROM temp_spotlight_review_report order by ID
 				) innerQuery
@@ -3964,7 +3940,7 @@ PROCEDURE GetAllReviewsByShopperID (
 		iPpage_number IN INT,
 		iPpage_size IN INT,
 		iPnum_record OUT INT,
-    curPresult OUT refCur	
+    curPresult OUT refCur
   )
 	AS
     -- range of records to extract for the specified page
@@ -3974,8 +3950,8 @@ PROCEDURE GetAllReviewsByShopperID (
 		-- Empty temp table
 		EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_spotlight_review_report';
 
-    INSERT INTO temp_spotlight_review_report  
-    (  
+    INSERT INTO temp_spotlight_review_report
+    (
 			id,
 --			positive,
 --			total,
@@ -3992,14 +3968,14 @@ PROCEDURE GetAllReviewsByShopperID (
 			title,
 			status,
 			lang_id
-    )  
+    )
 		SELECT ROWNUM,
     sku, prod_name_u, date_posted, review_id, review,
 		reivewer, shopper_id, email, rating_id, title, status, lang_id--, reviewer_type
 		FROM
 		(
 			select
-			pr.sku, pn.prod_name_u, date_posted, r.review_id, review, 
+			pr.sku, pn.prod_name_u, date_posted, r.review_id, review,
 			nvl(
 				nvl(
 					LTrim(
@@ -4011,41 +3987,41 @@ PROCEDURE GetAllReviewsByShopperID (
 								WHEN 2 THEN s.firstname || ' ' || s.lastname
 								WHEN 3 THEN s.lastname || ' ' || s.firstname
 							end
-						FROM ya_review_reviewerName rn 
+						FROM ya_review_reviewerName rn
 						inner join ya_shopper s on rn.shopper_id=s.shopper_id
 						WHERE rn.shopper_id=pr.shopper_id)
-					), 
+					),
 					ltrim(nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname))
 				), 'Anonymous'
 			) as reivewer,
 			pr.shopper_id,s.email,pr.rating_id,prl.title,(case review_approved when 'Y' then 'Approved' end) as status,prl.lang_id
-			FROM ya_product_rating pr  
-			inner join ya_prod_rating_lang prl ON (pr.rating_id = prl.rating_id)  
-			inner join ya_review r ON (r.review_id = prl.us_review_id)  
-			left join ya_shopper s ON (s.shopper_id=pr.shopper_id)  
+			FROM ya_product_rating pr
+			inner join ya_prod_rating_lang prl ON (pr.rating_id = prl.rating_id)
+			inner join ya_review r ON (r.review_id = prl.us_review_id)
+			left join ya_shopper s ON (s.shopper_id=pr.shopper_id)
 			inner join ya_prod_lang pn ON pn.sku=pr.sku and pn.lang_id=prl.lang_id
-			WHERE	review_approved='Y' 
+			WHERE	review_approved='Y'
 			and (pn.lang_id=iPlang_id OR iPlang_id = 0)
 			and (reviewer_type='USER' or reviewer_type='WINNER')
 			and r.review_id in (
 				select distinct review_id from ya_review_report rr
 				where (rr.created_datetime >= dPstart_date AND rr.created_datetime <= dPend_date)
 			)
-			order by date_posted desc   
+			order by date_posted desc
 		) inner_table;
-  
+
 	  --Return Total Record count
     SELECT count(1) INTO iPnum_record From temp_spotlight_review_report;
-		
+
     -- calculate the first and last ID of the range of topics we need
 		iLfrom_id := ((iPpage_number - 1) * iPpage_size) + 1;
     iLto_id := iPpage_number * iPpage_size;
-		
+
 		-- select the page of records
 		OPEN curPresult	FOR
 			SELECT * FROM
 			(
-				SELECT innerQuery.*, rownum AS rnum 
+				SELECT innerQuery.*, rownum AS rnum
 				from(
 					SELECT * FROM temp_spotlight_review_report order by ID
 				) innerQuery
@@ -4066,7 +4042,7 @@ PROCEDURE GetAllReviewsByShopperID (
 		dLcutoff_date date;
 		dLlastcreated_date date;
 		iLrating_count INT;
-	BEGIN	
+	BEGIN
 		dLcutoff_date := SYSDATE - 1;
 		dLlastcreated_date := dLcutoff_date;
 
@@ -4081,16 +4057,16 @@ PROCEDURE GetAllReviewsByShopperID (
 
 		--print dLcutoff_date;
 		--print dLlastcreated_date;
-  
+
 		IF (dLlastcreated_date - dLcutoff_date < 0)  THEN
 			dLcutoff_date := dLlastcreated_date - 1;
 		END IF;
 
-		--print dLcutoff_date; 
+		--print dLcutoff_date;
 
 		OPEN curPresult FOR
 			select review_id, rating_id, review_key, date_posted
-			from ya_review_approval_system_key  
+			from ya_review_approval_system_key
 			WHERE date_posted >= dLcutoff_date;
 
 		RETURN;
@@ -4103,19 +4079,19 @@ PROCEDURE GetAllReviewsByShopperID (
 	AS
 	BEGIN
 		OPEN curPresult FOR
-			select 
-			a.review_id as reviewId,  --0            
-			nvl(a.review, ' ') as content,            
+			select
+			a.review_id as reviewId,  --0
+			nvl(a.review, ' ') as content,
 			a.lang_id as langId,
 			nvl(a.title, ' ') as title,
-			a.rating_id as ratingId,  --4            
-			a.date_posted as datePosted,             
+			a.rating_id as ratingId,  --4
+			a.date_posted as datePosted,
 			nvl(a.shopper_id, ' ') as shopperId,
-			nvl(a.reviewer, ' ') as reviewerName            
+			nvl(a.reviewer, ' ') as reviewerName
 			from ya_review_tmp_newReviewList a
-			/*  
-			inner join ya_product_rating b on a.rating_id = b.rating_id  
-			where review_approved ='N'  
+			/*
+			inner join ya_product_rating b on a.rating_id = b.rating_id
+			where review_approved ='N'
 			*/
 			WHERE rownum <=512;
 
@@ -4128,14 +4104,14 @@ PROCEDURE GetAllReviewsByShopperID (
   )
 	AS
 	BEGIN
-		-- same logic as proc_fe_getNewReview          
-		-- return the number of reviews which haven't been processed yet,          
-		-- instead of reviews          
+		-- same logic as proc_fe_getNewReview
+		-- return the number of reviews which haven't been processed yet,
+		-- instead of reviews
 		OPEN curPresult FOR
 			select count(*)	from ya_review_tmp_newReviewList;
-			/*  
-			inner join ya_product_rating b on a.rating_id = b.rating_id  
-			where review_approved ='N'  
+			/*
+			inner join ya_product_rating b on a.rating_id = b.rating_id
+			where review_approved ='N'
 			*/
 
 		RETURN;
@@ -4185,15 +4161,15 @@ PROCEDURE GetAllReviewsByShopperID (
 
 	/* proc_fe_updateReviewStatus */
 	PROCEDURE UpdateReviewStatus (
-		iPrating_id IN INT,                  
-		cPstatus IN CHAR,                  
+		iPrating_id IN INT,
+		cPstatus IN CHAR,
 		cPaction_type IN VARCHAR2,
-		cPremark IN NVARCHAR2   
+		cPremark IN NVARCHAR2
   )
 	AS
 		iLrating_count INT;
 	BEGIN
-		UPDATE ya_product_rating 
+		UPDATE ya_product_rating
 		SET review_approved = cPstatus
 		WHERE rating_id = iPrating_id;
 
@@ -4203,7 +4179,7 @@ PROCEDURE GetAllReviewsByShopperID (
         RETURN;
       END;
     END IF;
-  
+
 		IF (cPstatus = 'Y') THEN
 			SELECT COUNT(*) INTO iLrating_count FROM ya_product_review_approve WHERE rating_id = iPrating_id;
 			IF (iLrating_count <= 0) THEN
@@ -4211,7 +4187,7 @@ PROCEDURE GetAllReviewsByShopperID (
 				VALUES(iPrating_id, SYSDATE);
 			END IF;
 		END IF;
-  
+
     IF SQLCODE <> 0 THEN
       BEGIN
         ROLLBACK;
@@ -4220,27 +4196,27 @@ PROCEDURE GetAllReviewsByShopperID (
     END IF;
 
 		select COUNT(*) INTO iLrating_count from ya_review_action_log where rating_id = iPrating_id;
-		IF (iLrating_count <= 0) THEN             
-			insert into ya_review_action_log(rating_id, action_type, remark, updated_datetime)    
+		IF (iLrating_count <= 0) THEN
+			insert into ya_review_action_log(rating_id, action_type, remark, updated_datetime)
 			values(iPrating_id, cPaction_type, cPremark, SYSDATE);
-		else  
+		else
 			select COUNT(*) INTO iLrating_count from ya_review_action_log where rating_id = iPrating_id;
 			if (iLrating_count > 1)  THEN
-				update ya_review_action_log   
-				set action_type = cPaction_type,  
-				remark = cPremark,  
+				update ya_review_action_log
+				set action_type = cPaction_type,
+				remark = cPremark,
 				updated_datetime = SYSDATE
-				where rating_id = iPrating_id 
+				where rating_id = iPrating_id
 				and action_type= 'Instant Review Approval System';
-			else  
-				update ya_review_action_log   
+			else
+				update ya_review_action_log
 				set action_type = cPaction_type,
 				remark = cPremark,
 				updated_datetime = SYSDATE
 				where rating_id = iPrating_id;
 			END IF;
 		END IF;
-  
+
 		delete from ya_review_tmp_newReviewList where rating_id = iPrating_id;
 
 		IF SQLCODE <> 0 THEN
@@ -4260,3 +4236,5 @@ PROCEDURE GetAllReviewsByShopperID (
 
 END Pkg_FE_ReviewAccess;
 /
+ 
+REM END SS_ADM PKG_FE_REVIEWACCESS

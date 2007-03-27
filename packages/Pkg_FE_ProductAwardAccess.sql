@@ -1,4 +1,7 @@
-CREATE OR REPLACE PACKAGE Pkg_FE_ProductAwardAccess
+
+REM START SS_ADM PKG_FE_PRODUCTAWARDACCESS
+
+  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_PRODUCTAWARDACCESS" 
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -21,8 +24,7 @@ AS
   );
 END Pkg_FE_ProductAwardAccess;
 /
-
-CREATE OR REPLACE PACKAGE BODY Pkg_FE_ProductAwardAccess
+CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_PRODUCTAWARDACCESS" 
 AS
   /* proc_fe_getAwardNominateDirectors */
   PROCEDURE GetNominateDirectors (
@@ -45,7 +47,7 @@ AS
       ya_product_award paa,
       ya_product_award_artist part,
       ya_product_artist pa,
-      backend_adm.productRegion bpr,
+      backend_adm.prod_region bpr,
       ya_artist a,
       ya_artist_lang al,
       ya_artist_lang al_en
@@ -60,11 +62,11 @@ AS
       AND pa.artist_id = part.artist_id
       AND pa.rel_id in (44, 47) --directors
 
-      AND bpr.productId = pa.sku
-      AND bpr.categoryId = 1
-      AND bpr.regionId = iPsite_id -- must be equal to YAWeb's siteId
-      AND bpr.originId = iPsite_id -- must be equal to YAWeb's siteId
-      AND bpr.enable = 'Y'
+      AND bpr.prod_id = pa.sku
+      AND bpr.category_id = 1
+      AND bpr.region_id = iPsite_id -- must be equal to YAWeb's siteId
+      AND bpr.origin_id = iPsite_id -- must be equal to YAWeb's siteId
+      AND bpr.is_enabled = 'Y'
 
       AND a.artist_id = pa.artist_id
       AND part.artist_id = al.artist_id(+)
@@ -88,7 +90,7 @@ AS
       ad.year,
       rag.product_category_id --rev account group id
     FROM
-      backend_adm.productRegion bpr,
+      backend_adm.prod_region bpr,
       ya_product p,
       ya_product_award pa,
       ya_award_definition ad,
@@ -103,11 +105,11 @@ AS
         )
       AND
         (
-          bpr.productId = pa.sku
-          AND bpr.categoryId = 1
-          AND bpr.regionId = iPsite_id -- must be equal to YAWeb's siteId
-          AND bpr.originId = iPsite_id -- must be equal to YAWeb's siteId
-          AND bpr.enable = 'Y'
+          bpr.prod_id = pa.sku
+          AND bpr.category_id = 1
+          AND bpr.region_id = iPsite_id -- must be equal to YAWeb's siteId
+          AND bpr.origin_id = iPsite_id -- must be equal to YAWeb's siteId
+          AND bpr.is_enabled = 'Y'
         )
       AND pa.priority = 1
     ORDER BY
@@ -131,17 +133,17 @@ AS
     FROM
       ya_award_definition ad,
       ya_product_award pa,
-      backend_adm.productRegion bpr
+      backend_adm.prod_region bpr
     WHERE
       ad.event_id = iPevent_id
       AND ad.award_definition_id = pa.award_definition_id
       AND
         (
-          bpr.productId = pa.sku
-          AND bpr.categoryId = 1
-          AND bpr.regionId = iPsite_id -- must be equal to YAWeb's siteId
-          AND bpr.originId = iPsite_id -- must be equal to YAWeb's siteId
-          AND bpr.enable = 'Y'
+          bpr.prod_id = pa.sku
+          AND bpr.category_id = 1
+          AND bpr.region_id = iPsite_id -- must be equal to YAWeb's siteId
+          AND bpr.origin_id = iPsite_id -- must be equal to YAWeb's siteId
+          AND bpr.is_enabled = 'Y'
         )
       AND pa.priority = 1
     ORDER BY
@@ -150,4 +152,5 @@ AS
   END GetAwardYearsByEventId;
 END Pkg_FE_ProductAwardAccess;
 /
-
+ 
+REM END SS_ADM PKG_FE_PRODUCTAWARDACCESS

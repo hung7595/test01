@@ -1,4 +1,6 @@
 
+REM START SS_ADM PKG_FE_BASKETACCESS
+
   CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_BASKETACCESS" 
 AS
   TYPE refCur IS REF CURSOR;
@@ -502,7 +504,7 @@ END;
     iPtype IN INT
   )
 AS
-  iLsql VARCHAR2(5000);
+  iLsql VARCHAR2(500);
 BEGIN
   iLsql := 'DELETE FROM ya_new_basket WHERE shopper_id = '''|| cPshopperId
     ||''' AND site_id = '|| CAST(iPsiteId AS nvarchar2)
@@ -605,7 +607,7 @@ END;
   AND lq.frontend_quantity > 0
   ORDER BY lq.sku;
 
-  /* Get Shipment Unit */
+  /* Get shipment Unit */
   iLShipmentUnitConst := 200; /* in Grams */
 
   OPEN curPgetBasket3 FOR
@@ -631,7 +633,7 @@ END;
       AND type = iPtype
     );
 
-  /* Inventory and Availability Info */
+  /* inventory and Availability Info */
     IF iPcountryId = -1 THEN
       BEGIN
         OPEN curPgetBasket4 FOR
@@ -639,30 +641,30 @@ END;
           p.sku,
           -1,
           CASE
-            WHEN pa.availability = 0 THEN 99
+            WHEN pa.avlb = 0 THEN 99
             ELSE 0
           END,
-          cast(nvl(o.availability_id, pa.availability) as int)
+          cast(nvl(o.availability_id, pa.avlb) as int)
         FROM
           ya_new_basket_shadow pt
           INNER JOIN ya_product p ON
             pt.sku = p.sku
-          INNER JOIN backend_adm.productavailability pa ON p.sku = pa.productid
-          INNER JOIN backend_adm.productRegion r ON
-            pt.sku = r.productId
-            AND r.regionId = iPsiteId
-            AND pa.productid = r.productid
-            AND pa.regionid = r.regionid
-		  LEFT OUTER JOIN ya_availability_override o ON r.supplierid = o.supplier_id
+          INNER JOIN backend_adm.prod_avlb pa ON p.sku = pa.prod_id
+          INNER JOIN backend_adm.prod_region r ON
+            pt.sku = r.prod_id
+            AND r.region_id = iPsiteId
+            AND pa.prod_id = r.prod_id
+            AND pa.region_id = r.region_id
+		  LEFT OUTER JOIN ya_availability_override o ON r.supplier_id = o.supplier_id
             AND p.account_id = o.account_id AND SYSDATE() BETWEEN o.start_date AND o.end_date
-            AND pa.availability < o.availability_id
+            AND pa.avlb < o.availability_id
           INNER JOIN
             (
-              SELECT rp.productId productId, MIN(SEQUENCE) seq
-              FROM backend_adm.productRegion rp
+              SELECT rp.prod_id productId, MIN(SEQUENCE) seq
+              FROM backend_adm.prod_region rp
               inner join ya_new_basket_shadow b on
                 (
-                  rp.productID = b.sku
+                  rp.prod_id = b.sku
                   and b.shopper_id = cPshopperId
                   and b.site_id = iPsiteid
 				  and b.paypal_uid=cPguid
@@ -670,14 +672,14 @@ END;
                 )
               WHERE
                 --default country ID
-                rp.regionId = iPsiteId
-              GROUP BY rp.productId
+                rp.region_id = iPsiteId
+              GROUP BY rp.prod_id
             ) t ON
-            r.productId = t.productId
+            r.prod_id = t.productId
             AND r.sequence = t.seq
         WHERE
           pt.shopper_id = cPshopperId
-          AND pa.regionId = iPsiteId
+          AND pa.region_id = iPsiteId
 		  AND pt.paypal_uid=cPguid
         ORDER BY p.sku;
       END;
@@ -688,48 +690,48 @@ END;
           p.sku,
           -1,
           CASE
-            WHEN pa.availability = 0 THEN 99
+            WHEN pa.avlb = 0 THEN 99
             ELSE 0
           END,
-          NVL(o.availability_id, pa.availability)
+          NVL(o.availability_id, pa.avlb)
         FROM
           ya_new_basket_shadow pt
           INNER JOIN ya_product p ON pt.sku = p.sku
-          INNER JOIN backend_adm.productavailability pa ON p.sku = pa.productid
-          INNER JOIN backend_adm.productRegion r ON
-            pt.sku = r.productId
-            AND r.regionId = iPsiteId
-            AND pa.productid = r.productid
-            AND pa.regionid = r.regionid
+          INNER JOIN backend_adm.prod_avlb pa ON p.sku = pa.prod_id
+          INNER JOIN backend_adm.prod_region r ON
+            pt.sku = r.prod_id
+            AND r.region_id = iPsiteId
+            AND pa.prod_id = r.prod_id
+            AND pa.region_id = r.region_id
 		  LEFT OUTER JOIN ya_availability_override o ON
-            r.supplierid = o.supplier_id
+            r.supplier_id = o.supplier_id
             AND p.account_id = o.account_id
             AND SYSDATE() BETWEEN o.start_date AND o.end_date
-            AND pa.availability < o.availability_id
+            AND pa.avlb < o.availability_id
           INNER JOIN
             (
               SELECT
-                rp.productId productId,
+                rp.prod_id productId,
                 MAX(SEQUENCE) seq
               FROM ya_country_region_rel rl
-              INNER JOIN backend_adm.productRegion rp ON
-                rl.region_id = rp.regionId
+              INNER JOIN backend_adm.prod_region rp ON
+                rl.region_id = rp.region_id
               INNER JOIN ya_new_basket_shadow b ON
-                rp.productID = b.sku
+                rp.prod_id = b.sku
                 AND b.shopper_id = cPshopperId
                 AND b.site_id = iPsiteid
 				AND b.paypal_uid=cPguid
                 AND b.type = iPtype
               WHERE
                 rl.country_id = iPcountryId
-                AND rp.regionId = iPsiteId
-              GROUP BY rp.productId
+                AND rp.region_id = iPsiteId
+              GROUP BY rp.prod_id
             ) t ON
-              r.productId = t.productId
+              r.prod_id = t.productId
               AND r.sequence = t.seq
           WHERE
             pt.shopper_id = cPshopperId
-            AND pa.regionId = iPsiteId
+            AND pa.region_id = iPsiteId
 			AND pt.paypal_uid=cPguid
           ORDER BY p.sku;
 
@@ -757,31 +759,31 @@ END;
   /* Product Information */
   OPEN curPgetBasket6 FOR
   SELECT
-    r.productId,
+    r.prod_id,
     b.quantity,
     p.cover_img_loc AS cover_img_loc,
     NVL(p.cover_img_width, 0) AS cover_img_width,
     NVL(p.cover_img_height, 0) AS cover_img_height,
-    NVL(r.preorder, 'N') AS preorder,
-    NVL(r.preorderStart, dtLnullDate) AS preorder_start,
-    NVL(r.preorderEnd, dtLnullDate) AS preorder_end,
-    NVL(r.listPrice, 9999) AS list_price,
-    NVL(r.salePrice, 9999) AS sale_price,
-    NVL(r.salePriceStart, dtLnullDate) AS sale_start,
-    NVL(r.salePriceEnd, dtLnullDate) AS salePriceEnd,
+    NVL(r.is_preorder, 'N') AS preorder,
+    NVL(r.preorder_start, dtLnullDate) AS preorder_start,
+    NVL(r.preorder_end, dtLnullDate) AS preorder_end,
+    NVL(r.list_price, 9999) AS list_price,
+    NVL(r.sale_price, 9999) AS sale_price,
+    NVL(r.sale_price_start, dtLnullDate) AS sale_start,
+    NVL(r.sale_price_end, dtLnullDate) AS salePriceEnd,
     NVL(pl.prod_name_u, ple.prod_name_u),
     NVL(p.release_date, dtLnullDate),
     plp.prod_name_img_loc,
     NVL(plp.name_img_width, 0),
     NVL(plp.name_img_height, 0),
     NVL(p.account_id, -1),
-    NVL(r.supplierId, -1),
-    NVL(r.enable, 'N'),
-    NVL(r.canSell, 'N'),
+    NVL(r.supplier_id, -1),
+    NVL(r.is_enabled, 'N'),
+    NVL(r.is_can_sell, 'N'),
     NVL(pl.prod_subtitle, ple.prod_subtitle),
     NVL(pl.prod_name_aka, ple.prod_name_aka),
     NVL(pl.prod_subtitle_aka, ple.prod_subtitle_aka),
-    NVL(r.preorderBufferDay, -1) AS preorder_buffer_day,
+    NVL(r.preorder_buffer_day, -1) AS preorder_buffer_day,
     t.regionCount
   FROM
     ya_new_basket_shadow b
@@ -804,8 +806,8 @@ END;
       LEFT JOIN ya_prod_lang ple ON
         p.sku = ple.sku
         AND ple.lang_id = 1 -- English
-      INNER JOIN backend_adm.productRegion r ON
-        b.sku = r.productId
+      INNER JOIN backend_adm.prod_region r ON
+        b.sku = r.prod_id
       INNER JOIN
         (
           SELECT
@@ -815,14 +817,14 @@ END;
           FROM
             (
               SELECT
-                rp.productId productId,
+                rp.prod_id productId,
                 MAX(SEQUENCE) seq
               FROM
                 ya_country_region_rel rl
-                INNER JOIN backend_adm.productRegion rp ON
-                  rl.region_id = rp.regionId
+                INNER JOIN backend_adm.prod_region rp ON
+                  rl.region_id = rp.region_id
                 INNER JOIN ya_new_basket_shadow b ON
-                  rp.productID = b.sku
+                  rp.prod_id = b.sku
                   AND b.shopper_id = cPshopperId
                   AND b.site_id = iPsiteid
                   AND b.type = iPtype
@@ -830,19 +832,19 @@ END;
               WHERE
                 iPcountryId <> -1
                 AND rl.country_id = iPcountryId
-                AND rp.originId = iPsiteId
-                AND rp.categoryID = 1
-              GROUP BY rp.productId
+                AND rp.origin_id = iPsiteId
+                AND rp.category_id = 1
+              GROUP BY rp.prod_id
             ) s
             INNER JOIN
               (
                 SELECT
-                  rp.productId productId,
-                  COUNT(rp.productId) regionCount
+                  rp.prod_id productId,
+                  COUNT(rp.prod_id) regionCount
                 FROM
-                  backend_adm.productRegion rp
+                  backend_adm.prod_region rp
                   INNER JOIN ya_new_basket_shadow b ON
-                    rp.productID = b.sku
+                    rp.prod_id = b.sku
                     AND b.shopper_id = cPshopperId
                     AND b.site_id = iPsiteid
                     AND b.type = iPtype
@@ -850,20 +852,20 @@ END;
                 WHERE
                   --default country ID
                   iPcountryId <> -1
-                  AND rp.originId = iPsiteId
-                  AND rp.categoryID = 1
-                GROUP BY rp.productId
+                  AND rp.origin_id = iPsiteId
+                  AND rp.category_id = 1
+                GROUP BY rp.prod_id
               ) t ON
               s.productId = t.productId
             UNION
             SELECT
-              rp.productId productId,
+              rp.prod_id productId,
               MIN(SEQUENCE) seq,
-              COUNT(rp.productId) regionCount
+              COUNT(rp.prod_id) regionCount
             FROM
-              backend_adm.productRegion rp
+              backend_adm.prod_region rp
               INNER JOIN ya_new_basket_shadow b ON
-                rp.productID = b.sku
+                rp.prod_id = b.sku
                 AND b.shopper_id = cPshopperId
                 AND b.site_id = iPsiteid
                 AND b.type = iPtype
@@ -871,14 +873,14 @@ END;
             WHERE
               --default country ID
               iPcountryId = -1
-              AND rp.originId = iPsiteId
-              AND rp.categoryID = 1
-            GROUP BY rp.productId
+              AND rp.origin_id = iPsiteId
+              AND rp.category_id = 1
+            GROUP BY rp.prod_id
       ) t ON
-    r.productId = t.productId
+    r.prod_id = t.productId
     AND r.sequence = t.seq
-  WHERE r.categoryID = 1 --not wholesale
-    AND r.originId = iPsiteId
+  WHERE r.category_id = 1 --not wholesale
+    AND r.origin_id = iPsiteId
     AND b.shopper_id = cPshopperId
     AND b.site_id = iPsiteId
     AND b.type = iPtype
@@ -961,7 +963,7 @@ END GetShadowBasketWithWarranty;
   AND lq.frontend_quantity > 0
   ORDER BY lq.sku;
 
-  /* Get Shipment Unit */
+  /* Get shipment Unit */
   iLShipmentUnitConst := 200; /* in Grams */
 
   OPEN curPgetBasket3 FOR
@@ -986,7 +988,7 @@ END GetShadowBasketWithWarranty;
       AND type = iPtype
     );
 
-  /* Inventory and Availability Info */
+  /* inventory and Availability Info */
     IF iPcountryId = -1 THEN
       BEGIN
         OPEN curPgetBasket4 FOR
@@ -994,44 +996,44 @@ END GetShadowBasketWithWarranty;
           p.sku,
           -1,
           CASE
-            WHEN pa.availability = 0 THEN 99
+            WHEN pa.avlb = 0 THEN 99
             ELSE 0
           END,
-          cast(nvl(o.availability_id, pa.availability) as int)
+          cast(nvl(o.availability_id, pa.avlb) as int)
         FROM
           ya_new_basket pt
           INNER JOIN ya_product p ON
             pt.sku = p.sku
-          INNER JOIN backend_adm.productavailability pa ON p.sku = pa.productid
-          INNER JOIN backend_adm.productRegion r ON
-            pt.sku = r.productId
-            AND r.regionId = iPsiteId
-            AND pa.productid = r.productid
-            AND pa.regionid = r.regionid
-		  LEFT OUTER JOIN ya_availability_override o ON r.supplierid = o.supplier_id
+          INNER JOIN backend_adm.prod_avlb pa ON p.sku = pa.prod_id
+          INNER JOIN backend_adm.prod_region r ON
+            pt.sku = r.prod_id
+            AND r.region_id = iPsiteId
+            AND pa.prod_id = r.prod_id
+            AND pa.region_id = r.region_id
+		  LEFT OUTER JOIN ya_availability_override o ON r.supplier_id = o.supplier_id
             AND p.account_id = o.account_id AND SYSDATE() BETWEEN o.start_date AND o.end_date
-            AND pa.availability < o.availability_id
+            AND pa.avlb < o.availability_id
           INNER JOIN
             (
-              SELECT rp.productId productId, MIN(SEQUENCE) seq
-              FROM backend_adm.productRegion rp
+              SELECT rp.prod_id productId, MIN(SEQUENCE) seq
+              FROM backend_adm.prod_region rp
               inner join ya_new_basket b on
                 (
-                  rp.productID = b.sku
+                  rp.prod_id = b.sku
                   and b.shopper_id = cPshopperId
                   and b.site_id = iPsiteid
                   and b.type = iPtype
                 )
               WHERE
                 --default country ID
-                rp.regionId = iPsiteId
-              GROUP BY rp.productId
+                rp.region_id = iPsiteId
+              GROUP BY rp.prod_id
             ) t ON
-            r.productId = t.productId
+            r.prod_id = t.productId
             AND r.sequence = t.seq
         WHERE
           pt.shopper_id = cPshopperId
-          AND pa.regionId = iPsiteId
+          AND pa.region_id = iPsiteId
         ORDER BY p.sku;
       END;
     ELSE
@@ -1041,47 +1043,47 @@ END GetShadowBasketWithWarranty;
           p.sku,
           -1,
           CASE
-            WHEN pa.availability = 0 THEN 99
+            WHEN pa.avlb = 0 THEN 99
             ELSE 0
           END,
-          NVL(o.availability_id, pa.availability)
+          NVL(o.availability_id, pa.avlb)
         FROM
           ya_new_basket pt
           INNER JOIN ya_product p ON pt.sku = p.sku
-          INNER JOIN backend_adm.productavailability pa ON p.sku = pa.productid
-          INNER JOIN backend_adm.productRegion r ON
-            pt.sku = r.productId
-            AND r.regionId = iPsiteId
-            AND pa.productid = r.productid
-            AND pa.regionid = r.regionid
+          INNER JOIN backend_adm.prod_avlb pa ON p.sku = pa.prod_id
+          INNER JOIN backend_adm.prod_region r ON
+            pt.sku = r.prod_id
+            AND r.region_id = iPsiteId
+            AND pa.prod_id = r.prod_id
+            AND pa.region_id = r.region_id
 		  LEFT OUTER JOIN ya_availability_override o ON
-            r.supplierid = o.supplier_id
+            r.supplier_id = o.supplier_id
             AND p.account_id = o.account_id
             AND SYSDATE() BETWEEN o.start_date AND o.end_date
-            AND pa.availability < o.availability_id
+            AND pa.avlb < o.availability_id
           INNER JOIN
             (
               SELECT
-                rp.productId productId,
+                rp.prod_id productId,
                 MAX(SEQUENCE) seq
               FROM ya_country_region_rel rl
-              INNER JOIN backend_adm.productRegion rp ON
-                rl.region_id = rp.regionId
+              INNER JOIN backend_adm.prod_region rp ON
+                rl.region_id = rp.region_id
               INNER JOIN ya_new_basket b ON
-                rp.productID = b.sku
+                rp.prod_id = b.sku
                 AND b.shopper_id = cPshopperId
                 AND b.site_id = iPsiteid
                 AND b.type = iPtype
               WHERE
                 rl.country_id = iPcountryId
-                AND rp.regionId = iPsiteId
-              GROUP BY rp.productId
+                AND rp.region_id = iPsiteId
+              GROUP BY rp.prod_id
             ) t ON
-              r.productId = t.productId
+              r.prod_id = t.productId
               AND r.sequence = t.seq
           WHERE
             pt.shopper_id = cPshopperId
-            AND pa.regionId = iPsiteId
+            AND pa.region_id = iPsiteId
           ORDER BY p.sku;
 
       END;
@@ -1107,31 +1109,31 @@ END GetShadowBasketWithWarranty;
   /* Product Information */
   OPEN curPgetBasket6 FOR
   SELECT
-    r.productId,
+    r.prod_id,
     b.quantity,
     p.cover_img_loc AS cover_img_loc,
     NVL(p.cover_img_width, 0) AS cover_img_width,
     NVL(p.cover_img_height, 0) AS cover_img_height,
-    NVL(r.preorder, 'N') AS preorder,
-    NVL(r.preorderStart, dtLnullDate) AS preorder_start,
-    NVL(r.preorderEnd, dtLnullDate) AS preorder_end,
-    NVL(r.listPrice, 9999) AS list_price,
-    NVL(r.salePrice, 9999) AS sale_price,
-    NVL(r.salePriceStart, dtLnullDate) AS sale_start,
-    NVL(r.salePriceEnd, dtLnullDate) AS salePriceEnd,
+    NVL(r.is_preorder, 'N') AS preorder,
+    NVL(r.preorder_start, dtLnullDate) AS preorder_start,
+    NVL(r.preorder_end, dtLnullDate) AS preorder_end,
+    NVL(r.list_price, 9999) AS list_price,
+    NVL(r.sale_price, 9999) AS sale_price,
+    NVL(r.sale_price_start, dtLnullDate) AS sale_start,
+    NVL(r.sale_price_end, dtLnullDate) AS salePriceEnd,
     NVL(pl.prod_name_u, ple.prod_name_u),
     NVL(p.release_date, dtLnullDate),
     plp.prod_name_img_loc,
     NVL(plp.name_img_width, 0),
     NVL(plp.name_img_height, 0),
     NVL(p.account_id, -1),
-    NVL(r.supplierId, -1),
-    NVL(r.enable, 'N'),
-    NVL(r.canSell, 'N'),
+    NVL(r.supplier_id, -1),
+    NVL(r.is_enabled, 'N'),
+    NVL(r.is_can_sell, 'N'),
     NVL(pl.prod_subtitle, ple.prod_subtitle),
     NVL(pl.prod_name_aka, ple.prod_name_aka),
     NVL(pl.prod_subtitle_aka, ple.prod_subtitle_aka),
-    NVL(r.preorderBufferDay, -1) AS preorder_buffer_day,
+    NVL(r.preorder_buffer_day, -1) AS preorder_buffer_day,
     t.regionCount
   FROM
     ya_new_basket b
@@ -1154,8 +1156,8 @@ END GetShadowBasketWithWarranty;
       LEFT JOIN ya_prod_lang ple ON
         p.sku = ple.sku
         AND ple.lang_id = 1 -- English
-      INNER JOIN backend_adm.productRegion r ON
-        b.sku = r.productId
+      INNER JOIN backend_adm.prod_region r ON
+        b.sku = r.prod_id
       INNER JOIN
         (
           SELECT
@@ -1165,67 +1167,67 @@ END GetShadowBasketWithWarranty;
           FROM
             (
               SELECT
-                rp.productId productId,
+                rp.prod_id productId,
                 MAX(SEQUENCE) seq
               FROM
                 ya_country_region_rel rl
-                INNER JOIN backend_adm.productRegion rp ON
-                  rl.region_id = rp.regionId
+                INNER JOIN backend_adm.prod_region rp ON
+                  rl.region_id = rp.region_id
                 INNER JOIN ya_new_basket b ON
-                  rp.productID = b.sku
+                  rp.prod_id = b.sku
                   AND b.shopper_id = cPshopperId
                   AND b.site_id = iPsiteid
                   ANd b.type = iPtype
               WHERE
                 iPcountryId <> -1
                 AND rl.country_id = iPcountryId
-                AND rp.originId = iPsiteId
-                AND rp.categoryID = 1
-              GROUP BY rp.productId
+                AND rp.origin_id = iPsiteId
+                AND rp.category_id = 1
+              GROUP BY rp.prod_id
             ) s
             INNER JOIN
               (
                 SELECT
-                  rp.productId productId,
-                  COUNT(rp.productId) regionCount
+                  rp.prod_id productId,
+                  COUNT(rp.prod_id) regionCount
                 FROM
-                  backend_adm.productRegion rp
+                  backend_adm.prod_region rp
                   INNER JOIN ya_new_basket b ON
-                    rp.productID = b.sku
+                    rp.prod_id = b.sku
                     AND b.shopper_id = cPshopperId
                     AND b.site_id = iPsiteid
                     AND b.type = iPtype
                 WHERE
                   --default country ID
                   iPcountryId <> -1
-                  AND rp.originId = iPsiteId
-                  AND rp.categoryID = 1
-                GROUP BY rp.productId
+                  AND rp.origin_id = iPsiteId
+                  AND rp.category_id = 1
+                GROUP BY rp.prod_id
               ) t ON
               s.productId = t.productId
             UNION
             SELECT
-              rp.productId productId,
+              rp.prod_id productId,
               MIN(SEQUENCE) seq,
-              COUNT(rp.productId) regionCount
+              COUNT(rp.prod_id) regionCount
             FROM
-              backend_adm.productRegion rp
+              backend_adm.prod_region rp
               INNER JOIN ya_new_basket b ON
-                rp.productID = b.sku
+                rp.prod_id = b.sku
                 AND b.shopper_id = cPshopperId
                 AND b.site_id = iPsiteid
                 AND b.type = iPtype
             WHERE
               --default country ID
               iPcountryId = -1
-              AND rp.originId = iPsiteId
-              AND rp.categoryID = 1
-            GROUP BY rp.productId
+              AND rp.origin_id = iPsiteId
+              AND rp.category_id = 1
+            GROUP BY rp.prod_id
       ) t ON
-    r.productId = t.productId
+    r.prod_id = t.productId
     AND r.sequence = t.seq
-  WHERE r.categoryID = 1 --not wholesale
-    AND r.originId = iPsiteId
+  WHERE r.category_id = 1 --not wholesale
+    AND r.origin_id = iPsiteId
     AND b.shopper_id = cPshopperId
     AND b.site_id = iPsiteId
     AND b.type = iPtype
@@ -1304,7 +1306,7 @@ END GetBasketWithWarranty;
   AND lq.frontend_quantity > 0
   ORDER BY lq.sku;
 
-  /* Get Shipment Unit */
+  /* Get shipment Unit */
   iLShipmentUnitConst := 200; /* in Grams */
 
   OPEN curPgetBasket3 FOR
@@ -1329,7 +1331,7 @@ END GetBasketWithWarranty;
       AND type = iPtype
     );
 
-  /* Inventory and Availability Info */
+  /* inventory and Availability Info */
     IF iPcountryId = -1 THEN
       BEGIN
         OPEN curPgetBasket4 FOR
@@ -1337,44 +1339,44 @@ END GetBasketWithWarranty;
           p.sku,
           -1,
           CASE
-            WHEN pa.availability = 0 THEN 99
+            WHEN pa.avlb = 0 THEN 99
             ELSE 0
           END,
-          cast(nvl(o.availability_id, pa.availability) as int)
+          cast(nvl(o.availability_id, pa.avlb) as int)
         FROM
           ya_new_basket pt
           INNER JOIN ya_product p ON
             pt.sku = p.sku
-          INNER JOIN backend_adm.productavailability pa ON p.sku = pa.productid
-          INNER JOIN backend_adm.productRegion r ON
-            pt.sku = r.productId
-            AND r.regionId = iPsiteId
-            AND pa.productid = r.productid
-            AND pa.regionid = r.regionid
-		  LEFT OUTER JOIN ya_availability_override o ON r.supplierid = o.supplier_id
+          INNER JOIN backend_adm.prod_avlb pa ON p.sku = pa.prod_id
+          INNER JOIN backend_adm.prod_region r ON
+            pt.sku = r.prod_id
+            AND r.region_id = iPsiteId
+            AND pa.prod_id = r.prod_id
+            AND pa.region_id = r.region_id
+		  LEFT OUTER JOIN ya_availability_override o ON r.supplier_id = o.supplier_id
             AND p.account_id = o.account_id AND SYSDATE() BETWEEN o.start_date AND o.end_date
-            AND pa.availability < o.availability_id
+            AND pa.avlb < o.availability_id
           INNER JOIN
             (
-              SELECT rp.productId productId, MIN(SEQUENCE) seq
-              FROM backend_adm.productRegion rp
+              SELECT rp.prod_id productId, MIN(SEQUENCE) seq
+              FROM backend_adm.prod_region rp
               inner join ya_new_basket b on
                 (
-                  rp.productID = b.sku
+                  rp.prod_id = b.sku
                   and b.shopper_id = cPshopperId
                   and b.site_id = iPsiteid
                   and b.type = iPtype
                 )
               WHERE
                 --default country ID
-                rp.regionId = iPsiteId
-              GROUP BY rp.productId
+                rp.region_id = iPsiteId
+              GROUP BY rp.prod_id
             ) t ON
-            r.productId = t.productId
+            r.prod_id = t.productId
             AND r.sequence = t.seq
         WHERE
           pt.shopper_id = cPshopperId
-          AND pa.regionId = iPsiteId
+          AND pa.region_id = iPsiteId
         ORDER BY p.sku;
       END;
     ELSE
@@ -1384,47 +1386,47 @@ END GetBasketWithWarranty;
           p.sku,
           -1,
           CASE
-            WHEN pa.availability = 0 THEN 99
+            WHEN pa.avlb = 0 THEN 99
             ELSE 0
           END,
-          NVL(o.availability_id, pa.availability)
+          NVL(o.availability_id, pa.avlb)
         FROM
           ya_new_basket pt
           INNER JOIN ya_product p ON pt.sku = p.sku
-          INNER JOIN backend_adm.productavailability pa ON p.sku = pa.productid
-          INNER JOIN backend_adm.productRegion r ON
-            pt.sku = r.productId
-            AND r.regionId = iPsiteId
-            AND pa.productid = r.productid
-            AND pa.regionid = r.regionid
+          INNER JOIN backend_adm.prod_avlb pa ON p.sku = pa.prod_id
+          INNER JOIN backend_adm.prod_region r ON
+            pt.sku = r.prod_id
+            AND r.region_id = iPsiteId
+            AND pa.prod_id = r.prod_id
+            AND pa.region_id = r.region_id
 		  LEFT OUTER JOIN ya_availability_override o ON
-            r.supplierid = o.supplier_id
+            r.supplier_id = o.supplier_id
             AND p.account_id = o.account_id
             AND SYSDATE() BETWEEN o.start_date AND o.end_date
-            AND pa.availability < o.availability_id
+            AND pa.avlb < o.availability_id
           INNER JOIN
             (
               SELECT
-                rp.productId productId,
+                rp.prod_id productId,
                 MAX(SEQUENCE) seq
               FROM ya_country_region_rel rl
-              INNER JOIN backend_adm.productRegion rp ON
-                rl.region_id = rp.regionId
+              INNER JOIN backend_adm.prod_region rp ON
+                rl.region_id = rp.region_id
               INNER JOIN ya_new_basket b ON
-                rp.productID = b.sku
+                rp.prod_id = b.sku
                 AND b.shopper_id = cPshopperId
                 AND b.site_id = iPsiteid
                 AND b.type = iPtype
               WHERE
                 rl.country_id = iPcountryId
-                AND rp.regionId = iPsiteId
-              GROUP BY rp.productId
+                AND rp.region_id = iPsiteId
+              GROUP BY rp.prod_id
             ) t ON
-              r.productId = t.productId
+              r.prod_id = t.productId
               AND r.sequence = t.seq
           WHERE
             pt.shopper_id = cPshopperId
-            AND pa.regionId = iPsiteId
+            AND pa.region_id = iPsiteId
           ORDER BY p.sku;
 
       END;
@@ -1450,31 +1452,31 @@ END GetBasketWithWarranty;
   /* Product Information */
   OPEN curPgetBasket6 FOR
   SELECT
-    r.productId,
+    r.prod_id,
     b.quantity,
     p.cover_img_loc AS cover_img_loc,
     NVL(p.cover_img_width, 0) AS cover_img_width,
     NVL(p.cover_img_height, 0) AS cover_img_height,
-    NVL(r.preorder, 'N') AS preorder,
-    NVL(r.preorderStart, dtLnullDate) AS preorder_start,
-    NVL(r.preorderEnd, dtLnullDate) AS preorder_end,
-    NVL(r.listPrice, 9999) AS list_price,
-    NVL(r.salePrice, 9999) AS sale_price,
-    NVL(r.salePriceStart, dtLnullDate) AS sale_start,
-    NVL(r.salePriceEnd, dtLnullDate) AS salePriceEnd,
+    NVL(r.is_preorder, 'N') AS preorder,
+    NVL(r.preorder_start, dtLnullDate) AS preorder_start,
+    NVL(r.preorder_end, dtLnullDate) AS preorder_end,
+    NVL(r.list_price, 9999) AS list_price,
+    NVL(r.sale_price, 9999) AS sale_price,
+    NVL(r.sale_price_start, dtLnullDate) AS sale_start,
+    NVL(r.sale_price_end, dtLnullDate) AS salePriceEnd,
     NVL(pl.prod_name_u, ple.prod_name_u),
     NVL(p.release_date, dtLnullDate),
     plp.prod_name_img_loc,
     NVL(plp.name_img_width, 0),
     NVL(plp.name_img_height, 0),
     NVL(p.account_id, -1),
-    NVL(r.supplierId, -1),
-    NVL(r.enable, 'N'),
-    NVL(r.canSell, 'N'),
+    NVL(r.supplier_id, -1),
+    NVL(r.is_enabled, 'N'),
+    NVL(r.is_can_sell, 'N'),
     NVL(pl.prod_subtitle, ple.prod_subtitle),
     NVL(pl.prod_name_aka, ple.prod_name_aka),
     NVL(pl.prod_subtitle_aka, ple.prod_subtitle_aka),
-    NVL(r.preorderBufferDay, -1) AS preorder_buffer_day,
+    NVL(r.preorder_buffer_day, -1) AS preorder_buffer_day,
     t.regionCount
   FROM
     ya_new_basket b
@@ -1497,8 +1499,8 @@ END GetBasketWithWarranty;
       LEFT JOIN ya_prod_lang ple ON
         p.sku = ple.sku
         AND ple.lang_id = 1 -- English
-      INNER JOIN backend_adm.productRegion r ON
-        b.sku = r.productId
+      INNER JOIN backend_adm.prod_region r ON
+        b.sku = r.prod_id
       INNER JOIN
         (
           SELECT
@@ -1508,67 +1510,67 @@ END GetBasketWithWarranty;
           FROM
             (
               SELECT
-                rp.productId productId,
+                rp.prod_id productId,
                 MAX(SEQUENCE) seq
               FROM
                 ya_country_region_rel rl
-                INNER JOIN backend_adm.productRegion rp ON
-                  rl.region_id = rp.regionId
+                INNER JOIN backend_adm.prod_region rp ON
+                  rl.region_id = rp.region_id
                 INNER JOIN ya_new_basket b ON
-                  rp.productID = b.sku
+                  rp.prod_id = b.sku
                   AND b.shopper_id = cPshopperId
                   AND b.site_id = iPsiteid
                   ANd b.type = iPtype
               WHERE
                 iPcountryId <> -1
                 AND rl.country_id = iPcountryId
-                AND rp.originId = iPsiteId
-                AND rp.categoryID = 1
-              GROUP BY rp.productId
+                AND rp.origin_id = iPsiteId
+                AND rp.category_id = 1
+              GROUP BY rp.prod_id
             ) s
             INNER JOIN
               (
                 SELECT
-                  rp.productId productId,
-                  COUNT(rp.productId) regionCount
+                  rp.prod_id productId,
+                  COUNT(rp.prod_id) regionCount
                 FROM
-                  backend_adm.productRegion rp
+                  backend_adm.prod_region rp
                   INNER JOIN ya_new_basket b ON
-                    rp.productID = b.sku
+                    rp.prod_id = b.sku
                     AND b.shopper_id = cPshopperId
                     AND b.site_id = iPsiteid
                     AND b.type = iPtype
                 WHERE
                   --default country ID
                   iPcountryId <> -1
-                  AND rp.originId = iPsiteId
-                  AND rp.categoryID = 1
-                GROUP BY rp.productId
+                  AND rp.origin_id = iPsiteId
+                  AND rp.category_id = 1
+                GROUP BY rp.prod_id
               ) t ON
               s.productId = t.productId
             UNION
             SELECT
-              rp.productId productId,
+              rp.prod_id productId,
               MIN(SEQUENCE) seq,
-              COUNT(rp.productId) regionCount
+              COUNT(rp.prod_id) regionCount
             FROM
-              backend_adm.productRegion rp
+              backend_adm.prod_region rp
               INNER JOIN ya_new_basket b ON
-                rp.productID = b.sku
+                rp.prod_id = b.sku
                 AND b.shopper_id = cPshopperId
                 AND b.site_id = iPsiteid
                 AND b.type = iPtype
             WHERE
               --default country ID
               iPcountryId = -1
-              AND rp.originId = iPsiteId
-              AND rp.categoryID = 1
-            GROUP BY rp.productId
+              AND rp.origin_id = iPsiteId
+              AND rp.category_id = 1
+            GROUP BY rp.prod_id
       ) t ON
-    r.productId = t.productId
+    r.prod_id = t.productId
     AND r.sequence = t.seq
-  WHERE r.categoryID = 1 --not wholesale
-    AND r.originId = iPsiteId
+  WHERE r.category_id = 1 --not wholesale
+    AND r.origin_id = iPsiteId
     AND b.shopper_id = cPshopperId
     AND b.site_id = iPsiteId
     AND b.type = iPtype
@@ -1697,26 +1699,26 @@ END GetBasket;
         -- promotiON bundle, aka OnePlusOne, Double Deal
         OPEN curPresult1 FOR
         SELECT
-          bpr.productId,
+          bpr.prod_id,
           p.cover_img_loc,
           NVL(p.cover_img_width, 0) AS cover_img_width,
           NVL(p.cover_img_height, 0) AS cover_img_height,
-          NVL(bpr.preorder, 'N') AS preorder,
-          NVL(bpr.preorderstart, dtLnull_date) AS preorder_start,
-          NVL(bpr.preorderend, dtLnull_date) AS preorder_end,
-          NVL(bpr.listprice, 9999) AS list_price,
-          NVL(bpr.saleprice, 9999) AS sale_price,
-          NVL(bpr.salepricestart, dtLnull_date) AS sale_start,
-          NVL(bpr.salepriceend, dtLnull_date) AS salepriceend,
+          NVL(bpr.is_preorder, 'N') AS preorder,
+          NVL(bpr.preorder_start, dtLnull_date) AS preorder_start,
+          NVL(bpr.preorder_end, dtLnull_date) AS preorder_end,
+          NVL(bpr.list_price, 9999) AS list_price,
+          NVL(bpr.sale_price, 9999) AS sale_price,
+          NVL(bpr.sale_price_start, dtLnull_date) AS sale_start,
+          NVL(bpr.sale_price_end, dtLnull_date) AS salepriceend,
           NVL(p.release_date, dtLnull_date) AS release_date,
           NVL(p.account_id, -1) AS account_id,
-          NVL(bpr.supplierid, -1) AS supplierid,
-          NVL(bpr.enable, 'N') AS enable,
-          NVL(bpr.cansell, 'N') AS cansell,
-          NVL(bpr.preorderbufferday, -1) AS preorder_buffer_day,
-          NVL(o.availability_id, bpa.availability),
+          NVL(bpr.supplier_id, -1) AS supplierid,
+          NVL(bpr.is_enabled, 'N') AS enable,
+          NVL(bpr.is_can_sell, 'N') AS cansell,
+          NVL(bpr.preorder_buffer_day, -1) AS preorder_buffer_day,
+          NVL(o.availability_id, bpa.avlb),
           NVL(p.country_release_id, -1),
-          NVL(bpr.preorderDeadline, dtLnull_date) AS preorder_date --20
+          NVL(bpr.preorder_deadline, dtLnull_date) AS preorder_date --20
         FROM
           (
             SELECT *
@@ -1742,47 +1744,47 @@ END GetBasket;
                 (
                   SELECT bpr_i.*
                   FROM
-                    backend_adm.productRegiON bpr_i,
+                    backend_adm.prod_region bpr_i,
                     ya_promotion_bundle pb_i
                   WHERE
                     pb_i.site_id = iPsite_id
                     AND (pb_i.sku =  iLlast_sku OR pb_i.partner_sku = iLlast_sku)
-                    AND bpr_i.categoryId = 1
-                    AND bpr_i.originId = iPsite_id
+                    AND bpr_i.category_id = 1
+                    AND bpr_i.origin_id = iPsite_id
                     AND
                       (
-                        bpr_i.productId <>  iLlast_sku
-                        AND (bpr_i.productId = pb_i.partner_sku OR bpr_i.productId = pb_i.sku)
+                        bpr_i.prod_id <>  iLlast_sku
+                        AND (bpr_i.prod_id = pb_i.partner_sku OR bpr_i.prod_id = pb_i.sku)
                       )
                   ORDER BY bpr_i.sequence
                 )
               WHERE ROWNUM = 1
             ) bpr ON
-            bpr.categoryId = 1
-            AND bpr.originId = iPsite_id
+            bpr.category_id = 1
+            AND bpr.origin_id = iPsite_id
             AND
               (
-                bpr.productId <> b.sku
-                AND (bpr.productId = pb.partner_sku OR bpr.productId = pb.sku)
+                bpr.prod_id <> b.sku
+                AND (bpr.prod_id = pb.partner_sku OR bpr.prod_id = pb.sku)
               )
-          INNER JOIN backend_adm.productAvailability bpa ON
-            bpa.productId = bpr.productId
-            AND bpa.originId = iPsite_id
-            AND bpa.regionId = bpr.regionId
+          INNER JOIN backend_adm.prod_avlb bpa ON
+            bpa.prod_id = bpr.prod_id
+            AND bpa.origin_id = iPsite_id
+            AND bpa.region_id = bpr.region_id
             AND bpa.category = 1
           INNER JOIN ya_product p ON
-            p.sku = bpa.productId
+            p.sku = bpa.prod_id
           LEFT JOIN ya_availability_override o ON
-            bpr.supplierid = o.supplier_id
+            bpr.supplier_id = o.supplier_id
             AND p.account_id = o.account_id
             AND dtLcurrent_date BETWEEN o.start_date AND o.end_date
-            AND bpa.availability < o.availability_id
+            AND bpa.avlb < o.availability_id
         WHERE
-          bpr.cansell = 'Y'
+          bpr.is_can_sell = 'Y'
           AND dtLcurrent_date -- ya_promotion_bundle
           BETWEEN NVL(pb.start_date, dtLcurrent_date)
           AND NVL(pb.end_date, dtLcurrent_date)
-          AND NVL(o.availability_id, bpa.availability) < 60;
+          AND NVL(o.availability_id, bpa.avlb) < 60;
 
 
 
@@ -1792,26 +1794,26 @@ END GetBasket;
         FROM
           (
             SELECT
-              bpr.productId,
+              bpr.prod_id,
               p.cover_img_loc,
               NVL(p.cover_img_width, 0) AS cover_img_width,
               NVL(p.cover_img_height, 0) AS cover_img_height,
-              NVL(bpr.preorder, 'N') AS preorder,
-              NVL(bpr.preorderstart, dtLnull_date) AS preorder_start,
-              NVL(bpr.preorderend, dtLnull_date) AS preorder_end,
-              NVL(bpr.listprice, 9999) AS list_price,
-              NVL(bpr.saleprice, 9999) AS sale_price,
-              NVL(bpr.salepricestart, dtLnull_date) AS sale_start,
-              NVL(bpr.salepriceend, dtLnull_date) AS salepriceend,
+              NVL(bpr.is_preorder, 'N') AS preorder,
+              NVL(bpr.preorder_start, dtLnull_date) AS preorder_start,
+              NVL(bpr.preorder_end, dtLnull_date) AS preorder_end,
+              NVL(bpr.list_price, 9999) AS list_price,
+              NVL(bpr.sale_price, 9999) AS sale_price,
+              NVL(bpr.sale_price_start, dtLnull_date) AS sale_start,
+              NVL(bpr.sale_price_end, dtLnull_date) AS salepriceend,
               NVL(p.release_date, dtLnull_date),
               NVL(p.account_id, -1),
-              NVL(bpr.supplierid, -1),
-              NVL(bpr.enable, 'N'),
-              NVL(bpr.cansell, 'N'),
-              NVL(bpr.preorderbufferday, -1) AS preorder_buffer_day,
-              NVL(o.availability_id, bpa.availability),
+              NVL(bpr.supplier_id, -1),
+              NVL(bpr.is_enabled, 'N'),
+              NVL(bpr.is_can_sell, 'N'),
+              NVL(bpr.preorder_buffer_day, -1) AS preorder_buffer_day,
+              NVL(o.availability_id, bpa.avlb),
               NVL(p.country_release_id, -1),
-              NVL(bpr.preorderDeadline, dtLnull_date) AS preorder_date --20
+              NVL(bpr.preorder_deadline, dtLnull_date) AS preorder_date --20
             FROM
               (
                 SELECT *
@@ -1843,7 +1845,7 @@ END GetBasket;
                     cs_i.crossSellSku AS related_sku,
                     MIN(bpr_i.sequence) AS sequence
                   FROM
-                    backend_adm.productRegiON bpr_i,
+                    backend_adm.prod_region bpr_i,
                     dm_crosssell_sku cs_i
                   WHERE
                     cs_i.sku = iLlast_sku
@@ -1853,33 +1855,33 @@ END GetBasket;
                         WHEN iPsectionId = 0 THEN cs_i.sectionId --sectionId=0 means all sections
                         ELSE iPsectionId
                       END
-                    AND bpr_i.categoryId = 1
-                    AND bpr_i.originId = iPsite_id
-                    AND bpr_i.productId = cs_i.crossSellSku
+                    AND bpr_i.category_id = 1
+                    AND bpr_i.origin_id = iPsite_id
+                    AND bpr_i.prod_id = cs_i.crossSellSku
                   GROUP BY cs_i.crossSellSku
                 ) tmp_pr ON
                 tmp_pr.related_sku = cs.crossSellSku
-              INNER JOIN backend_adm.productRegiON bpr ON
-                bpr.categoryId = 1
-                AND bpr.originId = iPsite_id
-                AND bpr.productId = cs.crossSellSku
+              INNER JOIN backend_adm.prod_region bpr ON
+                bpr.category_id = 1
+                AND bpr.origin_id = iPsite_id
+                AND bpr.prod_id = cs.crossSellSku
                 AND bpr.sequence = tmp_pr.sequence
-                AND bpr.productId = tmp_pr.related_sku
-              INNER JOIN backend_adm.productAvailability bpa ON
-                bpa.productId = bpr.productId
-                AND bpa.originId = iPsite_id
-                AND bpa.regionId = bpr.regionId
+                AND bpr.prod_id = tmp_pr.related_sku
+              INNER JOIN backend_adm.prod_avlb bpa ON
+                bpa.prod_id = bpr.prod_id
+                AND bpa.origin_id = iPsite_id
+                AND bpa.region_id = bpr.region_id
                 AND bpa.category = 1
               INNER JOIN ya_product p ON
-                p.sku = bpa.productId
+                p.sku = bpa.prod_id
               LEFT JOIN ya_availability_override o ON
-                bpr.supplierid = o.supplier_id
+                bpr.supplier_id = o.supplier_id
                 AND p.account_id = o.account_id
                 AND dtLcurrent_date BETWEEN o.start_date AND o.end_date
-                AND bpa.availability < o.availability_id
+                AND bpa.avlb < o.availability_id
             WHERE
-              bpr.cansell = 'Y'
-              AND NVL(o.availability_id, bpa.availability) < 60
+              bpr.is_can_sell = 'Y'
+              AND NVL(o.availability_id, bpa.avlb) < 60
             ORDER BY cs.rank ASC, /* cs.last_modified_datetime DESC, */cs.crossSellSku DESC
           )
         WHERE ROWNUM < 4;
@@ -1889,26 +1891,26 @@ END GetBasket;
         -- promotiON bundle, aka OnePlusOne, Double Deal
         OPEN curPresult1 FOR
         SELECT
-          bpr.productId,
+          bpr.prod_id,
           p.cover_img_loc,
           NVL(p.cover_img_width, 0) AS cover_img_width,
           NVL(p.cover_img_height, 0) AS cover_img_height,
-          NVL(bpr.preorder, 'N') AS preorder,
-          NVL(bpr.preorderstart, dtLnull_date) AS preorder_start,
-          NVL(bpr.preorderend, dtLnull_date) AS preorder_end,
-          NVL(bpr.listprice, 9999) AS list_price,
-          NVL(bpr.saleprice, 9999) AS sale_price,
-          NVL(bpr.salepricestart, dtLnull_date) AS sale_start,
-          NVL(bpr.salepriceend, dtLnull_date) AS salepriceend,
+          NVL(bpr.is_preorder, 'N') AS preorder,
+          NVL(bpr.preorder_start, dtLnull_date) AS preorder_start,
+          NVL(bpr.preorder_end, dtLnull_date) AS preorder_end,
+          NVL(bpr.list_price, 9999) AS list_price,
+          NVL(bpr.sale_price, 9999) AS sale_price,
+          NVL(bpr.sale_price_start, dtLnull_date) AS sale_start,
+          NVL(bpr.sale_price_end, dtLnull_date) AS salepriceend,
           NVL(p.release_date, dtLnull_date),
           NVL(p.account_id, -1),
-          NVL(bpr.supplierid, -1),
-          NVL(bpr.enable, 'N'),
-          NVL(bpr.cansell, 'N'),
-          NVL(bpr.preorderbufferday, -1) AS preorder_buffer_day,
-          NVL(o.availability_id, bpa.availability),
+          NVL(bpr.supplier_id, -1),
+          NVL(bpr.is_enabled, 'N'),
+          NVL(bpr.is_can_sell, 'N'),
+          NVL(bpr.preorder_buffer_day, -1) AS preorder_buffer_day,
+          NVL(o.availability_id, bpa.avlb),
           NVL(p.country_release_id, -1),
-          NVL(bpr.preorderDeadline, dtLnull_date) AS preorder_date --20
+          NVL(bpr.preorder_deadline, dtLnull_date) AS preorder_date --20
         FROM
           (
             SELECT *
@@ -1934,51 +1936,51 @@ END GetBasket;
                 (
                   SELECT bpr_i.*
                   FROM
-                    backend_adm.productRegiON bpr_i,
+                    backend_adm.prod_region bpr_i,
                     ya_promotion_bundle pb_i,
                     ya_country_region_rel crr
                   WHERE
                     pb_i.site_id = iPsite_id
                     AND (pb_i.sku =  iLlast_sku OR pb_i.partner_sku = iLlast_sku)
-                    AND bpr_i.categoryId = 1
-                    AND bpr_i.originId = iPsite_id
+                    AND bpr_i.category_id = 1
+                    AND bpr_i.origin_id = iPsite_id
                     AND
                       (
-                        bpr_i.productId <>  iLlast_sku
-                        AND (bpr_i.productId = pb_i.partner_sku OR bpr_i.productId = pb_i.sku)
+                        bpr_i.prod_id <>  iLlast_sku
+                        AND (bpr_i.prod_id = pb_i.partner_sku OR bpr_i.prod_id = pb_i.sku)
                       )
                     AND crr.country_id = iPcountry_id
-                    AND bpr_i.regionId = crr.region_id
+                    AND bpr_i.region_id = crr.region_id
                   ORDER BY bpr_i.sequence DESC
                 )
               WHERE
                 ROWNUM = 1
             ) bpr ON
-            bpr.categoryId = 1
-            AND bpr.originId = iPsite_id
+            bpr.category_id = 1
+            AND bpr.origin_id = iPsite_id
             AND
               (
-                bpr.productId <> b.sku
-                AND (bpr.productId = pb.partner_sku OR bpr.productId = pb.sku)
+                bpr.prod_id <> b.sku
+                AND (bpr.prod_id = pb.partner_sku OR bpr.prod_id = pb.sku)
               )
-          INNER JOIN backend_adm.productAvailability bpa ON
-            bpa.productId = bpr.productId
-            AND bpa.originId = iPsite_id
-            AND bpa.regionId = bpr.regionId
+          INNER JOIN backend_adm.prod_avlb bpa ON
+            bpa.prod_id = bpr.prod_id
+            AND bpa.origin_id = iPsite_id
+            AND bpa.region_id = bpr.region_id
             AND bpa.category = 1
           INNER JOIN ya_product p ON
-            p.sku = bpa.productId
+            p.sku = bpa.prod_id
           LEFT JOIN ya_availability_override o ON
-            bpr.supplierid = o.supplier_id
+            bpr.supplier_id = o.supplier_id
             AND p.account_id = o.account_id
             AND dtLcurrent_date BETWEEN o.start_date
             AND o.end_date
-            AND bpa.availability < o.availability_id
+            AND bpa.avlb < o.availability_id
         WHERE
-          bpr.cansell = 'Y'
+          bpr.is_can_sell = 'Y'
           AND dtLcurrent_date -- ya_promotion_bundle
             BETWEEN NVL(pb.start_date, dtLcurrent_date) AND NVL(pb.end_date, dtLcurrent_date)
-          AND NVL(o.availability_id, bpa.availability) < 60;
+          AND NVL(o.availability_id, bpa.avlb) < 60;
 
 
 
@@ -1988,26 +1990,26 @@ END GetBasket;
         FROM
           (
             SELECT
-              bpr.productId,--0
+              bpr.prod_id,--0
               p.cover_img_loc AS cover_img_loc,
               NVL(p.cover_img_width, 0) AS cover_img_width,
               NVL(p.cover_img_height, 0) AS cover_img_height,
-              NVL(bpr.preorder, 'N') AS preorder,
-              NVL(bpr.preorderstart, dtLnull_date) AS preorder_start, --5
-              NVL(bpr.preorderend, dtLnull_date) AS preorder_end,
-              NVL(bpr.listprice, 9999) AS list_price,
-              NVL(bpr.saleprice, 9999) AS sale_price,
-              NVL(bpr.salepricestart, dtLnull_date) AS sale_start,
-              NVL(bpr.salepriceend, dtLnull_date) AS salepriceend, --10
+              NVL(bpr.is_preorder, 'N') AS preorder,
+              NVL(bpr.preorder_start, dtLnull_date) AS preorder_start, --5
+              NVL(bpr.preorder_end, dtLnull_date) AS preorder_end,
+              NVL(bpr.list_price, 9999) AS list_price,
+              NVL(bpr.sale_price, 9999) AS sale_price,
+              NVL(bpr.sale_price_start, dtLnull_date) AS sale_start,
+              NVL(bpr.sale_price_end, dtLnull_date) AS salepriceend, --10
               NVL(p.release_date, dtLnull_date),
               NVL(p.account_id, -1),
-              NVL(bpr.supplierid, -1),
-              NVL(bpr.enable, 'N'),
-              NVL(bpr.cansell, 'N'), -- 15
-              NVL(bpr.preorderbufferday, -1) AS preorder_buffer_day,
-              NVL(o.availability_id, bpa.availability),
+              NVL(bpr.supplier_id, -1),
+              NVL(bpr.is_enabled, 'N'),
+              NVL(bpr.is_can_sell, 'N'), -- 15
+              NVL(bpr.preorder_buffer_day, -1) AS preorder_buffer_day,
+              NVL(o.availability_id, bpa.avlb),
               NVL(p.country_release_id, -1),
-              NVL(bpr.preorderDeadline, dtLnull_date) AS preorder_date --20
+              NVL(bpr.preorder_deadline, dtLnull_date) AS preorder_date --20
             FROM
               (
                 SELECT *
@@ -2041,7 +2043,7 @@ END GetBasket;
                     cs_i.crossSellSku related_sku,
                     MAX(bpr_i.sequence) sequence
                   FROM
-                    backend_adm.productRegiON bpr_i,
+                    backend_adm.prod_region bpr_i,
                     dm_crosssell_sku cs_i
                   WHERE
                     cs_i.sku = iLlast_sku
@@ -2051,34 +2053,34 @@ END GetBasket;
                         WHEN iPsectionId = 0 THEN cs_i.sectionId --sectionId=0 means all sections
                         ELSE iPsectionId
                       END
-                    AND bpr_i.categoryId = 1
-                    AND bpr_i.originId = iPsite_id
-                    AND bpr_i.productId = cs_i.crossSellSku
+                    AND bpr_i.category_id = 1
+                    AND bpr_i.origin_id = iPsite_id
+                    AND bpr_i.prod_id = cs_i.crossSellSku
                   GROUP BY cs_i.crossSellSku
                 ) tmp_pr ON
                 tmp_pr.related_sku = cs.crossSellSku
-              INNER JOIN backend_adm.productRegiON bpr ON
-                bpr.categoryId = 1
-                AND bpr.originId = iPsite_id
-                AND bpr.productId = cs.crossSellSku
-                AND bpr.regionId = crr.region_id
+              INNER JOIN backend_adm.prod_region bpr ON
+                bpr.category_id = 1
+                AND bpr.origin_id = iPsite_id
+                AND bpr.prod_id = cs.crossSellSku
+                AND bpr.region_id = crr.region_id
                 AND bpr.sequence = tmp_pr.sequence
-                AND bpr.productId = tmp_pr.related_sku
-              INNER JOIN backend_adm.productAvailability bpa ON
-                bpa.productId = bpr.productId
-                AND bpa.originId = iPsite_id
-                AND bpa.regionId = bpr.regionId
+                AND bpr.prod_id = tmp_pr.related_sku
+              INNER JOIN backend_adm.prod_avlb bpa ON
+                bpa.prod_id = bpr.prod_id
+                AND bpa.origin_id = iPsite_id
+                AND bpa.region_id = bpr.region_id
                 AND bpa.category = 1
               INNER JOIN ya_product p ON
-                p.sku = bpa.productId
+                p.sku = bpa.prod_id
               LEFT JOIN ya_availability_override o ON
-                bpr.supplierid = o.supplier_id
+                bpr.supplier_id = o.supplier_id
                 AND p.account_id = o.account_id
                 AND dtLcurrent_date BETWEEN o.start_date AND o.end_date
-                AND bpa.availability < o.availability_id
+                AND bpa.avlb < o.availability_id
             WHERE
-              bpr.cansell = 'Y'
-              AND NVL(o.availability_id, bpa.availability) < 60
+              bpr.is_can_sell = 'Y'
+              AND NVL(o.availability_id, bpa.avlb) < 60
             ORDER BY cs.rank ASC,/* cs.last_modified_datetime DESC, */cs.crossSellSku DESC
           )
         WHERE ROWNUM < 4;
@@ -2289,3 +2291,5 @@ END GetBasket;
 -- +--- Body
 END Pkg_fe_BasketAccess;
 /
+ 
+REM END SS_ADM PKG_FE_BASKETACCESS

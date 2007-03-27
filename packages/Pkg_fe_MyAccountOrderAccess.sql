@@ -1,4 +1,6 @@
 
+REM START SS_ADM PKG_FE_MYACCOUNTORDERACCESS
+
   CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_MYACCOUNTORDERACCESS" 
 AS
   TYPE curGorder IS REF CURSOR;
@@ -56,25 +58,25 @@ END Pkg_Fe_Myaccountorderaccess;
 CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_MYACCOUNTORDERACCESS" 
 AS
   FUNCTION GetOrderLineStatus(
-    iLproduct_id INT, 
+    iLproduct_id INT,
     iLorder_id INT
   ) RETURN INT IS
     iLnew_status INT;
     iLstatus_count INT;
   BEGIN
-    SELECT COUNT(DISTINCT status) INTO iLstatus_count FROM OrderLineDetail
-    WHERE orderLineId IN (SELECT ol.id FROM OrderLine ol WHERE ol.orderId = iLorder_id AND ol.parentId = iLproduct_id AND ol.parentId <> ol.productId)
-      AND status NOT IN (8,9); -- 8: bogus, 9: cancelled
+    SELECT COUNT(DISTINCT sts) INTO iLstatus_count FROM order_line_dtl
+    WHERE order_line_id IN (SELECT ol.id FROM order_line ol WHERE ol.order_info_id = iLorder_id AND ol.parent_id = iLproduct_id AND ol.parent_id <> ol.prod_id)
+      AND sts NOT IN (8,9); -- 8: bogus, 9: cancelled
 
     IF iLstatus_count > 1 THEN
       iLnew_status := 2;
     ELSIF iLstatus_count = 0 THEN
-      SELECT DISTINCT status INTO iLnew_status FROM OrderLineDetail
-      WHERE orderLineId IN (SELECT ol.id FROM OrderLine ol WHERE ol.orderId = iLorder_id AND ol.parentId = iLproduct_id AND ol.parentId <> ol.productId);
+      SELECT DISTINCT sts INTO iLnew_status FROM order_line_dtl
+      WHERE order_line_id IN (SELECT ol.id FROM order_line ol WHERE ol.order_info_id = iLorder_id AND ol.parent_id = iLproduct_id AND ol.parent_id <> ol.prod_id);
     ELSE
-      SELECT DISTINCT status INTO iLnew_status FROM OrderLineDetail
-      WHERE orderLineId IN (SELECT ol.id FROM OrderLine ol WHERE ol.orderId = iLorder_id AND ol.parentId = iLproduct_id AND ol.parentId <> ol.productId)
-        AND status NOT IN (8,9);
+      SELECT DISTINCT sts INTO iLnew_status FROM order_line_dtl
+      WHERE order_line_id IN (SELECT ol.id FROM order_line ol WHERE ol.order_info_id = iLorder_id AND ol.parent_id = iLproduct_id AND ol.parent_id <> ol.prod_id)
+        AND sts NOT IN (8,9);
     END IF;
     RETURN iLnew_status;
   END GetOrderLineStatus;
@@ -88,37 +90,37 @@ AS
   AS
   BEGIN
     OPEN curPorder FOR
-    SELECT o.id, o.originorderid, o.orderDate, o.customerComment, ol.id AS lineId, o.originid AS siteId, ol.productId, ld.quantity AS openQty
-      , ol.shipmentUnit, ol.unitPrice
+    SELECT o.id, o.origin_order_id, o.order_dt, o.cust_cmt, ol.id AS lineId, o.origin_id AS siteId, ol.prod_id, ld.qnty AS openQty
+      , ol.shipment_unit, ol.unit_price
       , CASE
-         WHEN ol.parentId = ol.productId THEN Pkg_fe_MyAccountOrderAccess.GetOrderLineStatus(ol.productId, o.id)
-         ELSE ld.status END AS lineStatus
-      , ol.quantity AS quantity, b.coupon, b.couponAmt, b.credit, b.creditAmt, b.shipmentAmt
-      , b.handlingAmt, b.tax, b.amount, o.splitShipment, b.handlingAmt, b.specialHandling, b.ccNum, b.firstname AS b_firstname, b.lastname AS b_lastname
-      , b.method AS paymentType, b.address1 AS b_address1, b.address2 AS b_address2, b.city AS b_city, b.state AS b_state, b.zip AS b_zip, b.phone AS b_phone
-      , s.firstname AS s_firstname, s.lastname AS s_lastname, s.email AS s_email, s.dayPhone AS s_dayPhone, s.address1 AS s_address1, s.address2 AS s_address2
+         WHEN ol.parent_id = ol.prod_id THEN Pkg_fe_MyAccountOrderAccess.GetOrderLineStatus(ol.prod_id, o.id)
+         ELSE ld.sts END AS lineStatus
+      , ol.qnty AS quantity, b.coupon, b.coupon_amt, b.credit, b.credit_amt, b.shipment_amt
+      , b.handling_amt, b.tax, b.amt, o.split_shipment, b.handling_amt, b.special_handling, b.cc_num, b.first_name AS b_firstname, b.last_name AS b_lastname
+      , b.method AS paymentType, b.addr_1 AS b_address1, b.addr_2 AS b_address2, b.city AS b_city, b.state AS b_state, b.zip AS b_zip, b.phone AS b_phone
+      , s.first_name AS s_firstname, s.last_name AS s_lastname, s.email AS s_email, s.day_phone AS s_dayPhone, s.addr_1 AS s_address1, s.addr_2 AS s_address2
       , s.city AS s_city, s.state AS s_state, s.zip AS s_zip, s.method AS shipMethodId, s.country AS ship_country_id, pl.prod_name AS prod_name, pe.prod_name AS prod_ename
-      , cast(ol.miscinfo AS VARCHAR2(4000)) AS miscInfo, pr.preorder AS preorder, pr.preorderstart AS preorder_start, pr.preorderend AS preorder_end
+      , cast(ol.misc_info AS VARCHAR2(4000)) AS miscInfo, pr.is_preorder AS preorder, pr.preorder_start AS preorder_start, pr.preorder_end AS preorder_end
       , bbl.meaning AS cardType, bpl.meaning AS paymentMethod, bcl.meaning AS bill_country, scl.meaning AS ship_country, sml.meaning AS shipMethod
-      , b.method, '' AS prod_name_img_loc, o.status, o.hold, pd.account_id, pe.prod_subtitle_aka
-    FROM OrderInfo o
-      INNER JOIN OrderLine ol ON o.id = ol.orderId AND (ol.parentId = -1 OR ol.parentId = ol.productId)
-      INNER JOIN OrderLineDetail ld ON ol.orderId = ld.orderId AND ol.id = ld.orderLineId
-      INNER JOIN BillingInfo b ON o.id = b.orderId
-      INNER JOIN ShippingInfo s ON o.id = s.orderId
-      INNER JOIN Lookup bpl ON b.method = bpl.code AND bpl.langType = -1 AND bpl.category = 'paymentMethod'
-      LEFT OUTER JOIN Lookup bbl ON b.ccType = bbl.code AND bbl.langType = -1 AND bbl.category = 'creditCardType'
-      LEFT OUTER JOIN Lookup bcl ON b.country = bcl.code AND bcl.langType = -1 AND bcl.category = 'country'
-      INNER JOIN Lookup sml ON s.method = sml.code AND sml.langType = -1 AND sml.category = 'shippingMethod'
-      INNER JOIN Lookup scl ON s.country = scl.code AND scl.langType = -1 AND scl.category = 'country'
-      INNER JOIN YA_PRODUCT pd ON ol.productId = pd.sku
-	  INNER JOIN productregion pr ON ol.productId=pr.productId AND pr.regionId=1
-      INNER JOIN YA_PROD_LANG pl ON ol.productId = pl.sku AND pl.lang_id = iLlang_id
-      INNER JOIN YA_PROD_LANG pe ON ol.productId = pe.sku AND pe.lang_id = 1
-    WHERE o.originOrderId = cPorder_id
-      AND o.customerId = cPshopper_id
-      AND o.parentId = -1
-    ORDER BY ol.productId;
+      , b.method, '' AS prod_name_img_loc, o.sts, o.hold, pd.account_id, pe.prod_subtitle_aka
+    FROM order_info o
+      INNER JOIN order_line ol ON o.id = ol.order_info_id AND (ol.parent_id = -1 OR ol.parent_id = ol.prod_id)
+      INNER JOIN order_line_dtl ld ON ol.order_info_id = ld.order_info_id AND ol.id = ld.order_line_id
+      INNER JOIN billing_info b ON o.id = b.order_info_id
+      INNER JOIN shipping_info s ON o.id = s.order_info_id
+      INNER JOIN lookup bpl ON b.method = bpl.code AND bpl.lang_type = -1 AND bpl.category = 'paymentMethod'
+      LEFT OUTER JOIN lookup bbl ON b.cc_type = bbl.code AND bbl.lang_type = -1 AND bbl.category = 'creditCardType'
+      LEFT OUTER JOIN lookup bcl ON b.country = bcl.code AND bcl.lang_type = -1 AND bcl.category = 'country'
+      INNER JOIN lookup sml ON s.method = sml.code AND sml.lang_type = -1 AND sml.category = 'shippingMethod'
+      INNER JOIN lookup scl ON s.country = scl.code AND scl.lang_type = -1 AND scl.category = 'country'
+      INNER JOIN YA_PRODUCT pd ON ol.prod_id = pd.sku
+	  INNER JOIN prod_region pr ON ol.prod_id=pr.prod_id AND pr.region_id=1
+      INNER JOIN YA_PROD_LANG pl ON ol.prod_id = pl.sku AND pl.lang_id = iLlang_id
+      INNER JOIN YA_PROD_LANG pe ON ol.prod_id = pe.sku AND pe.lang_id = 1
+    WHERE o.origin_order_id = cPorder_id
+      AND o.cust_id = cPshopper_id
+      AND o.parent_id = -1
+    ORDER BY ol.prod_id;
   END GetOrder;
 
   PROCEDURE GetShopperInvoiceId (
@@ -130,11 +132,11 @@ AS
   BEGIN
     OPEN curPinvoice_id FOR
     SELECT i.id
-    FROM Invoice i
-      INNER JOIN orderInfo o ON i.orderId = o.id
-    WHERE o.originorderid = cPorder_id
-      AND o.customerid = cPshopper_id
-      AND i.status <> 4
+    FROM invoice i
+      INNER JOIN order_info o ON i.order_info_id = o.id
+    WHERE o.origin_order_id = cPorder_id
+      AND o.cust_id = cPshopper_id
+      AND i.sts <> 4
       AND i.TYPE = 1;
   END GetShopperInvoiceId;
 
@@ -147,33 +149,33 @@ AS
   AS
   BEGIN
     OPEN curPinvoice FOR
-    SELECT i.id, i.invoiceDate, i.shippingTotal, o.originorderid, o.orderDate, il.id AS lineId,
-      il.skuCode, il.unitPrice, il.shipmentUnit, il.quantity, il.shipmentId, sp.trackingNumber, sp.id AS shipmentId,
-      b.coupon, b.couponAmt, b.credit, b.creditAmt, b.shipmentAmt, b.handlingAmt, b.tax, b.amount,
-      b.ccNum, b.firstname AS b_firstname, b.lastname AS b_lastname,
-      b.address1 AS b_address1, b.address2 AS b_address2, b.city AS b_city, b.state AS b_state, b.zip AS b_zip, b.phone AS b_phone,
-      s.firstname AS s_firstname, s.lastname AS s_lastname, s.email AS s_email, s.dayPhone AS s_dayPhone,
-      s.address1 AS s_address1, s.address2 AS s_address2, s.city AS s_city, s.state AS s_state, s.zip AS s_zip,
+    SELECT i.id, i.invoice_dt, i.shipping_total, o.origin_order_id, o.order_dt, il.id AS lineId,
+      il.sku, il.unit_price, il.shipment_unit, il.qnty, il.shipment_id, sp.tracking_num, sp.id AS shipmentId,
+      b.coupon, b.coupon_amt, b.credit, b.credit_amt, b.shipment_amt, b.handling_amt, b.tax, b.amt,
+      b.cc_num, b.first_name AS b_firstname, b.last_name AS b_lastname,
+      b.addr_1 AS b_address1, b.addr_2 AS b_address2, b.city AS b_city, b.state AS b_state, b.zip AS b_zip, b.phone AS b_phone,
+      s.first_name AS s_firstname, s.last_name AS s_lastname, s.email AS s_email, s.day_phone AS s_dayPhone,
+      s.addr_1 AS s_address1, s.addr_2 AS s_address2, s.city AS s_city, s.state AS s_state, s.zip AS s_zip,
       pl.prod_name AS prod_name, pf.prod_name AS prod_name_english, pf.prod_name_img_loc, s.method AS shipMethodId, s.country AS ship_country_id,
-      bbl.meaning AS cardType, bpl.meaning AS paymentMethod, bcl.meaning AS bill_country, scl.meaning AS ship_country, sml.meaning AS shipMethod, ol.productid, pf.prod_subtitle_aka
-    FROM Invoice i
-      INNER JOIN InvoiceLine il ON i.id = il.invoiceId AND SUBSTR(il.skuCode,0,4)<>'MISC'
-      INNER JOIN Shipment sp ON il.shipmentId = sp.id
-      INNER JOIN BillingInfo b ON b.invoiceId = i.id
-      INNER JOIN ShippingInfo s ON i.shippingInfoId = s.Id
-      INNER JOIN orderInfo o ON i.orderId = o.id
-      INNER JOIN orderLine ol ON il.orderLineId = ol.id
-      LEFT OUTER JOIN Lookup bbl ON b.ccType = bbl.code AND bbl.langType = -1 AND bbl.category = 'creditCardType'
-      LEFT OUTER JOIN Lookup bcl ON b.country = bcl.code AND bcl.langType = -1 AND bcl.category = 'country'
-      INNER JOIN Lookup bpl ON b.method = bpl.code AND bpl.langType = -1 AND bpl.category = 'paymentMethod'
-      INNER JOIN Lookup sml ON s.method = sml.code AND sml.langType = -1 AND sml.category = 'shippingMethod'
-      INNER JOIN Lookup scl ON s.country = scl.code AND scl.langType = -1 AND scl.category = 'country'
-      INNER JOIN YA_PROD_LANG pf ON ol.productId = pf.sku AND pf.lang_id = 1
-      LEFT OUTER JOIN YA_PROD_LANG pl ON ol.productId = pl.sku AND pl.lang_id = iLlang_id
+      bbl.meaning AS cardType, bpl.meaning AS paymentMethod, bcl.meaning AS bill_country, scl.meaning AS ship_country, sml.meaning AS shipMethod, ol.prod_id, pf.prod_subtitle_aka
+    FROM invoice i
+      INNER JOIN invoice_line il ON i.id = il.invoice_id AND SUBSTR(il.sku,0,4)<>'MISC'
+      INNER JOIN shipment sp ON il.shipment_id = sp.id
+      INNER JOIN billing_info b ON b.invoice_id = i.id
+      INNER JOIN shipping_info s ON i.shipping_info_id = s.Id
+      INNER JOIN order_info o ON i.order_info_id = o.id
+      INNER JOIN order_line ol ON il.order_line_id = ol.id
+      LEFT OUTER JOIN lookup bbl ON b.cc_type = bbl.code AND bbl.lang_type = -1 AND bbl.category = 'creditCardType'
+      LEFT OUTER JOIN lookup bcl ON b.country = bcl.code AND bcl.lang_type = -1 AND bcl.category = 'country'
+      INNER JOIN lookup bpl ON b.method = bpl.code AND bpl.lang_type = -1 AND bpl.category = 'paymentMethod'
+      INNER JOIN lookup sml ON s.method = sml.code AND sml.lang_type = -1 AND sml.category = 'shippingMethod'
+      INNER JOIN lookup scl ON s.country = scl.code AND scl.lang_type = -1 AND scl.category = 'country'
+      INNER JOIN YA_PROD_LANG pf ON ol.prod_id = pf.sku AND pf.lang_id = 1
+      LEFT OUTER JOIN YA_PROD_LANG pl ON ol.prod_id = pl.sku AND pl.lang_id = iLlang_id
     WHERE i.id = iLinvoice_id
-      AND i.status <> 4
+      AND i.sts <> 4
       AND i.TYPE = 1
-    ORDER BY sp.id, il.skuCode;
+    ORDER BY sp.id, il.sku;
   END GetInvoice;
 
   PROCEDURE GetItemShippingAmount (
@@ -201,38 +203,38 @@ AS
   AS
   BEGIN
     OPEN curPorder FOR
-    SELECT o.id, o.originorderid, o.orderDate, o.customerComment, ol.id AS lineId, o.originid AS siteId, ol.productId, ld.quantity AS openQty
-      , ol.shipmentUnit, ol.unitPrice
+    SELECT o.id, o.origin_order_id, o.order_dt, o.cust_cmt, ol.id AS lineId, o.origin_id AS siteId, ol.prod_id, ld.qnty AS openQty
+      , ol.shipment_unit, ol.unit_price
       , CASE
-         WHEN ol.parentId = ol.productId THEN Pkg_Fe_Myaccountorderaccess.GetOrderLineStatus(ol.productId, o.id)
-         ELSE ld.status END AS lineStatus
-      , ol.quantity AS quantity, b.coupon, b.couponAmt, b.credit, b.creditAmt, b.shipmentAmt
-      , b.handlingAmt, b.tax, b.amount, o.splitShipment, b.handlingAmt, b.specialHandling, b.ccNum, b.firstname AS b_firstname, b.lastname AS b_lastname
-      , b.method AS paymentType, b.address1 AS b_address1, b.address2 AS b_address2, b.city AS b_city, b.state AS b_state, b.zip AS b_zip, b.phone AS b_phone
-      , s.firstname AS s_firstname, s.lastname AS s_lastname, s.email AS s_email, s.dayPhone AS s_dayPhone, s.address1 AS s_address1, s.address2 AS s_address2
+         WHEN ol.parent_id = ol.prod_id THEN Pkg_Fe_Myaccountorderaccess.GetOrderLineStatus(ol.prod_id, o.id)
+         ELSE ld.sts END AS lineStatus
+      , ol.qnty AS quantity, b.coupon, b.coupon_amt, b.credit, b.credit_amt, b.shipment_amt
+      , b.handling_amt, b.tax, b.amt, o.split_shipment, b.handling_amt, b.special_handling, b.cc_num, b.first_name AS b_firstname, b.last_name AS b_lastname
+      , b.method AS paymentType, b.addr_1 AS b_address1, b.addr_2 AS b_address2, b.city AS b_city, b.state AS b_state, b.zip AS b_zip, b.phone AS b_phone
+      , s.first_name AS s_firstname, s.last_name AS s_lastname, s.email AS s_email, s.day_phone AS s_dayPhone, s.addr_1 AS s_address1, s.addr_2 AS s_address2
       , s.city AS s_city, s.state AS s_state, s.zip AS s_zip, s.method AS shipMethodId, s.country AS ship_country_id, pl.prod_name AS prod_name, pe.prod_name AS prod_ename
-      , cast(ol.miscinfo AS VARCHAR2(4000)) AS miscInfo, pr.preorder AS preorder, pr.preorderstart AS preorder_start, pr.preorderend AS preorder_end
+      , cast(ol.misc_info AS VARCHAR2(4000)) AS miscInfo, pr.is_preorder AS preorder, pr.preorder_start AS preorder_start, pr.preorder_end AS preorder_end
       , bbl.meaning AS cardType, bpl.meaning AS paymentMethod, bcl.meaning AS bill_country, scl.meaning AS ship_country, sml.meaning AS shipMethod
-      , b.method, '' AS prod_name_img_loc, o.status, o.hold, pd.account_id, pe.prod_subtitle_aka,
-	  b.ccNumEncrypted AS card_numberEncrypted, b.encryptionKey
-    FROM OrderInfo o
-      INNER JOIN OrderLine ol ON o.id = ol.orderId AND (ol.parentId = -1 OR ol.parentId = ol.productId)
-      INNER JOIN OrderLineDetail ld ON ol.orderId = ld.orderId AND ol.id = ld.orderLineId
-      INNER JOIN BillingInfo b ON o.id = b.orderId
-      INNER JOIN ShippingInfo s ON o.id = s.orderId
-      INNER JOIN Lookup bpl ON b.method = bpl.code AND bpl.langType = -1 AND bpl.category = 'paymentMethod'
-      LEFT OUTER JOIN Lookup bbl ON b.ccType = bbl.code AND bbl.langType = -1 AND bbl.category = 'creditCardType'
-      LEFT OUTER JOIN Lookup bcl ON b.country = bcl.code AND bcl.langType = -1 AND bcl.category = 'country'
-      INNER JOIN Lookup sml ON s.method = sml.code AND sml.langType = -1 AND sml.category = 'shippingMethod'
-      INNER JOIN Lookup scl ON s.country = scl.code AND scl.langType = -1 AND scl.category = 'country'
-      INNER JOIN YA_PRODUCT pd ON ol.productId = pd.sku
-	  INNER JOIN productregion pr ON ol.productId=pr.productId AND pr.regionId=1
-      INNER JOIN YA_PROD_LANG pl ON ol.productId = pl.sku AND pl.lang_id = iLlang_id
-      INNER JOIN YA_PROD_LANG pe ON ol.productId = pe.sku AND pe.lang_id = 1
-    WHERE o.originOrderId = cPorder_id
-      AND o.customerId = cPshopper_id
-      AND o.parentId = -1
-    ORDER BY ol.productId;
+      , b.method, '' AS prod_name_img_loc, o.sts, o.hold, pd.account_id, pe.prod_subtitle_aka,
+	  b.cc_num_encrypted AS card_numberEncrypted, b.encryption_key
+    FROM order_info o
+      INNER JOIN order_line ol ON o.id = ol.order_info_id AND (ol.parent_id = -1 OR ol.parent_id = ol.prod_id)
+      INNER JOIN order_line_dtl ld ON ol.order_info_id = ld.order_info_id AND ol.id = ld.order_line_id
+      INNER JOIN billing_info b ON o.id = b.order_info_id
+      INNER JOIN shipping_info s ON o.id = s.order_info_id
+      INNER JOIN lookup bpl ON b.method = bpl.code AND bpl.lang_type = -1 AND bpl.category = 'paymentMethod'
+      LEFT OUTER JOIN lookup bbl ON b.cc_type = bbl.code AND bbl.lang_type = -1 AND bbl.category = 'creditCardType'
+      LEFT OUTER JOIN lookup bcl ON b.country = bcl.code AND bcl.lang_type = -1 AND bcl.category = 'country'
+      INNER JOIN lookup sml ON s.method = sml.code AND sml.lang_type = -1 AND sml.category = 'shippingMethod'
+      INNER JOIN lookup scl ON s.country = scl.code AND scl.lang_type = -1 AND scl.category = 'country'
+      INNER JOIN YA_PRODUCT pd ON ol.prod_id = pd.sku
+	  INNER JOIN prod_region pr ON ol.prod_id=pr.prod_id AND pr.region_id=1
+      INNER JOIN YA_PROD_LANG pl ON ol.prod_id = pl.sku AND pl.lang_id = iLlang_id
+      INNER JOIN YA_PROD_LANG pe ON ol.prod_id = pe.sku AND pe.lang_id = 1
+    WHERE o.origin_order_id = cPorder_id
+      AND o.cust_id = cPshopper_id
+      AND o.parent_id = -1
+    ORDER BY ol.prod_id;
   END GetOrderEncrypted;
 
   PROCEDURE GetInvoiceEncrypted (
@@ -244,35 +246,37 @@ AS
   AS
   BEGIN
     OPEN curPinvoice FOR
-    SELECT i.id, i.invoiceDate, i.shippingTotal, o.originorderid, o.orderDate, il.id AS lineId,
-      il.skuCode, il.unitPrice, il.shipmentUnit, il.quantity, il.shipmentId, sp.trackingNumber, sp.id AS shipmentId,
-      b.coupon, b.couponAmt, b.credit, b.creditAmt, b.shipmentAmt, b.handlingAmt, b.tax, b.amount,
-      b.ccNum, b.firstname AS b_firstname, b.lastname AS b_lastname,
-      b.address1 AS b_address1, b.address2 AS b_address2, b.city AS b_city, b.state AS b_state, b.zip AS b_zip, b.phone AS b_phone,
-      s.firstname AS s_firstname, s.lastname AS s_lastname, s.email AS s_email, s.dayPhone AS s_dayPhone,
-      s.address1 AS s_address1, s.address2 AS s_address2, s.city AS s_city, s.state AS s_state, s.zip AS s_zip,
+    SELECT i.id, i.invoice_dt, i.shipping_total, o.origin_order_id, o.order_dt, il.id AS lineId,
+      il.sku, il.unit_price, il.shipment_unit, il.qnty, il.shipment_id, sp.tracking_num, sp.id AS shipmentId,
+      b.coupon, b.coupon_amt, b.credit, b.credit_amt, b.shipment_amt, b.handling_amt, b.tax, b.amt,
+      b.cc_num, b.first_name AS b_firstname, b.last_name AS b_lastname,
+      b.addr_1 AS b_address1, b.addr_2 AS b_address2, b.city AS b_city, b.state AS b_state, b.zip AS b_zip, b.phone AS b_phone,
+      s.first_name AS s_firstname, s.last_name AS s_lastname, s.email AS s_email, s.day_phone AS s_dayPhone,
+      s.addr_1 AS s_address1, s.addr_2 AS s_address2, s.city AS s_city, s.state AS s_state, s.zip AS s_zip,
       pl.prod_name AS prod_name, pf.prod_name AS prod_name_english, pf.prod_name_img_loc, s.method AS shipMethodId, s.country AS ship_country_id,
-      bbl.meaning AS cardType, bpl.meaning AS paymentMethod, bcl.meaning AS bill_country, scl.meaning AS ship_country, sml.meaning AS shipMethod, ol.productid, pf.prod_subtitle_aka,
-	  b.ccNumEncrypted AS card_numberEncrypted, b.encryptionKey
-    FROM Invoice i
-      INNER JOIN InvoiceLine il ON i.id = il.invoiceId AND SUBSTR(il.skuCode,0,4)<>'MISC'
-      INNER JOIN Shipment sp ON il.shipmentId = sp.id
-      INNER JOIN BillingInfo b ON b.invoiceId = i.id
-      INNER JOIN ShippingInfo s ON i.shippingInfoId = s.Id
-      INNER JOIN orderInfo o ON i.orderId = o.id
-      INNER JOIN orderLine ol ON il.orderLineId = ol.id
-      LEFT OUTER JOIN Lookup bbl ON b.ccType = bbl.code AND bbl.langType = -1 AND bbl.category = 'creditCardType'
-      LEFT OUTER JOIN Lookup bcl ON b.country = bcl.code AND bcl.langType = -1 AND bcl.category = 'country'
-      INNER JOIN Lookup bpl ON b.method = bpl.code AND bpl.langType = -1 AND bpl.category = 'paymentMethod'
-      INNER JOIN Lookup sml ON s.method = sml.code AND sml.langType = -1 AND sml.category = 'shippingMethod'
-      INNER JOIN Lookup scl ON s.country = scl.code AND scl.langType = -1 AND scl.category = 'country'
-      INNER JOIN YA_PROD_LANG pf ON ol.productId = pf.sku AND pf.lang_id = 1
-      LEFT OUTER JOIN YA_PROD_LANG pl ON ol.productId = pl.sku AND pl.lang_id = iLlang_id
+      bbl.meaning AS cardType, bpl.meaning AS paymentMethod, bcl.meaning AS bill_country, scl.meaning AS ship_country, sml.meaning AS shipMethod, ol.prod_id, pf.prod_subtitle_aka,
+	  b.cc_num_encrypted AS card_numberEncrypted, b.encryption_key
+    FROM invoice i
+      INNER JOIN invoice_line il ON i.id = il.invoice_id AND SUBSTR(il.sku,0,4)<>'MISC'
+      INNER JOIN shipment sp ON il.shipment_id = sp.id
+      INNER JOIN billing_info b ON b.invoice_id = i.id
+      INNER JOIN shipping_info s ON i.shipping_info_id = s.Id
+      INNER JOIN order_info o ON i.order_info_id = o.id
+      INNER JOIN order_line ol ON il.order_line_id = ol.id
+      LEFT OUTER JOIN lookup bbl ON b.cc_type = bbl.code AND bbl.lang_type = -1 AND bbl.category = 'creditCardType'
+      LEFT OUTER JOIN lookup bcl ON b.country = bcl.code AND bcl.lang_type = -1 AND bcl.category = 'country'
+      INNER JOIN lookup bpl ON b.method = bpl.code AND bpl.lang_type = -1 AND bpl.category = 'paymentMethod'
+      INNER JOIN lookup sml ON s.method = sml.code AND sml.lang_type = -1 AND sml.category = 'shippingMethod'
+      INNER JOIN lookup scl ON s.country = scl.code AND scl.lang_type = -1 AND scl.category = 'country'
+      INNER JOIN YA_PROD_LANG pf ON ol.prod_id = pf.sku AND pf.lang_id = 1
+      LEFT OUTER JOIN YA_PROD_LANG pl ON ol.prod_id = pl.sku AND pl.lang_id = iLlang_id
     WHERE i.id = iLinvoice_id
-      AND i.status <> 4
+      AND i.sts <> 4
       AND i.TYPE = 1
-    ORDER BY sp.id, il.skuCode;
+    ORDER BY sp.id, il.sku;
   END GetInvoiceEncrypted;
 
 END Pkg_Fe_Myaccountorderaccess;
 /
+ 
+REM END SS_ADM PKG_FE_MYACCOUNTORDERACCESS
