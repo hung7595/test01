@@ -20,7 +20,7 @@ BEGIN
 
 EXCEPTION
   WHEN NO_DATA_FOUND THEN
-    RETURN 0 ;
+    RETURN -1 ;
 
 END Fn_GetRatingID;
 /
