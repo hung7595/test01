@@ -143,14 +143,14 @@ IS
     SELECT
       p.sku,
       p.release_date,
-      pr1.cansell AS us_cansell,
-      pr1.enable AS us_enabled,
-      pr2.cansell AS tw_cansell,
-      pr2.enable AS tw_enabled,
+      pr1.is_can_sell AS us_cansell,
+      pr1.is_enabled AS us_enabled,
+      pr2.is_can_sell AS tw_cansell,
+      pr2.is_enabled AS tw_enabled,
       p.us_launch_date,
       p.us_launch_date,
-      pr1.displaypriority as us_priority,
-      pr2.displaypriority as tw_priority,
+      pr1.disp_priority as us_priority,
+      pr2.disp_priority as tw_priority,
       a.sku AS adult_sku,
       p.is_parent,
       NVL(ps1.sales_quantity_sum, 0),
@@ -162,8 +162,8 @@ IS
     FROM
       temp_table_sku s
       INNER JOIN ya_product p ON p.sku = s.sku
-	  LEFT JOIN productregion pr1 ON pr1.productId=s.sku AND pr1.regionId=1
-	  LEFT JOIN productregion pr2 ON pr2.productId=s.sku AND pr2.regionId=7
+	  LEFT JOIN prod_region pr1 ON pr1.prod_id=s.sku AND pr1.region_id=1
+	  LEFT JOIN prod_region pr2 ON pr2.prod_id=s.sku AND pr2.region_id=7
       LEFT OUTER JOIN ya_adult_product a ON p.sku = a.sku
       LEFT OUTER JOIN ya_prod_score ps1 ON
         p.sku = ps1.sku
@@ -182,17 +182,17 @@ IS
 
     OPEN rcPresult2 FOR
     SELECT
-      b.productid,
-      b.availability,
-      b.originid
-    FROM backend_adm.ProductAvailability b
+      b.prod_id,
+      b.avlb,
+      b.origin_id
+    FROM backend_adm.prod_avlb b
     WHERE
-      b.productid IN
+      b.prod_id IN
         (
           SELECT t.sku
           FROM temp_table_baseItem t
         )
-      AND b.regionid IN (1, 7)
+      AND b.region_id IN (1, 7)
       AND b.category = 1;
 
     -- MC - Asian Film Award
@@ -207,18 +207,18 @@ IS
     -- VBE phrase 2
     OPEN rcPresult4 FOR
     SELECT
-      pr1.productid,
+      pr1.prod_id,
       CASE
-        WHEN pr1.saleprice IS NOT NULL AND SYSDATE BETWEEN pr1.salePriceStart AND pr1.salePriceEnd THEN pr1.saleprice
-        WHEN pr1.listprice IS NOT NULL THEN pr1.listprice
+        WHEN pr1.sale_price IS NOT NULL AND SYSDATE BETWEEN pr1.sale_price_start AND pr1.sale_price_end THEN pr1.sale_price
+        WHEN pr1.list_price IS NOT NULL THEN pr1.list_price
         ELSE 9999
       END,
-      pr1.regionid
-    FROM backend_adm.productregion pr1
+      pr1.region_id
+    FROM backend_adm.prod_region pr1
     WHERE
-      pr1.productid IN (SELECT t.sku FROM temp_table_baseItem t)
-      AND pr1.regionid IN (1,7)
-      AND pr1.categoryId = 1;
+      pr1.prod_id IN (SELECT t.sku FROM temp_table_baseItem t)
+      AND pr1.region_id IN (1,7)
+      AND pr1.category_id = 1;
 
     -- reset the queue if no more item need to be udpated
     SELECT COUNT(1) INTO iLtemp FROM temp_table_baseItem;

@@ -1,4 +1,7 @@
-CREATE OR REPLACE package Pkg_bo_ProductDalc
+
+REM START SS_ADM PKG_BO_PRODUCTDALC
+
+  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_BO_PRODUCTDALC" 
 AS
   TYPE refCur IS ref CURSOR;
   -- --- cross selling 2005 ---+
@@ -365,8 +368,7 @@ AS
   );
 END Pkg_bo_ProductDalc;
 /
-
-CREATE OR REPLACE package body Pkg_bo_ProductDalc
+CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_BO_PRODUCTDALC" 
 IS
 
   PROCEDURE GetProductAwardsRawInfos (
@@ -1088,33 +1090,33 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
     FROM
       (
       SELECT
-        pr.regionId as region_id,
+        pr.region_id as region_id,
         -- countryIds are to be obtained FROM xml
-        NVL(pr.cansell, 'N') as can_sell,
-        NVL(pr.enable, 'N') as enable,
-        NVL(pr.supplierId, -1)  as supplier_id,
-        NVL(pr.listPrice,9999) as list_price, --4
+        NVL(pr.is_can_sell, 'N') as can_sell,
+        NVL(pr.is_enabled, 'N') as enable,
+        NVL(pr.supplier_id, -1)  as supplier_id,
+        NVL(pr.list_price,9999) as list_price, --4
         -- compute isOnSale IN app
-        NVL(pr.salePrice,9999) as sale_price,
-        NVL(pr.salePriceStart, dtLnullDate) as sale_start,
-        NVL(pr.salePriceEnd, dtLnullDate) as sale_end,
-        NVL(pr.preorder, 'N') as preorder,
-        NVL(pr.preorderStart, dtLnullDate) as preorder_start, --9
-        NVL(pr.preorderEnd, dtLnullDate) as preorder_end,
-        CAST(NVL(pr.preorderBufferDay, -1) as int) as preorder_buffer_day,
-        NVL(pr.preorderDeadline, dtLnullDate) as preorder_date,
-        NVL(pa.availability, 60) as product_availability,
-        pr.productId as sku, --14
+        NVL(pr.sale_price,9999) as sale_price,
+        NVL(pr.sale_price_start, dtLnullDate) as sale_start,
+        NVL(pr.sale_price_end, dtLnullDate) as sale_end,
+        NVL(pr.is_preorder, 'N') as preorder,
+        NVL(pr.preorder_start, dtLnullDate) as preorder_start, --9
+        NVL(pr.preorder_end, dtLnullDate) as preorder_end,
+        CAST(NVL(pr.preorder_buffer_day, -1) as int) as preorder_buffer_day,
+        NVL(pr.preorder_deadline, dtLnullDate) as preorder_date,
+        NVL(pa.avlb, 60) as product_availability,
+        pr.prod_id as sku, --14
         pr.sequence
       FROM
-        productRegion pr,
-        productAvailability pa
-      WHERE pr.productId IN (iPsku1, iPsku2, iPsku3, iPsku4, iPsku5, iPsku6, iPsku7, iPsku8, iPsku9, iPsku10, iPsku11, iPsku12, iPsku13, iPsku14, iPsku15, iPsku16, iPsku17, iPsku18, iPsku19, iPsku20)
-        AND pr.originId = 1 -- us
-        AND pr.categoryId = 1 -- b2c
-        AND pa.productId = pr.productId
-        AND pa.regionId = pr.regionId
-        AND pa.originId = 1 -- us
+        prod_region pr,
+        prod_avlb pa
+      WHERE pr.prod_id IN (iPsku1, iPsku2, iPsku3, iPsku4, iPsku5, iPsku6, iPsku7, iPsku8, iPsku9, iPsku10, iPsku11, iPsku12, iPsku13, iPsku14, iPsku15, iPsku16, iPsku17, iPsku18, iPsku19, iPsku20)
+        AND pr.origin_id = 1 -- us
+        AND pr.category_id = 1 -- b2c
+        AND pa.prod_id = pr.prod_id
+        AND pa.region_id = pr.region_id
+        AND pa.origin_id = 1 -- us
         AND pa.category = 1 -- b2c
       ) r
     INNER JOIN
@@ -1319,34 +1321,34 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
     FROM
       (
       SELECT
-        pr.regionId as region_id,
+        pr.region_id as region_id,
         -- countryIds are to be obtained FROM xml
-        NVL(pr.cansell, 'N') as can_sell,
-        NVL(pr.enable, 'N') as enable,
-        NVL(pr.supplierId, -1)  as supplier_id,
-        NVL(pr.listPrice,9999) as list_price, --4
+        NVL(pr.is_can_sell, 'N') as can_sell,
+        NVL(pr.is_enabled, 'N') as enable,
+        NVL(pr.supplier_id, -1)  as supplier_id,
+        NVL(pr.list_price,9999) as list_price, --4
         -- compute isOnSale IN app,
-        NVL(pr.salePrice,9999) as sale_price,
-        NVL(pr.salePriceStart, dtLnullDate) as sale_start,
-        NVL(pr.salePriceEnd, dtLnullDate) as sale_end,
-        NVL(pr.preorder, 'N') as preorder,
-        NVL(pr.preorderStart, dtLnullDate) as preorder_start, --9
-        NVL(pr.preorderEnd, dtLnullDate) as preorder_end,
-        CAST(NVL(pr.preorderBufferDay, -1) as int) as preorder_buffer_day,
-        NVL(pr.preorderDeadline, dtLnullDate) as preorder_date,
-        NVL(pa.availability, 60) as product_availability,
-        pr.productId as sku, --14
+        NVL(pr.sale_price,9999) as sale_price,
+        NVL(pr.sale_price_start, dtLnullDate) as sale_start,
+        NVL(pr.sale_price_end, dtLnullDate) as sale_end,
+        NVL(pr.is_preorder, 'N') as preorder,
+        NVL(pr.preorder_start, dtLnullDate) as preorder_start, --9
+        NVL(pr.preorder_end, dtLnullDate) as preorder_end,
+        CAST(NVL(pr.preorder_buffer_day, -1) as int) as preorder_buffer_day,
+        NVL(pr.preorder_deadline, dtLnullDate) as preorder_date,
+        NVL(pa.avlb, 60) as product_availability,
+        pr.prod_id as sku, --14
         pr.sequence
       FROM
-        productRegion pr,
-        productAvailability pa
+        prod_region pr,
+        prod_avlb pa
       WHERE
-        pr.productId IN (iPsku1, iPsku2, iPsku3, iPsku4, iPsku5, iPsku6, iPsku7, iPsku8, iPsku9, iPsku10, iPsku11, iPsku12, iPsku13, iPsku14, iPsku15, iPsku16, iPsku17, iPsku18, iPsku19, iPsku20)
-        AND pr.originId = 7 -- tw
-        AND pr.categoryId = 1 -- b2c
-        AND pa.productId = pr.productId
-        AND pa.regionId = pr.regionId
-        AND pa.originId = 7 -- tw
+        pr.prod_id IN (iPsku1, iPsku2, iPsku3, iPsku4, iPsku5, iPsku6, iPsku7, iPsku8, iPsku9, iPsku10, iPsku11, iPsku12, iPsku13, iPsku14, iPsku15, iPsku16, iPsku17, iPsku18, iPsku19, iPsku20)
+        AND pr.origin_id = 7 -- tw
+        AND pr.category_id = 1 -- b2c
+        AND pa.prod_id = pr.prod_id
+        AND pa.region_id = pr.region_id
+        AND pa.origin_id = 7 -- tw
         AND pa.category = 1 -- b2c
       ) r
     INNER JOIN
@@ -1860,33 +1862,33 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
       FROM
         (
         SELECT
-          pr.regionId as region_id,
+          pr.region_id as region_id,
           -- countryIds are to be obtained FROM xml
-          NVL(pr.cansell, 'N') as can_sell,
-          NVL(pr.enable, 'N') as enable,
-          NVL(pr.supplierId, -1)  as supplier_id,
-          NVL(pr.listPrice,9999) as list_price, --4
+          NVL(pr.is_can_sell, 'N') as can_sell,
+          NVL(pr.is_enabled, 'N') as enable,
+          NVL(pr.supplier_id, -1)  as supplier_id,
+          NVL(pr.list_price,9999) as list_price, --4
           -- compute isOnSale IN app
-          NVL(pr.salePrice,9999) as sale_price,
-          NVL(pr.salePriceStart, dtLnullDate) as sale_start,
-          NVL(pr.salePriceEnd, dtLnullDate) as sale_end,
-          NVL(pr.preorder, 'N') as preorder,
-          NVL(pr.preorderStart, dtLnullDate) as preorder_start, --9
-          NVL(pr.preorderEnd, dtLnullDate) as preorder_end,
-          CAST(NVL(pr.preorderBufferDay, -1) as int) as preorder_buffer_day,
-          NVL(pr.preorderDeadline, dtLnullDate) as preorder_date,
-          NVL(pa.availability, 60) as product_availability,
-          pr.productId as sku, --14
+          NVL(pr.sale_price,9999) as sale_price,
+          NVL(pr.sale_price_start, dtLnullDate) as sale_start,
+          NVL(pr.sale_price_end, dtLnullDate) as sale_end,
+          NVL(pr.is_preorder, 'N') as preorder,
+          NVL(pr.preorder_start, dtLnullDate) as preorder_start, --9
+          NVL(pr.preorder_end, dtLnullDate) as preorder_end,
+          CAST(NVL(pr.preorder_buffer_day, -1) as int) as preorder_buffer_day,
+          NVL(pr.preorder_deadline, dtLnullDate) as preorder_date,
+          NVL(pa.avlb, 60) as product_availability,
+          pr.prod_id as sku, --14
           pr.sequence
         FROM
-          productRegion pr,
-          productAvailability pa
-        WHERE pr.productId = iPsku
-          AND pr.originId = 1 -- us
-          AND pr.categoryId = 1 -- b2c
-          AND pa.productId = pr.productId
-          AND pa.regionId = pr.regionId
-          AND pa.originId = 1 -- us
+          prod_region pr,
+          prod_avlb pa
+        WHERE pr.prod_id = iPsku
+          AND pr.origin_id = 1 -- us
+          AND pr.category_id = 1 -- b2c
+          AND pa.prod_id = pr.prod_id
+          AND pa.region_id = pr.region_id
+          AND pa.origin_id = 1 -- us
           AND pa.category = 1 -- b2c
         ) r
       INNER JOIN
@@ -2070,34 +2072,34 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
     FROM
       (
       SELECT
-        pr.regionId as region_id,
+        pr.region_id as region_id,
         -- countryIds are to be obtained FROM xml
-        NVL(pr.cansell, 'N') as can_sell,
-        NVL(pr.enable, 'N') as enable,
-        NVL(pr.supplierId, -1)  as supplier_id,
-        NVL(pr.listPrice,9999) as list_price, --4
+        NVL(pr.is_can_sell, 'N') as can_sell,
+        NVL(pr.is_enabled, 'N') as enable,
+        NVL(pr.supplier_id, -1)  as supplier_id,
+        NVL(pr.list_price,9999) as list_price, --4
         -- compute isOnSale IN app,
-        NVL(pr.salePrice,9999) as sale_price,
-        NVL(pr.salePriceStart, dtLnullDate) as sale_start,
-        NVL(pr.salePriceEnd, dtLnullDate) as sale_end,
-        NVL(pr.preorder, 'N') as preorder,
-        NVL(pr.preorderStart, dtLnullDate) as preorder_start, --9
-        NVL(pr.preorderEnd, dtLnullDate) as preorder_end,
-        CAST(NVL(pr.preorderBufferDay, -1) as int) as preorder_buffer_day,
-        NVL(pr.preorderDeadline, dtLnullDate) as preorder_date,
-        NVL(pa.availability, 60) as product_availability,
-        pr.productId as sku, --14
+        NVL(pr.sale_price,9999) as sale_price,
+        NVL(pr.sale_price_start, dtLnullDate) as sale_start,
+        NVL(pr.sale_price_end, dtLnullDate) as sale_end,
+        NVL(pr.is_preorder, 'N') as preorder,
+        NVL(pr.preorder_start, dtLnullDate) as preorder_start, --9
+        NVL(pr.preorder_end, dtLnullDate) as preorder_end,
+        CAST(NVL(pr.preorder_buffer_day, -1) as int) as preorder_buffer_day,
+        NVL(pr.preorder_deadline, dtLnullDate) as preorder_date,
+        NVL(pa.avlb, 60) as product_availability,
+        pr.prod_id as sku, --14
         pr.sequence
       FROM
-        productRegion pr,
-        productAvailability pa
+        prod_region pr,
+        prod_avlb pa
       WHERE
-        pr.productId = iPsku
-        AND pr.originId = 7 -- tw
-        AND pr.categoryId = 1 -- b2c
-        AND pa.productId = pr.productId
-        AND pa.regionId = pr.regionId
-        AND pa.originId = 7 -- tw
+        pr.prod_id = iPsku
+        AND pr.origin_id = 7 -- tw
+        AND pr.category_id = 1 -- b2c
+        AND pa.prod_id = pr.prod_id
+        AND pa.region_id = pr.region_id
+        AND pa.origin_id = 7 -- tw
         AND pa.category = 1 -- b2c
       ) r
     INNER JOIN
@@ -2564,15 +2566,15 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
     AND cs1.rating = 6
     AND cs1.related_sku IN
       (
-       SELECT pr.productId
-       FROM productregion pr,
-      productavailability pa
-      WHERE pr.productId = pa.productid
-	  AND pr.regionId=1
-      AND pr.enable = 'Y'
-      AND pa.originid = 1
+       SELECT pr.prod_id
+       FROM prod_region pr,
+      prod_avlb pa
+      WHERE pr.prod_id = pa.prod_id
+	  AND pr.region_id=1
+      AND pr.is_enabled = 'Y'
+      AND pa.origin_id = 1
       AND pa.category = 1
-      AND pa.availability < 60
+      AND pa.avlb < 60
        )
     UNION
     SELECT
@@ -2585,15 +2587,15 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
     AND cs2.rating not IN (0, 6)
     AND cs2.related_sku IN
       (
-      SELECT pr.productId
-      FROM  productregion pr,
-        productavailability pa
-      WHERE pr.productId = pa.productid
-	  AND pr.regionId=1
-      AND pr.enable = 'Y'
-      AND pa.originid = 1
+      SELECT pr.prod_id
+      FROM  prod_region pr,
+        prod_avlb pa
+      WHERE pr.prod_id = pa.prod_id
+	  AND pr.region_id=1
+      AND pr.is_enabled = 'Y'
+      AND pa.origin_id = 1
       AND pa.category = 1
-      AND pa.availability < 60
+      AND pa.avlb < 60
       )
       ORDER BY rating DESC
       ) cs
@@ -2616,15 +2618,15 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
     AND cs1.rating = 6
     AND cs1.related_sku IN
       (
-       SELECT pr.productId
-       FROM  productregion pr,
-         productavailability pa
-       WHERE pr.productId = pa.productid
-	   AND pr.regionId=1
-       AND pr.enable = 'Y'
-       AND pa.originid = 1
+       SELECT pr.prod_id
+       FROM  prod_region pr,
+         prod_avlb pa
+       WHERE pr.prod_id = pa.prod_id
+	   AND pr.region_id=1
+       AND pr.is_enabled = 'Y'
+       AND pa.origin_id = 1
        AND pa.category = 1
-       AND pa.availability < 60
+       AND pa.avlb < 60
        )
     UNION
     SELECT
@@ -2637,15 +2639,15 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
     AND cs2.rating not IN (0, 6)
     AND cs2.related_sku IN
       (
-      SELECT pr.productId
-      FROM productregion pr,
-           productavailability pa
-      WHERE	pr.productId = pa.productid
-	  AND pr.regionId=1
-      AND pr.enable = 'Y'
-      AND pa.originid = 1
+      SELECT pr.prod_id
+      FROM prod_region pr,
+           prod_avlb pa
+      WHERE	pr.prod_id = pa.prod_id
+	  AND pr.region_id=1
+      AND pr.is_enabled = 'Y'
+      AND pa.origin_id = 1
       AND pa.category = 1
-      AND pa.availability < 60
+      AND pa.avlb < 60
       )
       ORDER BY rating DESC
     ) cs
@@ -2667,15 +2669,15 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
     AND cs1.rating = 6
     AND cs1.related_sku IN
       (
-      SELECT pr.productId
-      FROM productregion pr,
-         productavailability pa
-      WHERE pr.productId = pa.productid
-	  AND   pr.regionId=1
-      AND	pr.enable = 'Y'
-      AND	pa.originid = 1
+      SELECT pr.prod_id
+      FROM prod_region pr,
+         prod_avlb pa
+      WHERE pr.prod_id = pa.prod_id
+	  AND   pr.region_id=1
+      AND	pr.is_enabled = 'Y'
+      AND	pa.origin_id = 1
       AND	pa.category = 1
-      AND	pa.availability < 60
+      AND	pa.avlb < 60
       )
     UNION
     SELECT
@@ -2688,15 +2690,15 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
     AND cs2.rating not IN (0, 6)
     AND cs2.related_sku IN
       (
-      SELECT pr.productId
-      FROM productregion pr,
-         productavailability pa
-      WHERE pr.productId = pa.productid
-	  AND   pr.regionId=1
-      AND	pr.enable = 'Y'
-      AND	pa.originid = 1
+      SELECT pr.prod_id
+      FROM prod_region pr,
+         prod_avlb pa
+      WHERE pr.prod_id = pa.prod_id
+	  AND   pr.region_id=1
+      AND	pr.is_enabled = 'Y'
+      AND	pa.origin_id = 1
       AND	pa.category = 1
-      AND	pa.availability < 60
+      AND	pa.avlb < 60
       )
       ORDER BY rating DESC
     ) cs
@@ -2730,15 +2732,15 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
          AND cs1.rating = 6
          AND cs1.related_sku IN
      (
-     SELECT pr.productId
-     FROM productregion pr,
-          productavailability pa
-     WHERE pr.productId = pa.productid
-	 AND pr.regionId=7
-     AND pr.enable = 'Y'
-     AND pa.originid = 7
+     SELECT pr.prod_id
+     FROM prod_region pr,
+          prod_avlb pa
+     WHERE pr.prod_id = pa.prod_id
+	 AND pr.region_id=7
+     AND pr.is_enabled = 'Y'
+     AND pa.origin_id = 7
      AND pa.category = 1
-     AND pa.availability < 60
+     AND pa.avlb < 60
      )
     UNION
     SELECT
@@ -2751,15 +2753,15 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
     AND cs2.rating not IN (0, 6)
     AND cs2.related_sku IN
             (
-            SELECT pr.productId
-            FROM productregion pr,
-                 productavailability pa
-            WHERE pr.productId = pa.productid
-			AND pr.regionId=7
-            AND pr.enable = 'Y'
-            AND pa.originid = 7
+            SELECT pr.prod_id
+            FROM prod_region pr,
+                 prod_avlb pa
+            WHERE pr.prod_id = pa.prod_id
+			AND pr.region_id=7
+            AND pr.is_enabled = 'Y'
+            AND pa.origin_id = 7
             AND pa.category = 1
-            AND pa.availability < 60
+            AND pa.avlb < 60
             )
           ORDER BY rating DESC
     ) cs
@@ -2781,15 +2783,15 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
       AND	cs1.rating = 6
       AND	cs1.related_sku IN
         (
-        SELECT pr.productId
-        FROM productregion pr,
-             productavailability pa
-        WHERE pr.productId = pa.productid
-		AND pr.regionId=7
-        AND pr.enable = 'Y'
-        AND pa.originid = 7
+        SELECT pr.prod_id
+        FROM prod_region pr,
+             prod_avlb pa
+        WHERE pr.prod_id = pa.prod_id
+		AND pr.region_id=7
+        AND pr.is_enabled = 'Y'
+        AND pa.origin_id = 7
         AND pa.category = 1
-        AND pa.availability < 60
+        AND pa.avlb < 60
         )
        UNION
        SELECT
@@ -2802,15 +2804,15 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
        AND cs2.rating not IN (0, 6)
        AND cs2.related_sku IN
          (
-         SELECT pr.productId
-         FROM productregion pr,
-              productavailability pa
-         WHERE pr.productId = pa.productid
-		 AND pr.regionId=7
-         AND pr.enable = 'Y'
-         AND pa.originid = 7
+         SELECT pr.prod_id
+         FROM prod_region pr,
+              prod_avlb pa
+         WHERE pr.prod_id = pa.prod_id
+		 AND pr.region_id=7
+         AND pr.is_enabled = 'Y'
+         AND pa.origin_id = 7
          AND pa.category = 1
-         AND pa.availability < 60
+         AND pa.avlb < 60
          )
       ORDER BY rating DESC
     ) cs
@@ -2831,15 +2833,15 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
     AND cs1.rating = 6
     AND cs1.related_sku IN
       (
-      SELECT pr.productId
-      FROM  productregion pr,
-          productavailability pa
-      WHERE pr.productId = pa.productid
-	  AND   pr.regionId=7
-      AND	pr.enable = 'Y'
-      AND	pa.originid = 7
+      SELECT pr.prod_id
+      FROM  prod_region pr,
+          prod_avlb pa
+      WHERE pr.prod_id = pa.prod_id
+	  AND   pr.region_id=7
+      AND	pr.is_enabled = 'Y'
+      AND	pa.origin_id = 7
       AND	pa.category = 1
-      AND	pa.availability < 60
+      AND	pa.avlb < 60
       )
     UNION
     SELECT
@@ -2852,14 +2854,14 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
     AND cs2.rating not IN (0, 6)
     AND cs2.related_sku IN
       (
-      SELECT pr.productId
-      FROM productregion pr,
-         productavailability pa
-      WHERE pr.productId = pa.productid
-      AND	pr.enable = 'Y'
-      AND	pa.originid = 7
+      SELECT pr.prod_id
+      FROM prod_region pr,
+         prod_avlb pa
+      WHERE pr.prod_id = pa.prod_id
+      AND	pr.is_enabled = 'Y'
+      AND	pa.origin_id = 7
       AND	pa.category = 1
-      AND	pa.availability < 60
+      AND	pa.avlb < 60
       )
       ORDER BY rating DESC
     ) cs
@@ -2893,15 +2895,15 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
      AND type_id IN ( iPdifferent_format_type1, iPdifferent_format_type2)
      AND cs.related_sku  IN
      (
-     SELECT pr.productId
-     FROM productregion pr,
- 	 productavailability pa
+     SELECT pr.prod_id
+     FROM prod_region pr,
+ 	 prod_avlb pa
      WHERE 1=1
-          AND pr.productId=pa.productId
- 	  AND pr.enable  = 'Y'
- 	  AND pa.regionId=1
- 	  AND pr.regionId=1
-          AND pa.availability < 60
+          AND pr.prod_id=pa.prod_id
+ 	  AND pr.is_enabled  = 'Y'
+ 	  AND pa.region_id=1
+ 	  AND pr.region_id=1
+          AND pa.avlb < 60
      );
 
     /*tw*/
@@ -2916,15 +2918,15 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
      AND type_id IN ( iPdifferent_format_type1, iPdifferent_format_type2)
      AND cs.related_sku  IN
      (
-     SELECT pr.productId
-     FROM productregion pr,
- 	 productavailability pa
+     SELECT pr.prod_id
+     FROM prod_region pr,
+ 	 prod_avlb pa
      WHERE 1=1
-          AND pr.productId=pa.productId
- 	  AND pr.enable = 'Y'
- 	  AND pr.regionId=7
- 	  AND pa.regionId=7
-          AND pa.availability < 60
+          AND pr.prod_id=pa.prod_id
+ 	  AND pr.is_enabled = 'Y'
+ 	  AND pr.region_id=7
+ 	  AND pa.region_id=7
+          AND pa.avlb < 60
        );
     RETURN;
   END GetCrossSellingDifferentFormat;
@@ -2965,14 +2967,14 @@ BEGIN
 iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,iPsku12,iPsku13,iPsku14,iPsku15,iPsku16,iPsku17,iPsku18,iPsku19,iPsku20)
   AND cs.type_id IN (iPdifferent_format_type1, iPdifferent_format_type2)
   AND cs.related_sku
-    IN (SELECT pr.productId
-		FROM productregion pr,
-	       productavailability pa
-		WHERE pr.productId=pa.productId
-		AND pr.regionId=1
-		AND pa.regionId=1
-		AND pr.enable = 'Y'
-		AND	pa.availability  < 60
+    IN (SELECT pr.prod_id
+		FROM prod_region pr,
+	       prod_avlb pa
+		WHERE pr.prod_id=pa.prod_id
+		AND pr.region_id=1
+		AND pa.region_id=1
+		AND pr.is_enabled = 'Y'
+		AND	pa.avlb  < 60
 		);
 
 
@@ -2984,14 +2986,14 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
 iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,iPsku12,iPsku13,iPsku14,iPsku15,iPsku16,iPsku17,iPsku18,iPsku19,iPsku20)
   AND cs.type_id IN (iPdifferent_format_type1, iPdifferent_format_type2)
   AND cs.related_sku
-    IN (SELECT pr.productId
-		FROM productregion pr,
-	       productavailability pa
-		WHERE pr.productId=pa.productId
-		AND pr.regionId=1
-		AND pa.regionId=1
-		AND pr.enable = 'Y'
-		AND	pa.availability  < 60);
+    IN (SELECT pr.prod_id
+		FROM prod_region pr,
+	       prod_avlb pa
+		WHERE pr.prod_id=pa.prod_id
+		AND pr.region_id=1
+		AND pa.region_id=1
+		AND pr.is_enabled = 'Y'
+		AND	pa.avlb  < 60);
 
   RETURN;
   END GetCrossDifferentFormats;
@@ -3481,22 +3483,22 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
         SELECT dcs.sectionid, dcs.crossSellsku
         FROM
           dm_crossSell_sku dcs,
-          productavailability pa,
-          productRegion pr
+          prod_avlb pa,
+          prod_region pr
         WHERE
           dcs.sku = iPsku
-          AND pa.productid = dcs.crossSellsku
-          AND pr.productId = pa.productId
-          AND pr.regionId = pa.regionId
-          AND pr.originId = pa.originId
-          AND pr.categoryId = pa.category
-          AND pr.enable = 'Y'
-          AND pr.cansell = 'Y'
-          AND pa.originid = 1 -- us
-          AND pa.regionId = 1 -- us region
+          AND pa.prod_id = dcs.crossSellsku
+          AND pr.prod_id = pa.prod_id
+          AND pr.region_id = pa.region_id
+          AND pr.origin_id = pa.origin_id
+          AND pr.category_id = pa.category
+          AND pr.is_enabled = 'Y'
+          AND pr.is_can_sell = 'Y'
+          AND pa.origin_id = 1 -- us
+          AND pa.region_id = 1 -- us region
           AND pa.category = 1 -- b2c
-          AND pa.availability < 60
-          AND dcs.originId = pa.originid
+          AND pa.avlb < 60
+          AND dcs.originId = pa.origin_id
         ORDER BY dcs.rank ASC, dcs.crossSellSku DESC
       ) r
       where ROWNUM <=100
@@ -3518,21 +3520,21 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
           (SELECT 1
            FROM
              ya_product_artist i_par,
-             productavailability i_pa,
-             productRegion i_pr
+             prod_avlb i_pa,
+             prod_region i_pr
            WHERE
              i_par.artist_id = dca.crossSellArtistId
-             AND i_pa.productid = i_par.sku
-             AND i_pr.productId = i_pa.productId
-             AND i_pr.regionId = i_pa.regionId
-             AND i_pr.originId = i_pa.originId
-             AND i_pr.categoryId = i_pa.category
-             AND i_pr.enable = 'Y'
-             AND i_pr.cansell = 'Y'
-             AND i_pa.originid = dca.originid
-             AND i_pa.regionId = dca.originid
+             AND i_pa.prod_id = i_par.sku
+             AND i_pr.prod_id = i_pa.prod_id
+             AND i_pr.region_id = i_pa.region_id
+             AND i_pr.origin_id = i_pa.origin_id
+             AND i_pr.category_id = i_pa.category
+             AND i_pr.is_enabled = 'Y'
+             AND i_pr.is_can_sell = 'Y'
+             AND i_pa.origin_id = dca.originid
+             AND i_pa.region_id = dca.originid
              AND i_pa.category = 1 -- b2c
-             AND i_pa.availability < 60
+             AND i_pa.avlb < 60
              AND ROWNUM = 1
            )
       ORDER BY
@@ -3552,22 +3554,22 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
         SELECT dcs.sectionid, dcs.crossSellsku
         FROM
           dm_crossSell_sku dcs,
-          productavailability pa,
-          productRegion pr
+          prod_avlb pa,
+          prod_region pr
         WHERE
           dcs.sku = iPsku
-          AND pa.productid = dcs.crossSellsku
-          AND pr.productId = pa.productId
-          AND pr.regionId = pa.regionId
-          AND pr.originId = pa.originId
-          AND pr.categoryId = pa.category
-          AND pr.enable = 'Y'
-          AND pr.cansell = 'Y'
-          AND pa.originid = 7 -- global
-          AND pa.regionId = 7 -- global region
+          AND pa.prod_id = dcs.crossSellsku
+          AND pr.prod_id = pa.prod_id
+          AND pr.region_id = pa.region_id
+          AND pr.origin_id = pa.origin_id
+          AND pr.category_id = pa.category
+          AND pr.is_enabled = 'Y'
+          AND pr.is_can_sell = 'Y'
+          AND pa.origin_id = 7 -- global
+          AND pa.region_id = 7 -- global region
           AND pa.category = 1 -- b2c
-          AND pa.availability < 60
-          AND dcs.originId = pa.originid
+          AND pa.avlb < 60
+          AND dcs.originId = pa.origin_id
         ORDER BY dcs.rank ASC, dcs.crossSellSku DESC
       ) r
       where ROWNUM <=100
@@ -3589,21 +3591,21 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
           (SELECT 1
            FROM
              ya_product_artist i_par,
-             productavailability i_pa,
-             productRegion i_pr
+             prod_avlb i_pa,
+             prod_region i_pr
            WHERE
              i_par.artist_id = dca.crossSellArtistId
-             AND i_pa.productid = i_par.sku
-             AND i_pr.productId = i_pa.productId
-             AND i_pr.regionId = i_pa.regionId
-             AND i_pr.originId = i_pa.originId
-             AND i_pr.categoryId = i_pa.category
-             AND i_pr.enable = 'Y'
-             AND i_pr.cansell = 'Y'
-             AND i_pa.originid = dca.originid
-             AND i_pa.regionId = dca.originid
+             AND i_pa.prod_id = i_par.sku
+             AND i_pr.prod_id = i_pa.prod_id
+             AND i_pr.region_id = i_pa.region_id
+             AND i_pr.origin_id = i_pa.origin_id
+             AND i_pr.category_id = i_pa.category
+             AND i_pr.is_enabled = 'Y'
+             AND i_pr.is_can_sell = 'Y'
+             AND i_pa.origin_id = dca.originid
+             AND i_pa.region_id = dca.originid
              AND i_pa.category = 1 -- b2c
-             AND i_pa.availability < 60
+             AND i_pa.avlb < 60
              AND ROWNUM = 1
            )
       ORDER BY
@@ -3616,4 +3618,5 @@ iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,iPsku11,i
 
 END Pkg_bo_ProductDalc;
 /
-
+ 
+REM END SS_ADM PKG_BO_PRODUCTDALC
