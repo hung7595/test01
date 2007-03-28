@@ -3324,7 +3324,7 @@ PROCEDURE GetShadowOrderWithWarranty (
       INNER JOIN backend_adm.shipping_info si ON
         oi.id = si.order_info_id
       INNER JOIN backend_adm.billing_info bi ON
-        oi.id = bi.order_info_id
+        bi.id = si.order_info_id
     WHERE oi.id = iLorder_id;
 
     RETURN;
