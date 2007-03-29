@@ -199,12 +199,29 @@ AS
     cPcoupon_code IN VARCHAR2
   )
   AS
+    cLcoupon_code VARCHAR2(8);
+    iLcount INT;
   BEGIN
-   INSERT INTO ya_coupon
+    IF cPcoupon_code IS NULL THEN
+      -- Generate Coupon
+      SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO cLcoupon_code FROM dual;
+
+      -- Make sure unique coupon code
+      SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = cLcoupon_code;
+      WHILE (iLcount = 1)
+      LOOP
+		    SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO cLcoupon_code FROM dual;
+		    SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = cLcoupon_code;
+      END LOOP;
+    ELSE
+      cLcoupon_code := cPcoupon_code;
+    END IF;
+      
+    INSERT INTO ya_coupon
       (shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value,expiration_date, all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger)
-   VALUES
-      (cPshopper_id, cPcoupon_code, 'YS New Customer Coupon 060711', 'YesStyle New Customer US$5 Coupon', 5, to_date('2007/09/30', 'yyyy/mm/dd'), 'O', 'N', 1, 10, 5);
-   COMMIT;
+    VALUES
+      (cPshopper_id, cLcoupon_code, 'YS New Customer Coupon 060711', 'YesStyle New Customer US$5 Coupon', 5, to_date('2007/09/30', 'yyyy/mm/dd'), 'O', 'N', 1, 10, 5);
+    COMMIT;
   END CreateNewShopperCoupon;
 
   PROCEDURE CreateNewShopperCoupon_woCode (
