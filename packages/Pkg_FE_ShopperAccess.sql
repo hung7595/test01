@@ -68,6 +68,7 @@ AS
         SELECT shopper_id
         FROM ya_session
         WHERE session_id = cPsession_id
+        AND member_type <> 3
       );
     RETURN;
   END GetShopperDataBySessionId;
@@ -91,7 +92,8 @@ AS
       member_type,
       NVL(anonymous, 'Y')
     FROM ya_shopper
-    WHERE shopper_id = cPshopper_id;
+    WHERE shopper_id = cPshopper_id
+    AND member_type <> 3;
     RETURN;
   END GetShopperDataByShopperId;
 
@@ -114,7 +116,9 @@ AS
       nickname,
       NVL(member_type, 1)
     FROM ya_shopper
-    WHERE email = cPemail;
+--    WHERE email = cPemail;
+    WHERE lower(email) = lower(cPemail)
+    AND member_type <> 3;
     RETURN;
   END GetShopperDataByEmail;
 
