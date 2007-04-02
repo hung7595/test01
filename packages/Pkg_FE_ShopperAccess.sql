@@ -68,8 +68,8 @@ AS
         SELECT shopper_id
         FROM ya_session
         WHERE session_id = cPsession_id
-        AND member_type <> 3
-      );
+      )
+    AND member_type <> 3;
     RETURN;
   END GetShopperDataBySessionId;
 
