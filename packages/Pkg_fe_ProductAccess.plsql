@@ -234,6 +234,11 @@ AS
     iPgroupId out INT
   );
 
+  PROCEDURE GetBargainSuppInfoData (
+    iPsite_id		IN	INT,
+    curPgetBargainSuppInfo	OUT	refCur
+  );
+  
   -- YesStyle
   PROCEDURE GetPublisherProductGroup (
     iPpublisherId IN INT,
@@ -2112,6 +2117,24 @@ END;
     return;
   END GetGroupIdByAccountId;
 
+  PROCEDURE GetBargainSuppInfoData(
+    iPsite_id IN INT,
+    curPgetBargainSuppInfo OUT refCur
+  )
+  AS
+  BEGIN
+    OPEN curPgetBargainSuppInfo FOR
+    SELECT
+      bsi.DEPT_ID AS DEPT_ID, bsi.PROD_COUNT AS PROD_COUNT, bsi.MAX_DISCOUNT AS MAX_DISCOUNT
+    FROM
+      ya_bargain_supp_info bsi
+    WHERE
+      bsi.SITE_ID = iPsite_id;
+      
+    return;
+  END GetBargainSuppInfoData;
+  
+  
   PROCEDURE GetPublisherProductGroup (
     iPpublisherId IN INT,
     iPlangId IN INT,
