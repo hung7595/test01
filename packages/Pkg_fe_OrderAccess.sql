@@ -3314,7 +3314,7 @@ PROCEDURE GetShadowOrderWithWarranty (
     ORDER BY ol.id;
 
     OPEN curPresult3 FOR
-    SELECT /*+ INDEX (SI IX_SHIPPINGINFO_2) */
+    SELECT /*+ INDEX(SI IX_SHIPPINGINFO_2 BI IX_BILLINGINFO_2) */
       oi.origin_order_id,
       oi.sales_id,
       oi.origin_id,
