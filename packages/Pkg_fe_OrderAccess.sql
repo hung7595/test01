@@ -3377,12 +3377,10 @@ PROCEDURE GetShadowOrderWithWarranty (
       bi.encryption_key,
       bi.cc_num_encrypted
     FROM
-      backend_adm.order_info oi
-      INNER JOIN backend_adm.shipping_info si ON
-        oi.id = si.order_info_id
-      INNER JOIN backend_adm.billing_info bi ON
-        bi.order_info_id = si.order_info_id
-    WHERE oi.id = iLorder_id;
+      backend_adm.order_info oi, backend_adm.shipping_info si, backend_adm.billing_info bi
+    WHERE oi.id = iLorder_id
+    AND oi.id = si.order_info_id
+    AND si.order_info_id = bi.order_info_id;
 
     RETURN;
   END GetOrderFromBackend;
