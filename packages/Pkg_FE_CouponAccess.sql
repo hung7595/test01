@@ -52,6 +52,10 @@ AS
     iPsite_id IN INT,
     curPresult OUT refCur
   );
+  PROCEDURE CreateYSSurveyCoupon (
+    cPshopper_id IN CHAR,
+    curPresult OUT refCur
+  );
 END Pkg_FE_CouponAccess;
 /
 CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_COUPONACCESS" 
@@ -238,7 +242,7 @@ AS
 		-- Make sure unique coupon code
 		SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
 		WHILE (iLcount = 1)
-			LOOP
+			LOOP     
 					SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO iLcoupon_code FROM dual;
 					SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
 			END LOOP;
@@ -282,6 +286,40 @@ AS
 		)
 		AND (((site_id = iPsite_id or site_id=99) and iPsite_id not in (10)) or site_id = iPsite_id);
 	END GetShopperCoupon;
+	
+	PROCEDURE CreateYSSurveyCoupon (
+    cPshopper_id IN CHAR,
+    curPresult OUT refCur
+  )
+  AS
+		iLcount INT;
+		iLcoupon_code VARCHAR2(13);
+  BEGIN
+		-- Generate Coupon
+		SELECT 'YSPOLL_' || cast(dbms_random.string('U', 6) AS VARCHAR2(6)) INTO iLcoupon_code FROM dual;
+
+		-- Make sure unique coupon code
+		SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
+		WHILE (iLcount = 1)
+			LOOP     
+					SELECT 'YSPOLL_' || cast(dbms_random.string('U', 6) AS VARCHAR2(6)) INTO iLcoupon_code FROM dual;
+					SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
+			END LOOP;
+
+		-- Insert data into table
+
+		INSERT INTO ya_coupon
+			(shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value,expiration_date, all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, create_date)
+		VALUES
+			(cPshopper_id, iLcoupon_code, 'YesStyle.com Survey Coupon 2007', 'YesStyle.com Survey US$5 Coupon', 5, sysdate +30, 'N', 'N', 1, 10, 5, 'frontend', SYSDATE);
+
+		-- Retur Result
+		OPEN curPresult FOR
+	    SELECT iLcoupon_code as coupon_code FROM dual;
+
+		COMMIT;
+		RETURN;
+  END CreateYSSurveyCoupon;
 
 END Pkg_FE_CouponAccess;
 /
