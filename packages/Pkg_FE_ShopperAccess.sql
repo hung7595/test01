@@ -41,6 +41,10 @@ AS
     cPpassword IN VARCHAR2,
     cPresult OUT CHAR
   );
+   PROCEDURE AddShopperRegisterSiteId (
+    cPshopper_id IN CHAR,
+    cPsiteId IN INT
+  );
 END Pkg_FE_ShopperAccess;
 /
 
@@ -236,6 +240,44 @@ AS
       END;
     END IF;
   END RegisterNewShopper;
+  PROCEDURE AddShopperRegisterSiteId (
+    cPshopper_id IN CHAR,
+    cPsiteId IN INT
+  )
+  AS
+    iLtemp INT := 0;
+  BEGIN
+    BEGIN
+      SELECT 1 INTO iLtemp FROM ya_customer_profile WHERE shopper_id = cPshopper_id;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        iLtemp := 0;
+    END;
+
+    IF iLtemp = 0 THEN -- Email Not Exist
+      BEGIN
+        INSERT INTO ya_customer_profile
+          (
+            shopper_id,
+            register_site_id,
+            created_datetime
+          )
+        VALUES
+          (
+            cPshopper_id,
+            cPsiteId,
+            SYSDATE
+          );
+
+
+        IF sqlcode = 0 THEN
+          COMMIT;
+        ELSE
+          ROLLBACK;
+        END IF;
+      END;
+    END IF;
+  END AddShopperRegisterSiteId;
 END Pkg_FE_ShopperAccess;
 /
 
