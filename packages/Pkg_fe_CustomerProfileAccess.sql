@@ -23,6 +23,16 @@ AS
     iPresidence_place		IN	INT		DEFAULT NULL,
     iPsite_id			IN	INT		DEFAULT 99
   );
+   PROCEDURE UpdateCustomerProfile1 (
+    cPshopper_id 		IN	CHAR,
+    dtPbirthday			IN	CHAR		DEFAULT NULL,
+    iPeducation_level		IN	INT 		DEFAULT NULL,
+    iPannual_income		IN	INT		DEFAULT NULL,
+    iPgender			IN 	INT		DEFAULT NULL,
+    iPethnicity			IN	INT		DEFAULT NULL,
+    iPresidence_place		IN	INT		DEFAULT NULL,
+    iPsite_id			IN	INT		DEFAULT 99
+  );
 
   PROCEDURE InsertCustomerProfileInfo (
     cPshopper_id 		IN	CHAR,
@@ -163,6 +173,47 @@ IS
     END IF;
   COMMIT;
   END UpdateCustomerProfile;
+  
+  PROCEDURE UpdateCustomerProfile1 (
+    cPshopper_id 		IN	CHAR,
+    dtPbirthday			IN	CHAR		DEFAULT NULL,
+    iPeducation_level		IN	INT 		DEFAULT NULL,
+    iPannual_income		IN	INT		DEFAULT NULL,
+    iPgender			IN 	INT		DEFAULT NULL,
+    iPethnicity			IN	INT		DEFAULT NULL,
+    iPresidence_place		IN	INT		DEFAULT NULL,
+    iPsite_id			IN	INT		DEFAULT 99
+  )
+  AS
+    iLProfileExist INT;
+  BEGIN
+    BEGIN
+    	SELECT 1 INTO iLProfileExist FROM ya_customer_profile WHERE shopper_id = cPshopper_id;
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+      iLProfileExist := -1;
+    END;   
+
+    IF iLProfileExist > 0 THEN
+      UPDATE ya_customer_profile SET
+        birthday = TO_DATE(dtPbirthday,'yyyy/mm/dd'),
+        education_level = iPeducation_level,
+        annual_income = iPannual_income,
+        gender = iPgender,
+        ethnicity = iPethnicity,
+        residence_place = iPresidence_place,
+        updated_datetime = sysdate
+      WHERE shopper_id = cPshopper_id;
+      
+    ELSE
+      INSERT INTO ya_customer_profile
+	(shopper_id, birthday, education_level, annual_income, gender, ethnicity,
+         residence_place, register_site_id, created_datetime, updated_datetime)
+      VALUES
+        (cPshopper_id, dtPbirthday, iPeducation_level, iPannual_income, iPgender, iPethnicity,
+         iPresidence_place, iPsite_id, sysdate(), sysdate());
+    END IF;
+  COMMIT;
+  END UpdateCustomerProfile1;
 
   PROCEDURE InsertCustomerProfileInfo (
     cPshopper_id 		IN	CHAR,
