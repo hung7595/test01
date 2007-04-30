@@ -209,7 +209,7 @@ IS
 	(shopper_id, birthday, education_level, annual_income, gender, ethnicity,
          residence_place, register_site_id, created_datetime, updated_datetime)
       VALUES
-        (cPshopper_id, dtPbirthday, iPeducation_level, iPannual_income, iPgender, iPethnicity,
+        (cPshopper_id, TO_DATE(dtPbirthday,'yyyy/mm/dd'), iPeducation_level, iPannual_income, iPgender, iPethnicity,
          iPresidence_place, iPsite_id, sysdate(), sysdate());
     END IF;
   COMMIT;
