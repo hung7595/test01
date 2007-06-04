@@ -504,7 +504,7 @@ END;
     iPtype IN INT
   )
 AS
-  iLsql VARCHAR2(500);
+  iLsql VARCHAR2(1000);
 BEGIN
   iLsql := 'DELETE FROM ya_new_basket WHERE shopper_id = '''|| cPshopperId
     ||''' AND site_id = '|| CAST(iPsiteId AS nvarchar2)
