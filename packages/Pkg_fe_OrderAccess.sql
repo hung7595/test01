@@ -479,6 +479,21 @@ PROCEDURE InsertPaypalOrderXml (
     cPcurrency IN CHAR
   );
 
+  /* for cvc project*/
+  PROCEDURE UpdatePaymentInfo (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    cPcc_uid IN CHAR,
+    nvcPcust_comment IN NVARCHAR2,
+    nvcPbank_name IN NVARCHAR2,
+    nvcPbank_phone IN NVARCHAR2
+  );
+
+  PROCEDURE GetShopperIdByCcUId (
+    cPshopper_id OUT CHAR,
+    cPcc_uid IN CHAR
+  );
+  
 END Pkg_Fe_Orderaccess;
 /
 
@@ -5261,7 +5276,51 @@ PROCEDURE GetShadowOrderWithWarranty (
 
     RETURN;
   END UpdateCheckOutCurrency;
-END Pkg_Fe_Orderaccess;
+  
+  PROCEDURE UpdatePaymentInfo (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    cPcc_uid IN CHAR,
+    nvcPcust_comment IN NVARCHAR2,
+    nvcPbank_name IN NVARCHAR2,
+    nvcPbank_phone IN NVARCHAR2
+  )
+  AS
+  BEGIN
+    UPDATE ya_checkout_data
+    SET
+      cc_uid = cPcc_uid,
+      customer_comment = nvcPcust_comment,
+      bank_name = nvcPbank_name,
+      bank_phone = nvcPbank_phone,
+      last_updated_datetime = SYSDATE()
+    WHERE
+      shopper_id = cPshopper_id
+      AND site_id = iPsite_id;
+
+  END UpdatePaymentInfo;  
+
+  PROCEDURE GetShopperIdByCcUId (
+    cPshopper_id OUT CHAR,
+    cPcc_uid IN CHAR
+  )
+  AS
+  BEGIN
+    BEGIN
+      SELECT
+        shopper_id INTO cPshopper_id
+      FROM
+        ya_checkout_data
+      WHERE
+        cc_uid = cPcc_uid;
+
+        EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+          cPshopper_id := null;
+    END;
+  END GetShopperIdByCcUId;    
+
+  END Pkg_Fe_Orderaccess;
 /
  
 REM END SS_ADM PKG_FE_ORDERACCESS
