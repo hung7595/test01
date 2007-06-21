@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE Pkg_fe_asso AS
+create or replace PACKAGE Pkg_fe_asso AS
 
 TYPE cur_return IS REF CURSOR;
 TYPE cur_asso IS REF CURSOR RETURN YA_ASSOCIATE%ROWTYPE;
@@ -381,12 +381,13 @@ PROCEDURE sp_fe_asso_selOrderByLid
 );
 
 END Pkg_fe_asso;
+
+
 /
 
 
 
-
-CREATE OR REPLACE PACKAGE BODY Pkg_fe_asso AS
+create or replace PACKAGE BODY Pkg_fe_asso AS
 
 
 PROCEDURE sp_fe_asso_genLinkCode
@@ -632,13 +633,15 @@ PROCEDURE sp_fe_asso_insAsso
 	oriPaymentOption INT;
 	cSsnApproved CHAR(1);
   iLassociateId int;
+  iLcommissionId int;
 BEGIN
 
 SELECT COUNT(*) INTO iCount FROM YA_ASSOCIATE WHERE shopper_id=cShopperId AND site_id=iSiteId;
 iLassociateId := iAssociateId;
+iLcommissionId := 13;
 IF (iCount<1) THEN
 	cSsnApproved := 'N';
-  
+
   if (iLassociateId<1) then
     select SEQ_ASSOCIATE.nextval into iLassociateId from dual;
   end if;
@@ -660,7 +663,8 @@ IF (iCount<1) THEN
 		payment_option, comm_lang,
 		news_pref, join_date,
 		paypal_email, ssn_approved,
-		lang_id, associate_id
+		lang_id, associate_id,
+		commission_id
 	)
 	VALUES
 	(
@@ -679,7 +683,8 @@ IF (iCount<1) THEN
 		iPaymentOption, iCommLang,
 		cNewsPref, (SYSDATE),
 		cPaypalEmail, cSsnApproved,
-		iLangId, iLassociateId
+		iLangId, iLassociateId,
+		iLcommissionId
 	);
 
 ELSE
@@ -730,7 +735,7 @@ END sp_fe_asso_insAsso;
 
 PROCEDURE sp_fe_asso_insAssoHitsRaw
 (
-  cCode IN VARCHAR2, 
+  cCode IN VARCHAR2,
   iRowAffected OUT INT
 ) IS
 	iLinkId INT;
@@ -1070,23 +1075,23 @@ ORDER BY al.link_id DESC;
 */
 
 OPEN cur_out2 FOR
-SELECT 
-  a.associate_id, 
-  al.site_name, 
-  al.link_id, 
-  ar.credit_status, 
-  TO_NUMBER(TO_CHAR(SUM(NVL(ar.credit_amount, 0)), '999999999.99')) AS credit, 
+SELECT
+  a.associate_id,
+  al.site_name,
+  al.link_id,
+  ar.credit_status,
+  TO_NUMBER(TO_CHAR(SUM(NVL(ar.credit_amount, 0)), '999999999.99')) AS credit,
   al.link_code,
   NVL(ah.total_credit,0) AS total
-FROM 
-  (SELECT * FROM YA_ASSOCIATE WHERE shopper_id = cShopperId AND site_id = iSiteId) a 
+FROM
+  (SELECT * FROM YA_ASSOCIATE WHERE shopper_id = cShopperId AND site_id = iSiteId) a
   inner join YA_ASSOCIATE_LINK al ON a.associate_id = al.associate_id AND al.link_status > 1
-  left join 
+  left join
   (
     SELECT lo.link_id, lo.credit_status, NVL(lo.credit_amount, NVL(ch.comm_rate, 0)*lo.quantity*lo.unit_price) AS credit_amount, lo.last_change_date
 	FROM YA_ASSOCIATE_LINK l
 	inner join YA_ASSOCIATE_COMMISSION_HIST ch ON l.associate_id = ch.associate_id
-	inner join YA_ASSOCIATE_LINK_ORDERS lo ON lo.link_id = l.link_id AND TO_CHAR(lo.order_date, 'yyyy') = TO_CHAR(ch.valid_date, 'yyyy') AND TO_CHAR(lo.order_date, 'mm') = TO_CHAR(ch.valid_date, 'mm') 
+	inner join YA_ASSOCIATE_LINK_ORDERS lo ON lo.link_id = l.link_id AND TO_CHAR(lo.order_date, 'yyyy') = TO_CHAR(ch.valid_date, 'yyyy') AND TO_CHAR(lo.order_date, 'mm') = TO_CHAR(ch.valid_date, 'mm')
   ) ar
   ON ar.link_id = al.link_id
   LEFT OUTER JOIN YA_ASSOCIATE_LEGACY_HISTORY ah ON ah.link_id = al.link_id
@@ -1645,7 +1650,7 @@ cEndDate := TO_CHAR(dtDate, 'mm') || '/01/' || TO_CHAR(dtDate, 'yyyy');
 
 SELECT COUNT(DISTINCT ns.customerId) INTO iCustomer
 FROM datamining_adm.DM_NEWSHOPPER ns
-inner join YA_ASSOCIATE_LINK_ORDERS alo ON ns.feorderid = alo.origin_order_id 
+inner join YA_ASSOCIATE_LINK_ORDERS alo ON ns.feorderid = alo.origin_order_id
 INNER JOIN (SELECT link_id FROM YA_ASSOCIATE_LINK WHERE associate_id=iAssociateId) al ON alo.link_id = al.link_id
 WHERE alo.order_date >= TO_DATE(cStartDate, 'mm/dd/yyyy') AND alo.order_date < TO_DATE(cEndDate, 'mm/dd/yyyy') AND alo.credit_status <> 4;
 
@@ -1687,18 +1692,18 @@ SELECT link_percentage INTO deciOldPercentage FROM YA_ASSOCIATE_LINK WHERE (asso
 
 SELECT SUM(NVL(credit_amount, quantity*unit_price*c.comm_rate)) INTO deciLastApproved
 FROM ya_associate_link_orders o
-inner join ya_associate_link l 
+inner join ya_associate_link l
 ON l.link_id = o.link_id
-inner join ya_associate_commission_hist c 
-ON TO_CHAR(o.last_change_date, 'mm') = TO_CHAR(c.valid_date, 'mm') 
-  AND TO_CHAR(o.last_change_date, 'yyyy') = TO_CHAR(c.valid_date, 'yyyy') 
+inner join ya_associate_commission_hist c
+ON TO_CHAR(o.last_change_date, 'mm') = TO_CHAR(c.valid_date, 'mm')
+  AND TO_CHAR(o.last_change_date, 'yyyy') = TO_CHAR(c.valid_date, 'yyyy')
   AND l.associate_id = c.associate_id
-WHERE 
-  o.last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy') 
+WHERE
+  o.last_change_date >= TO_DATE(cStartDate, 'mm/dd/yyyy')
   AND o.last_change_date < TO_DATE(cEndDate, 'mm/dd/yyyy')
   AND o.credit_status = 2
-  AND l.associate_id = iAssociateId; 
-  
+  AND l.associate_id = iAssociateId;
+
 END sp_fe_asso_monthlyCredit;
 
 
@@ -3906,4 +3911,8 @@ BEGIN
 END sp_fe_asso_getProductLot;
 
 END Pkg_fe_asso;
+
+
 /
+
+
