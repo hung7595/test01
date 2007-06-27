@@ -5,6 +5,12 @@ AS
     cPencrypted_cc_num IN VARCHAR2,
     iPreturn OUT INT
   );
+  
+  PROCEDURE IsWhiteListCreditCard(
+    cPshopper_id IN VARCHAR2,
+    cPencrypted_cc_num IN VARCHAR2,
+    iPreturn OUT INT
+  );  
 END Pkg_FE_APPROVALRULEACCESS;
 /
 CREATE OR REPLACE PACKAGE BODY Pkg_FE_APPROVALRULEACCESS
@@ -25,5 +31,22 @@ AS
   EXCEPTION WHEN NO_DATA_FOUND THEN
     iPreturn := -1;
   END IsSuccessCreditCard;
+
+  PROCEDURE IsWhiteListCreditCard (
+    cPshopper_id IN VARCHAR2,
+    cPencrypted_cc_num IN VARCHAR2,
+    iPreturn OUT INT
+  )
+  AS
+  BEGIN
+    SELECT 1
+    INTO iPreturn
+    FROM white_list_cust
+    WHERE
+      cust_id = cPshopper_id
+      AND encrypted_cc_num = cPencrypted_cc_num;
+  EXCEPTION WHEN NO_DATA_FOUND THEN
+    iPreturn := -1;
+  END IsWhiteListCreditCard;
 END Pkg_FE_APPROVALRULEACCESS;
 /
