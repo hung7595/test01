@@ -81,21 +81,32 @@ IS
   )
   AS
     iLmember_type INT := 1;
+    iLduplicate_account INT := 1;
   BEGIN
-    IF cPshopper_id IS NULL OR
-      length(cPshopper_id) = 0 then
+    BEGIN
+      SELECT 1 INTO iLduplicate_account FROM ya_shopper WHERE lower(email) = lower(cPemail);
+      EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            iLduplicate_account := -1;
+    END;
+  
+    IF iLduplicate_account = -1 THEN
       BEGIN
-        cPshopper_id := SYS_GUID();
-     END;
-    END IF;
+        IF cPshopper_id IS NULL OR
+          length(cPshopper_id) = 0 then
+          BEGIN
+            cPshopper_id := SYS_GUID();
+          END;
+        END IF;
 
-    INSERT INTO ya_shopper
-      (shopper_id, created_date, email, lastname, firstname, username,
-       password, nickname, dob, member_type, anonymous)
-    VALUES (cPshopper_id, SYSDATE, cPemail, cPlastname, cPfirstname, cPemail,
-       cPpassword, cPnickname, dtDOB, iLmember_type, 'N');
-    COMMIT;
+        INSERT INTO ya_shopper
+          (shopper_id, created_date, email, lastname, firstname, username,
+          password, nickname, dob, member_type, anonymous)
+        VALUES (cPshopper_id, SYSDATE, cPemail, cPlastname, cPfirstname, cPemail,
+          cPpassword, cPnickname, dtDOB, iLmember_type, 'N');
+        COMMIT;      
+      END;
+    END IF;
   END AddShopperInfo;
 END Pkg_fe_MyAccountShopperAccess;
 /
-
