@@ -2001,7 +2001,7 @@ AS
     INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
     SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, iLbuffer_code
     FROM ya_new_basket nb
-      INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code in (133)
+      INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code in (SELECT cl.campaign_code FROM ya_campaign_lookup cl WHERE cl.campaign_type = 2)
     WHERE nb.shopper_id = cPshopper_id
       AND nb.type = 0
       AND nb.site_id = iPsite_id
@@ -2575,7 +2575,7 @@ AS
         INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
         SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, iLbuffer_code
         FROM ya_new_basket nb
-          INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code in (133)
+          INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code in (SELECT cl.campaign_code FROM ya_campaign_lookup cl WHERE cl.campaign_type = 2)
         WHERE nb.shopper_id = cPshopper_id
           AND nb.type = 0
           AND nb.site_id = iPsite_id
