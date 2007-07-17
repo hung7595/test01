@@ -32,6 +32,12 @@ AS
     iPlang_id IN INT,
     rcPresult OUT refCur
   );
+  
+  PROCEDURE GetPromotionMessage (
+    cPpromotion_name IN VARCHAR2,
+    iPlang_id IN INT,
+    rcPresult OUT refCur
+  );
 END Pkg_fe_PromotionAccess;
 /
 
@@ -250,6 +256,21 @@ IS
       END IF;
     END IF;
   END GetPrdGrpPromotionDetailInfo;
+  
+    PROCEDURE GetPromotionMessage (
+    cPpromotion_name IN VARCHAR2,
+    iPlang_id IN INT,
+    rcPresult OUT refCur
+  )
+  AS
+  BEGIN
+    OPEN rcPresult FOR
+	  SELECT * FROM ya_asset_translation t, ya_promotion_message m 
+		WHERE t.asset_id = m.asset_id 
+		  AND m.promotion_name = cPpromotion_name
+		  AND t.lang_id = iPlang_id;
+	RETURN;
+  END GetPromotionMessage;
 END Pkg_fe_PromotionAccess;
 /
 
