@@ -843,7 +843,7 @@ BEGIN
   AND TO_CHAR(lo.order_date, 'mm') = TO_CHAR(ch.valid_date, 'mm')
   WHERE credit_status = 2;
 
-  SELECT SUM(TOTAL_CREDIT-TOTAL_CREDIT_PAID) into dPlegacyAmount FROM YA_ASSOCIATE_LEGACY_HISTORY
+  SELECT NVL(SUM(TOTAL_CREDIT-TOTAL_CREDIT_PAID), 0) into dPlegacyAmount FROM YA_ASSOCIATE_LEGACY_HISTORY
   WHERE link_id in (SELECT link_id FROM YA_ASSOCIATE_LINK WHERE associate_id = iPAssociateId);
 
   SELECT NVL(SUM(amount_paid), 0) into dPtotalPaid
