@@ -739,14 +739,19 @@ PROCEDURE CreatePayment
 )
 IS
   dtLpayDate DATE;
+  iLpayHistoryId INT;
 BEGIN
   if (dtPpayDate is not null) then
     dtLpayDate := dtPpayDate;
   else
     dtLpayDate := SYSDATE;
   end if;
+  
+  select seq_ya_asso_pay_history.nextval into iLpayHistoryId from dual;
+
   INSERT INTO YA_ASSOCIATE_PAY_HISTORY
   (
+    id,
     associate_id,
     pay_date,
     amount_paid,
@@ -755,6 +760,7 @@ BEGIN
   )
   VALUES
   (
+    iLpayHistoryId,
     iPassociateId,
     dtLpayDate,
     deciPamount,
