@@ -825,6 +825,7 @@ PROCEDURE GetCommissionBalance
 IS
   dPtotalGain FLOAT;
   dPtotalPaid FLOAT;
+  dPlegacyAmount FLOAT;
 BEGIN
   SELECT NVL(SUM(NVL(lo.credit_amount, lo.quantity*lo.unit_price*ch.comm_rate)), 0) into dPtotalGain
   FROM YA_ASSOCIATE_LINK l
@@ -836,11 +837,14 @@ BEGIN
   AND TO_CHAR(lo.order_date, 'mm') = TO_CHAR(ch.valid_date, 'mm')
   WHERE credit_status = 2;
 
+  SELECT SUM(TOTAL_CREDIT-TOTAL_CREDIT_PAID) into dPlegacyAmount FROM YA_ASSOCIATE_LEGACY_HISTORY
+  WHERE link_id in (SELECT link_id FROM YA_ASSOCIATE_LINK WHERE associate_id = iPAssociateId);
+
   SELECT NVL(SUM(amount_paid), 0) into dPtotalPaid
   FROM YA_ASSOCIATE_PAY_HISTORY
   WHERE associate_id = iPAssociateId;
 
-  dPbalance := dPtotalGain - dPtotalPaid;
+  dPbalance := dPtotalGain + dPlegacyAmount - dPtotalPaid;
 END GetCommissionBalance;
 
 PROCEDURE CreateAssoCredit
