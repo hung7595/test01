@@ -8,7 +8,7 @@ SELECT
 shopper_id, member_type, created_date, anonymous
 FROM
 ya_shopper
-WHERE created_date >= to_date('20-01-2002', 'DD-MM-YYYY')
+WHERE created_date >= to_date('21-01-2002 15:42:34', 'DD-MM-YYYY HH24:MI:SS')
 AND anonymous = 'N'
 /
 
