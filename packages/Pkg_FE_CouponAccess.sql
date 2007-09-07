@@ -1,7 +1,4 @@
-
-REM START SS_ADM PKG_FE_COUPONACCESS
-
-  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_COUPONACCESS" 
+CREATE OR REPLACE PACKAGE          "PKG_FE_COUPONACCESS"
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -56,9 +53,16 @@ AS
     cPshopper_id IN CHAR,
     curPresult OUT refCur
   );
+  /* 2007 email referral */
+  PROCEDURE CreateCouponForEmailRefer (
+    cPshopper_id IN CHAR,
+    curPresult OUT refCur
+  );
 END Pkg_FE_CouponAccess;
 /
-CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_COUPONACCESS" 
+
+
+CREATE OR REPLACE PACKAGE BODY          "PKG_FE_COUPONACCESS"
 AS
   PROCEDURE GetCoupon (
     cPcode IN VARCHAR2,
@@ -220,7 +224,7 @@ AS
     ELSE
       cLcoupon_code := cPcoupon_code;
     END IF;
-      
+
     INSERT INTO ya_coupon
       (shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value,expiration_date, all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger)
     VALUES
@@ -242,7 +246,7 @@ AS
 		-- Make sure unique coupon code
 		SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
 		WHILE (iLcount = 1)
-			LOOP     
+			LOOP
 					SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO iLcoupon_code FROM dual;
 					SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
 			END LOOP;
@@ -286,7 +290,7 @@ AS
 		)
 		AND (((site_id = iPsite_id or site_id=99) and iPsite_id not in (10)) or site_id = iPsite_id);
 	END GetShopperCoupon;
-	
+
 	PROCEDURE CreateYSSurveyCoupon (
     cPshopper_id IN CHAR,
     curPresult OUT refCur
@@ -301,7 +305,7 @@ AS
 		-- Make sure unique coupon code
 		SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
 		WHILE (iLcount = 1)
-			LOOP     
+			LOOP
 					SELECT 'YSPOLL_' || cast(dbms_random.string('U', 6) AS VARCHAR2(6)) INTO iLcoupon_code FROM dual;
 					SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
 			END LOOP;
@@ -321,7 +325,36 @@ AS
 		RETURN;
   END CreateYSSurveyCoupon;
 
+  PROCEDURE CreateCouponForEmailRefer (
+    cPshopper_id IN CHAR,
+    curPresult OUT refCur
+  )
+  AS
+		iLcount INT;
+		iLcoupon_code VARCHAR2(8);
+  BEGIN
+		-- Generate Coupon
+		SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO iLcoupon_code FROM dual;
+
+		-- Make sure unique coupon code
+		SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
+		WHILE (iLcount = 1)
+			LOOP
+					SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO iLcoupon_code FROM dual;
+					SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
+			END LOOP;
+
+		 INSERT INTO ya_coupon
+      (shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value,expiration_date, all_shoppers,
+      coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, CREATE_DATE)
+	  SELECT cPshopper_id, iLcoupon_code, 'YesStyle.com Referral', '2007 Referral Coupon', 5, add_months(SYSDATE, 3), 'N', 'N', 1, 10, 5, 'ys_email_referral', SYSDATE
+		FROM
+		 dual;
+		OPEN curPresult FOR
+			SELECT iLcoupon_code as coupon_code FROM dual;
+		COMMIT;
+		RETURN;
+  END CreateCouponForEmailRefer;
+
 END Pkg_FE_CouponAccess;
 /
- 
-REM END SS_ADM PKG_FE_COUPONACCESS
