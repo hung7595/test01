@@ -60,7 +60,7 @@ IS
   AS
   BEGIN
     OPEN curPresult1 FOR
-		SELECT cust_id 
+		/*SELECT cust_id 
 			FROM order_info o, ya_customer_profile c 
 			WHERE o.cust_id = cShopperId
 				AND o.order_dt < to_date('2007/09/01', 'YYYY/MM/DD') AND o.cust_id = c.shopper_id
@@ -69,7 +69,10 @@ IS
 		SELECT cast( shopper_id AS NVARCHAR2(150) ) 
 			FROM ya_customer_profile 
 			WHERE created_datetime < to_date('2007/09/01', 'YYYY/MM/DD') 
-				AND shopper_id = cShopperId AND register_site_id = 10;
+				AND shopper_id = cShopperId AND register_site_id = 10;*/
+		SELECT shopper_id 
+			FROM ya_shopper 
+			WHERE shopper_id = cShopperId AND (email LIKE '%@yesasia.com' OR email LIKE '%@yesstyle.com');
     RETURN;
    END GetExistingYAYSShopper;
    
