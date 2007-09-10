@@ -347,7 +347,7 @@ AS
 		 INSERT INTO ya_coupon
       (shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value,expiration_date, all_shoppers,
       coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, CREATE_DATE)
-	  SELECT cPshopper_id, iLcoupon_code, 'YesStyle.com Referral', '2007 Referral Coupon', 5, add_months(SYSDATE, 3), 'N', 'N', 1, 10, 5, 'ys_email_referral', SYSDATE
+	  SELECT cPshopper_id, iLcoupon_code, 'YesStyle.com Referral', '2007 Referral $5 Coupon', 5, add_months(SYSDATE, 3), 'N', 'N', 1, 10, 5, 'ys_email_referral', SYSDATE
 		FROM
 		 dual;
 		OPEN curPresult FOR
