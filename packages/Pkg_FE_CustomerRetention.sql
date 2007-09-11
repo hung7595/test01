@@ -51,8 +51,7 @@ IS
         INSERT INTO ya_coupon
           (coupon_code, campaign_name, coupon_description, shopper_id, dollar_coupon_value, expiration_date, all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, create_date)
         VALUES
-          (cLcoupon_code, 'YesAsia.com Customer Coupon', 'YesAsia.com Customer Coupon', cPshopperId, 25, to_date('2010/12/31', 'yyyy/mm/dd'), 'N', 'N', 1, 99, 0, 'ya_customer_retention_customer', sysdate);
-        COMMIT;
+          (cLcoupon_code, 'YesAsia.com Customer Coupon', 'YesAsia.com Customer Coupon', cPshopperId, 25, sysdate+30, 'N', 'N', 1, 99, 0, 'ya_customer_retention_customer', sysdate);
       END;
     END IF;
   
@@ -96,8 +95,7 @@ IS
         INSERT INTO ya_coupon
           (coupon_code, campaign_name, coupon_description, shopper_id, dollar_coupon_value, expiration_date, all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, create_date)
         VALUES
-          (cLcoupon_code, 'YesAsia.com Register Coupon', 'YesAsia.com Register Coupon', cPshopperId, 25, to_date('2010/12/31', 'yyyy/mm/dd'), 'N', 'N', 1, 99, 0, 'ya_customer_retention_register', sysdate);
-        COMMIT;
+          (cLcoupon_code, 'YesAsia.com Register Coupon', 'YesAsia.com Register Coupon', cPshopperId, 25, sysdate+30, 'N', 'N', 1, 99, 0, 'ya_customer_retention_register', sysdate);
       END;
     END IF;
   
