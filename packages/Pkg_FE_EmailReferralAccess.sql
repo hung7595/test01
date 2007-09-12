@@ -61,10 +61,9 @@ IS
   BEGIN
     OPEN curPresult1 FOR
 		SELECT cust_id 
-			FROM order_info o, ya_customer_profile c 
+			FROM order_info o
 			WHERE o.cust_id = cShopperId
-				AND o.order_dt < to_date('2007/09/01', 'YYYY/MM/DD') AND o.cust_id = c.shopper_id
-				AND c.register_site_id = 1 AND c.created_datetime < to_date('2007/09/01', 'YYYY/MM/DD')
+				AND o.order_dt < to_date('2007/09/01', 'YYYY/MM/DD') -- AND o.cust_id = c.shopper_id
 		UNION 
 		SELECT cast( shopper_id AS NVARCHAR2(150) ) 
 			FROM ya_customer_profile 
