@@ -30,7 +30,12 @@ AS
     cPshopper_id IN CHAR,
     iPreturn OUT INT
   );
-
+  /*2007 email referral  program for check the shopper get existing 3 or more coupon*/
+  PROCEDURE checkReferralCoupon (
+    cPshopper_id IN CHAR,
+    iPreturn OUT INT
+  );
+  
   /* proc_fe_CreateNewShopperCoupon */
   PROCEDURE CreateNewShopperCoupon (
     cPshopper_id IN CHAR,
@@ -202,6 +207,22 @@ AS
     iPreturn := -1;
   END ValidateShopperId;
 
+  PROCEDURE checkReferralCoupon (
+    cPshopper_id IN CHAR,
+    iPreturn OUT INT
+  )
+  AS
+  BEGIN
+    SELECT count(*)
+    INTO iPreturn
+    FROM ya_coupon
+    WHERE
+      campaign_name = 'YesStyle.com Referral'
+      AND shopper_id = cPshopper_id;
+  EXCEPTION WHEN NO_DATA_FOUND THEN
+    iPreturn := -1;
+  END checkReferralCoupon;
+  
   PROCEDURE CreateNewShopperCoupon (
     cPshopper_id IN CHAR,
     cPcoupon_code IN VARCHAR2
