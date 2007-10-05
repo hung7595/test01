@@ -78,13 +78,13 @@ PROCEDURE CreateNextPurchaseCoupon (
 			INSERT INTO ya_coupon
 				(shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value,expiration_date, all_shoppers,
 		  coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, CREATE_DATE)
-				SELECT cPshopper_id, cLcoupon_code_YA, cLyaCampaignName, cLyaCouponDescription, 5, add_months(SYSDATE, 2), 'N', 'N', 1, iPsiteId, 5, 'next_purchase', SYSDATE
+				SELECT cPshopper_id, cLcoupon_code_YA, cLyaCampaignName, cLyaCouponDescription, 5, add_months(SYSDATE, 2), 'N', 'N', 1, iPsiteId, NULL, 'next_purchase', SYSDATE
 			FROM dual;
 			--============================ Create YS coupon=========================================
 			INSERT INTO ya_coupon
 				(shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value,expiration_date, all_shoppers,
 		  coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, CREATE_DATE)
-				SELECT cPshopper_id, cLcoupon_code_YS, cLysCampaignName, cLysCouponDescription, 5, add_months(SYSDATE, 2), 'N', 'N', 1, 10, 5, 'next_purchase', SYSDATE
+				SELECT cPshopper_id, cLcoupon_code_YS, cLysCampaignName, cLysCouponDescription, 5, add_months(SYSDATE, 2), 'N', 'N', 1, 10, NULL, 'next_purchase', SYSDATE
 			FROM dual;
 			--============================ Keep record for sending email===============================
 			INSERT INTO ya_next_purchase_coupon (coupon_code, order_id) 
