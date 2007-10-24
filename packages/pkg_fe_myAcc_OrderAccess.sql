@@ -168,14 +168,14 @@ BEGIN
   (select * from 
   (SELECT *
   FROM ORDER_INFO oi
-  WHERE oi.cust_id = cPshopperId
+  WHERE oi.cust_id = cPshopperId AND oi.origin_id in (1,7)
   ORDER BY oi.ID DESC) oi
   WHERE rownum <= iLendRowNumber) oi1
   left outer join 
   (select * from 
   (SELECT *
   FROM ORDER_INFO oi
-  WHERE oi.cust_id = cPshopperId
+  WHERE oi.cust_id = cPshopperId AND oi.origin_id in (1,7)
   ORDER BY oi.ID DESC) oi
   WHERE rownum < iLstartRowNumber) oi2
   on oi1.id=oi2.id
@@ -192,7 +192,7 @@ PROCEDURE GetOrderCountByShopperId
 )
 IS
 BEGIN
-  SELECT COUNT(1) INTO iPtotalOrder FROM ORDER_INFO oi WHERE oi.cust_id = cPshopperId;
+  SELECT COUNT(1) INTO iPtotalOrder FROM ORDER_INFO oi WHERE oi.cust_id = cPshopperId AND oi.origin_id in (1,7);
 END;
 
 PROCEDURE GetOrderHistory
