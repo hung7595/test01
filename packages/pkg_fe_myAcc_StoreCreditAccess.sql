@@ -27,7 +27,7 @@ PROCEDURE GetStoreCreditBalance
 AS 
 BEGIN
   OPEN curPout FOR
-    SELECT current_balance,currency FROM ya_frontend_credit_system WHERE shopper_id = iPShopperId ORDER BY currency;
+    SELECT current_balance,currency FROM ya_frontend_credit_system WHERE site_id in (1,7) AND shopper_id = iPShopperId ORDER BY currency;
 END GetStoreCreditBalance;
 
 PROCEDURE GetStoreCreditTxn
@@ -45,7 +45,7 @@ BEGIN
        FROM ya_frontend_credit_system yfcs 
        INNER JOIN ya_frontend_credit_system_txn yfcstx
        ON yfcs.credit_id = yfcstx.credit_id
-       WHERE yfcs.shopper_id = iPShopperId AND yfcs.credit_type_id <> 4 ORDER BY yfcstx.transaction_datetime DESC)
+       WHERE yfcs.site_id in (1,7) AND yfcs.shopper_id = iPShopperId AND yfcs.credit_type_id <> 4 ORDER BY yfcstx.transaction_datetime DESC)
     WHERE rownum <= 10 ORDER BY transaction_datetime ASC;
 END GetStoreCreditTxn;
 
