@@ -299,7 +299,7 @@ IS
     vcLartist_id_csv VARCHAR2(1000);
     iLtemp INT;
   BEGIN
-    EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_email_int_table';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_email_int_table01';
 
     vcLartist_id_csv := vcPartist_id_csv;
     iLtemp := NVL(LENGTH(RTRIM(vcLartist_id_csv)),0);
@@ -310,14 +310,14 @@ IS
 
         WHILE iLend_pos > 0 LOOP
           BEGIN
-            INSERT INTO temp_email_int_table (column1)
+            INSERT INTO temp_email_int_table01 (column1)
             VALUES (cast(substr(vcLartist_id_csv,1,iLend_pos-1) AS INT));
             vcLartist_id_csv := substr(vcLartist_id_csv, iLend_pos + 1);
             iLend_pos := instr(vcLartist_id_csv, ',');
           END;
         END LOOP;
 
-        INSERT INTO temp_email_int_table (column1)
+        INSERT INTO temp_email_int_table01 (column1)
         VALUES (cast(vcLartist_id_csv AS INT));
       END;
     END IF;
@@ -325,7 +325,7 @@ IS
     DELETE FROM ya_email_shopper_sub_artist
     WHERE shopper_id = cPshopper_id
     AND pref_id = iPpref_id
-    AND artist_id NOT IN (SELECT column1 FROM temp_email_int_table);
+    AND artist_id NOT IN (SELECT column1 FROM temp_email_int_table01);
 
     IF sqlcode <> 0 THEN
       ROLLBACK;
@@ -348,7 +348,7 @@ IS
     iLtemp INT;
 		iLcounter INT;
   BEGIN
-    EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_email_int_table';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_email_int_table01';
 
     vcLartist_id_csv := vcPartist_id_csv;
     iLtemp := NVL(LENGTH(RTRIM(vcLartist_id_csv)),0);
@@ -359,7 +359,7 @@ IS
 
         WHILE iLend_pos > 0 LOOP
           BEGIN
-            INSERT INTO temp_email_int_table (column1)
+            INSERT INTO temp_email_int_table01 (column1)
             VALUES (cast(substr(vcLartist_id_csv,1,iLend_pos-1) AS INT));
 
             vcLartist_id_csv := substr(vcLartist_id_csv, iLend_pos + 1);
@@ -367,9 +367,9 @@ IS
           END;
         END LOOP;
 
-				SELECT count(*) INTO iLcounter FROM temp_email_int_table WHERE column1 = vcLartist_id_csv;
+				SELECT count(*) INTO iLcounter FROM temp_email_int_table01 WHERE column1 = vcLartist_id_csv;
 				IF (iLcounter = 0) THEN
-	        INSERT INTO temp_email_int_table (column1)
+	        INSERT INTO temp_email_int_table01 (column1)
 		      VALUES (cast(vcLartist_id_csv AS INT));
 				END IF;
       END;
@@ -385,7 +385,7 @@ IS
       cPshopper_id,
       column1,
       iPpref_id
-    FROM temp_email_int_table a
+    FROM temp_email_int_table01 a
   	WHERE
       NOT EXISTS
         (
@@ -429,7 +429,7 @@ IS
     vcL_id_csv VARCHAR2(1000);
     iLtemp INT;
   BEGIN
-    EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_email_int_table';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_email_int_table01';
 
     vcL_id_csv := iPid_csv;
     iLtemp := NVL(LENGTH(RTRIM(vcL_id_csv)),0);
@@ -440,7 +440,7 @@ IS
 
         WHILE iLend_pos > 0 LOOP
           BEGIN
-            INSERT INTO temp_email_int_table (column1)
+            INSERT INTO temp_email_int_table01 (column1)
             VALUES (cast(substr(vcL_id_csv,1,iLend_pos-1) AS INT));
 
             vcL_id_csv := substr(vcL_id_csv, iLend_pos + 1);
@@ -448,14 +448,14 @@ IS
           END;
         END LOOP;
 
-        INSERT INTO temp_email_int_table (column1)
+        INSERT INTO temp_email_int_table01 (column1)
         VALUES (cast(vcL_id_csv AS INT));
       END;
     END IF;
 
     DELETE FROM ya_email_shopper_sub_text
     WHERE shopper_id = cPshopper_id
-    AND id NOT IN (SELECT column1 FROM temp_email_int_table);
+    AND id NOT IN (SELECT column1 FROM temp_email_int_table01);
 
     IF sqlcode <> 0 THEN
       ROLLBACK;
