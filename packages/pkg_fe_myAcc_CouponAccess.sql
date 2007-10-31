@@ -29,6 +29,12 @@ PROCEDURE GetValidCouponByOrder
   curPout1 OUT cur_return
 );
 
+PROCEDURE UpdateCouponUsed
+(
+  cPshopperId IN varchar2,
+  cPcouponCode IN Char
+);
+
 END PKG_FE_MYACC_COUPON;
 /
 
@@ -54,16 +60,21 @@ PROCEDURE GetCouponsWithShopperId
 AS 
 BEGIN
   OPEN curPout FOR
-    SELECT *
-      FROM ya_coupon
-      WHERE (coupon_used <> 'Y' OR NOT EXISTS 
-        (SELECT * FROM order_info o INNER JOIN billing_info b ON o.id = b.order_info_id
-           WHERE b.coupon = coupon_code AND o.cust_id = iPShopperId))
-      AND expiration_date >= SYSDATE
-      AND shopper_id = iPShopperId
-      AND (site_id=iPSiteId OR site_id=99)
-      ORDER BY expiration_date;
-  
+	  SELECT c.*
+	  FROM ya_coupon c
+	  LEFT JOIN ya_coupon_user u ON c.coupon_code = u.coupon_code AND u.shopper_id = iPShopperId
+	  WHERE coupon_used <> 'Y'
+	  AND c.expiration_date >= SYSDATE
+	  AND (
+		  c.shopper_id = iPShopperId
+		  OR
+		  (
+			  c.all_shoppers = 'G' AND u.shopper_id is not null AND NOT EXISTS (
+				  SELECT 1 FROM order_info o INNER JOIN billing_info b ON o.id = b.order_info_id WHERE b.coupon = u.coupon_code AND o.cust_id = iPShopperId
+			  )
+		  )
+	  )
+	  AND (((site_id = iPSiteId or site_id=99) and iPSiteId not in (10)) or site_id = iPSiteId);
 END GetCouponsWithShopperId;
 
 PROCEDURE GetCouponsWithCode
@@ -118,6 +129,27 @@ BEGIN
 	  )
 	  AND (((site_id = iLsiteId or site_id=99) and iLsiteId not in (10)) or site_id = iLsiteId);
 END GetValidCouponByOrder;
+
+PROCEDURE UpdateCouponUsed
+(
+  cPshopperId IN varchar2,
+  cPcouponCode IN Char
+)
+AS 
+BEGIN
+	UPDATE ya_coupon
+	SET coupon_used = 'Y'
+	WHERE
+		coupon_code = cPcouponCode
+		AND
+			(
+				(
+					shopper_id = cPshopperId
+					AND all_shoppers NOT IN ('Y', 'U')
+				) -- Y: all shoppers, U: unique
+				OR all_shoppers = 'O'
+			);  
+END UpdateCouponUsed;
 
 END PKG_FE_MYACC_COUPON;
 /
