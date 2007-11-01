@@ -74,6 +74,12 @@ PROCEDURE AddOrderChangeLineContent
   cPcontent IN NCLOB
 );
 
+PROCEDURE GetPendingOrder
+(
+  cPshopperId IN nvarchar2,
+  curPout OUT cur_return
+);
+
 END Pkg_fe_MyAcc_OrderAccess;
 /
 
@@ -139,6 +145,7 @@ BEGIN
   inner join prod_avlb pa on ol.prod_id = pa.prod_id and pa.region_id = oi.origin_id
   inner join ya_product p on pa.prod_id = p.sku
   inner join (select * from ya_prod_lang where lang_id = iPlangId) pl on p.sku = pl.sku
+  inner join ya_prod_lang pe on p.sku = pe.sku and pe.lang_id = 1
   left outer join ya_shipping_unit su on su.site_id = oi.origin_id and p.sku = su.sku;
   
   OPEN curPout5 FOR
@@ -331,6 +338,21 @@ BEGIN
   insert into ya_order_chg_ln_content(order_chg_ln_id, key, content) 
   values(iPorderChangeLineId, cPkey, cPcontent);
 END AddOrderChangeLineContent;
+
+PROCEDURE GetPendingOrder
+(
+  cPshopperId IN nvarchar2,
+  curPout OUT cur_return
+)
+IS
+BEGIN
+  OPEN curPout FOR
+  SELECT yo.order_num 
+  FROM ya_order yo
+    LEFT OUTER JOIN order_info oi ON cast(order_num as varchar2(7)) = origin_order_id AND oi.cust_id = cPshopperId 
+  WHERE 1=1 and yo.shopper_id = cPshopperId 
+    AND oi.origin_id IS NULL;
+END GetPendingOrder;
 
 END Pkg_fe_MyAcc_OrderAccess;
 /
