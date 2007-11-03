@@ -27,7 +27,7 @@ PROCEDURE GetPurchasedGiftCert
 AS 
 BEGIN
   OPEN curPout FOR
-    SELECT gc.cert_code, gc.cert_amount,
+    SELECT DISTINCT gc.cert_code, gc.cert_amount,
       gc.created_datetime AS created_date,
       gc.send_ecard_datetime as send_ecard_date,
       redemption_datetime AS redeem_date,
@@ -39,10 +39,18 @@ BEGIN
       END AS status,
       gc.recipient_email
   FROM ya_gift_cert gc, 
-       ya_shopper s
-  WHERE 
+       ya_shopper s,
+       order_info oi,
+       order_line ol,
+       order_line_dtl otd
+  WHERE    
     gc.purchaser_shopper_id = iPShopperId
     AND gc.purchaser_shopper_id = s.shopper_id
+    AND oi.origin_order_id = cast(gc.order_num as nvarchar2(100))
+    AND oi.id = ol.order_info_id
+    AND ol.prod_id = gc.sku
+    AND ol.id = otd.order_line_id
+    AND otd.sts = 6
   ORDER BY created_date ASC;
     
 END GetPurchasedGiftCert;

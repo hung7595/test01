@@ -200,7 +200,7 @@ BEGIN
   FROM SHIPPING_INFO si where si.shipment_id in (select s.id from shipment s where order_info_id = iLorderInfoId);
 
   open curPout3 for 
-  select sl.id, sl.shipment_id, p.sku, sl.qnty, ol.unit_price, sl.sts, sl.shipment_unit, pl.prod_name, p.account_id, pa.avlb
+  select sl.id, sl.shipment_id, p.sku, sl.qnty, ol.unit_price, sl.sts, sl.shipment_unit, pl.prod_name, p.account_id, pa.avlb, ol.parent_id
   from 
   (
     select s.* from shipment s
