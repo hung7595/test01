@@ -139,7 +139,7 @@ BEGIN
         END AS INT
     ) as shipment_unit, 
     ol.promotion_id as promotion_id, ol.original_unit_price as original_unit_price, pa.avlb as avlb, ol.parent_id, ol.misc_info,
-    p.release_date, pr.is_preorder, pr.preorder_start, pr.preorder_end
+    p.release_date, pr.is_preorder, pr.preorder_start, pr.preorder_end, pe.prod_name_u as eng_prod_name
   FROM (select * from order_info where cust_id = cPshopperId and id = iLorderInfoId) oi
   inner join order_line ol on oi.id = ol.order_info_id
   inner join order_line_dtl old on ol.id = old.order_line_id

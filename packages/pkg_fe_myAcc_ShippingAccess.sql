@@ -115,7 +115,7 @@ BEGIN
   
   open curPout3 for 
   select sl.id, sl.shipment_id, p.sku, sl.qnty, ol.unit_price, sl.sts, sl.shipment_unit, pl.prod_name, p.account_id, pa.avlb, ol.parent_id,
-  p.release_date, pr.is_preorder, pr.preorder_start, pr.preorder_end
+  p.release_date, pr.is_preorder, pr.preorder_start, pr.preorder_end, pe.prod_name_u as eng_prod_name
   from shipment s 
   inner join shipment_line sl on s.id = sl.shipment_id 
   inner join order_line ol on sl.order_line_id = ol.id
@@ -124,6 +124,7 @@ BEGIN
   inner join prod_region pr on ol.prod_id = pr.prod_id and pr.region_id = oi.origin_id
   inner join ya_product p on pa.prod_id = p.sku
   inner join (select * from ya_prod_lang where lang_id = iPlangId) pl on p.sku = pl.sku
+  inner join ya_prod_lang pe on p.sku = pe.sku and pe.lang_id = 1
   order by sl.id;
 
   open curPout4 for 
@@ -206,7 +207,7 @@ BEGIN
 
   open curPout3 for 
   select sl.id, sl.shipment_id, p.sku, sl.qnty, ol.unit_price, sl.sts, sl.shipment_unit, pl.prod_name, p.account_id, pa.avlb, ol.parent_id,
-  p.release_date, pr.is_preorder, pr.preorder_start, pr.preorder_end
+  p.release_date, pr.is_preorder, pr.preorder_start, pr.preorder_end, pe.prod_name_u as eng_prod_name
   from 
   (
     select s.* from shipment s
@@ -219,6 +220,7 @@ BEGIN
   inner join prod_region pr on ol.prod_id = pr.prod_id and pr.region_id = oi.origin_id
   inner join ya_product p on pa.prod_id = p.sku
   inner join (select * from ya_prod_lang where lang_id = iPlangId) pl on p.sku = pl.sku
+  inner join ya_prod_lang pe on p.sku = pe.sku and pe.lang_id = 1
   order by sl.id;
 
   open curPout4 for 
