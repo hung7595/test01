@@ -349,7 +349,7 @@ BEGIN
   OPEN curPout FOR
   SELECT yo.order_num 
   FROM ya_order yo
-    LEFT OUTER JOIN order_info oi ON cast(order_num as varchar2(7)) = origin_order_id AND oi.cust_id = cPshopperId 
+    LEFT OUTER JOIN order_info oi ON TO_CHAR(order_num) = origin_order_id AND oi.cust_id = cPshopperId 
   WHERE 1=1 and yo.shopper_id = cPshopperId 
     AND oi.origin_id IS NULL;
 END GetPendingOrder;
