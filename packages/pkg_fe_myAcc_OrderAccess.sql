@@ -138,11 +138,13 @@ BEGIN
           END, iLshipmentunitconst) / iLshipmentunitconst)
         END AS INT
     ) as shipment_unit, 
-    ol.promotion_id as promotion_id, ol.original_unit_price as original_unit_price, pa.avlb as avlb, ol.parent_id, ol.misc_info
+    ol.promotion_id as promotion_id, ol.original_unit_price as original_unit_price, pa.avlb as avlb, ol.parent_id, ol.misc_info,
+    p.release_date, pr.is_preorder, pr.preorder_start, pr.preorder_end
   FROM (select * from order_info where cust_id = cPshopperId and id = iLorderInfoId) oi
   inner join order_line ol on oi.id = ol.order_info_id
   inner join order_line_dtl old on ol.id = old.order_line_id
   inner join prod_avlb pa on ol.prod_id = pa.prod_id and pa.region_id = oi.origin_id
+  inner join prod_region pr on ol.prod_id = pr.prod_id and pr.region_id = oi.origin_id
   inner join ya_product p on pa.prod_id = p.sku
   inner join (select * from ya_prod_lang where lang_id = iPlangId) pl on p.sku = pl.sku
   inner join ya_prod_lang pe on p.sku = pe.sku and pe.lang_id = 1
@@ -350,10 +352,8 @@ BEGIN
   SELECT yo.order_num 
   FROM ya_order yo
     LEFT OUTER JOIN order_info oi ON TO_CHAR(order_num) = origin_order_id AND oi.cust_id = cPshopperId 
-  WHERE 1=0 and yo.shopper_id = cPshopperId 
+  WHERE 1=0 and yo.shopper_id = cPshopperId     
     AND oi.origin_id IS NULL;
-
-    
 END GetPendingOrder;
 
 END Pkg_fe_MyAcc_OrderAccess;

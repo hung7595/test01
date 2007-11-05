@@ -114,12 +114,14 @@ BEGIN
   FROM SHIPPING_INFO si where si.shipment_id in (select s.id from shipment s where order_info_id = iLorderInfoId);
   
   open curPout3 for 
-  select sl.id, sl.shipment_id, p.sku, sl.qnty, ol.unit_price, sl.sts, sl.shipment_unit, pl.prod_name, p.account_id, pa.avlb, ol.parent_id
+  select sl.id, sl.shipment_id, p.sku, sl.qnty, ol.unit_price, sl.sts, sl.shipment_unit, pl.prod_name, p.account_id, pa.avlb, ol.parent_id,
+  p.release_date, pr.is_preorder, pr.preorder_start, pr.preorder_end
   from shipment s 
   inner join shipment_line sl on s.id = sl.shipment_id 
   inner join order_line ol on sl.order_line_id = ol.id
   inner join (select * from order_info where cust_id = cPshopperId and origin_order_id = cLoriginOrderId) oi on ol.order_info_id = oi.id
   inner join prod_avlb pa on ol.prod_id = pa.prod_id and pa.region_id = oi.origin_id
+  inner join prod_region pr on ol.prod_id = pr.prod_id and pr.region_id = oi.origin_id
   inner join ya_product p on pa.prod_id = p.sku
   inner join (select * from ya_prod_lang where lang_id = iPlangId) pl on p.sku = pl.sku
   order by sl.id;
@@ -190,9 +192,12 @@ BEGIN
   cLoriginOrderId := to_char(iPorderNumber);
   select id into iLorderInfoId from order_info where cust_id = cPshopperId and origin_order_id = cLoriginOrderId;
   
-  open curPout1 for 
-  select s.* from shipment s
-  inner join order_info oi on s.order_info_id = oi.id and oi.parent_id = iLorderInfoId
+  open curPout1 for
+  select s.*, i.id as invoice_id 
+  from (select sp.* from shipment sp
+    inner join order_info oi on sp.order_info_id = oi.id and oi.parent_id = iLorderInfoId) s 
+    inner join shipping_info si on s.id = si.shipment_id
+    inner join invoice i on si.id = i.shipping_info_id
   order by s.id;
 
   open curPout2 for 
@@ -200,7 +205,8 @@ BEGIN
   FROM SHIPPING_INFO si where si.shipment_id in (select s.id from shipment s where order_info_id = iLorderInfoId);
 
   open curPout3 for 
-  select sl.id, sl.shipment_id, p.sku, sl.qnty, ol.unit_price, sl.sts, sl.shipment_unit, pl.prod_name, p.account_id, pa.avlb, ol.parent_id
+  select sl.id, sl.shipment_id, p.sku, sl.qnty, ol.unit_price, sl.sts, sl.shipment_unit, pl.prod_name, p.account_id, pa.avlb, ol.parent_id,
+  p.release_date, pr.is_preorder, pr.preorder_start, pr.preorder_end
   from 
   (
     select s.* from shipment s
@@ -210,6 +216,7 @@ BEGIN
   inner join order_line ol on sl.order_line_id = ol.id
   inner join (select * from order_info where cust_id = cPshopperId and origin_order_id = cLoriginOrderId) oi on ol.order_info_id = oi.id
   inner join prod_avlb pa on ol.prod_id = pa.prod_id and pa.region_id = oi.origin_id
+  inner join prod_region pr on ol.prod_id = pr.prod_id and pr.region_id = oi.origin_id
   inner join ya_product p on pa.prod_id = p.sku
   inner join (select * from ya_prod_lang where lang_id = iPlangId) pl on p.sku = pl.sku
   order by sl.id;
