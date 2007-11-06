@@ -379,8 +379,7 @@ PROCEDURE GetAddressById (
       preferred_ship = cPpreferred_ship, 
       preferred_bill = cPpreferred_bill,      
       site_id = iPsite_id
-    WHERE address_id = iPaddress_id
-    AND lang_id = iPlang_id;
+    WHERE address_id = iPaddress_id;
     
     -- Commit
     IF sqlcode = 0 THEN
