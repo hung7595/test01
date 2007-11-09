@@ -115,11 +115,11 @@ BEGIN
   open curPout1 for
 	  SELECT c.*
 	  FROM ya_coupon c
-	  LEFT JOIN ya_coupon_user u ON c.coupon_code = u.coupon_code AND u.shopper_id = cLshopperId
+	  LEFT JOIN ya_coupon_user u ON c.coupon_code = u.coupon_code AND u.shopper_id = to_char(cLshopperId)
 	  WHERE coupon_used <> 'Y'
 	  AND c.expiration_date >= SYSDATE
 	  AND (
-		  c.shopper_id = cLshopperId
+		  c.shopper_id = to_char(cLshopperId)
 		  OR
 		  (
 			  c.all_shoppers = 'G' AND u.shopper_id is not null AND NOT EXISTS (
