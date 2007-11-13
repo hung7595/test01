@@ -125,7 +125,7 @@ BEGIN
   SELECT 
     ol.id as order_line_id, ol.prod_id as sku, p.account_id as account_id, pl.prod_name_u as product_name, old.qnty as quantity, ol.unit_price as unit_price, old.sts as status, 
     ol.shipment_unit, ol.promotion_id as promotion_id, ol.original_unit_price as original_unit_price, pa.avlb as avlb, ol.parent_id, ol.misc_info,
-    p.release_date, pr.is_preorder, pr.preorder_start, pr.preorder_end, pe.prod_name_u as eng_prod_name
+    p.release_date, pr.is_preorder, pr.preorder_start, pr.preorder_end, pe.prod_name_u as eng_prod_name, ol.parent_line_id
   FROM (select * from order_info where cust_id = cPshopperId and id = iLorderInfoId) oi
   inner join order_line ol on oi.id = ol.order_info_id
   inner join order_line_dtl old on ol.id = old.order_line_id

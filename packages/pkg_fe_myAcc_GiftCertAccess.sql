@@ -51,6 +51,7 @@ BEGIN
     AND ol.prod_id = gc.sku
     AND ol.id = otd.order_line_id
     AND otd.sts = 6
+    AND gc.bogus <> 'Y'
   ORDER BY created_date ASC;
     
 END GetPurchasedGiftCert;
@@ -75,10 +76,24 @@ BEGIN
       END AS status,
       gc.recipient_email
   FROM ya_gift_cert gc, 
-       ya_shopper s
-  WHERE 
+       ya_shopper s,
+       ya_shopper rc,
+       order_info oi,
+       order_line ol,
+       order_line_dtl otd
+  WHERE
     gc.purchaser_shopper_id = s.shopper_id
-    AND gc.recipient_shopper_id = iPShopperId
+    AND rc.shopper_id = iPShopperId
+    AND (
+          (gc.recipient_shopper_id is null and gc.recipient_email = rc.email)
+          OR gc.recipient_shopper_id = iPShopperId
+        )
+    AND oi.origin_order_id = cast(gc.order_num as nvarchar2(100))
+    AND oi.id = ol.order_info_id
+    AND ol.prod_id = gc.sku
+    AND ol.id = otd.order_line_id
+    AND otd.sts = 6
+    AND gc.bogus <> 'Y'
   ORDER BY created_date ASC;
     
 END GetReceivedGiftCert;
