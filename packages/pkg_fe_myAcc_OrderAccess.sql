@@ -80,6 +80,11 @@ PROCEDURE GetPendingOrder
   curPout OUT cur_return
 );
 
+PROCEDURE IsChequeReceived (
+	iPorderNumber IN NVARCHAR2,
+  iPresult	 IN OUT INT
+);
+
 END Pkg_fe_MyAcc_OrderAccess;
 /
 
@@ -341,6 +346,25 @@ BEGIN
   WHERE 1=0 and yo.shopper_id = cPshopperId     
     AND oi.origin_id IS NULL;
 END GetPendingOrder;
+
+PROCEDURE IsChequeReceived (
+	iPorderNumber IN NVARCHAR2,
+  iPresult	 IN OUT INT
+)
+AS
+BEGIN
+	/*
+	DepositDetail.status:
+	1-HOLD FOR ORDER, 3-USED,  5-HOLD FOR AR
+	Deposit.paymentType:
+	10-STORE Credit, 11-Coupon
+	*/
+	SELECT count(*) INTO iPresult
+	FROM order_info o
+	INNER JOIN deposit_dtl dd ON o.id = dd.order_info_id AND dd.sts IN (1, 3, 5)
+	INNER JOIN deposit d ON d.id = dd.deposit_id AND d.pymt_type NOT IN (10, 11)
+	WHERE o.origin_order_id = iPorderNumber;
+END IsChequeReceived;
 
 END Pkg_fe_MyAcc_OrderAccess;
 /
