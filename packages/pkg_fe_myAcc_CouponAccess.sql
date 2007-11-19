@@ -19,7 +19,8 @@ PROCEDURE GetCouponsWithCode
 (
   iPShopperId IN Char,
   iPCouponCode IN Char,
-  curPout OUT cur_return
+  curPout OUT cur_return,
+  curPout1 OUT cur_return
 );
 
 PROCEDURE GetValidCouponByOrder
@@ -70,7 +71,7 @@ BEGIN
 		  OR
 		  (
 			  c.all_shoppers = 'G' AND u.shopper_id is not null AND NOT EXISTS (
-				  SELECT 1 FROM order_info o INNER JOIN billing_info b ON o.id = b.order_info_id WHERE b.coupon = u.coupon_code AND o.cust_id = iPShopperId
+				  SELECT 1 FROM order_info o INNER JOIN billing_info b ON o.id = b.order_info_id WHERE b.coupon = u.coupon_code AND o.cust_id = to_nchar(iPShopperId)
 			  )
 		  )
 	  )
@@ -81,20 +82,35 @@ PROCEDURE GetCouponsWithCode
 (
   iPShopperId IN Char,
   iPCouponCode IN Char,
-  curPout OUT cur_return
+  curPout OUT cur_return,
+  curPout1 OUT cur_return
 )
 AS 
 BEGIN
   OPEN curPout FOR
-    SELECT *
-      FROM ya_coupon
-      WHERE (coupon_used <> 'Y' OR NOT EXISTS 
-        (SELECT * FROM order_info o INNER JOIN billing_info b ON o.id = b.order_info_id
-           WHERE b.coupon = coupon_code AND o.cust_id = iPShopperId))
-      AND expiration_date >= SYSDATE
-      AND coupon_code IN (iPCouponCode)
-      ORDER BY expiration_date;
-  
+	  SELECT c.*
+	  FROM ya_coupon c
+	  LEFT JOIN ya_coupon_user u ON c.coupon_code = u.coupon_code AND u.shopper_id = iPShopperId
+	  WHERE c.coupon_used <> 'Y'
+	  AND c.expiration_date >= SYSDATE
+	  AND (
+		  c.shopper_id = iPShopperId
+		  OR
+		  (
+			  c.all_shoppers = 'G' AND u.shopper_id is not null AND NOT EXISTS (
+				  SELECT 1 FROM order_info o INNER JOIN billing_info b ON o.id = b.order_info_id WHERE b.coupon = u.coupon_code AND o.cust_id = to_nchar(iPShopperId)
+			  )
+		  )
+	  )
+	  AND c.coupon_code IN (iPCouponCode);
+   
+  OPEN curPout1 FOR
+    SELECT coupon_code, constraint_type, constraint_value
+    FROM ya_coupon_constraint
+    WHERE coupon_code IN (iPCouponCode)
+      AND constraint_type in (1,2,3)
+    ORDER BY coupon_code, constraint_type;
+
 END GetCouponsWithCode;
 
 PROCEDURE GetValidCouponByOrder
