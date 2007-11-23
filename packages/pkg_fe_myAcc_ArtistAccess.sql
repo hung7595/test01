@@ -73,7 +73,7 @@ AS
             
     OPEN curPresult FOR
       SELECT 
-      al2.artist_id as artist_id, al2.lang_id as lang_id, nvl(art.origin_country_id, -1) as country_id,
+      art.artist_id as artist_id, al2.lang_id as lang_id, nvl(art.origin_country_id, -1) as country_id,
       nvl(al1.firstname, '') as en_firstname, nvl(al1.lastname, '') as en_lastname, nvl(al1.akaname, '') as en_akaname, 
       nvl(al2.firstname, '') as firstname, nvl(al2.lastname, '') as lastname, nvl(al2.akaname, '') as akaname
       FROM temp_artist_int_table tait
