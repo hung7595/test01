@@ -84,6 +84,19 @@ AS
 END Pkg_FE_ArtistAccess;
 /
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 CREATE OR REPLACE PACKAGE BODY Pkg_FE_ArtistAccess
 IS
   /* proc_fe_get_frontpage_artist */
@@ -257,8 +270,7 @@ IS
                   AND preferred_flag='Y'
                   AND ROWNUM=1
                 )
-          WHERE
-            a.gender = cPgender
+          WHERE a.gender = cPgender
           ORDER by
             (al.lastname_u || al.firstname_u || al.akaname_u);
        END;
@@ -308,8 +320,7 @@ IS
                   AND preferred_flag='Y'
                   AND ROWNUM=1
                 )
-          WHERE
-            a.gender = cPgender
+          WHERE a.gender = cPgender
           ORDER by
             (al.lastname_u ||  al.firstname_u || al.akaname_u);
         END;
