@@ -1,7 +1,4 @@
-
-REM START SS_ADM PKG_FE_PRODUCTACCESS
-
-  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_PRODUCTACCESS" 
+CREATE OR REPLACE PACKAGE          "PKG_FE_PRODUCTACCESS"
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -238,16 +235,26 @@ AS
     iPsite_id		IN	INT,
     curPgetBargainSuppInfo	OUT	refCur
   );
-  
+
   -- YesStyle
   PROCEDURE GetPublisherProductGroup (
     iPpublisherId IN INT,
     iPlangId IN INT,
     curPgetProductGroup OUT refCur
   );
+    PROCEDURE GetFrontPageProductLotsByPId (
+    iPpublisherId	IN	INT,
+    iPDeptId		IN	INT,
+    iPlangId		IN	INT,
+    iPsiteId		IN	INT,
+    curPgetFrontpage	OUT	refCur
+  ); /* For get brand page product lot */
 END Pkg_Fe_Productaccess;
+
 /
-CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_PRODUCTACCESS" 
+
+
+CREATE OR REPLACE PACKAGE BODY          "PKG_FE_PRODUCTACCESS"
 IS
   PROCEDURE GetPublisherGroupName (
     iPgroup_id    IN  INT,
@@ -2164,11 +2171,11 @@ END;
       ya_bargain_supp_info bsi
     WHERE
       bsi.SITE_ID = iPsite_id;
-      
+
     return;
   END GetBargainSuppInfoData;
-  
-  
+
+
   PROCEDURE GetPublisherProductGroup (
     iPpublisherId IN INT,
     iPlangId IN INT,
@@ -2200,7 +2207,50 @@ END;
     RETURN;
   END GetPublisherProductGroup;
 
+  PROCEDURE GetFrontPageProductLotsByPId (
+    iPpublisherId	IN	INT,
+    iPDeptId		IN	INT,
+    iPlangId		IN	INT,
+    iPsiteId		IN	INT,
+    curPgetFrontpage	OUT	refCur
+  )
+AS
+BEGIN
+  OPEN curPgetFrontpage FOR
+      SELECT
+        pl.sku,
+        pl.lot_location,
+        pll.description,
+        pl.dept_id,
+        PLI.desc_img_loc,
+        NVL(PLI.desc_img_width,0),
+        NVL(PLI.desc_img_height,0),
+        NULL,
+        -1,
+        pll.remark
+      FROM
+        YA_PRODUCT_LOT pl
+        INNER JOIN ya_publisher_file_rel pfr ON
+		  pfr.publisher_id = iPpublisherId
+		  AND
+		  pl.file_id = pfr.file_id
+        INNER JOIN ya_content_filename cf ON
+		  cf.id = pfr.file_id
+        LEFT OUTER JOIN YA_PROD_LOT_LANG pll ON
+          pl.prod_lot_id = pll.prod_lot_id
+          AND pll.lang_id = iPlangId
+        LEFT OUTER JOIN YA_PROD_LOT_LANG PLI ON
+          PLI.prod_lot_id = pl.prod_lot_id
+          AND PLI.preferred_flag = 'Y'
+        INNER JOIN prod_region pr ON
+          pl.sku = pr.prod_id
+		  AND pr.region_id=iPsiteId
+      WHERE
+        pr.is_enabled = 'Y' AND pl.lot_location = iPpublisherId
+      ORDER BY pl.lot_location, pl.priority;
+RETURN;
+END GetFrontPageProductLotsByPId;
+
 END Pkg_Fe_Productaccess;
+
 /
- 
-REM END SS_ADM PKG_FE_PRODUCTACCESS
