@@ -144,7 +144,8 @@ AS
     cPactionType IN VARCHAR2,
     cPremark IN CLOB,
     iPreview_id IN OUT INT,
-    iPrating_id IN OUT INT
+    iPrating_id IN OUT INT,
+    cPisCommit IN CHAR DEFAULT 'Y'
   );
 
   /* proc_fe_review_addReviewHelpful */
@@ -1815,7 +1816,8 @@ PROCEDURE InsertReviewData (
     cPactionType IN VARCHAR2,
     cPremark IN CLOB,
     iPreview_id IN OUT INT,
-    iPrating_id IN OUT INT
+    iPrating_id IN OUT INT,
+    cPisCommit IN CHAR DEFAULT 'Y'
   )
   AS
     iLseq_currval INT;
@@ -1966,9 +1968,14 @@ PROCEDURE InsertReviewData (
 			END;
 		END IF;
 
-    COMMIT;
+    IF cPisCommit = 'Y' THEN
+      BEGIN
+        COMMIT;
+      END;
+    END IF;
     RETURN;
   END InsertReviewData2;
+  
 
   PROCEDURE InserHelpfulReviewData (
     iPreview_id IN INT,
