@@ -1,6 +1,4 @@
 
-REM START SS_ADM PKG_FE_ARTICLEACCESS
-
   CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_ARTICLEACCESS" 
 AS
   TYPE refCur IS REF CURSOR;
@@ -70,8 +68,22 @@ AS
     iPlangId IN INT,
     oPcount OUT INT
   );
+  
+  PROCEDURE GetArticleCountBySiteIdLangId (
+    iPsiteId IN INT,
+    iPlangId IN INT,
+    oPcount OUT INT
+  );
 
   PROCEDURE GetArticlesByLangId (
+    iPlang_Id IN INT,
+    iPstart_rec IN INT,
+    iProw_num IN INT,
+    curPresult OUT refCur
+  );
+  
+  PROCEDURE GetArticlesBySiteIdLangId (
+    iPsite_Id IN INT,
     iPlang_Id IN INT,
     iPstart_rec IN INT,
     iProw_num IN INT,
@@ -555,6 +567,58 @@ AS
       WHEN NO_DATA_FOUND THEN
         oPcount := 0;
   END GetArticleCountByLangId;
+  
+  PROCEDURE GetArticleCountBySiteIdLangId (
+    iPsiteId IN INT,
+    iPlangId IN INT,
+    oPcount OUT INT
+  )
+  AS
+  BEGIN
+    Case iPsiteId
+      -- YA US Site
+      When 1 then
+        SELECT COUNT(*) AS num INTO oPcount
+          FROM
+          (
+            SELECT * FROM ya_article_lang lang, ya_article article
+            WHERE lang.article_id = article.article_id
+            AND lang.lang_id = iPlangId
+            AND article.enable = 'Y'
+            AND article.status = 8
+            AND article.IS_YA_US_ENABLED = 'Y'
+          );
+      -- YA GB Site
+      When 7 then
+        SELECT COUNT(*) AS num INTO oPcount
+          FROM
+          (
+            SELECT * FROM ya_article_lang lang, ya_article article
+            WHERE lang.article_id = article.article_id
+            AND lang.lang_id = iPlangId
+            AND article.enable = 'Y'
+            AND article.status = 8
+            AND article.IS_YA_GB_ENABLED = 'Y'
+          );
+      -- YS GB Site
+      When 10 then
+        SELECT COUNT(*) AS num INTO oPcount
+          FROM
+          (
+            SELECT * FROM ya_article_lang lang, ya_article article
+            WHERE lang.article_id = article.article_id
+            AND lang.lang_id = iPlangId
+            AND article.enable = 'Y'
+            AND article.status = 8
+            AND article.IS_YS_GB_ENABLED = 'Y'
+          );
+      ELSE
+        oPcount := 0;
+    End case;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        oPcount := 0;
+  END GetArticleCountBySiteIdLangId;
 
   PROCEDURE GetArticlesByLangId (
     iPlang_Id IN INT,
@@ -594,6 +658,126 @@ AS
     )
     WHERE rnum > iPstart_rec;
   END GetArticlesByLangId;
+  
+  PROCEDURE GetArticlesBySiteIdLangId (
+    iPsite_Id IN INT,
+    iPlang_Id IN INT,
+    iPstart_rec IN INT,
+    iProw_num IN INT,
+    curPresult OUT refCur
+  )
+  AS
+  BEGIN
+    /* get the article */
+    Case iPsite_Id
+      -- YA US Site
+      When 1 then
+        OPEN curPresult FOR
+        SELECT * FROM
+        (
+          SELECT innerQuery.*, rownum rnum
+          from
+          (
+            SELECT
+              NVL(article.product_group_sku,0) product_group_sku,
+              lang.title title,
+              lang.author author,
+              lang.parsed_body parsed_body,
+              lang.banner_image banner_image,
+              article.in_tracking_no in_tracking_no,
+              article.out_tracking_no out_tracking_no,
+              NVL(article.article_id,0) article_id,
+              lang.submission_date submission_date
+            FROM
+              ya_article_lang lang,
+              ya_article article
+            WHERE lang.article_id = article.article_id
+            AND lang.lang_id = iPlang_Id
+            AND article.enable = 'Y'
+            AND article.status = 8
+            AND article.IS_YA_US_ENABLED = 'Y'
+            ORDER BY lang.submission_date DESC
+          ) innerQuery
+          WHERE ROWNUM < (iPstart_rec + iProw_num + 1)
+        )
+        WHERE rnum > iPstart_rec;
+      -- YA GB Site
+      When 7 then
+                OPEN curPresult FOR
+        SELECT * FROM
+        (
+          SELECT innerQuery.*, rownum rnum
+          from
+          (
+            SELECT
+              NVL(article.product_group_sku,0) product_group_sku,
+              lang.title title,
+              lang.author author,
+              lang.parsed_body parsed_body,
+              lang.banner_image banner_image,
+              article.in_tracking_no in_tracking_no,
+              article.out_tracking_no out_tracking_no,
+              NVL(article.article_id,0) article_id,
+              lang.submission_date submission_date
+            FROM
+              ya_article_lang lang,
+              ya_article article
+            WHERE lang.article_id = article.article_id
+            AND lang.lang_id = iPlang_Id
+            AND article.enable = 'Y'
+            AND article.status = 8
+            AND article.IS_YA_GB_ENABLED = 'Y'
+            ORDER BY lang.submission_date DESC
+          ) innerQuery
+          WHERE ROWNUM < (iPstart_rec + iProw_num + 1)
+        )
+        WHERE rnum > iPstart_rec;
+      -- YS GB Site
+      When 10 then
+        OPEN curPresult FOR
+        SELECT * FROM
+        (
+          SELECT innerQuery.*, rownum rnum
+          from
+          (
+            SELECT
+              NVL(article.product_group_sku,0) product_group_sku,
+              lang.title title,
+              lang.author author,
+              lang.parsed_body parsed_body,
+              lang.banner_image banner_image,
+              article.in_tracking_no in_tracking_no,
+              article.out_tracking_no out_tracking_no,
+              NVL(article.article_id,0) article_id,
+              lang.submission_date submission_date
+            FROM
+              ya_article_lang lang,
+              ya_article article
+            WHERE lang.article_id = article.article_id
+            AND lang.lang_id = iPlang_Id
+            AND article.enable = 'Y'
+            AND article.status = 8
+            AND article.IS_YS_GB_ENABLED = 'Y'
+            ORDER BY lang.submission_date DESC
+          ) innerQuery
+          WHERE ROWNUM < (iPstart_rec + iProw_num + 1)
+        )
+        WHERE rnum > iPstart_rec;
+      Else
+        OPEN curPresult FOR
+        SELECT
+          '' product_group_sku,
+          '' title,
+          '' author,
+          '' parsed_body,
+          '' banner_image,
+          0 in_tracking_no,
+          0 out_tracking_no,
+          0 article_id,
+          sysdate submission_date
+        FROM dual;
+    End Case;
+  END GetArticlesBySiteIdLangId;
 
   /* proc_fe_GetNewArticleByArticleId */
   PROCEDURE GetNewArticleByArticleId (
@@ -719,7 +903,7 @@ AS
       ya_dept_lang dept,
       ya_article article
     WHERE rel.rel_id = dept.dept_id
-    AND dept.lang_id = rel.lang_id
+    --AND dept.lang_id = rel.lang_id
     AND rel.article_id = article.article_id
     AND article.enable = 'Y'
     AND article.status = 8
@@ -734,4 +918,3 @@ AS
 END Pkg_FE_ArticleAccess;
 /
  
-REM END SS_ADM PKG_FE_ARTICLEACCESS
