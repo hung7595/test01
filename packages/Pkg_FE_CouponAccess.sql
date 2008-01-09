@@ -67,7 +67,7 @@ END Pkg_FE_CouponAccess;
 /
 
 
-CREATE OR REPLACE PACKAGE BODY          "PKG_FE_COUPONACCESS"
+create or replace PACKAGE BODY          "PKG_FE_COUPONACCESS"
 AS
   PROCEDURE GetCoupon (
     cPcode IN VARCHAR2,
@@ -222,7 +222,7 @@ AS
   EXCEPTION WHEN NO_DATA_FOUND THEN
     iPreturn := -1;
   END checkReferralCoupon;
-  
+
   PROCEDURE CreateNewShopperCoupon (
     cPshopper_id IN CHAR,
     cPcoupon_code IN VARCHAR2
@@ -249,7 +249,7 @@ AS
     INSERT INTO ya_coupon
       (shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value,expiration_date, all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger)
     VALUES
-      (cPshopper_id, cLcoupon_code, 'YS New Customer Coupon 060711', 'YesStyle New Customer US$5 Coupon', 5, to_date('2007/09/30', 'yyyy/mm/dd'), 'O', 'N', 1, 10, 5);
+      (cPshopper_id, cLcoupon_code, 'YS New Customer Coupon 060711', 'YesStyle New Customer US$5 Coupon', 5, add_months(SYSDATE, 1), 'O', 'N', 1, 10, 5);
     COMMIT;
   END CreateNewShopperCoupon;
 
@@ -277,7 +277,7 @@ AS
 		INSERT INTO ya_coupon
 			(shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value,expiration_date, all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, create_date)
 		VALUES
-			(cPshopper_id, iLcoupon_code, 'YS New Customer Coupon 060711', 'YesStyle New Customer US$5 Coupon', 5, to_date('2007/09/30', 'yyyy/mm/dd'), 'O', 'N', 1, 10, 5, 'frontend', SYSDATE);
+			(cPshopper_id, iLcoupon_code, 'YS New Customer Coupon 060711', 'YesStyle New Customer US$5 Coupon', 5, add_months(SYSDATE, 1), 'O', 'N', 1, 10, 5, 'frontend', SYSDATE);
 
 		-- Retur Result
 		OPEN curPresult FOR
