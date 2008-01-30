@@ -1,5 +1,4 @@
-
-  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_PROD_GALLERYACCESS" AS
+CREATE OR REPLACE PACKAGE PKG_FE_PROD_GALLERYACCESS AS
 TYPE CUR_RETURN IS REF CURSOR;
 
 PROCEDURE AddImage
@@ -125,7 +124,8 @@ PROCEDURE UpdateSectionInfo
 
 END PKG_FE_PROD_GALLERYACCESS;
 /
-CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_PROD_GALLERYACCESS" AS
+
+CREATE OR REPLACE PACKAGE BODY PKG_FE_PROD_GALLERYACCESS AS
 
   PROCEDURE AddImage
 (
@@ -142,44 +142,43 @@ CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_PROD_GALLERYACCESS" AS
   iPArrange_priority IN INT := 0,
   cPisCommit IN CHAR DEFAULT 'Y'
 ) AS
-  gallery_id int;
-  image_id int;
-  counter int := 0;
-  sqlStatement nvarchar2(4000);
+  intGalleryId int;
+  intImageId int;
+  intCounter int := 0;
   BEGIN
     /* Create New Gallery If Sku Does Not Have Gallery, And Get the gallery_id */
-    SELECT count(*) into counter FROM ya_prod_gallery WHERE sku=iPSku;
-    IF counter > 0 then
-      SELECT gallery_id into gallery_id  FROM ya_prod_gallery WHERE sku=iPSku and rownum = 1;
+    SELECT count(*) into intCounter FROM ya_prod_gallery WHERE sku=iPSku;
+    IF intCounter > 0 then
+      SELECT gallery_id into intGalleryId  FROM ya_prod_gallery WHERE sku=iPSku and rownum = 1;
     ELSE
-        SELECT count(*) into counter FROM ya_prod_gallery;
-        IF counter > 0 then
-          SELECT MAX(gallery_id) into gallery_id  FROM ya_prod_gallery;
-          gallery_id := gallery_id + 1;
+        SELECT count(*) into intCounter FROM ya_prod_gallery;
+        IF intCounter > 0 then
+          SELECT MAX(gallery_id) into intGalleryId  FROM ya_prod_gallery;
+          intGalleryId := intGalleryId + 1;
         ELSE
-             gallery_id := 1;
+          intGalleryId := 1;
         END IF;
-        INSERT INTO ya_prod_gallery(gallery_id, sku) VALUES(gallery_id, iPSku);
+        INSERT INTO ya_prod_gallery(gallery_id, sku) VALUES(intGalleryId, iPSku);
     END IF;
-
+ 
     /* Rearrange Priority If Sku Is For YesStyle */
-    SELECT count(*) into counter FROM ya_prod_gallery_image WHERE gallery_id = gallery_id AND priority = 0;
-    IF (iPArrange_priority != 0  AND iPPriority = 0 AND counter > 0) then
-        UPDATE ya_prod_gallery_image SET priority = priority + 1 WHERE gallery_id = gallery_id;
+    SELECT count(*) into intCounter FROM ya_prod_gallery_image WHERE gallery_id = intGalleryId AND priority = 0;
+    IF (iPArrange_priority != 0  AND iPPriority = 0 AND intCounter > 0) then
+        UPDATE ya_prod_gallery_image SET priority = priority + 1 WHERE gallery_id = intGalleryId;
     END IF;
-
+    
     /* Insert Image */
-    Select SEQ_imageid.NEXTVAL into image_id from DUAL;
-    INSERT INTO ya_prod_gallery_image( image_id, gallery_id, section_id, image_path, thumb_path, priority)
-    VALUES(image_id,gallery_id, iPSection_id, iPImage_path, iPThumb_path, iPPriority);
-
+    Select SEQ_imageid.NEXTVAL into intImageId from DUAL;
+    INSERT INTO ya_prod_gallery_image( image_id, gallery_id, section_id, image_path, thumb_path, priority) 
+    VALUES(intImageId, intGalleryId, iPSection_id, iPImage_path, iPThumb_path, iPPriority);
+    
     /* Insert Image Description */
-    INSERT INTO ya_prod_gallery_desc(image_id, lang_id, description) VALUES( image_id, 1, iPDesc_en );
-    INSERT INTO ya_prod_gallery_desc(image_id, lang_id, description) VALUES( image_id, 2, iPDesc_b5 );
-    INSERT INTO ya_prod_gallery_desc(image_id, lang_id, description) VALUES( image_id, 3, iPDesc_jp );
-    INSERT INTO ya_prod_gallery_desc(image_id, lang_id, description) VALUES( image_id, 4, iPDesc_kr );
-    INSERT INTO ya_prod_gallery_desc(image_id, lang_id, description) VALUES( image_id, 5, iPDesc_gb );
-
+    INSERT INTO ya_prod_gallery_desc(image_id, lang_id, description) VALUES( intImageId, 1, iPDesc_en );
+    INSERT INTO ya_prod_gallery_desc(image_id, lang_id, description) VALUES( intImageId, 2, iPDesc_b5 );
+    INSERT INTO ya_prod_gallery_desc(image_id, lang_id, description) VALUES( intImageId, 3, iPDesc_jp );
+    INSERT INTO ya_prod_gallery_desc(image_id, lang_id, description) VALUES( intImageId, 4, iPDesc_kr );
+    INSERT INTO ya_prod_gallery_desc(image_id, lang_id, description) VALUES( intImageId, 5, iPDesc_gb );
+    
     IF cPisCommit = 'Y' THEN
       BEGIN
         COMMIT;
@@ -203,27 +202,27 @@ CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_PROD_GALLERYACCESS" AS
   iPName_gb IN NVARCHAR2,
   iPPriority IN int
 ) AS
-  section_id int;
+  intSection_id int;
   BEGIN
     /* Get the new section_id */
     BEGIN
-      SELECT MAX(section_id) into section_id  FROM ya_prod_gallery_section;
-      section_id := section_id + 1;
+      SELECT MAX(section_id) into intSection_id  FROM ya_prod_gallery_section;
+      intSection_id := intSection_id + 1;
     EXCEPTION
       WHEN NO_DATA_FOUND THEN
         BEGIN
-          section_id := 1;
+          intSection_id := 1;
         END;
     END;
-
+    
     /* Insert Section */
-    INSERT INTO ya_prod_gallery_section(section_id, lang_id, section_name) VALUES( section_id, 1,  iPName_en );
-    INSERT INTO ya_prod_gallery_section(section_id, lang_id, section_name) VALUES( section_id, 2,  iPName_b5 );
-    INSERT INTO ya_prod_gallery_section(section_id, lang_id, section_name) VALUES( section_id, 3,  iPName_jp );
-    INSERT INTO ya_prod_gallery_section(section_id, lang_id, section_name) VALUES( section_id, 4,  iPName_kr );
-    INSERT INTO ya_prod_gallery_section(section_id, lang_id, section_name) VALUES( section_id, 5,  iPName_gb );
+    INSERT INTO ya_prod_gallery_section(section_id, lang_id, section_name) VALUES( intSection_id, 1,  iPName_en );
+    INSERT INTO ya_prod_gallery_section(section_id, lang_id, section_name) VALUES( intSection_id, 2,  iPName_b5 );
+    INSERT INTO ya_prod_gallery_section(section_id, lang_id, section_name) VALUES( intSection_id, 3,  iPName_jp );
+    INSERT INTO ya_prod_gallery_section(section_id, lang_id, section_name) VALUES( intSection_id, 4,  iPName_kr );
+    INSERT INTO ya_prod_gallery_section(section_id, lang_id, section_name) VALUES( intSection_id, 5,  iPName_gb );
 
-    update ya_prod_gallery_section set priority = iPPriority where section_id = section_id;
+    update ya_prod_gallery_section set priority = iPPriority where section_id = intSection_id;
 
     COMMIT;
     RETURN;
@@ -249,7 +248,7 @@ CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_PROD_GALLERYACCESS" AS
       OPEN curPout FOR
         SELECT 1 from dual;
     END IF;
-
+    
     RETURN;
   END CanGalleryOverride;
 
@@ -335,14 +334,14 @@ CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_PROD_GALLERYACCESS" AS
   BEGIN
     OPEN curPout FOR
     /* Get All Image Gallery Of Specified Sku */
-    SELECT
-    b.section_id,
-    b.section_name,
-    c.image_id,
-    c.image_path,
-    c.thumb_path,
-    d.description,
-    c.priority as priority,
+    SELECT 
+    b.section_id, 
+    b.section_name, 
+    c.image_id, 
+    c.image_path, 
+    c.thumb_path, 
+    d.description, 
+    c.priority as priority, 
     b.priority as section_priority
     FROM ya_prod_gallery a, ya_prod_gallery_section b, ya_prod_gallery_image c, ya_prod_gallery_desc d
     WHERE a.gallery_id=c.gallery_id AND b.section_id=c.section_id AND  c.image_id=d.image_id
@@ -380,20 +379,20 @@ CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_PROD_GALLERYACCESS" AS
   BEGIN
     OPEN curPout FOR
       SELECT
-	ya_prod_gallery_image.image_id AS image_id,
-	ya_prod_gallery_image.gallery_id AS gallery_id,
-	ya_prod_gallery_image.section_id AS section_id,
-	ya_prod_gallery_image.image_path AS image_path,
-	ya_prod_gallery_image.thumb_path AS thumb_path,
-	ya_prod_gallery_image.priority AS priority,
-	ya_prod_gallery_desc.lang_id AS lang_id,
-	ya_prod_gallery_desc.description AS description,
+	ya_prod_gallery_image.image_id AS image_id, 
+	ya_prod_gallery_image.gallery_id AS gallery_id, 
+	ya_prod_gallery_image.section_id AS section_id, 
+	ya_prod_gallery_image.image_path AS image_path, 
+	ya_prod_gallery_image.thumb_path AS thumb_path, 
+	ya_prod_gallery_image.priority AS priority, 
+	ya_prod_gallery_desc.lang_id AS lang_id, 
+	ya_prod_gallery_desc.description AS description, 
 	ya_prod_gallery.sku AS sku
       FROM
 	ya_prod_gallery_image INNER JOIN
-	ya_prod_gallery_desc ON
+	ya_prod_gallery_desc ON 
 	ya_prod_gallery_image.image_id = ya_prod_gallery_desc.image_id INNER JOIN
-	ya_prod_gallery ON
+	ya_prod_gallery ON 
 	ya_prod_gallery_image.gallery_id = ya_prod_gallery.gallery_id
       WHERE
 	ya_prod_gallery_image.image_id = iPImageId;
@@ -408,7 +407,7 @@ CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_PROD_GALLERYACCESS" AS
   BEGIN
     /* TODO implementation required */
     OPEN curPout FOR
-      SELECT * FROM ya_prod_gallery_image
+      SELECT * FROM ya_prod_gallery_image 
       WHERE image_id = iPImageId;
     RETURN;
   END GetImgByImgId;
@@ -420,7 +419,7 @@ CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_PROD_GALLERYACCESS" AS
 ) AS
   BEGIN
     OPEN curPout FOR
-      SELECT cover_img_loc, cover_img_width, cover_img_height
+      SELECT cover_img_loc, cover_img_width, cover_img_height 
       FROM ya_product
       WHERE sku = iPSku;
     RETURN;
@@ -552,4 +551,3 @@ CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_PROD_GALLERYACCESS" AS
 
 END PKG_FE_PROD_GALLERYACCESS;
 /
- 
