@@ -2354,6 +2354,7 @@ AS
     WHEN OTHERS THEN
       BEGIN
         ROLLBACK;
+        RAISE;
       END;
   COMMIT;
   END InsertOrderXmlWithOrderNum;
