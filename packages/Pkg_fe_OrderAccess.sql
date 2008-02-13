@@ -86,7 +86,8 @@ AS
     vcPlimited_sku_csv IN VARCHAR,
     vcPlimited_qty_csv IN VARCHAR,
     cPcurrency IN CHAR,
-    iPencryptionKey_id IN INT
+    iPencryptionKey_id IN INT,
+    iPaffected_row OUT INT
   );
 
   /* proc_fe_InsertOrderXml_encrypted */
@@ -2178,7 +2179,8 @@ AS
     vcPlimited_sku_csv IN VARCHAR,
     vcPlimited_qty_csv IN VARCHAR,
     cPcurrency IN CHAR,
-    iPencryptionKey_id IN INT
+    iPencryptionKey_id IN INT,
+    iPaffected_row OUT INT
   )
   AS
     iLexist INT;
@@ -2349,10 +2351,11 @@ AS
         UpdateLimitedQuantity(vcPlimited_sku_csv, vcPlimited_qty_csv, iPsite_id);
       END;
     END IF;
-
+	iPaffected_row := SQL%ROWCOUNT;
   EXCEPTION
     WHEN OTHERS THEN
       BEGIN
+      iPaffected_row := -1;
         ROLLBACK;
         RAISE;
       END;
