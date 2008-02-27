@@ -1,5 +1,4 @@
-
-  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_ARTICLEACCESS" 
+CREATE OR REPLACE PACKAGE          "PKG_FE_ARTICLEACCESS"
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -100,10 +99,12 @@ AS
     curPgetArticle4 OUT refCur,
     curPgetArticle5 OUT refCur
   );
-
 END Pkg_FE_ArticleAccess;
+
 /
-CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_ARTICLEACCESS" 
+
+
+CREATE OR REPLACE PACKAGE BODY          "PKG_FE_ARTICLEACCESS"
 AS
   /* proc_fe_GetArticleByArticleId */
   PROCEDURE GetArticleByArticleId (
@@ -260,7 +261,9 @@ AS
       lang.parsed_body parsed_body,
       lang.banner_image banner_image,
       article.in_tracking_no in_tracking_no,
-      article.out_tracking_no out_tracking_no
+      article.out_tracking_no out_tracking_no,
+      NVL(article.article_id,0) article_id,
+      lang.submission_date submission_date
     FROM
       ya_article_lang lang,
       ya_article article
@@ -914,7 +917,6 @@ AS
     ORDER BY rel.priority ASC;
   RETURN;
   END;
-
 END Pkg_FE_ArticleAccess;
+
 /
- 
