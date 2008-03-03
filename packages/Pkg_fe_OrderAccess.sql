@@ -853,12 +853,9 @@ AS
           END;
         END IF;
 
-
-
-
-
         -- START - Obtained the SKU AND QTY
         -----------------------------------
+        /*
         SELECT (l.frontend_quantity - iLcurrent_qty), l.action_id
         INTO iLcurrent_qty, iLaction
         FROM YA_LIMITED_QUANTITY l
@@ -878,18 +875,32 @@ AS
             ORDER BY l.site_id
           )
         WHERE ROWNUM = 1;
-
+        */
 
         -- UPDATE frontend quantity
+        INSERT INTO YA_LIMITED_QUANTITY_ACTION
+          (
+            sku,
+            site_id,
+            action_id,
+            action_datetime
+          )
+        SELECT sku, site_id, action_id, SYSDATE 
+        FROM ya_limited_quantity 
+        WHERE 
+        (site_id = iPsite_id OR site_id = 99)
+        AND frontend_quantity - iLcurrent_qty <= 0
+        AND frontend_quantity > 0;
+        
         UPDATE YA_LIMITED_QUANTITY
         SET
-          frontend_quantity = iLcurrent_qty,
+          frontend_quantity = frontend_quantity - iLcurrent_qty,
           FE_last_change_datetime = SYSDATE
         WHERE
           sku = iLcurrent_sku
-          AND site_id = iLapply_site_id;
+          AND (site_id = iPsite_id OR site_id = 99);
 
-
+/*
         IF iLcurrent_qty <= 0  THEN
           BEGIN
             IF iLaction  = 1 THEN
@@ -947,7 +958,6 @@ AS
             END IF;
 
 
-            /* mark cansell, enabled */
             IF iLaction = 3 THEN
               IF iLapply_site_id = 1 THEN
                 UPDATE YA_PRODUCT
@@ -979,7 +989,6 @@ AS
               END IF;
             END IF;
 
-            /* mark out of print */
             IF iLaction  = 4 THEN
               IF iLapply_site_id = 1 THEN
                 UPDATE YA_PRODUCT
@@ -1003,7 +1012,6 @@ AS
             END IF;
 
 
-            /* mark 7 days */
             IF iLaction  = 5 THEN
               IF iLapply_site_id = 1 THEN
                 UPDATE YA_PRODUCT
@@ -1027,7 +1035,6 @@ AS
             END IF;
 
 
-            /* mark 14 days */
             IF iLaction  = 6 THEN
               IF iLapply_site_id = 1 THEN
                 UPDATE YA_PRODUCT
@@ -1066,6 +1073,7 @@ AS
               );
           END;
         END IF;
+  */
         ------
         -- END
 
@@ -1085,14 +1093,16 @@ AS
       END;
     END LOOP;
 
+    COMMIT;
+    RETURN;
+
     EXCEPTION
       WHEN OTHERS THEN
         BEGIN
           ROLLBACK;
+          RAISE;
         END;
 
-    COMMIT;
-    RETURN;
   END UpdateLimitedQuantity;
 
 
@@ -2160,13 +2170,14 @@ AS
       END;
     END IF;
 
+  COMMIT;
+
   EXCEPTION
     WHEN OTHERS THEN
       BEGIN
         iPorder_num := -1;
         ROLLBACK;
       END;
-  COMMIT;
   END InsertOrderXmlEncrypted;
 
   PROCEDURE InsertOrderXmlWithOrderNum (
