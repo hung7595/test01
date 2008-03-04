@@ -20,13 +20,6 @@ As
 END Pkg_fe_ManagementOrderAccess;
 /
 
-
-
-
-
-
-
-
 CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_MANAGEMENTORDERACCESS" 
 IS
   PROCEDURE GetOrderXML (
@@ -35,51 +28,14 @@ IS
   AS
   BEGIN
     OPEN curPorder FOR
-/*    
-    SELECT order_num, created_datetime, site_id,  order_xml
-    FROM ya_order
-    WHERE TO_CHAR(order_num) NOT IN (
-      SELECT origin_order_id
-      FROM order_info
-      WHERE id <> 62036
-      and origin_order_id not like 'ESD%'
-      and origin_order_id not like 'TOWER%'
-      and origin_order_id not like 'SS%'
-      and origin_order_id not like 'BB%'
-      and origin_order_id not like 'HMV%'
-    )
-    and (
-      (order_num > 1141720 AND site_id = 7)
-      OR (order_num > 1141710 AND site_id = 3)
-      OR (order_num > 1142106 AND site_id = 1)
-    )
-    ORDER BY order_num;
-	SELECT Y.ORDER_NUM, Y.CREATED_DATETIME, Y.SITE_ID, Y.ORDER_XML 
-	FROM 
-	YA_ORDER Y
-	LEFT OUTER JOIN 
-	( SELECT ORIGIN_ORDER_ID 
-	  FROM ORDER_INFO 
-	  WHERE ID <> 62036 
-	  AND ORIGIN_ORDER_ID NOT LIKE 'ESD%' 
-	  AND ORIGIN_ORDER_ID NOT LIKE 'TOWER%' 
-	  AND ORIGIN_ORDER_ID NOT LIKE 'SS%' 
-	  AND ORIGIN_ORDER_ID NOT LIKE 'BB%' 
-	  AND ORIGIN_ORDER_ID NOT LIKE 'HMV%' ) o
-	ON TO_CHAR(ORDER_NUM) = O.ORIGIN_ORDER_ID  
-	WHERE O.ORIGIN_ORDER_ID IS NULL
-	AND ( 
-          (ORDER_NUM > 1141720 AND SITE_ID = 7) 
-       OR (ORDER_NUM > 1141710 AND SITE_ID = 3) 
-       OR (ORDER_NUM > 1142106 AND SITE_ID = 1))
-    ORDER BY order_num;   
-*/
+
 
 	SELECT Y.ORDER_NUM, Y.CREATED_DATETIME, Y.SITE_ID, Y.ORDER_XML 
 	FROM  YA_ORDER Y 
-        LEFT OUTER JOIN ORDER_INFO O ON TO_CHAR(ORDER_NUM) = O.ORIGIN_ORDER_ID
-        WHERE O.ORIGIN_ORDER_ID IS NULL
-          AND ORDER_NUM > 4500000;
+    LEFT OUTER JOIN ORDER_INFO O ON TO_CHAR(ORDER_NUM) = O.ORIGIN_ORDER_ID
+  WHERE O.ORIGIN_ORDER_ID IS NULL
+    AND ORDER_NUM > 4988000
+    AND ORDER_NUM not in (4969471, 4947249); -- invalid order without order line
           
   END GetOrderXML;
 
