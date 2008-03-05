@@ -890,7 +890,8 @@ AS
         WHERE 
         (site_id = iPsite_id OR site_id = 99)
         AND frontend_quantity - iLcurrent_qty <= 0
-        AND frontend_quantity > 0;
+        AND frontend_quantity > 0
+        AND sku = iLcurrent_sku;
         
         UPDATE YA_LIMITED_QUANTITY
         SET
