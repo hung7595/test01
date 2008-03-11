@@ -7747,12 +7747,12 @@ IS
           FROM ya_prod_attr pa
           WHERE
             pa.attribute_id = bc.category_attribute_id
-            AND EXISTS
+            AND pa.sku IN 
               (
-                SELECT 1
+                SELECT bp.sku
                 FROM ya_bargain_product bp
-                WHERE
-                  bp.sku = pa.sku
+                WHERE 1=1 
+                  -- bp.sku = pa.sku
                   AND bp.site_id = iPsite_id
                   AND bp.sale_start <= SYSDATE()
                   AND bp.sale_end >= SYSDATE()
@@ -7760,8 +7760,6 @@ IS
         )
     ORDER BY bc.priority;
   END GetBargainRootDept;
-
-
 
   PROCEDURE GetBargainRootLangDept (
     iPbargain_attribute IN INT,
