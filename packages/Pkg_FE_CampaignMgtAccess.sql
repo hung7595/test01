@@ -66,8 +66,7 @@ IS
 	iProw_affacted OUT INT
   )
   AS
-	sLSQL1 VARCHAR2(500);
-	sLSQL2 VARCHAR2(400);
+	sLSQL1 VARCHAR2(1000);
   BEGIN
 	sLSQL1 := 'INSERT INTO ya_campaign (campaign_code, sku, campaign_datetime, created_datetime)
           SELECT '|| iCampaignCode || ', sku, sysdate, sysdate FROM ya_product, dual WHERE sku in (' || cSKUCsv || ') AND sku not in (SELECT sku FROM ya_campaign WHERE campaign_code = '|| iCampaignCode || ')';
@@ -76,12 +75,6 @@ IS
 	--INSERT INTO ya_campaign (campaign_code, sku, campaign_datetime, created_datetime)
           --SELECT iCampaignCode, sku, dtLcurrDate, dtLcurrDate FROM ya_product WHERE sku in (cSKUCsv)
           --AND sku not in (SELECT sku FROM ya_campaign WHERE campaign_code = iCampaignCode);
-	sLSQL2 := 'INSERT INTO ya_campaign_history (campaign_code, sku, action_type_id, action_datetime)
-          SELECT '|| iCampaignCode || ', sku, 1, sysdate FROM ya_product,dual WHERE sku in (' || cSKUCsv || ')';
-		  dbms_output.put_line(sLSQL2);
-	EXECUTE IMMEDIATE sLSQL2;
-	--INSERT INTO ya_campaign_history (campaign_code, sku, action_type_id, action_datetime)
-          --SELECT iCampaignCode, sku, 1, dtLcurrDate FROM ya_product WHERE sku in (cSKUCsv);
 
     IF sqlcode = 0 THEN
 		iProw_affacted := SQL%ROWCOUNT;
@@ -98,18 +91,11 @@ IS
   )
   AS
 	sLSQL1 VARCHAR2(500);
-	sLSQL2 VARCHAR2(400);
   BEGIN
 	sLSQL1 := 'DELETE FROM ya_campaign WHERE campaign_code = ' || iCampaignCode || ' AND sku in (' || cSKUCsv || ')';
 		  dbms_output.put_line(sLSQL1);
 	EXECUTE IMMEDIATE sLSQL1;
 	--DELETE FROM ya_campaign WHERE campaign_code = iCampaignCode AND sku in (cSKUCsv);
-	sLSQL2 := 'INSERT INTO ya_campaign_history (campaign_code, sku, action_type_id, action_datetime)
-           SELECT '|| iCampaignCode || ', sku, 2, sysdate FROM ya_product, dual WHERE sku in ('|| cSKUCsv || ')';
-		  dbms_output.put_line(sLSQL2);
-	EXECUTE IMMEDIATE sLSQL2;
-	--INSERT INTO ya_campaign_history (campaign_code, sku, action_type_id, action_datetime)
-           --SELECT iCampaignCode, sku, 2, dtLcurrDate FROM ya_product WHERE sku in (cSKUCsv);
 
     IF sqlcode = 0 THEN
 		iProw_affacted := SQL%ROWCOUNT;
@@ -168,26 +154,21 @@ ORDER BY p.sku;
 	iProw_affacted OUT INT
   )
   AS
-    dtLcurrDate VARCHAR2(50);
 	sLSQL1 VARCHAR2(500);
 	sLSQL2 VARCHAR2(400);
-	sLSQL3 VARCHAR2(400);
 
   BEGIN
-    SELECT TO_CHAR(SYSDATE, 'DD-MON-YYYY HH:MI:SS') INTO dtLcurrDate FROM DUAL;
 
 	sLSQL1 := 'INSERT INTO ya_campaign (campaign_code, sku, campaign_datetime, created_datetime)' ||
         'SELECT ' || iCampaignCode || ', sku,  sysdate, sysdate FROM ya_product, dual WHERE sku in (' ||
 		cSKUList || ') AND sku not in (SELECT sku FROM ya_campaign WHERE campaign_code = ' || iCampaignCode || ')';
-	--Need to remove sku from 135 once it is in 133
 	EXECUTE IMMEDIATE sLSQL1;
 
 	If iCampaignCode = 133 Then
-		sLSQL2 := 'DELETE FROM ya_campaign ' || 'WHERE campaign_code = 135 ' || 'AND sku in (' || cSKUList || ')';
+	--Need to remove sku from 135 once it is in 133
+		sLSQL2 := 'DELETE FROM ya_campaign WHERE campaign_code = 135 AND sku in (' || cSKUList || ')';
 		EXECUTE IMMEDIATE sLSQL2;
 	END IF;
-	sLSQL3 := 'INSERT INTO ' || 'ya_campaign_history ' || '(campaign_code, sku, ' || 'action_type_id,' || ' action_datetime) SELECT ' ||	iCampaignCode || ' , sku, 1, sysdate FROM ya_product, dual' || ' WHERE sku in (' || cSKUList || ')';
-	EXECUTE IMMEDIATE sLSQL3;
     IF sqlcode = 0 THEN
 		iProw_affacted := SQL%ROWCOUNT;
 		COMMIT;
@@ -207,8 +188,6 @@ ORDER BY p.sku;
   BEGIN
     SELECT SYSDATE INTO dtLcurrDate FROM DUAL;
 	DELETE FROM ya_campaign WHERE sku = iSKU and campaign_code = iCampaignCode;
-	INSERT INTO ya_campaign_history (campaign_code, sku, action_type_id, action_datetime)
-        VALUES (iCampaignCode , iSKU , 2, dtLcurrDate);
 
     IF sqlcode = 0 THEN
 		iProw_affacted := SQL%ROWCOUNT;
