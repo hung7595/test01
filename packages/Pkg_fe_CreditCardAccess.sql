@@ -35,6 +35,10 @@ AS
     cPencryptionKey  IN	INT,
     iPprofileId IN OUT INT
   );
+  PROCEDURE DeleteCreditCard (
+  iPprofile_id IN INT,
+  iProw_affacted OUT INT
+  );
 END Pkg_Fe_Creditcardaccess;
 /
 
@@ -216,6 +220,27 @@ IS
       );
     COMMIT;
   RETURN;
-  END CreateCCProfileEncrypted;
+  END CreateCCProfileEncrypted;  
+  PROCEDURE DeleteCreditCard (
+    iPprofile_id IN INT,
+    iProw_affacted OUT INT
+  )
+  AS
+  BEGIN
+    iProw_affacted := 0;
+  
+    DELETE FROM YA_CREDIT_CARD_PROFILE    
+    WHERE profile_id = iPprofile_id;
+    
+    -- Commit
+    IF sqlcode = 0 THEN      
+      iProw_affacted := SQL%ROWCOUNT;
+      COMMIT;
+    ELSE        
+      ROLLBACK;          
+    END IF;
+        
+    RETURN;
+  END DeleteCreditCard;  
 END Pkg_Fe_Creditcardaccess;
 /
