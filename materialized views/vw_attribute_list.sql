@@ -10,11 +10,11 @@ select pa.attribute_id,a.attribute_type_id, p.publisher_id, pd.dept_id,count(pa.
 inner join ya_prod_attr pa on p.sku=pa.sku
 inner join ya_prod_dept pd on p.sku=pd.sku
 inner join ya_attribute a on pa.attribute_id=a.attribute_id
-inner join ya_attribute_type att on a.attribute_type_id=att.attribute_type_id and a.attribute_type_id in (64, 65)
+inner join ya_attribute_type att on a.attribute_type_id=att.attribute_type_id and a.attribute_type_id in (64, 65, 68)
 inner join prod_avlb pav on p.sku=pav.prod_id and region_id=10 and avlb<=40
 inner join prod_region pr on p.sku=pr.prod_id and pr.region_id=10 and pr.is_can_sell='Y' and pr.is_enabled='Y'
 where 1=1 -- p.publisher_id=233766 
-and pd.dept_id in (10864, 11118)
+and pd.dept_id in (10864, 11118, 11434)
 group by pa.attribute_id,a.attribute_type_id, p.publisher_id, pd.dept_id
 )
  a
