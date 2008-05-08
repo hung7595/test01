@@ -97,6 +97,10 @@ AS
   iPlangId IN INT,
   curPresult1 out refCur
   );
+    
+  PROCEDURE GetAttributeType ( 
+  curPresult1 out refCur
+  );
   
    END Pkg_FE_DeptMgtAccess;
 
@@ -531,7 +535,17 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	RETURN;
 
   END GetBrowsePath;
+  
+  PROCEDURE GetAttributeType (  
+  curPresult1 out refCur
+  ) AS
+  BEGIN
+    
+    OPEN curPresult1 FOR	  
+		 select attribute_type_id, attribute_type_name from ya_attribute_type where lang_id = 1;
+	RETURN;
 
+  END GetAttributeType;
 END PKG_FE_DEPTMGTACCESS;
 
 /
