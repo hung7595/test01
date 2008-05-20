@@ -35,7 +35,7 @@ IS
     LEFT OUTER JOIN ORDER_INFO O ON TO_CHAR(ORDER_NUM) = O.ORIGIN_ORDER_ID
   WHERE O.ORIGIN_ORDER_ID IS NULL
     AND ORDER_NUM > 4988000
-    AND ORDER_NUM not in (4969471, 4947249); -- invalid order without order line
+    AND ORDER_NUM not in (4969471, 4947249, 5061468); -- invalid order without order line
           
   END GetOrderXML;
 
