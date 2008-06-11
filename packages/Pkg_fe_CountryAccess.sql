@@ -10,6 +10,7 @@ AS
 END Pkg_fe_CountryAccess;
 /
 
+
 CREATE OR REPLACE package body Pkg_fe_CountryAccess
 IS
   PROCEDURE GetCountryList (
@@ -50,6 +51,7 @@ IS
           AND CASE iPsite_id
                 WHEN 1 THEN c.us_canship
                 WHEN 7 THEN c.tw_canship
+                WHEN 10 THEN c.YS_CANSHIP
               END = 'Y'
         ORDER BY cs.country_name;
       END;
@@ -57,5 +59,5 @@ IS
   RETURN;
   END GetCountryList;
 END Pkg_fe_CountryAccess;
-/
 
+/
