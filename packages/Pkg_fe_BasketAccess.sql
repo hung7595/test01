@@ -62,6 +62,17 @@ AS
     cPskuCSV IN VARCHAR2,
     iPtype IN INT
   );
+
+  PROCEDURE ClearBasket (
+    cPshopperId IN CHAR,
+    iPsiteId IN INT
+  );
+  
+  PROCEDURE ClearSaveForLaterBasket (
+    cPshopperId IN CHAR,
+    iPsiteId IN INT
+  );
+
 	PROCEDURE GetShadowBasketWithWarranty (
 	cPguid IN CHAR,
     cPshopperId IN CHAR,
@@ -540,6 +551,28 @@ BEGIN
   COMMIT;
 --  EXCEPTION WHEN others THEN ROLLBACK;
 END;
+
+  PROCEDURE ClearBasket (
+    cPshopperId IN CHAR,
+    iPsiteId IN INT
+    )
+  AS
+  BEGIN
+    DELETE FROM ya_new_basket WHERE shopper_id = cPshopperId AND site_id = iPsiteId AND type = 0; -- type = 0 for normal basket
+    DELETE FROM ya_warranty_basket WHERE shopper_id = cPshopperId AND site_id = iPsiteId;
+    COMMIT;
+  END;
+
+  PROCEDURE ClearSaveForLaterBasket (
+    cPshopperId IN CHAR,
+    iPsiteId IN INT
+    )
+  AS
+  BEGIN
+    DELETE FROM ya_new_basket WHERE shopper_id = cPshopperId AND site_id = iPsiteId AND type = 1; -- type = 1 for save for later basket
+    COMMIT;
+  END;
+
 /* use by paypal order*/
  PROCEDURE GetShadowBasketWithWarranty (
 	cPguid IN CHAR,
