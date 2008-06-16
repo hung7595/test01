@@ -210,7 +210,7 @@ AS
          ELSE ld.sts END AS lineStatus
       , ol.qnty AS quantity, b.coupon, b.coupon_amt, b.credit, b.credit_amt, b.shipment_amt
       , b.handling_amt, b.tax, b.amt, o.split_shipment, b.handling_amt, b.special_handling, b.cc_num, b.first_name AS b_firstname, b.last_name AS b_lastname
-      , b.method AS paymentType, b.addr_1 AS b_address1, b.addr_2 AS b_address2, b.city AS b_city, b.state AS b_state, b.zip AS b_zip, b.phone AS b_phone
+      , b.method AS paymentType, b.addr_1 AS b_address1, b.addr_2 AS b_address2, b.city AS b_city, b.state AS b_state, b.zip AS b_zip, b.phone AS b_phone, b.currency AS currency
       , s.first_name AS s_firstname, s.last_name AS s_lastname, s.email AS s_email, s.day_phone AS s_dayPhone, s.addr_1 AS s_address1, s.addr_2 AS s_address2
       , s.city AS s_city, s.state AS s_state, s.zip AS s_zip, s.method AS shipMethodId, s.country AS ship_country_id, pl.prod_name AS prod_name, pe.prod_name AS prod_ename
       , cast(ol.misc_info AS VARCHAR2(4000)) AS miscInfo, pr.is_preorder AS preorder, pr.preorder_start AS preorder_start, pr.preorder_end AS preorder_end
@@ -250,7 +250,7 @@ AS
       il.sku, il.unit_price, il.shipment_unit, il.qnty, il.shipment_id, sp.tracking_num, sp.id AS shipmentId,
       b.coupon, b.coupon_amt, b.credit, b.credit_amt, b.shipment_amt, b.handling_amt, b.tax, b.amt,
       b.cc_num, b.first_name AS b_firstname, b.last_name AS b_lastname,
-      b.addr_1 AS b_address1, b.addr_2 AS b_address2, b.city AS b_city, b.state AS b_state, b.zip AS b_zip, b.phone AS b_phone,
+      b.addr_1 AS b_address1, b.addr_2 AS b_address2, b.city AS b_city, b.state AS b_state, b.zip AS b_zip, b.phone AS b_phone, b.currency AS currency,
       s.first_name AS s_firstname, s.last_name AS s_lastname, s.email AS s_email, s.day_phone AS s_dayPhone,
       s.addr_1 AS s_address1, s.addr_2 AS s_address2, s.city AS s_city, s.state AS s_state, s.zip AS s_zip,
       pl.prod_name AS prod_name, pf.prod_name AS prod_name_english, pf.prod_name_img_loc, s.method AS shipMethodId, s.country AS ship_country_id,
