@@ -51,7 +51,7 @@ IS
   AS
   BEGIN
    OPEN curPAttribute FOR
-          select site_id,ATTRIBUTE_ID,COUNTRY_ID from ya_ban_ship_country_attr order by attribute_id,country_id;
+          select site_id,ATTRIBUTE_ID,COUNTRY_ID from ya_ban_ship_country_attr order by site_id,attribute_id,country_id;
   END GetCountryBlockByAttr;
 
     END Pkg_FE_CountryBlockAccess;
