@@ -393,6 +393,28 @@ PROCEDURE InsertPaypalOrderXml (
     iPaddress_id IN INT,
     cPcurrency IN CHAR DEFAULT 'USD'
   );
+  
+  PROCEDURE UpdateShippingAddressYS (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    nvcPcustomer_firstname IN NVARCHAR2,
+    nvcPcustomer_lastname IN NVARCHAR2,
+    nvcPcustomer_email IN NVARCHAR2,
+    nvcPship_to_firstname IN NVARCHAR2,
+    nvcPship_to_lastname IN NVARCHAR2,
+    nvcPship_to_address_one IN NVARCHAR2,
+    nvcPship_to_address_two IN NVARCHAR2,
+    nvcPship_to_city IN NVARCHAR2,
+    iPship_to_state_id IN INT,
+    nvcPship_to_state IN NVARCHAR2,
+    nvcPship_to_zip IN NVARCHAR2,
+    iPship_to_country_id IN INT,
+    nvcPship_to_phone IN NVARCHAR2,	
+    nvcPship_to_evephone IN NVARCHAR2,
+    nvcPship_to_email IN NVARCHAR2,
+    iPaddress_id IN INT,
+    cPcurrency IN CHAR DEFAULT 'USD'
+  );
 
   /* proc_fe_UpdateBillingAddress */
   PROCEDURE UpdateBillAddress (
@@ -3996,6 +4018,9 @@ PROCEDURE GetShadowOrderWithWarranty (
     ELSIF iPsite_id = 10 THEN
       -- YesStyle Site
       iLship_method := 49; -- Standard
+	ELSIF iPsite_id = 11 THEN
+      -- YesStyle China
+      iLship_method := 53; -- Standard
     ELSE
       iLship_method := -1;
     END IF;
@@ -4396,6 +4421,9 @@ PROCEDURE GetShadowOrderWithWarranty (
     ELSIF iPsite_id = 10 THEN
       -- YesStyle Site
       iLship_method := 49; -- Standard
+	ELSIF iPsite_id = 11 THEN
+      -- YesStyle China
+      iLship_method := 53; -- Standard
     ELSE
       iLship_method := -1;
     END IF;
@@ -4525,8 +4553,6 @@ PROCEDURE GetShadowOrderWithWarranty (
   EXCEPTION WHEN OTHERS THEN
     ROLLBACK;
   END UpdateShoppingInfo;
-
-
 
   PROCEDURE UpdateShippingAddress (
     cPshopper_id IN CHAR,
@@ -4751,6 +4777,242 @@ PROCEDURE GetShadowOrderWithWarranty (
   EXCEPTION WHEN OTHERS THEN
     ROLLBACK;
   END UpdateShippingAddress;
+
+  PROCEDURE UpdateShippingAddressYS (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    nvcPcustomer_firstname IN NVARCHAR2,
+    nvcPcustomer_lastname IN NVARCHAR2,
+    nvcPcustomer_email IN NVARCHAR2,
+    nvcPship_to_firstname IN NVARCHAR2,
+    nvcPship_to_lastname IN NVARCHAR2,
+    nvcPship_to_address_one IN NVARCHAR2,
+    nvcPship_to_address_two IN NVARCHAR2,
+    nvcPship_to_city IN NVARCHAR2,
+    iPship_to_state_id IN INT,
+    nvcPship_to_state IN NVARCHAR2,
+    nvcPship_to_zip IN NVARCHAR2,
+    iPship_to_country_id IN INT,
+    nvcPship_to_phone IN NVARCHAR2,
+    nvcPship_to_evephone IN NVARCHAR2,
+    nvcPship_to_email IN NVARCHAR2,
+    iPaddress_id IN INT,
+    cPcurrency IN CHAR DEFAULT 'USD'
+  )
+  AS
+    iLsale_id INT;
+    iLstored_shipping_method_id INT;
+    cLstored_shopper_id CHAR(32);
+    iLshipping_method_id INT;
+  BEGIN
+    iLsale_id := -1; -- Unknown sale id
+
+    -- Check whether checkout data already exists
+    BEGIN
+      SELECT
+        shipping_method_id,
+        shopper_id
+      INTO
+        iLstored_shipping_method_id,
+        cLstored_shopper_id
+      FROM ya_checkout_data
+      WHERE
+        shopper_id = cPshopper_id
+        AND site_id = iPsite_id;
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+      iLstored_shipping_method_id := -1;
+      cLstored_shopper_id := '';
+    END;
+
+
+    IF (cLstored_shopper_id IS NOT NULL) THEN -- That means checkout data exists
+      BEGIN
+        -- Resolve Conflicts BETWEEN Country AND Shipping Method Id
+        IF (iPsite_id = 1) THEN
+          IF (iPship_to_country_id = 226 AND iLstored_shipping_method_id = 11) THEN
+            -- Canadian shipping method + Ship to US
+            UPDATE ya_checkout_data
+            SET shipping_method_id = 16 -- Reset the method to Standard
+            WHERE
+              shopper_id = cPshopper_id
+              AND site_id = iPsite_id;
+          ELSIF (iPship_to_country_id = 38 AND iLstored_shipping_method_id <> 11) THEN
+            -- Ship to Canada + non-Canadian shipping method
+            UPDATE ya_checkout_data
+            SET shipping_method_id = 11 -- Reset shipping method to Canadian
+            WHERE
+              shopper_id = cPshopper_id
+              AND site_id = iPsite_id;
+          ELSIF (iLstored_shipping_method_id IS NULL OR iLstored_shipping_method_id = -1) THEN
+            IF (iPship_to_country_id = 226) THEN
+              UPDATE ya_checkout_data
+              SET shipping_method_id = 16 -- SET shipping method to Standard
+              WHERE
+                shopper_id = cPshopper_id
+                AND site_id = iPsite_id;
+            ELSIF (iPship_to_country_id = 38) THEN
+              UPDATE ya_checkout_data
+              SET shipping_method_id = 11 -- SET shipping method to Canadian
+              WHERE
+                shopper_id = cPshopper_id
+                AND site_id = iPsite_id;
+            END IF;
+          END IF;
+        ELSIF (iPsite_id = 7) THEN
+          IF (iPship_to_country_id = 98 AND iLstored_shipping_method_id <> 15) THEN
+            -- IF ship to HK the only eligible method is Express
+            UPDATE ya_checkout_data
+            SET shipping_method_id = 15
+            WHERE
+              shopper_id = cPshopper_id
+              AND site_id = iPsite_id;
+          ELSIF (iPship_to_country_id = 115 AND iLstored_shipping_method_id <> 12) THEN
+            -- IF ship to Korea the only eligible method is Standard
+            UPDATE ya_checkout_data
+            SET shipping_method_id = 12
+            WHERE
+              shopper_id = cPshopper_id
+              AND site_id = iPsite_id;
+          ELSIF (iPship_to_country_id <> 98 AND iPship_to_country_id <> 115
+            AND iLstored_shipping_method_id <> 12 AND iLstored_shipping_method_id <> 15) THEN
+            -- IF ship to Global site AND <> HK AND Korea default to Standard
+            UPDATE ya_checkout_data
+            SET shipping_method_id = 12
+            WHERE
+              shopper_id = cPshopper_id
+              AND site_id = iPsite_id;
+          ELSIF (iPship_to_country_id <> 98 AND iPship_to_country_id <> 115
+            AND iLstored_shipping_method_id <> 12 AND iLstored_shipping_method_id <> 15) THEN
+            -- IF ship to Global site AND <> HK AND Korea default to Standard
+            UPDATE ya_checkout_data
+            SET shipping_method_id = 12
+            WHERE
+              shopper_id = cPshopper_id
+              AND site_id = iPsite_id;
+          ELSIF (iLstored_shipping_method_id IS NULL) THEN
+            -- Shipping method has not been SET yet
+            IF (iPship_to_country_id = 98) THEN
+              -- IF ship HK default to Express
+              UPDATE ya_checkout_data
+              SET shipping_method_id = 15 -- SET shipping method to Express
+              WHERE
+                shopper_id = cPshopper_id
+                AND site_id = iPsite_id;
+            ELSE
+              -- Including Korea
+              UPDATE ya_checkout_data
+              SET shipping_method_id = 12 -- SET shipping method to Standard
+              WHERE
+                shopper_id = cPshopper_id
+                AND site_id = iPsite_id;
+            END IF;
+          END IF;
+        ELSIF (iPsite_id = 10) THEN
+          UPDATE ya_checkout_data
+          SET shipping_method_id = 49 -- SET shipping method to Express
+          WHERE
+            shopper_id = cPshopper_id
+            AND site_id = iPsite_id;
+        ELSIF (iPsite_id = 11) THEN
+          UPDATE ya_checkout_data
+          SET shipping_method_id = 53 -- SET shipping method to Express
+          WHERE
+            shopper_id = cPshopper_id
+            AND site_id = iPsite_id;
+        END IF;
+
+        UPDATE ya_checkout_data
+        SET
+          ship_to_firstname = nvcPship_to_firstname,
+          ship_to_lastname = nvcPship_to_lastname,
+          ship_to_address_one = nvcPship_to_address_one,
+          ship_to_address_two = nvcPship_to_address_two,
+          ship_to_city = nvcPship_to_city,
+          ship_to_state_id = iPship_to_state_id,
+          ship_to_state = nvcPship_to_state,
+          ship_to_zip = nvcPship_to_zip,
+          ship_to_country_id = iPship_to_country_id,
+          ship_to_day_phone = nvcPship_to_phone,
+          ship_to_eve_phone = nvcPship_to_evephone,
+          ship_to_email = nvcPship_to_email,
+          ship_profile_id = iPaddress_id,
+          last_updated_datetime = SYSDATE()
+        WHERE
+          shopper_id = cPshopper_id
+          AND site_id = iPsite_id;
+      END;
+    ELSE
+      BEGIN
+        IF (iPsite_id = 10) THEN
+          iLshipping_method_id := 49; -- Standard		
+        ELSIF (iPsite_id = 11) THEN
+          iLshipping_method_id := 53; -- Standard
+        ELSE
+          CASE iPship_to_country_id
+            WHEN 226 THEN -- US
+              iLshipping_method_id := 16; -- Standard
+            WHEN 38 THEN -- Canada
+              iLshipping_method_id := 11; -- Canadian
+            WHEN 98 THEN -- Hong Kong
+              iLshipping_method_id := 15; -- Express
+            ELSE iLshipping_method_id := 12;
+          END CASE;
+        END IF;
+
+        INSERT INTO ya_checkout_data
+          (
+            shopper_id,
+            site_id,
+            sale_id,
+            customer_firstname,
+            customer_lastname,
+            customer_email,
+            ship_to_firstname,
+            ship_to_lastname,
+            ship_to_address_one,
+            ship_to_address_two,
+            ship_to_city,
+            ship_to_state_id,
+            ship_to_state,
+            ship_to_zip,
+            ship_to_country_id,
+            ship_to_day_phone,
+			SHIP_TO_EVE_PHONE,
+            ship_to_email,
+            ship_profile_id,
+            shipping_method_id,
+            currency
+          )
+        VALUES
+          (
+            cPshopper_id,
+            iPsite_id,
+            iLsale_id,
+            nvcPcustomer_firstname,
+            nvcPcustomer_lastname,
+            nvcPcustomer_email,
+            nvcPship_to_firstname,
+            nvcPship_to_lastname,
+            nvcPship_to_address_one,
+            nvcPship_to_address_two,
+            nvcPship_to_city,
+            iPship_to_state_id,
+            nvcPship_to_state,
+            nvcPship_to_zip,
+            iPship_to_country_id,
+            nvcPship_to_phone,
+            nvcPship_to_evephone,
+            nvcPship_to_email,
+            iPaddress_id,
+            iLshipping_method_id,
+            cPcurrency
+          );
+      END;
+    END IF;
+    COMMIT;
+  EXCEPTION WHEN OTHERS THEN
+    ROLLBACK;
+  END UpdateShippingAddressYS;
 
 
 
