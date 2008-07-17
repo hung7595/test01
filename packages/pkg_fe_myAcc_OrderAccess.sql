@@ -130,7 +130,7 @@ BEGIN
   SELECT 
     ol.id as order_line_id, ol.prod_id as sku, p.account_id as account_id, pl.prod_name_u as product_name, old.qnty as quantity, ol.unit_price as unit_price, old.sts as status, 
     ol.shipment_unit, ol.promotion_id as promotion_id, ol.original_unit_price as original_unit_price, pa.avlb as avlb, ol.parent_id, ol.misc_info,
-    p.release_date, pr.is_preorder, pr.preorder_start, pr.preorder_end, pe.prod_name_u as eng_prod_name, ol.parent_line_id
+    p.release_date, pr.is_preorder, pr.preorder_start, pr.preorder_end, pe.prod_name_u as eng_prod_name, ol.parent_line_id, ol.shipment_grp
   FROM (select * from order_info where cust_id = cPshopperId and id = iLorderInfoId) oi
   inner join order_line ol on oi.id = ol.order_info_id
   inner join order_line_dtl old on ol.id = old.order_line_id
@@ -242,6 +242,9 @@ BEGIN
   where oc.order_number = iPorderNumber and cust_id = cPshopperId;
 END GetOrderHistory;
 
+/*
+  This procedure is specified for YA only as site ID is hard coded.
+*/
 PROCEDURE GetNeighborOrderNumber
 (
   iPorderNumber IN INT,
@@ -257,19 +260,19 @@ BEGIN
   cLoriginOrderId := to_char(iPorderNumber);
   select id into iLorderInfoId from order_info where origin_order_id = cLoriginOrderId;
   
-  select count(1) into iLcount from order_info where cust_id = cPshopperId and id < iLorderInfoId and parent_id < 0;
+  select count(1) into iLcount from order_info where cust_id = cPshopperId and id < iLorderInfoId and parent_id < 0 and origin_id in (1,7);
   if (iLcount>0) then
     select to_number(origin_order_id) into iPorderNumberPrev 
-    from (select origin_order_id from order_info where cust_id = cPshopperId and id < iLorderInfoId and parent_id < 0 order by id desc)
+    from (select origin_order_id from order_info where cust_id = cPshopperId and id < iLorderInfoId and parent_id < 0 and origin_id in (1,7) order by id desc)
     where rownum = 1;
   else
     iPorderNumberPrev := -1;
   end if;
 
-  select count(1) into iLcount from order_info where cust_id = cPshopperId and id > iLorderInfoId and parent_id < 0;
+  select count(1) into iLcount from order_info where cust_id = cPshopperId and id > iLorderInfoId and parent_id < 0 and origin_id in (1,7);
   if (iLcount>0) then
     select to_number(origin_order_id) into iPorderNumberNext 
-    from (select origin_order_id from order_info where cust_id = cPshopperId and id > iLorderInfoId and parent_id < 0 order by id)
+    from (select origin_order_id from order_info where cust_id = cPshopperId and id > iLorderInfoId and parent_id < 0 and origin_id in (1,7) order by id)
     where rownum = 1;
   else
     iPorderNumberNext := -1;
