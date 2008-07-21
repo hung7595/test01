@@ -42,6 +42,7 @@ AS
   );
 
   /* proc_fe_InsertOrderXml */
+/*  
   PROCEDURE InsertOrderXml (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
@@ -58,8 +59,10 @@ AS
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   );
+*/
 
   /* proc_fe_InsertPaypalOrderXml */
+/*
   PROCEDURE InsertPaypalOrderXml (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
@@ -75,6 +78,7 @@ AS
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   );
+*/  
 
   PROCEDURE InsertOrderXmlWithOrderNum (
     iPorder_num IN INT,
@@ -108,8 +112,9 @@ AS
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   );
-PROCEDURE InsertPaypalOrderXml (
-	cPguid IN CHAR,
+  
+  PROCEDURE InsertPaypalOrderXml (
+	  cPguid IN CHAR,
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
     vcPcoupon_code IN VARCHAR2,
@@ -125,7 +130,7 @@ PROCEDURE InsertPaypalOrderXml (
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   );
-  /* proc_fe_InsertPaypalOrderXml_encrypted */
+  
   PROCEDURE InsertPaypalOrderXmlEncrypted (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
@@ -143,7 +148,6 @@ PROCEDURE InsertPaypalOrderXml (
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   );
 
-  /* proc_fe_GetOrder */
   PROCEDURE GetOrderWithWarranty (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
@@ -1128,9 +1132,7 @@ AS
 
   END UpdateLimitedQuantity;
 
-
-
-
+/*
   PROCEDURE InsertOrderXml (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
@@ -1337,8 +1339,6 @@ AS
       END;
   COMMIT;
   END InsertOrderXml;
-
-
 
   PROCEDURE InsertPaypalOrderXml (
     cPshopper_id IN CHAR,
@@ -1589,8 +1589,7 @@ AS
     COMMIT;
     RETURN;
   END InsertPaypalOrderXml;
-
-
+*/
 
   PROCEDURE GetOrderWithWarranty (
     cPshopper_id IN CHAR,
@@ -2397,7 +2396,7 @@ AS
   END InsertOrderXmlWithOrderNum;
 
   PROCEDURE InsertPaypalOrderXml (
-	cPguid IN CHAR,
+	  cPguid IN CHAR,
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
     vcPcoupon_code IN VARCHAR2,
@@ -2414,29 +2413,14 @@ AS
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   )
   AS
-  --  cLguid CHAR(32);
     iLstatus INT;
     iLpaypal_status INT;
     iLexist INT;
     iLdebit_credit_return INT;
     iLseq_currval INT;
     iLseq_diff INT;
+    iLbuffer_code INT;    
   BEGIN
- /*   BEGIN
-      SELECT paypal_uid
-      INTO cLguid
-      FROM ya_checkout_data
-      WHERE
-        shopper_id = cPshopper_id
-        AND site_id = iPsite_id;
-    EXCEPTION
-      WHEN NO_DATA_FOUND THEN
-        BEGIN
-          iPorder_num := -1;
-          RETURN;
-        END;
-    END;*/
-
     BEGIN
       SELECT status, paypal_status
       INTO iLstatus, iLpaypal_status
@@ -2521,9 +2505,61 @@ AS
             WHERE
               b.shopper_id = cPshopper_id
               AND b.site_id = iPsite_id
-			  AND b.paypal_uid=cPguid
+			        AND b.paypal_uid=cPguid
               AND b.TYPE = 0;
           END;
+        END IF;
+
+        -- update buffer campaign
+        -- 60001: US, 60002: Global, 60003: YesStyle
+        IF iPsite_id = 1 THEN
+          iLbuffer_code := 60001;
+        ELSIF iPsite_id = 7 THEN
+          iLbuffer_code := 60002;
+        ELSIF iPsite_id = 10 THEN
+          iLbuffer_code := 60003;
+        END IF;
+
+        INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
+        SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, iLbuffer_code
+        FROM YA_NEW_BASKET_SHADOW nb
+          INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code in (SELECT cl.campaign_code FROM ya_campaign_lookup cl WHERE cl.campaign_type = 2)
+        WHERE nb.shopper_id = cPshopper_id
+          AND nb.type = 0
+          AND nb.site_id = iPsite_id
+          AND EXISTS (
+            SELECT 1
+            FROM ya_limited_quantity lq
+            WHERE lq.sku = nb.sku AND ((lq.site_id <> 10 AND lq.site_id IN (99, iPsite_id)) OR (lq.site_id = iPsite_id AND iPsite_id = 10))
+            AND lq.frontend_quantity > 0
+          );
+
+        -- for automatic clearance tool buffering
+        -- 50001: US, 50002: Global, 50003: YesStyle
+        IF iPsite_id = 1 THEN
+          INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
+          SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
+          FROM YA_NEW_BASKET_SHADOW nb
+            INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50001
+          WHERE nb.shopper_id = cPshopper_id
+            AND nb.type = 0
+            AND nb.site_id = iPsite_id;
+        ELSIF iPsite_id = 7 THEN
+          INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
+          SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
+          FROM YA_NEW_BASKET_SHADOW nb
+            INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50002
+          WHERE nb.shopper_id = cPshopper_id
+            AND nb.type = 0
+            AND nb.site_id = iPsite_id;
+        ELSIF iPsite_id = 10 THEN
+          INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
+          SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
+          FROM YA_NEW_BASKET_SHADOW nb
+            INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50003
+          WHERE nb.shopper_id = cPshopper_id
+            AND nb.type = 0
+            AND nb.site_id = iPsite_id;
         END IF;
 
 		DELETE FROM YA_NEW_BASKET_SHADOW
