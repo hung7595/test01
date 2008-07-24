@@ -7,6 +7,7 @@ AS
   );
   PROCEDURE CronJobUpdateBargainSuppInfo;
 END Cron_fe_BargainAccess;
+/
 
 
 CREATE OR REPLACE PACKAGE BODY Cron_fe_BargainAccess
@@ -171,6 +172,24 @@ IS
   Cron_fe_BargainAccess.UpdateBargainSuppInfo(2980, 1); --US
   Cron_fe_BargainAccess.UpdateBargainSuppInfo(2980, 7); --GB
 
+-- V5 - TV - All Chinese -> 157
+  Cron_fe_BargainAccess.UpdateBargainSuppInfo(157, 1); --US
+  Cron_fe_BargainAccess.UpdateBargainSuppInfo(157, 7); --GB
+
+-- V5 - TV - Japan -> 179
+  Cron_fe_BargainAccess.UpdateBargainSuppInfo(179, 1); --US
+  Cron_fe_BargainAccess.UpdateBargainSuppInfo(179, 7); --GB
+
+-- V5 - TV - Korea -> 2957
+  Cron_fe_BargainAccess.UpdateBargainSuppInfo(2957, 1); --US
+  Cron_fe_BargainAccess.UpdateBargainSuppInfo(2957, 7); --GB
+
+-- V5 - TV - Western -> 10961
+  Cron_fe_BargainAccess.UpdateBargainSuppInfo(10961, 1); --US
+  Cron_fe_BargainAccess.UpdateBargainSuppInfo(10961, 7); --GB
+
+
  END CronJobUpdateBargainSuppInfo;
 END Cron_fe_BargainAccess;
+/
 
