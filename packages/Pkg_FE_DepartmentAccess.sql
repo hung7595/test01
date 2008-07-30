@@ -370,7 +370,7 @@ IS
           AND dr.parent_dept_id = iPdeptId
           AND d.tw_enabled = 'Y';
       END;
-    ELSIF iPsiteId = 10 Then
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 Then
       BEGIN
         SELECT COUNT(1)
         INTO iPchildrenCount
@@ -617,7 +617,7 @@ IS
                    )
         ORDER BY tw_disp_seq;
       END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
       BEGIN
         /* Parent */
         OPEN curPparent FOR
@@ -871,7 +871,7 @@ IS
             AND d.tw_enabled = 'Y'
           ORDER BY tw_disp_seq;
         END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
         BEGIN
           /* Parent */
           OPEN curPparent FOR
@@ -1138,7 +1138,7 @@ IS
               ) /* adult attribute */
           ORDER BY tw_disp_seq;
         END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
         BEGIN
           /* Parent */
           OPEN curPparent FOR
@@ -1454,7 +1454,7 @@ IS
             AND d.tw_enabled = 'Y'
           ORDER BY tw_disp_seq;
         END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
         BEGIN
           /* Parent */
           OPEN curPparent FOR
@@ -1820,7 +1820,7 @@ IS
               ) /* adult attribute */
           ORDER BY tw_disp_seq;
         END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
         BEGIN
           /* Parent */
           OPEN curPparent FOR
@@ -2217,7 +2217,7 @@ IS
               )
           ORDER BY tw_disp_seq;
         END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
         BEGIN
           /* Parent */
           OPEN curPparent FOR
@@ -2568,7 +2568,7 @@ IS
               )
           ORDER BY tw_disp_seq;
         END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
         BEGIN
           /* Parent */
           OPEN curPparent FOR
@@ -2921,7 +2921,7 @@ IS
               )
           ORDER BY tw_disp_seq;
         END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
         BEGIN
           /* Parent */
           OPEN curPparent FOR
@@ -3329,7 +3329,7 @@ IS
             )
         ORDER BY tw_disp_seq;
       END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
       BEGIN
         /* Parent */
         OPEN curPparent FOR
@@ -3517,7 +3517,7 @@ IS
             AND db.site_id = iPsiteId
             AND db.enabled = 'Y';
         END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
         BEGIN
           OPEN curPtree FOR
           SELECT
@@ -3709,7 +3709,7 @@ IS
             AND d.tw_enabled = 'Y'
           ORDER BY tw_disp_seq;
         END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
         BEGIN
           /* Parent */
           OPEN curPparent FOR
@@ -3830,7 +3830,7 @@ IS
             AND d.tw_enabled = 'Y'
           ORDER BY tw_disp_seq;
         END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
         BEGIN
           OPEN curPtree FOR
           SELECT
@@ -4053,7 +4053,7 @@ IS
               )
           ORDER BY tw_disp_seq;
         END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
         BEGIN
           /* Parent */
           OPEN curPparent FOR
@@ -4463,7 +4463,7 @@ IS
           AND db.enabled = 'Y'
         ORDER BY tw_disp_seq;
       END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
       BEGIN
         OPEN curPtree FOR
         SELECT
@@ -4745,7 +4745,7 @@ IS
           AND dl.lang_id <= 5
         ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
       END;
-    ELSIF iPsiteId = 10 Then
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 Then
       BEGIN
         OPEN curPresult1 FOR
         SELECT
@@ -5096,7 +5096,7 @@ IS
             )
         ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
       END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
       BEGIN
         OPEN curPresult1 FOR
         SELECT
@@ -5443,7 +5443,7 @@ IS
             )
         ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
       END;
-    ELSIF iPsiteId = 10 Then
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 Then
       BEGIN
         OPEN curPresult1 FOR
         SELECT
@@ -5797,7 +5797,7 @@ IS
        ORDER BY d.tw_disp_seq, d.dept_id, lang_id;
 
       END;
-    ELSIF iPsiteId = 10 Then
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 Then
       BEGIN
         OPEN curPresult1 FOR
         SELECT
@@ -6142,7 +6142,7 @@ IS
           AND dl.lang_id <= 5
         ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
       END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
       BEGIN
         OPEN curPresult1 FOR
         SELECT
@@ -6487,7 +6487,7 @@ IS
             )
         ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
       END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
       BEGIN
         OPEN curPresult1 FOR
         SELECT
@@ -6839,7 +6839,7 @@ IS
             )
         ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
       END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
       BEGIN
         OPEN curPresult1 FOR
         SELECT
@@ -7193,7 +7193,7 @@ IS
             )
         ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
       END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
       BEGIN
         OPEN curPresult1 FOR
         SELECT
@@ -7354,7 +7354,7 @@ IS
             )
           AND ROWNUM = 1;
       END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
       BEGIN
         SELECT COUNT(1)
         INTO iPreturn
@@ -7440,7 +7440,7 @@ IS
             )
           AND ROWNUM = 1;
       END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
       BEGIN
         SELECT COUNT(1)
         INTO iPreturn
@@ -7529,7 +7529,7 @@ IS
             )
           AND ROWNUM = 1;
       END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
       BEGIN
         SELECT COUNT(1)
         INTO iPreturn
@@ -7609,7 +7609,7 @@ IS
             )
           AND ROWNUM = 1;
       END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
       BEGIN
         SELECT COUNT(1)
         INTO iPreturn
@@ -7692,7 +7692,7 @@ IS
             )
           AND ROWNUM = 1;
       END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
       BEGIN
         SELECT COUNT(1)
         INTO iPreturn
@@ -7747,12 +7747,12 @@ IS
           FROM ya_prod_attr pa
           WHERE
             pa.attribute_id = bc.category_attribute_id
-            AND pa.sku IN 
+            AND EXISTS
               (
-                SELECT bp.sku
+                SELECT 1
                 FROM ya_bargain_product bp
-                WHERE 1=1 
-                  -- bp.sku = pa.sku
+                WHERE
+                  bp.sku = pa.sku
                   AND bp.site_id = iPsite_id
                   AND bp.sale_start <= SYSDATE()
                   AND bp.sale_end >= SYSDATE()
@@ -7760,6 +7760,8 @@ IS
         )
     ORDER BY bc.priority;
   END GetBargainRootDept;
+
+
 
   PROCEDURE GetBargainRootLangDept (
     iPbargain_attribute IN INT,
@@ -8113,7 +8115,7 @@ IS
             )
           ORDER BY tw_disp_seq;
         END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
         BEGIN
           /* Parent */
           OPEN curPparent FOR
@@ -8410,7 +8412,7 @@ IS
             )
           ORDER BY tw_disp_seq;
         END;
-    ELSIF iPsiteId = 10 THEN
+    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
         BEGIN
           /* Parent */
           OPEN curPparent FOR
