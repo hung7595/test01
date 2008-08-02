@@ -22,7 +22,7 @@ AS
   )
   AS
   BEGIN
-    IF sysdate >= to_date('2008-08-01 22:00:00', 'YYYY-MM-DD HH24:MI:SS') and sysdate <= to_date('2008-08-02 02:00:00', 'YYYY-MM-DD HH24:MI:SS') THEN
+    IF sysdate >= to_date('2008-08-01 22:00:00', 'YYYY-MM-DD HH24:MI:SS') and sysdate <= to_date('2008-08-02 00:00:00', 'YYYY-MM-DD HH24:MI:SS') THEN
       BEGIN
         SELECT 1 INTO iPreturn FROM DUAL;
       END;
