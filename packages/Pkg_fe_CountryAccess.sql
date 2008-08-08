@@ -52,6 +52,7 @@ IS
                 WHEN 1 THEN c.us_canship
                 WHEN 7 THEN c.tw_canship
                 WHEN 10 THEN c.YS_CANSHIP
+				WHEN 11 THEN c.YS_CANSHIP
               END = 'Y'
         ORDER BY cs.country_name;
       END;
