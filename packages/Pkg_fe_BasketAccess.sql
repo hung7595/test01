@@ -1,7 +1,4 @@
-
-REM START SS_ADM PKG_FE_BASKETACCESS
-
-  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_BASKETACCESS" 
+CREATE OR REPLACE PACKAGE PKG_FE_BASKETACCESS
 AS
   TYPE refCur IS REF CURSOR;
   PROCEDURE DeleteWarrantyItem (
@@ -62,17 +59,15 @@ AS
     cPskuCSV IN VARCHAR2,
     iPtype IN INT
   );
-
   PROCEDURE ClearBasket (
     cPshopperId IN CHAR,
     iPsiteId IN INT
   );
-  
+
   PROCEDURE ClearSaveForLaterBasket (
     cPshopperId IN CHAR,
     iPsiteId IN INT
   );
-
 	PROCEDURE GetShadowBasketWithWarranty (
 	cPguid IN CHAR,
     cPshopperId IN CHAR,
@@ -169,10 +164,12 @@ AS
     iPsku20 IN INT DEFAULT NULL
   );
 END Pkg_fe_BasketAccess;
+
 /
-CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_BASKETACCESS" 
+
+
+CREATE OR REPLACE PACKAGE BODY PKG_FE_BASKETACCESS
 IS
--- Body ---+
 ------------- AddItem
   PROCEDURE AddItem (
     cPshopperId IN CHAR,
@@ -551,7 +548,6 @@ BEGIN
   COMMIT;
 --  EXCEPTION WHEN others THEN ROLLBACK;
 END;
-
   PROCEDURE ClearBasket (
     cPshopperId IN CHAR,
     iPsiteId IN INT
@@ -572,7 +568,6 @@ END;
     DELETE FROM ya_new_basket WHERE shopper_id = cPshopperId AND site_id = iPsiteId AND type = 1; -- type = 1 for save for later basket
     COMMIT;
   END;
-
 /* use by paypal order*/
  PROCEDURE GetShadowBasketWithWarranty (
 	cPguid IN CHAR,
@@ -1293,7 +1288,20 @@ END GetBasketWithWarranty;
   AS
     dtLnullDate DATE := TO_DATE('01-01-1900','DD-MM-YYYY');
     iLShipmentUnitConst INT;
+    iLRegionId INT;
+    iLOriginId INT;
   BEGIN
+        IF iPsiteId = 11 THEN
+		begin
+		  iLRegionId := 10;
+		  iLOriginId := 10;
+		end;
+		ELSE
+		begin
+		  iLRegionId := iPsiteId;
+		  iLOriginId := iPsiteId;
+		end;
+  	END IF;
   /* Attribute Info */
   OPEN curPgetBasket1 FOR
   SELECT
@@ -1383,7 +1391,7 @@ END GetBasketWithWarranty;
           INNER JOIN backend_adm.prod_avlb pa ON p.sku = pa.prod_id
           INNER JOIN backend_adm.prod_region r ON
             pt.sku = r.prod_id
-            AND r.region_id = iPsiteId
+            AND r.region_id = iLRegionId
             AND pa.prod_id = r.prod_id
             AND pa.region_id = r.region_id
 		  LEFT OUTER JOIN ya_availability_override o ON r.supplier_id = o.supplier_id
@@ -1402,14 +1410,14 @@ END GetBasketWithWarranty;
                 )
               WHERE
                 --default country ID
-                rp.region_id = iPsiteId
+                rp.region_id = iLRegionId
               GROUP BY rp.prod_id
             ) t ON
             r.prod_id = t.productId
             AND r.sequence = t.seq
         WHERE
           pt.shopper_id = cPshopperId
-          AND pa.region_id = iPsiteId
+          AND pa.region_id = iLRegionId
         ORDER BY p.sku;
       END;
     ELSE
@@ -1429,7 +1437,7 @@ END GetBasketWithWarranty;
           INNER JOIN backend_adm.prod_avlb pa ON p.sku = pa.prod_id
           INNER JOIN backend_adm.prod_region r ON
             pt.sku = r.prod_id
-            AND r.region_id = iPsiteId
+            AND r.region_id = iLRegionId
             AND pa.prod_id = r.prod_id
             AND pa.region_id = r.region_id
 		  LEFT OUTER JOIN ya_availability_override o ON
@@ -1452,14 +1460,14 @@ END GetBasketWithWarranty;
                 AND b.type = iPtype
               WHERE
                 rl.country_id = iPcountryId
-                AND rp.region_id = iPsiteId
+                AND rp.region_id = iLRegionId
               GROUP BY rp.prod_id
             ) t ON
               r.prod_id = t.productId
               AND r.sequence = t.seq
           WHERE
             pt.shopper_id = cPshopperId
-            AND pa.region_id = iPsiteId
+            AND pa.region_id = iLRegionId
           ORDER BY p.sku;
 
       END;
@@ -1557,7 +1565,7 @@ END GetBasketWithWarranty;
               WHERE
                 iPcountryId <> -1
                 AND rl.country_id = iPcountryId
-                AND rp.origin_id = iPsiteId
+                AND rp.origin_id = iLOriginId
                 AND rp.category_id = 1
               GROUP BY rp.prod_id
             ) s
@@ -1576,7 +1584,7 @@ END GetBasketWithWarranty;
                 WHERE
                   --default country ID
                   iPcountryId <> -1
-                  AND rp.origin_id = iPsiteId
+                  AND rp.origin_id = iLOriginId
                   AND rp.category_id = 1
                 GROUP BY rp.prod_id
               ) t ON
@@ -1596,14 +1604,14 @@ END GetBasketWithWarranty;
             WHERE
               --default country ID
               iPcountryId = -1
-              AND rp.origin_id = iPsiteId
+              AND rp.origin_id = iLOriginId
               AND rp.category_id = 1
             GROUP BY rp.prod_id
       ) t ON
     r.prod_id = t.productId
     AND r.sequence = t.seq
   WHERE r.category_id = 1 --not wholesale
-    AND r.origin_id = iPsiteId
+    AND r.origin_id = iLOriginId
     AND b.shopper_id = cPshopperId
     AND b.site_id = iPsiteId
     AND b.type = iPtype
@@ -2323,6 +2331,5 @@ END GetBasket;
   END DeleteWarrantyItem;
 -- +--- Body
 END Pkg_fe_BasketAccess;
+
 /
- 
-REM END SS_ADM PKG_FE_BASKETACCESS
