@@ -42,6 +42,11 @@ AS
     cPcoupon_code IN VARCHAR2
   );
 
+  PROCEDURE CreateYSCNewShopperCoupon (
+    cPshopper_id IN CHAR,
+    cPcoupon_code IN VARCHAR2
+  );
+
 	/* proc_fe_CreateNewShopperCoupon */
   PROCEDURE CreateNewShopperCoupon_woCode (
     cPshopper_id IN CHAR,
@@ -252,6 +257,36 @@ AS
       (cPshopper_id, cLcoupon_code, 'YS New Customer Coupon 060711', 'YesStyle New Customer US$5 Coupon', 5, add_months(SYSDATE, 1), 'O', 'N', 1, 10, 5);
     COMMIT;
   END CreateNewShopperCoupon;
+
+  PROCEDURE CreateYSCNewShopperCoupon (
+    cPshopper_id IN CHAR,
+    cPcoupon_code IN VARCHAR2
+  )
+  AS
+    cLcoupon_code VARCHAR2(8);
+    iLcount INT;
+  BEGIN
+    IF cPcoupon_code IS NULL THEN
+      -- Generate Coupon
+      SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO cLcoupon_code FROM dual;
+
+      -- Make sure unique coupon code
+      SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = cLcoupon_code;
+      WHILE (iLcount = 1)
+      LOOP
+		    SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO cLcoupon_code FROM dual;
+		    SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = cLcoupon_code;
+      END LOOP;
+    ELSE
+      cLcoupon_code := cPcoupon_code;
+    END IF;
+
+    INSERT INTO ya_coupon
+      (shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value,expiration_date, all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger)
+    VALUES
+      (cPshopper_id, cLcoupon_code, 'YSC New Customer Coupon 080820', 'YesStyle New Customer RMB 10 Coupon', 1.3, add_months(SYSDATE, 1), 'O', 'N', 1, 11, 5);
+    COMMIT;
+  END CreateYSCNewShopperCoupon;
 
   PROCEDURE CreateNewShopperCoupon_woCode (
     cPshopper_id IN CHAR,
