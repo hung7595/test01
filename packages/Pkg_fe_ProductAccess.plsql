@@ -1432,8 +1432,21 @@ END FillProductBooksInformation;
       iLShipmentUnitConst	INT;
       cLsku_csv			VARCHAR2(2000);
       iCounter			INT;
+      iLRegionId    INT;
+      iLOriginId    INT;
   BEGIN
-    EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_product_int_table';
+    IF iPsite_id = 11 THEN
+		  begin
+		    iLRegionId := 10;
+		    iLOriginId := 10;
+		  end;
+		ELSE
+		  begin
+		    iLRegionId := iPsite_id;
+		    iLOriginId := iPsite_id;
+		  end;
+  	END IF;
+  	EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_product_int_table';
 
     dtLnullDate := TO_DATE('01-01-1900','DD-MM-YYYY');
     cLsku_csv := cPsku_csv;
@@ -1539,26 +1552,6 @@ END FillProductBooksInformation;
         t1.sku = p.column1
       LEFT OUTER JOIN YA_SHIPPING_UNIT t2 ON
         t1.sku = t2.sku AND t2.site_id = iPsite_id;
-    /*
-    SELECT
-      t1.sku,
-      CAST(
-           CASE WHEN t2.shipment_unit IS NOT NULL THEN t2.shipment_unit
-           ELSE CEIL(NVL(case when dimension_weight is not null and weight is not null
-                         then case when dimension_weight > weight
-                         then dimension_weight else weight end
-                         else weight end, iLShipmentUnitConst) / iLShipmentUnitConst)
-           END AS int
-           ) as shipment_unit
-    FROM
-      ya_product t1,
-      ya_shipping_unit t2,
-      temp_getMostTalked p
-      --(select * FROM TABLE (cast ( TabData as tabSKUList)))p
-    WHERE t1.sku = p.sku
-    AND t1.sku = t2.sku (+)
-    AND t2.site_id = iPsite_id;
-    */
 
     /* inventory and Availability Info */
     OPEN curPgetProduct4 FOR
@@ -1575,16 +1568,16 @@ END FillProductBooksInformation;
       INNER JOIN YA_PRODUCT p ON
         pt.column1 = p.sku
       INNER JOIN backend_adm.prod_avlb pa ON
-        pt.column1 = pa.prod_id AND pa.region_id = iPsite_id
+        pt.column1 = pa.prod_id AND pa.region_id = iLRegionId
       INNER JOIN backend_adm.prod_region pr ON
-        pt.column1 = pr.prod_id AND pr.region_id = iPsite_id
+        pt.column1 = pr.prod_id AND pr.region_id = iLRegionId
       LEFT OUTER JOIN YA_AVAILABILITY_OVERRIDE o ON
         pr.supplier_id = o.supplier_id
         AND p.account_id = o.account_id
         AND SYSDATE BETWEEN o.start_date AND o.end_date
         AND pa.avlb < o.availability_id
     WHERE
-      pa.region_id = iPsite_id
+      pa.region_id = iLRegionId
     ORDER BY pt.column1;
 
     /* Campaign Code */
@@ -1649,10 +1642,7 @@ END FillProductBooksInformation;
     AND p.sku = ple.sku (+)
     AND ple.lang_id = 1 /* English */
     AND p.is_parent = 'N'
-    AND pr.region_id = iPsite_id;
-
-
-    RETURN;
+    AND pr.region_id = iLRegionId;
   RETURN;
   END GetProductBase;
 
