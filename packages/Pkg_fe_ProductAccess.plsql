@@ -1628,7 +1628,7 @@ END FillProductBooksInformation;
       prod_region pr
     WHERE tp.column1 = p.sku
     AND p.sku=pr.prod_id
-    AND pr.region_id=iPsite_id
+    AND pr.region_id=iLRegionId
     AND p.sku = pl.sku (+)
     AND pl.lang_id = iPlang_id
     AND p.sku = pl2.sku (+)
