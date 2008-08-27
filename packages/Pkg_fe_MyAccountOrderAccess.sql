@@ -6,6 +6,7 @@ AS
   TYPE curGorder IS REF CURSOR;
   TYPE curGinvoice IS REF CURSOR;
   TYPE curGinvoice_id IS REF CURSOR;
+  TYPE refCur IS REF CURSOR;
 
   FUNCTION GetOrderLineStatus (
     iLproduct_id INT,
@@ -51,6 +52,12 @@ AS
     iLlang_id IN INT,
     iLinvoice_id IN VARCHAR2,
     curPinvoice OUT curGinvoice
+  );
+
+  PROCEDURE GetOrderStylebucksDetail (
+    cPshopper_id IN CHAR,
+    iPorder_id IN CHAR,
+    curPresult1 OUT refCur
   );
 
 END Pkg_Fe_Myaccountorderaccess;
@@ -222,10 +229,10 @@ AS
       INNER JOIN order_line_dtl ld ON ol.order_info_id = ld.order_info_id AND ol.id = ld.order_line_id
       INNER JOIN billing_info b ON o.id = b.order_info_id
       INNER JOIN shipping_info s ON o.id = s.order_info_id
-      INNER JOIN lookup bpl ON b.method = bpl.code AND bpl.lang_type = -1 AND bpl.category = 'paymentMethod'
+      INNER JOIN lookup bpl ON b.method = bpl.code AND bpl.lang_type = iLlang_id AND bpl.category = 'paymentMethod'
       LEFT OUTER JOIN lookup bbl ON b.cc_type = bbl.code AND bbl.lang_type = -1 AND bbl.category = 'creditCardType'
       LEFT OUTER JOIN lookup bcl ON b.country = bcl.code AND bcl.lang_type = -1 AND bcl.category = 'country'
-      INNER JOIN lookup sml ON s.method = sml.code AND sml.lang_type = -1 AND sml.category = 'shippingMethod'
+      INNER JOIN lookup sml ON s.method = sml.code AND sml.lang_type = iLlang_id AND sml.category = 'shippingMethod'
       INNER JOIN lookup scl ON s.country = scl.code AND scl.lang_type = -1 AND scl.category = 'country'
       INNER JOIN YA_PRODUCT pd ON ol.prod_id = pd.sku
 	  INNER JOIN prod_region pr ON ol.prod_id=pr.prod_id AND pr.region_id=1
@@ -265,8 +272,8 @@ AS
       INNER JOIN order_line ol ON il.order_line_id = ol.id
       LEFT OUTER JOIN lookup bbl ON b.cc_type = bbl.code AND bbl.lang_type = -1 AND bbl.category = 'creditCardType'
       LEFT OUTER JOIN lookup bcl ON b.country = bcl.code AND bcl.lang_type = -1 AND bcl.category = 'country'
-      INNER JOIN lookup bpl ON b.method = bpl.code AND bpl.lang_type = -1 AND bpl.category = 'paymentMethod'
-      INNER JOIN lookup sml ON s.method = sml.code AND sml.lang_type = -1 AND sml.category = 'shippingMethod'
+      INNER JOIN lookup bpl ON b.method = bpl.code AND bpl.lang_type = iLlang_id AND bpl.category = 'paymentMethod'
+      INNER JOIN lookup sml ON s.method = sml.code AND sml.lang_type = iLlang_id AND sml.category = 'shippingMethod'
       INNER JOIN lookup scl ON s.country = scl.code AND scl.lang_type = -1 AND scl.category = 'country'
       INNER JOIN YA_PROD_LANG pf ON ol.prod_id = pf.sku AND pf.lang_id = 1
       LEFT OUTER JOIN YA_PROD_LANG pl ON ol.prod_id = pl.sku AND pl.lang_id = iLlang_id
@@ -276,6 +283,51 @@ AS
     ORDER BY sp.id, il.sku;
   END GetInvoiceEncrypted;
 
+  PROCEDURE GetOrderStylebucksDetail (
+    cPshopper_id IN CHAR,
+    iPorder_id IN CHAR,
+    curPresult1 OUT refCur
+  )
+  AS
+   iLApprovalOrder INT;
+   dtLApprovalDate DATE;
+   dtLStartDate DATE;
+  BEGIN
+
+  
+BEGIN
+    SELECT 1 into iLApprovalOrder FROM  loyalty_order o, order_info i where i.ORIGIN_ORDER_ID = iPorder_id and i.id = o.order_info_id;
+EXCEPTION WHEN NO_DATA_FOUND THEN
+    iLApprovalOrder := 0;
+END;
+  IF iLApprovalOrder=0 THEN
+BEGIN
+    SELECT APPROVAL_DT into dtLApprovalDate FROM order_info where ORIGIN_ORDER_ID = iPorder_id;
+EXCEPTION WHEN NO_DATA_FOUND THEN
+    dtLApprovalDate := to_date('20050101','YYYYMMDD');
+END; 
+    SELECT to_date('20080101','YYYYMMDD') into dtLStartDate FROM dual;
+    IF dtLApprovalDate > dtLStartDate Then
+      OPEN curPresult1 FOR
+	    select m.membership_name, c.accumulated_point, 0 as gained_point
+		  from loyalty_customer c , loyalty_membership m
+		  where c.loyalty_membership_id = m.id and c.ya_shopper_id = cPshopper_id;
+    ELSE 
+      OPEN curPresult1 FOR
+	    select m.membership_name, c.accumulated_point, o.gained_point
+		  from loyalty_customer c , loyalty_membership m, loyalty_order o, order_info i
+		  where c.loyalty_membership_id = m.id and c.ya_shopper_id = cPshopper_id and i.ORIGIN_ORDER_ID = iPorder_id
+		   and i.CUST_ID = c.ya_shopper_id and o.order_info_id = i.id;
+	END IF;  
+  ELSE 
+    OPEN curPresult1 FOR
+	  select m.membership_name, c.accumulated_point, o.gained_point
+		from loyalty_customer c , loyalty_membership m, loyalty_order o, order_info i
+		where c.loyalty_membership_id = m.id and c.ya_shopper_id = cPshopper_id and i.ORIGIN_ORDER_ID = iPorder_id
+		 and i.CUST_ID = c.ya_shopper_id and o.order_info_id = i.id;
+  END IF;
+  END GetOrderStylebucksDetail;
+  
 END Pkg_Fe_Myaccountorderaccess;
 /
  
