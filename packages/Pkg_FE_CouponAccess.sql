@@ -46,6 +46,11 @@ AS
     cPshopper_id IN CHAR,
     cPcoupon_code IN VARCHAR2
   );
+  
+  PROCEDURE AddShopperToCouponUserGroup (
+    cPshopper_id IN CHAR,
+    cPcoupon_code IN VARCHAR2
+  );
 
 	/* proc_fe_CreateNewShopperCoupon */
   PROCEDURE CreateNewShopperCoupon_woCode (
@@ -287,6 +292,19 @@ AS
       (cPshopper_id, cLcoupon_code, 'YSC New Customer Coupon 080820', 'YesStyle New Customer RMB 10 Coupon', 1.3, add_months(SYSDATE, 1), 'O', 'N', 1, 11, 5);
     COMMIT;
   END CreateYSCNewShopperCoupon;
+
+  PROCEDURE AddShopperToCouponUserGroup (
+    cPshopper_id IN CHAR,
+    cPcoupon_code IN VARCHAR2
+  )
+  AS
+  BEGIN
+    INSERT INTO ya_coupon_user
+      (coupon_code, shopper_id, created_datetime)
+    VALUES
+      (cPcoupon_code, cPshopper_id, sysdate);
+    COMMIT;
+  END AddShopperToCouponUserGroup;
 
   PROCEDURE CreateNewShopperCoupon_woCode (
     cPshopper_id IN CHAR,
