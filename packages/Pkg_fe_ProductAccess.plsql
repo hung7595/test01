@@ -1425,7 +1425,7 @@ END FillProductBooksInformation;
   AS
   BEGIN
     OPEN curPgetProduct1 FOR
-    SELECT nb.sku, p.publisher_id 
+    SELECT nb.sku, nvl(p.publisher_id,-1)
     FROM ya_product p
       INNER JOIN ya_new_basket nb ON p.sku = nb.sku
     WHERE nb.shopper_id = cPshopper_id
