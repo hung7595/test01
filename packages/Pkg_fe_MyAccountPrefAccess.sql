@@ -26,6 +26,7 @@ As
 
   PROCEDURE SubscribeNewsletterEmail (
     cPemail IN VARCHAR2,
+    cPshopper_id IN VARCHAR2,
     iLnewsletter_id IN INT,
     iLsite_id IN INT,
     iLupdate_count OUT INT
@@ -151,6 +152,7 @@ IS
 
   PROCEDURE SubscribeNewsletterEmail (
     cPemail IN VARCHAR2,
+    cPshopper_id IN VARCHAR2,
     iLnewsletter_id IN INT,
     iLsite_id IN INT,
     iLupdate_count OUT INT
@@ -161,8 +163,8 @@ IS
   BEGIN
     SELECT COUNT(status) INTO iLrecord_count FROM ya_newsletter_subscriber WHERE email = cPemail AND newsletter_id = iLnewsletter_id AND site_id = iLsite_id;
     IF iLrecord_count = 0 THEN
-      INSERT INTO ya_newsletter_subscriber (guid, email, site_id, status, newsletter_id, last_modified_datetime, downloaded_flag)
-        VALUES (SYS_GUID(), cPemail, iLsite_id, 'A', iLnewsletter_id, SYSDATE, 'N');
+      INSERT INTO ya_newsletter_subscriber (guid, email, site_id, status, newsletter_id, last_modified_datetime, downloaded_flag, shopper_id)
+        VALUES (SYS_GUID(), cPemail, iLsite_id, 'A', iLnewsletter_id, SYSDATE, 'N', cPshopper_id);
       iLupdate_count := 1;
     ELSE
       SELECT COUNT(status) INTO iLrecord_count FROM ya_newsletter_subscriber WHERE email = cPemail AND newsletter_id = iLnewsletter_id AND status = 'A'AND site_id = iLsite_id;

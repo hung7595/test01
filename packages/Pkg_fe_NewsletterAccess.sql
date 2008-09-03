@@ -33,6 +33,11 @@ AS
     cPstatus IN CHAR,
     cPguid OUT CHAR
   );
+  
+  PROCEDURE GetExistingEmailList (
+    iPnewsletter_id		IN	INT,
+	curPresult 			OUT 	curGgetNews
+  );
 
 END Pkg_fe_NewsletterAccess;
 /
@@ -190,7 +195,8 @@ IS
         status,
         newsletter_id,
         last_modified_datetime,
-        downloaded_flag
+        downloaded_flag,
+		shopper_id
       )
     SELECT
       cLguid,
@@ -199,7 +205,8 @@ IS
       iPstatus,
       column1,
       SYSDATE,
-      'N' -- column1 => newsletter Id
+      'N', -- column1 => newsletter Id
+	  cPshopperId
     FROM
       temp_news_int_table
     WHERE column1 NOT IN -- newsletter Id
@@ -336,6 +343,21 @@ END;
     END IF;
     RETURN;
   END SubscribeNewsletterByEmail;
+
+PROCEDURE GetExistingEmailList (
+    iPnewsletter_id		IN	INT,
+	curPresult 			OUT 	curGgetNews
+  )
+  AS
+  
+  BEGIN  
+    OPEN curPresult FOR
+      SELECT distinct email
+      FROM ya_newsletter_subscriber a
+      WHERE newsletter_id = iPnewsletter_id and status = 'A' and (not exists 
+	  (select * from ya_reminder_exclude_list b where b.shopper_id = a.shopper_id) or a.shopper_id is null);
+    
+  END GetExistingEmailList;
 END Pkg_fe_NewsletterAccess;
 /
  
