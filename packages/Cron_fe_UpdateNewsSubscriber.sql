@@ -18,14 +18,15 @@ IS
 	  DECLARE
 	  x ya_newsletter_subscriber.shopper_id%TYPE;
 	  CURSOR ShopperIdCursor IS
-	  SELECT a.shopper_id
-	  FROM ya_shopper a where not exists (select * from ya_reminder_exclude_list b 
-	  where b.shopper_id = a.shopper_id) and not exists (select * from ya_customer_profile c 
-	  where c.shopper_id = a.shopper_id) and not exists (select * from ya_newsletter_subscriber d 
-	  where d.shopper_id = a.shopper_id) and exists (select * from order_info e 
-	  where e.cust_id = a.shopper_id and e.origin_id = iPsite_id and e.approval_dt is not null 
-	  and (e.sts = 11 or e.sts = 12 or e.sts = 13))
-	  FOR UPDATE;
+	  SELECT a.shopper_id FROM ya_shopper a WHERE 
+    NOT EXISTS (SELECT * FROM ya_reminder_exclude_list b WHERE b.shopper_id = a.shopper_id) 
+    AND NOT EXISTS (SELECT * FROM ya_customer_profile c WHERE c.shopper_id = a.shopper_id 
+    AND (c.register_site_id=10 OR c.register_site_id=11))
+    AND NOT EXISTS (SELECT * FROM ya_newsletter_subscriber d WHERE d.shopper_id = a.shopper_id 
+    AND (site_id=10 OR site_id=11)) 
+    AND EXISTS (SELECT * FROM ORder_info e WHERE e.cust_id = a.shopper_id 
+    AND e.ORigin_id = 10 AND e.approval_dt is NOT null
+	  AND (e.sts = 11 OR e.sts = 12 OR e.sts = 13)) AND shopper_id=a.shopper_id;
 		BEGIN
 		  OPEN ShopperIdCursor;
 		  LOOP
@@ -34,23 +35,23 @@ IS
 		    INSERT INTO ya_newsletter_subscriber
 		    (email,shopper_id,guid,date_time,site_id,newsletter_id,status,downloaded_flag,rowguid)
 		    VALUES
-		    ((SELECT email from ya_shopper where shopper_id=x),x,sys_guid(),sysdate,iPsite_id,45,'A','N',sys_guid());
+		    ((SELECT email FROM ya_shopper WHERE shopper_id=x),x,sys_guid(),sysdate,iPsite_id,45,'A','N',sys_guid());
 		    INSERT INTO ya_newsletter_subscriber
 		    (email,shopper_id,guid,date_time,site_id,newsletter_id,status,downloaded_flag,rowguid)
 		    VALUES
-		    ((SELECT email from ya_shopper where shopper_id=x),x,sys_guid(),sysdate,iPsite_id,46,'A','N',sys_guid());
+		    ((SELECT email FROM ya_shopper WHERE shopper_id=x),x,sys_guid(),sysdate,iPsite_id,46,'A','N',sys_guid());
 		    INSERT INTO ya_newsletter_subscriber
 		    (email,shopper_id,guid,date_time,site_id,newsletter_id,status,downloaded_flag,rowguid)
 		    VALUES
-		    ((SELECT email from ya_shopper where shopper_id=x),x,sys_guid(),sysdate,iPsite_id,47,'A','N',sys_guid());
+		    ((SELECT email FROM ya_shopper WHERE shopper_id=x),x,sys_guid(),sysdate,iPsite_id,47,'A','N',sys_guid());
 		    INSERT INTO ya_newsletter_subscriber
 		    (email,shopper_id,guid,date_time,site_id,newsletter_id,status,downloaded_flag,rowguid)
 		    VALUES
-		    ((SELECT email from ya_shopper where shopper_id=x),x,sys_guid(),sysdate,iPsite_id,48,'A','N',sys_guid());
+		    ((SELECT email FROM ya_shopper WHERE shopper_id=x),x,sys_guid(),sysdate,iPsite_id,48,'A','N',sys_guid());
 			INSERT INTO ya_newsletter_subscriber
 		    (email,shopper_id,guid,date_time,site_id,newsletter_id,status,downloaded_flag,rowguid)
 		    VALUES
-		    ((SELECT email from ya_shopper where shopper_id=x),x,sys_guid(),sysdate,iPsite_id,49,'A','N',sys_guid());
+		    ((SELECT email FROM ya_shopper WHERE shopper_id=x),x,sys_guid(),sysdate,iPsite_id,49,'A','N',sys_guid());
 		    END LOOP;
 		  CLOSE ShopperIdCursor;
 		END;
