@@ -683,7 +683,7 @@ END;
             AND r.region_id = iPsiteId
             AND pa.prod_id = r.prod_id
             AND pa.region_id = r.region_id
-		  LEFT OUTER JOIN ya_availability_override o ON r.supplier_id = o.supplier_id
+		      LEFT OUTER JOIN ya_availability_override o ON r.supplier_id = o.supplier_id
             AND p.account_id = o.account_id AND SYSDATE() BETWEEN o.start_date AND o.end_date
             AND pa.avlb < o.availability_id
           INNER JOIN
@@ -728,10 +728,11 @@ END;
           INNER JOIN backend_adm.prod_avlb pa ON p.sku = pa.prod_id
           INNER JOIN backend_adm.prod_region r ON
             pt.sku = r.prod_id
-            AND r.region_id = iPsiteId
+            AND r.origin_id = iPsiteId
+            AND r.category_id = 1
             AND pa.prod_id = r.prod_id
             AND pa.region_id = r.region_id
-		  LEFT OUTER JOIN ya_availability_override o ON
+		      LEFT OUTER JOIN ya_availability_override o ON
             r.supplier_id = o.supplier_id
             AND p.account_id = o.account_id
             AND SYSDATE() BETWEEN o.start_date AND o.end_date
@@ -748,25 +749,24 @@ END;
                 rp.prod_id = b.sku
                 AND b.shopper_id = cPshopperId
                 AND b.site_id = iPsiteid
-				AND b.paypal_uid=cPguid
+				        AND b.paypal_uid=cPguid
                 AND b.type = iPtype
               WHERE
                 rl.country_id = iPcountryId
-                AND rp.region_id = iPsiteId
+                AND rp.origin_id = iPsiteId
+                AND rp.category_id = 1
               GROUP BY rp.prod_id
             ) t ON
               r.prod_id = t.productId
               AND r.sequence = t.seq
           WHERE
             pt.shopper_id = cPshopperId
-            AND pa.region_id = iPsiteId
-			AND pt.paypal_uid=cPguid
+            AND pa.origin_id = iPsiteId
+            AND pa.category = 1
+			      AND pt.paypal_uid=cPguid
           ORDER BY p.sku;
-
       END;
     END IF;
-
-
 
   /* Campaign Code */
   OPEN curPgetBasket5 FOR
@@ -1081,8 +1081,7 @@ END GetShadowBasketWithWarranty;
           INNER JOIN backend_adm.prod_avlb pa ON p.sku = pa.prod_id
           INNER JOIN backend_adm.prod_region r ON
             pt.sku = r.prod_id
-            AND r.origin_id = iPsiteId
-            AND r.category_id = 1
+            AND r.region_id = iPsiteId
             AND pa.prod_id = r.prod_id
             AND pa.region_id = r.region_id
 		  LEFT OUTER JOIN ya_availability_override o ON
@@ -1105,16 +1104,14 @@ END GetShadowBasketWithWarranty;
                 AND b.type = iPtype
               WHERE
                 rl.country_id = iPcountryId
-                AND rp.origin_id = iPsiteId
-                AND rp.category_id = 1
+                AND rp.region_id = iPsiteId
               GROUP BY rp.prod_id
             ) t ON
               r.prod_id = t.productId
               AND r.sequence = t.seq
           WHERE
             pt.shopper_id = cPshopperId
-            AND pa.origin_id = iPsiteId
-            AND pa.category = 1
+            AND pa.region_id = iPsiteId
           ORDER BY p.sku;
 
       END;
