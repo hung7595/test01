@@ -38,7 +38,7 @@ AS
   AS
   BEGIN  
     OPEN curPresult FOR
-      SELECT shopper_id, newsletter_id, status, pending_status, downloaded_flag
+      SELECT a.shopper_id, a.newsletter_id, a.status, a.pending_status, a.downloaded_flag
       FROM ya_newsletter_subscriber a
       LEFT JOIN ya_shopper b ON a.email = b.email
       WHERE b.shopper_id = cPshopper_id
