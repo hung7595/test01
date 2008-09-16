@@ -23,7 +23,7 @@ AS
   AS
   BEGIN  
     OPEN curPresult FOR
-		select dl.designer_name, dl.designer_icon_url, dl.publisher_bg_url 
+		select dl.designer_name, dl.publisher_bg_url, dl.designer_icon_url
 		from ya_publisher_designer pd, ya_designer_lang dl 
 		where pd.designer_id = dl.designer_id 
 		and dl.lang_id = iPlang_id 
