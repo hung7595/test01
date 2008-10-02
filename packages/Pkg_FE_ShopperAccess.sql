@@ -1,4 +1,5 @@
-CREATE OR REPLACE PACKAGE Pkg_FE_ShopperAccess
+
+  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_SHOPPERACCESS" 
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -7,7 +8,13 @@ AS
     cPsession_id IN CHAR,
     curPresult OUT refCur
   );
-
+  
+  PROCEDURE GetShopperDataByShopperIdYS (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    curPresult OUT refCur
+  );
+  
   /* proc_fe_GetShopperById */
   PROCEDURE GetShopperDataByShopperId (
     cPshopper_id IN CHAR,
@@ -47,8 +54,7 @@ AS
   );
 END Pkg_FE_ShopperAccess;
 /
-
-CREATE OR REPLACE PACKAGE BODY Pkg_FE_ShopperAccess
+CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_SHOPPERACCESS" 
 AS
   PROCEDURE GetShopperDataBySessionId (
     cPsession_id IN CHAR,
@@ -78,6 +84,58 @@ AS
   END GetShopperDataBySessionId;
 
 
+  PROCEDURE GetShopperDataByShopperIdYS (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    curPresult OUT refCur
+  )
+  AS
+   iLHasRecord INT := 0;
+  BEGIN
+    select count(*) into iLHasRecord from loyalty_customer where ya_shopper_id = cPshopper_id;
+
+    If iLHasRecord>0 and iPsite_id=10 Then
+      OPEN curPresult FOR
+		SELECT
+	      shopper_id,
+	      password,
+	      email,
+	      firstname,
+	      lastname,
+	      username,
+	      nickname,
+	      member_type,
+	      NVL(anonymous, 'Y'),
+	      membership_name,
+	      discount_percentage/100
+
+	    FROM ya_shopper
+	    inner join loyalty_customer c on c.ya_shopper_id = shopper_id and c.site_id = iPsite_id
+	    inner join loyalty_membership m on c.loyalty_membership_id = m.id and m.membership_year = to_char(sysdate,'YYYY')
+	    WHERE shopper_id = cPshopper_id
+	    AND member_type <> 3;
+
+	Else
+      OPEN curPresult FOR
+		SELECT
+	      shopper_id,
+	      password,
+	      email,
+	      firstname,
+	      lastname,
+	      username,
+	      nickname,
+	      member_type,
+	      NVL(anonymous, 'Y'),
+		  null,
+		  0
+	    FROM ya_shopper
+	    WHERE shopper_id = cPshopper_id
+	    AND member_type <> 3;
+	End If;
+    RETURN;
+  END GetShopperDataByShopperIdYS;
+  
   PROCEDURE GetShopperDataByShopperId (
     cPshopper_id IN CHAR,
     curPresult OUT refCur
@@ -280,4 +338,4 @@ AS
   END AddShopperRegisterSiteId;
 END Pkg_FE_ShopperAccess;
 /
-
+ 

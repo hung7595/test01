@@ -1,6 +1,4 @@
 
-REM START SS_ADM PKG_FE_MYACCOUNTORDERACCESS
-
   CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_MYACCOUNTORDERACCESS" 
 AS
   TYPE curGorder IS REF CURSOR;
@@ -57,6 +55,7 @@ AS
   PROCEDURE GetOrderStylebucksDetail (
     cPshopper_id IN CHAR,
     iPorder_id IN CHAR,
+    iLsite_id IN INT,	
     curPresult1 OUT refCur
   );
 
@@ -286,6 +285,7 @@ AS
   PROCEDURE GetOrderStylebucksDetail (
     cPshopper_id IN CHAR,
     iPorder_id IN CHAR,
+    iLsite_id IN INT,	
     curPresult1 OUT refCur
   )
   AS
@@ -311,12 +311,14 @@ END;
       OPEN curPresult1 FOR
 	    select m.membership_name, c.accumulated_point, 0 as gained_point
 		  from loyalty_customer c , loyalty_membership m
-		  where c.loyalty_membership_id = m.id and c.ya_shopper_id = cPshopper_id;
+		  where c.loyalty_membership_id = m.id and c.ya_shopper_id = cPshopper_id
+		   and c.site_id = iLsite_id and m.MEMBERSHIP_YEAR = to_char(sysdate,'YYYY');
     ELSE 
       OPEN curPresult1 FOR
 	    select m.membership_name, c.accumulated_point, o.gained_point
 		  from loyalty_customer c , loyalty_membership m, loyalty_order o, order_info i
 		  where c.loyalty_membership_id = m.id and c.ya_shopper_id = cPshopper_id and i.ORIGIN_ORDER_ID = iPorder_id
+		   and c.site_id = iLsite_id and m.MEMBERSHIP_YEAR = to_char(sysdate,'YYYY')
 		   and i.CUST_ID = c.ya_shopper_id and o.order_info_id = i.id;
 	END IF;  
   ELSE 
@@ -324,11 +326,11 @@ END;
 	  select m.membership_name, c.accumulated_point, o.gained_point
 		from loyalty_customer c , loyalty_membership m, loyalty_order o, order_info i
 		where c.loyalty_membership_id = m.id and c.ya_shopper_id = cPshopper_id and i.ORIGIN_ORDER_ID = iPorder_id
-		 and i.CUST_ID = c.ya_shopper_id and o.order_info_id = i.id;
+		 and i.CUST_ID = c.ya_shopper_id and o.order_info_id = i.id
+		 and c.site_id = iLsite_id and m.MEMBERSHIP_YEAR = to_char(sysdate,'YYYY');
   END IF;
   END GetOrderStylebucksDetail;
-  
+
 END Pkg_Fe_Myaccountorderaccess;
 /
  
-REM END SS_ADM PKG_FE_MYACCOUNTORDERACCESS

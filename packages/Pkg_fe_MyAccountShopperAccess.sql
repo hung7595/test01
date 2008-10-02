@@ -1,5 +1,7 @@
-CREATE OR REPLACE PACKAGE Pkg_fe_MyAccountShopperAccess
+
+  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_MYACCOUNTSHOPPERACCESS" 
 AS
+  TYPE  refCur IS REF CURSOR;
 /*
   PROCEDURE AddShopper (
     cPshopper_id OUT CHAR
@@ -26,10 +28,15 @@ AS
     cPnickname IN VARCHAR2,
     dtDOB IN DATE
   );
+  
+  PROCEDURE GetMembershipDiscount (
+    cPshopper_id IN CHAR,
+    iLsite_id IN INT,	
+    curPresult1 OUT refCur
+  );
 END Pkg_fe_MyAccountShopperAccess;
 /
-
-CREATE OR REPLACE PACKAGE body Pkg_fe_MyAccountShopperAccess
+CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_MYACCOUNTSHOPPERACCESS" 
 IS
 /*
   PROCEDURE AddShopper (
@@ -89,7 +96,7 @@ IS
         WHEN NO_DATA_FOUND THEN
             iLduplicate_account := -1;
     END;
-  
+
     IF iLduplicate_account = -1 THEN
       BEGIN
         IF cPshopper_id IS NULL OR
@@ -104,9 +111,25 @@ IS
           password, nickname, dob, member_type, anonymous)
         VALUES (cPshopper_id, SYSDATE, cPemail, cPlastname, cPfirstname, cPemail,
           cPpassword, cPnickname, dtDOB, iLmember_type, 'N');
-        COMMIT;      
+        COMMIT;
       END;
     END IF;
   END AddShopperInfo;
+  
+  PROCEDURE GetMembershipDiscount (
+    cPshopper_id IN CHAR,
+    iLsite_id IN INT,	
+    curPresult1 OUT refCur
+  )
+  AS
+  BEGIN
+    OPEN curPresult1 FOR
+	  select membership_name,accumulated_point
+	  from loyalty_customer c , loyalty_membership m
+		where c.loyalty_membership_id = m.id and c.site_id = iLsite_id 
+		  and m.MEMBERSHIP_YEAR = to_char(sysdate,'YYYY') and c.ya_shopper_id = cPshopper_id;
+  END GetMembershipDiscount;
+  
 END Pkg_fe_MyAccountShopperAccess;
 /
+ 
