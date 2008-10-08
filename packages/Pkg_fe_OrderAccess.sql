@@ -1,7 +1,5 @@
 
-REM START SS_ADM PKG_FE_ORDERACCESS
-
-CREATE OR REPLACE PACKAGE PKG_FE_ORDERACCESS
+  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_ORDERACCESS" 
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -42,7 +40,7 @@ AS
   );
 
   /* proc_fe_InsertOrderXml */
-/*  
+/*
   PROCEDURE InsertOrderXml (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
@@ -78,7 +76,7 @@ AS
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   );
-*/  
+*/
 
   PROCEDURE InsertOrderXmlWithOrderNum (
     iPorder_num IN INT,
@@ -112,7 +110,7 @@ AS
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   );
-  
+
   PROCEDURE InsertPaypalOrderXml (
 	  cPguid IN CHAR,
     cPshopper_id IN CHAR,
@@ -130,7 +128,7 @@ AS
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   );
-  
+
   PROCEDURE InsertPaypalOrderXmlEncrypted (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
@@ -183,6 +181,25 @@ AS
     curPresult10 OUT refCur,
     curPresult11 OUT refCur
   );
+	PROCEDURE GetShadowOrderWithWarrantyYS (
+	cPguid IN CHAR,
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+    curPresult13 OUT refCur, -- GetShopper refCur1
+    curPresult1 OUT refCur, -- GetBasket refCur1
+    curPresult2 OUT refCur, -- GetBasket refCur2
+    curPresult3 OUT refCur, -- GetBasket refCur3
+    curPresult4 OUT refCur, -- GetBasket refCur4
+    curPresult5 OUT refCur, -- GetBasket refCur5
+    curPresult6 OUT refCur, -- GetBasket refCur6
+    curPresult7 OUT refCur, -- GetBasket refCur7
+    curPresult8 OUT refCur,
+    curPresult9 OUT refCur,
+    curPresult10 OUT refCur,
+    curPresult11 OUT refCur,
+    curPresult12 OUT refCur
+  );
 	PROCEDURE GetShadowOrderWithWarranty (
 	cPguid IN CHAR,
     cPshopper_id IN CHAR,
@@ -225,6 +242,7 @@ AS
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
     iPlang_id IN INT,
+    curPresult12 OUT refCur, -- GetShopper refCur1
     curPresult1 OUT refCur, -- GetBasket refCur1
     curPresult2 OUT refCur, -- GetBasket refCur2
     curPresult3 OUT refCur, -- GetBasket refCur3
@@ -397,7 +415,7 @@ AS
     iPaddress_id IN INT,
     cPcurrency IN CHAR DEFAULT 'USD'
   );
-  
+
   PROCEDURE UpdateShippingAddressYS (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
@@ -413,7 +431,7 @@ AS
     nvcPship_to_state IN NVARCHAR2,
     nvcPship_to_zip IN NVARCHAR2,
     iPship_to_country_id IN INT,
-    nvcPship_to_phone IN NVARCHAR2,	
+    nvcPship_to_phone IN NVARCHAR2,
     nvcPship_to_evephone IN NVARCHAR2,
     nvcPship_to_email IN NVARCHAR2,
     iPaddress_id IN INT,
@@ -533,11 +551,10 @@ AS
     cPshopper_id OUT CHAR,
     cPcc_uid IN CHAR
   );
-  
+
 END Pkg_Fe_Orderaccess;
 /
-
-CREATE OR REPLACE PACKAGE BODY PKG_FE_ORDERACCESS 
+CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_ORDERACCESS" 
 AS
   PROCEDURE InsertSaleCode (
     iPorder_num IN INT,
@@ -911,14 +928,14 @@ AS
             action_id,
             action_datetime
           )
-        SELECT sku, site_id, action_id, SYSDATE 
-        FROM ya_limited_quantity 
-        WHERE 
+        SELECT sku, site_id, action_id, SYSDATE
+        FROM ya_limited_quantity
+        WHERE
         (site_id = iPsite_id OR site_id = 99)
         AND frontend_quantity - iLcurrent_qty <= 0
         AND frontend_quantity > 0
         AND sku = iLcurrent_sku;
-        
+
         UPDATE YA_LIMITED_QUANTITY
         SET
           frontend_quantity = frontend_quantity - iLcurrent_qty,
@@ -2085,7 +2102,7 @@ AS
         AND nb.type = 0
         AND nb.site_id = iPsite_id;
     END IF;
-        
+
     -- remove basket's items
     DELETE FROM YA_NEW_BASKET
     WHERE
@@ -2331,7 +2348,7 @@ AS
         AND nb.type = 0
         AND nb.site_id = iPsite_id;
     END IF;
-        
+
     -- remove basket's items
     DELETE FROM YA_NEW_BASKET
     WHERE
@@ -2419,7 +2436,7 @@ AS
     iLdebit_credit_return INT;
     iLseq_currval INT;
     iLseq_diff INT;
-    iLbuffer_code INT;    
+    iLbuffer_code INT;
   BEGIN
     BEGIN
       SELECT status, paypal_status
@@ -3199,6 +3216,193 @@ PROCEDURE GetShadowOrderWithWarranty (
     RETURN;
   END GetShadowOrderWithWarranty;
 
+ /*uses by paypal */
+PROCEDURE GetShadowOrderWithWarrantyYS (
+	cPguid IN CHAR,
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+    curPresult13 OUT refCur, --Get Shopper obj
+    curPresult1 OUT refCur, -- GetBasket refCur1
+    curPresult2 OUT refCur, -- GetBasket refCur2
+    curPresult3 OUT refCur, -- GetBasket refCur3
+    curPresult4 OUT refCur, -- GetBasket refCur4
+    curPresult5 OUT refCur, -- GetBasket refCur5
+    curPresult6 OUT refCur, -- GetBasket refCur6
+    curPresult7 OUT refCur, -- GetBasket refCur7
+    curPresult8 OUT refCur,
+    curPresult9 OUT refCur,
+    curPresult10 OUT refCur,
+    curPresult11 OUT refCur,
+    curPresult12 OUT refCur
+  )
+  AS
+    iLcountry_id INT;
+    vcLcoupon_code VARCHAR2(32);
+    iLdummy INT;
+  BEGIN
+    BEGIN
+      SELECT ship_to_country_id
+      INTO iLcountry_Id
+      FROM ya_checkout_data_shadow
+      WHERE
+        shopper_id = cPshopper_id
+        AND	site_id = iPsite_id
+		AND paypal_uid=cPguid;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        iLcountry_id := -1;
+    END;
+
+  --Get Shopper Detail
+	Pkg_FE_ShopperAccess.GetShopperDataByShopperIdYS(
+	  cPshopper_id,iPsite_id, curPresult13);
+    -- GetBasket INTO curPresult1 to curPresult6
+    Pkg_Fe_Basketaccess.GetShadowBasketWithWarranty(
+      cPguid,
+	  cPshopper_id,
+      iPsite_id,
+      iPlang_id,
+      0,
+      iLcountry_id,
+      curPresult1,
+      curPresult2,
+      curPresult3,
+      curPresult4,
+      curPresult5,
+      curPresult6,
+      curPresult7
+      );
+
+    BEGIN
+      SELECT trim(coupon_code)
+      INTO vcLcoupon_code
+      FROM ya_checkout_data_shadow
+      WHERE
+        shopper_id = cPshopper_id
+        AND site_id = iPsite_id
+		AND paypal_uid=cPguid;
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+      vcLcoupon_code := '';
+    END;
+
+    -- get coupon constraint type 1
+    OPEN curPresult8 FOR
+    SELECT constraint_value
+    FROM YA_COUPON_CONSTRAINT
+    WHERE
+      coupon_code = vcLcoupon_code
+      AND constraint_type = 1;
+
+    -- get coupon constraint type 2
+    OPEN curPresult9 FOR
+    SELECT constraint_value
+    FROM YA_COUPON_CONSTRAINT
+    WHERE
+      coupon_code = vcLcoupon_code
+      AND constraint_type = 2;
+
+    -- get coupon constraint type 3
+    OPEN curPresult10 FOR
+    SELECT constraint_value
+    FROM YA_COUPON_CONSTRAINT
+    WHERE
+      coupon_code = vcLcoupon_code
+      AND constraint_type = 3;
+
+    OPEN curPresult11 FOR
+    SELECT
+      c.coupon_code,
+      coupon_description,
+      dollar_coupon_value,
+      percentage_coupon_value,
+      order_amount_trigger,
+      item_sku_trigger,
+      expiration_date,
+      shopper_id,
+      all_shoppers,
+      coupon_used,
+      coupon_type_id,
+      site_id,
+      corporate_domain
+    FROM
+      YA_COUPON c
+      LEFT OUTER JOIN YA_COUPON_CORPORATE cc ON
+        c.coupon_code = cc.coupon_code
+    WHERE c.coupon_code = vcLcoupon_code;
+
+
+    OPEN curPresult12 FOR
+    SELECT
+      sale_id,
+      customer_firstname,
+      customer_lastname,
+      customer_email,
+      customer_comment,
+      shipping_method_id,
+      split_shipment,
+      ship_to_firstname,
+      ship_to_lastname,
+      ship_to_address_one,
+      ship_to_address_two,
+      ship_to_city,
+      ship_to_state_id,
+      ship_to_state,
+      ship_to_zip,
+      ship_to_country_id,
+      ship_to_day_phone,
+      ship_to_eve_phone,
+      ship_to_fax_number,
+      ship_to_mobile_phone,
+      ship_to_email,
+      payment_method_id,
+      bill_to_firstname,
+      bill_to_lastname,
+      bill_to_address_one,
+      bill_to_address_two,
+      bill_to_city,
+      bill_to_state_id,
+      bill_to_state,
+      bill_to_zip,
+      bill_to_country_id,
+      bill_to_phone,
+      bill_to_email,
+      coupon_code,
+      CAST(credit_amount AS FLOAT),
+      cc_number,
+      cc_type_id,
+      cc_expiration_month,
+      cc_expiration_year,
+      bank_name,
+      bank_phone,
+      currency,
+      ship_profile_id,
+      bill_profile_id,
+      cc_profile_id,
+      message_type,
+      sender,
+      receiver,
+      date_of_delivery,
+      content,
+      font,
+      colour,
+      lang,
+  	  cc_numberencrypted,
+  	  encryptionkey
+    FROM
+      ya_checkout_data_shadow c
+      LEFT OUTER JOIN ya_giftcard_data g ON
+        c.shopper_id = g.shopper_id
+        AND c.site_id = g.site_id
+		AND c.paypal_uid=cPguid
+    WHERE
+      c.shopper_id = cPshopper_id
+      AND c.site_id = iPsite_id
+	  AND c.paypal_uid=cPguid;
+
+    RETURN;
+  END GetShadowOrderWithWarrantyYS;
+  
   PROCEDURE GetOrderWithWarrantyEncrypted (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
@@ -3379,6 +3583,7 @@ PROCEDURE GetShadowOrderWithWarranty (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
     iPlang_id IN INT,
+    curPresult12 OUT refCur, -- GetShopper refCur12
     curPresult1 OUT refCur, -- GetBasket refCur1
     curPresult2 OUT refCur, -- GetBasket refCur2
     curPresult3 OUT refCur, -- GetBasket refCur3
@@ -3409,12 +3614,13 @@ PROCEDURE GetShadowOrderWithWarranty (
     END;
 
     -- GetBasket INTO curPresult1 to curPresult6
-    Pkg_Fe_Basketaccess.GetBasket(
+    Pkg_Fe_Basketaccess.GetBasketYS(
       cPshopper_id,
       iPsite_id,
       iPlang_id,
       0,
       iLcountry_id,
+      curPresult12,
       curPresult1,
       curPresult2,
       curPresult3,
@@ -3606,7 +3812,7 @@ PROCEDURE GetShadowOrderWithWarranty (
     ORDER BY ol.id;
 
     OPEN curPresult3 FOR
-    SELECT 
+    SELECT
       oi.origin_order_id,
       oi.sales_id,
       oi.origin_id,
@@ -3669,10 +3875,10 @@ PROCEDURE GetShadowOrderWithWarranty (
       bi.encryption_key,
       bi.cc_num_encrypted
     FROM
-      backend_adm.order_info oi, 
+      backend_adm.order_info oi,
       (select * from billing_info where order_info_id = iLorder_id) bi,
       (select * from shipping_info where order_info_id = iLorder_id) si
---      backend_adm.shipping_info si, 
+--      backend_adm.shipping_info si,
 --      backend_adm.billing_info bi
     WHERE 1=1
     AND oi.id = iLorder_id
@@ -4980,7 +5186,7 @@ PROCEDURE GetShadowOrderWithWarranty (
     ELSE
       BEGIN
         IF (iPsite_id = 10) THEN
-          iLshipping_method_id := 49; -- Standard		
+          iLshipping_method_id := 49; -- Standard
         ELSIF (iPsite_id = 11) THEN
           iLshipping_method_id := 53; -- Standard
         ELSE
@@ -5792,7 +5998,7 @@ PROCEDURE GetShadowOrderWithWarranty (
 
     RETURN;
   END UpdateCheckOutCurrency;
-  
+
   PROCEDURE UpdatePaymentInfo (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
@@ -5814,7 +6020,7 @@ PROCEDURE GetShadowOrderWithWarranty (
       shopper_id = cPshopper_id
       AND site_id = iPsite_id;
 
-  END UpdatePaymentInfo;  
+  END UpdatePaymentInfo;
 
   PROCEDURE GetShopperIdByCcUId (
     cPshopper_id OUT CHAR,
@@ -5834,9 +6040,8 @@ PROCEDURE GetShadowOrderWithWarranty (
         WHEN NO_DATA_FOUND THEN
           cPshopper_id := null;
     END;
-  END GetShopperIdByCcUId;    
+  END GetShopperIdByCcUId;
 
   END Pkg_Fe_Orderaccess;
 /
  
-REM END SS_ADM PKG_FE_ORDERACCESS

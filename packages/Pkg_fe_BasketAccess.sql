@@ -1,4 +1,5 @@
-CREATE OR REPLACE PACKAGE PKG_FE_BASKETACCESS
+
+  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_BASKETACCESS" 
 AS
   TYPE refCur IS REF CURSOR;
   PROCEDURE DeleteWarrantyItem (
@@ -98,13 +99,28 @@ AS
     curPgetBasket6 OUT refCur,
     curPgetBasket7 OUT refCur
   );
-
+  
   PROCEDURE GetBasket (
     cPshopperId IN CHAR,
     iPsiteId IN INT,
     iPlangId IN INT,
     iPtype IN INT,
     iPcountryId IN INT DEFAULT -1,
+    curPgetBasket1 OUT refCur,
+    curPgetBasket2 OUT refCur,
+    curPgetBasket3 OUT refCur,
+    curPgetBasket4 OUT refCur,
+    curPgetBasket5 OUT refCur,
+    curPgetBasket6 OUT refCur
+  );
+  
+  PROCEDURE GetBasketYS (
+    cPshopperId IN CHAR,
+    iPsiteId IN INT,
+    iPlangId IN INT,
+    iPtype IN INT,
+    iPcountryId IN INT DEFAULT -1,
+    curPgetBasket7 OUT refCur,
     curPgetBasket1 OUT refCur,
     curPgetBasket2 OUT refCur,
     curPgetBasket3 OUT refCur,
@@ -164,11 +180,8 @@ AS
     iPsku20 IN INT DEFAULT NULL
   );
 END Pkg_fe_BasketAccess;
-
 /
-
-
-CREATE OR REPLACE PACKAGE BODY PKG_FE_BASKETACCESS
+CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_BASKETACCESS" 
 IS
 ------------- AddItem
   PROCEDURE AddItem (
@@ -928,6 +941,7 @@ END;
 END GetShadowBasketWithWarranty;
 
 
+
   PROCEDURE GetBasketWithWarranty (
     cPshopperId IN CHAR,
     iPsiteId IN INT,
@@ -1624,6 +1638,360 @@ END GetBasketWithWarranty;
   RETURN;
 
 END GetBasket;
+
+  PROCEDURE GetBasketYS (
+    cPshopperId IN CHAR,
+    iPsiteId IN INT,
+    iPlangId IN INT,
+    iPtype IN INT,
+    iPcountryId IN INT DEFAULT -1,
+    curPgetBasket7 OUT refCur,
+    curPgetBasket1 OUT refCur,
+    curPgetBasket2 OUT refCur,
+    curPgetBasket3 OUT refCur,
+    curPgetBasket4 OUT refCur,
+    curPgetBasket5 OUT refCur,
+    curPgetBasket6 OUT refCur
+    )
+  AS
+    dtLnullDate DATE := TO_DATE('01-01-1900','DD-MM-YYYY');
+    iLShipmentUnitConst INT;
+    iLRegionId INT;
+    iLOriginId INT;
+  BEGIN
+        IF iPsiteId = 11 THEN
+		begin
+		  iLRegionId := 10;
+		  iLOriginId := 10;
+		end;
+		ELSE
+		begin
+		  iLRegionId := iPsiteId;
+		  iLOriginId := iPsiteId;
+		end;
+  	END IF;
+  --Get Shopper Detail
+	Pkg_FE_ShopperAccess.GetShopperDataByShopperIdYS(
+	  cPshopperId,iPsiteId, curPgetBasket7);
+  /* Attribute Info */
+  OPEN curPgetBasket1 FOR
+  SELECT
+    pa.sku,
+    pa.attribute_id,
+    a.attribute_type_id,
+    NVL(al.attribute_name, ale.attribute_name),
+    a.img_loc,
+    NVL(a.img_height, 0),
+    NVL(a.img_width, 0)
+  FROM
+    ya_prod_attr pa,
+    ya_attribute a,
+    ya_attribute_lang ale,
+    ya_attribute_lang al
+  WHERE pa.attribute_id = a.attribute_id
+  AND pa.attribute_id = ale.attribute_id
+  AND ale.lang_id = 1 /* English */
+  AND pa.attribute_id = al.attribute_id
+  AND al.lang_id = iPlangId
+  AND pa.sku IN (
+                SELECT sku
+                FROM ya_new_basket
+                WHERE shopper_id = cPshopperId
+                AND site_id = iPsiteId
+                AND type = iPtype
+                )
+  ORDER BY pa.sku, a.attribute_type_id;
+
+  /* Limited Quantity */
+  OPEN curPgetBasket2 FOR
+  SELECT
+    lq.sku,
+    lq.frontend_quantity
+  FROM
+    ya_limited_quantity lq,
+    ya_new_basket b
+  WHERE lq.sku = b.sku
+  AND b.shopper_id = cPshopperId
+  AND b.site_id = iPsiteId
+  AND b.type = iPtype
+  AND lq.site_id in (99, iPSiteId)
+  AND lq.frontend_quantity > 0
+  ORDER BY lq.sku;
+
+  /* Get shipment Unit */
+  iLShipmentUnitConst := 200; /* in Grams */
+
+  OPEN curPgetBasket3 FOR
+  SELECT
+    t1.sku,
+    CAST(
+         CASE WHEN t2.shipment_unit IS NOT NULL THEN t2.shipment_unit
+         ELSE CEIL(NVL(t1.weight, iLShipmentUnitConst) / iLShipmentUnitConst)
+         END AS int
+         ) as shipment_unit
+  FROM
+    ya_product t1,
+    ya_shipping_unit t2
+  WHERE t1.sku = t2.sku(+)
+  AND t2.site_id(+) = iPsiteId
+  AND t1.sku IN
+    (
+      SELECT sku
+      FROM ya_new_basket
+      WHERE shopper_id = cPshopperId
+      AND site_id = iPsiteId
+      AND type = iPtype
+    );
+
+  /* inventory and Availability Info */
+    IF iPcountryId = -1 THEN
+      BEGIN
+        OPEN curPgetBasket4 FOR
+        SELECT
+          p.sku,
+          -1,
+          CASE
+            WHEN pa.avlb = 0 THEN 99
+            ELSE 0
+          END,
+          cast(nvl(o.availability_id, pa.avlb) as int)
+        FROM
+          ya_new_basket pt
+          INNER JOIN ya_product p ON
+            pt.sku = p.sku
+          INNER JOIN backend_adm.prod_avlb pa ON p.sku = pa.prod_id
+          INNER JOIN backend_adm.prod_region r ON
+            pt.sku = r.prod_id
+            AND r.region_id = iLRegionId
+            AND pa.prod_id = r.prod_id
+            AND pa.region_id = r.region_id
+		  LEFT OUTER JOIN ya_availability_override o ON r.supplier_id = o.supplier_id
+            AND p.account_id = o.account_id AND SYSDATE() BETWEEN o.start_date AND o.end_date
+            AND pa.avlb < o.availability_id
+          INNER JOIN
+            (
+              SELECT rp.prod_id productId, MIN(SEQUENCE) seq
+              FROM backend_adm.prod_region rp
+              inner join ya_new_basket b on
+                (
+                  rp.prod_id = b.sku
+                  and b.shopper_id = cPshopperId
+                  and b.site_id = iPsiteid
+                  and b.type = iPtype
+                )
+              WHERE
+                --default country ID
+                rp.region_id = iLRegionId
+              GROUP BY rp.prod_id
+            ) t ON
+            r.prod_id = t.productId
+            AND r.sequence = t.seq
+        WHERE
+          pt.shopper_id = cPshopperId
+          AND pa.region_id = iLRegionId
+        ORDER BY p.sku;
+      END;
+    ELSE
+      BEGIN
+        OPEN curPgetBasket4 FOR
+        SELECT
+          p.sku,
+          -1,
+          CASE
+            WHEN pa.avlb = 0 THEN 99
+            ELSE 0
+          END,
+          NVL(o.availability_id, pa.avlb)
+        FROM
+          ya_new_basket pt
+          INNER JOIN ya_product p ON pt.sku = p.sku
+          INNER JOIN backend_adm.prod_avlb pa ON p.sku = pa.prod_id
+          INNER JOIN backend_adm.prod_region r ON
+            pt.sku = r.prod_id
+            AND r.region_id = iLRegionId
+            AND pa.prod_id = r.prod_id
+            AND pa.region_id = r.region_id
+		  LEFT OUTER JOIN ya_availability_override o ON
+            r.supplier_id = o.supplier_id
+            AND p.account_id = o.account_id
+            AND SYSDATE() BETWEEN o.start_date AND o.end_date
+            AND pa.avlb < o.availability_id
+          INNER JOIN
+            (
+              SELECT
+                rp.prod_id productId,
+                MAX(SEQUENCE) seq
+              FROM ya_country_region_rel rl
+              INNER JOIN backend_adm.prod_region rp ON
+                rl.region_id = rp.region_id
+              INNER JOIN ya_new_basket b ON
+                rp.prod_id = b.sku
+                AND b.shopper_id = cPshopperId
+                AND b.site_id = iPsiteid
+                AND b.type = iPtype
+              WHERE
+                rl.country_id = iPcountryId
+                AND rp.region_id = iLRegionId
+              GROUP BY rp.prod_id
+            ) t ON
+              r.prod_id = t.productId
+              AND r.sequence = t.seq
+          WHERE
+            pt.shopper_id = cPshopperId
+            AND pa.region_id = iLRegionId
+          ORDER BY p.sku;
+
+      END;
+    END IF;
+
+
+
+  /* Campaign Code */
+  OPEN curPgetBasket5 FOR
+  SELECT
+    c.sku,
+    c.campaign_code
+  FROM
+    ya_campaign c,
+    ya_new_basket b
+  WHERE c.sku = b.sku
+  AND b.shopper_id = cPshopperId
+  AND b.site_id = iPsiteId
+  AND b.type = iPtype
+  ORDER BY c.sku DESC;
+
+
+  /* Product Information */
+  OPEN curPgetBasket6 FOR
+  SELECT
+    r.prod_id,
+    b.quantity,
+    p.cover_img_loc AS cover_img_loc,
+    NVL(p.cover_img_width, 0) AS cover_img_width,
+    NVL(p.cover_img_height, 0) AS cover_img_height,
+    NVL(r.is_preorder, 'N') AS preorder,
+    NVL(r.preorder_start, dtLnullDate) AS preorder_start,
+    NVL(r.preorder_end, dtLnullDate) AS preorder_end,
+    NVL(r.list_price, 9999) AS list_price,
+    NVL(r.sale_price, 9999) AS sale_price,
+    NVL(r.sale_price_start, dtLnullDate) AS sale_start,
+    NVL(r.sale_price_end, dtLnullDate) AS salePriceEnd,
+    NVL(pl.prod_name_u, ple.prod_name_u),
+    NVL(p.release_date, dtLnullDate),
+    plp.prod_name_img_loc,
+    NVL(plp.name_img_width, 0),
+    NVL(plp.name_img_height, 0),
+    NVL(p.account_id, -1),
+    NVL(r.supplier_id, -1),
+    NVL(r.is_enabled, 'N'),
+    NVL(r.is_can_sell, 'N'),
+    NVL(pl.prod_subtitle, ple.prod_subtitle),
+    NVL(pl.prod_name_aka, ple.prod_name_aka),
+    NVL(pl.prod_subtitle_aka, ple.prod_subtitle_aka),
+    NVL(r.preorder_buffer_day, -1) AS preorder_buffer_day,
+    t.regionCount
+  FROM
+    ya_new_basket b
+    INNER JOIN ya_product p ON
+      b.sku = p.sku AND type = iPtype
+    LEFT JOIN ya_prod_lang pl ON
+      p.sku = pl.sku
+      AND pl.lang_id = iPlangId
+    LEFT JOIN ya_prod_lang plp ON
+      p.sku = plp.sku
+      AND plp.lang_id IN -- prefered lang
+        (
+          SELECT lang_id
+          FROM ya_prod_lang
+          WHERE
+            sku = plp.sku
+            AND preferred_flag='Y'
+            AND ROWNUM = 1
+        )
+      LEFT JOIN ya_prod_lang ple ON
+        p.sku = ple.sku
+        AND ple.lang_id = 1 -- English
+      INNER JOIN backend_adm.prod_region r ON
+        b.sku = r.prod_id
+      INNER JOIN
+        (
+          SELECT
+            s.productId productId,
+            s.seq seq,
+            t.regionCount regionCount
+          FROM
+            (
+              SELECT
+                rp.prod_id productId,
+                MAX(SEQUENCE) seq
+              FROM
+                ya_country_region_rel rl
+                INNER JOIN backend_adm.prod_region rp ON
+                  rl.region_id = rp.region_id
+                INNER JOIN ya_new_basket b ON
+                  rp.prod_id = b.sku
+                  AND b.shopper_id = cPshopperId
+                  AND b.site_id = iPsiteid
+                  ANd b.type = iPtype
+              WHERE
+                iPcountryId <> -1
+                AND rl.country_id = iPcountryId
+                AND rp.origin_id = iLOriginId
+                AND rp.category_id = 1
+              GROUP BY rp.prod_id
+            ) s
+            INNER JOIN
+              (
+                SELECT
+                  rp.prod_id productId,
+                  COUNT(rp.prod_id) regionCount
+                FROM
+                  backend_adm.prod_region rp
+                  INNER JOIN ya_new_basket b ON
+                    rp.prod_id = b.sku
+                    AND b.shopper_id = cPshopperId
+                    AND b.site_id = iPsiteid
+                    AND b.type = iPtype
+                WHERE
+                  --default country ID
+                  iPcountryId <> -1
+                  AND rp.origin_id = iLOriginId
+                  AND rp.category_id = 1
+                GROUP BY rp.prod_id
+              ) t ON
+              s.productId = t.productId
+            UNION
+            SELECT
+              rp.prod_id productId,
+              MIN(SEQUENCE) seq,
+              COUNT(rp.prod_id) regionCount
+            FROM
+              backend_adm.prod_region rp
+              INNER JOIN ya_new_basket b ON
+                rp.prod_id = b.sku
+                AND b.shopper_id = cPshopperId
+                AND b.site_id = iPsiteid
+                AND b.type = iPtype
+            WHERE
+              --default country ID
+              iPcountryId = -1
+              AND rp.origin_id = iLOriginId
+              AND rp.category_id = 1
+            GROUP BY rp.prod_id
+      ) t ON
+    r.prod_id = t.productId
+    AND r.sequence = t.seq
+  WHERE r.category_id = 1 --not wholesale
+    AND r.origin_id = iLOriginId
+    AND b.shopper_id = cPshopperId
+    AND b.site_id = iPsiteId
+    AND b.type = iPtype
+    AND p.is_parent = 'N'
+  ORDER BY b.created_datetime DESC, b.sku DESC;
+
+  RETURN;
+
+END GetBasketYS;
 
 
   PROCEDURE TransferBasket (
@@ -2334,5 +2702,5 @@ END GetBasket;
   END DeleteWarrantyItem;
 -- +--- Body
 END Pkg_fe_BasketAccess;
-
 /
+ 
