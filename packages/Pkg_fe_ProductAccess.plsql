@@ -1538,7 +1538,7 @@ END FillProductBooksInformation;
       YA_LIMITED_QUANTITY lq,
       TEMP_PRODUCT_INT_TABLE p
     WHERE lq.sku = p.column1
-    AND lq.site_id IN (99, iPsite_id)
+    AND lq.site_id IN (99, iLOriginId)
     AND lq.frontend_quantity > 0
     ORDER BY lq.sku;
 
@@ -1571,7 +1571,7 @@ END FillProductBooksInformation;
       INNER JOIN TEMP_PRODUCT_INT_TABLE p ON
         t1.sku = p.column1
       LEFT OUTER JOIN YA_SHIPPING_UNIT t2 ON
-        t1.sku = t2.sku AND t2.site_id = iPsite_id;
+        t1.sku = t2.sku AND t2.site_id = iLOriginId;
 
     /* inventory and Availability Info */
     OPEN curPgetProduct4 FOR
