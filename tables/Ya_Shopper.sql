@@ -43,7 +43,7 @@ CREATE INDEX IX_Shopper_02 ON Ya_Shopper(rowguid) TABLESPACE SSCommerceserver_In
 CREATE INDEX IX_Shopper_03 ON Ya_Shopper(created_date, anonymous) TABLESPACE SSCommerceserver_Index
 /
 
-CREATE INDEX IX_Shopper_04 ON Ya_Shopper(LOWER(email)) TABLESPACE SSCommerceserver_Index
+CREATE UNIQUE INDEX IX_Shopper_04 ON Ya_Shopper(LOWER(email)) TABLESPACE SSCommerceserver_Index
 /
 
 CREATE INDEX IX_Shopper_05 ON Ya_Shopper(LOWER(username)) TABLESPACE SSCommerceserver_Index
