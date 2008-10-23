@@ -260,7 +260,7 @@ AS
       b.addr_1 AS b_address1, b.addr_2 AS b_address2, b.city AS b_city, b.state AS b_state, b.zip AS b_zip, b.phone AS b_phone, b.currency AS currency,
       s.first_name AS s_firstname, s.last_name AS s_lastname, s.email AS s_email, s.day_phone AS s_dayPhone,
       s.addr_1 AS s_address1, s.addr_2 AS s_address2, s.city AS s_city, s.state AS s_state, s.zip AS s_zip,
-      pl.prod_name AS prod_name, pf.prod_name AS prod_name_english, pf.prod_name_img_loc, s.method AS shipMethodId, s.country AS ship_country_id,
+      nvl(pl.prod_name, pe.prod_name) AS prod_name, pf.prod_name AS prod_name_english, pf.prod_name_img_loc, s.method AS shipMethodId, s.country AS ship_country_id,
       bbl.meaning AS cardType, bpl.meaning AS paymentMethod, bcl.meaning AS bill_country, scl.meaning AS ship_country, sml.meaning AS shipMethod, ol.prod_id, pf.prod_subtitle_aka,
 	  b.cc_num_encrypted AS card_numberEncrypted, b.encryption_key
     FROM invoice i
@@ -277,6 +277,7 @@ AS
       INNER JOIN lookup scl ON s.country = scl.code AND scl.lang_type = -1 AND scl.category = 'country'
       INNER JOIN YA_PROD_LANG pf ON ol.prod_id = pf.sku AND pf.lang_id = 1
       LEFT OUTER JOIN YA_PROD_LANG pl ON ol.prod_id = pl.sku AND pl.lang_id = iLlang_id
+	  INNER JOIN YA_PROD_LANG pe ON ol.prod_id = pe.sku AND pe.lang_id = 1
     WHERE i.id = iLinvoice_id
       AND i.sts <> 4
       AND i.TYPE = 1
