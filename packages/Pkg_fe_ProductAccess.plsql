@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE          "PKG_FE_PRODUCTACCESS"
+CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_PRODUCTACCESS" 
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -157,7 +157,7 @@ AS
     iPsite_id  		IN 	INT,
     curPgetProduct1 	OUT 	refCur
   );
-
+  
   PROCEDURE GetProductBase (
     cPsku_csv  		IN 	VARCHAR2,
     iPsite_id  		IN 	INT,
@@ -222,6 +222,7 @@ AS
   PROCEDURE GetPSFirstGalleryImages (
     iPsku IN INT,
     iPlangId IN INT,
+    iPsiteId IN INT,
     curPgetPS OUT refCur
   );
 
@@ -256,11 +257,8 @@ AS
     curPgetFrontpage	OUT	refCur
   ); /* For get brand page product lot */
 END Pkg_Fe_Productaccess;
-
 /
-
-
-CREATE OR REPLACE PACKAGE BODY          "PKG_FE_PRODUCTACCESS"
+CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_PRODUCTACCESS" 
 IS
   PROCEDURE GetPublisherGroupName (
     iPgroup_id    IN  INT,
@@ -1230,7 +1228,6 @@ RETURN;
 END;
 
 
-/* proc_fe_get_product_video_info */
   PROCEDURE GetProductVideosInformation (
     iPsku		IN	INT,
     curPgetProduct	OUT	refCur
@@ -1425,7 +1422,7 @@ END FillProductBooksInformation;
   AS
   BEGIN
     OPEN curPgetProduct1 FOR
-    SELECT nb.sku, nvl(p.publisher_id,-1)
+    SELECT nb.sku, nvl(p.publisher_id, -1)
     FROM ya_product p
       INNER JOIN ya_new_basket nb ON p.sku = nb.sku
     WHERE nb.shopper_id = cPshopper_id
@@ -1903,6 +1900,7 @@ END;
   PROCEDURE GetPSFirstGalleryImages (
     iPsku IN INT,
     iPlangId IN INT,
+	iPsiteId IN INT,
     curPgetPS OUT refCur
   )
   AS
@@ -1916,7 +1914,9 @@ END;
       YA_PROD_GALLERY a,
       YA_PROD_GALLERY_SECTION b,
       YA_PROD_GALLERY_IMAGE c,
-      YA_PROD_GALLERY_DESC d
+      YA_PROD_GALLERY_DESC d,
+	  prod_region pr,
+	  prod_avlb pa
     WHERE
       a.gallery_id=c.gallery_id
       AND b.section_id=c.section_id
@@ -1925,6 +1925,12 @@ END;
       AND d.lang_id = iPlangId
       AND c.priority = 0
       AND a.sku in (SELECT pr.sku FROM ya_prod_rel pr WHERE pr.parent_sku = iPsku)
+	  AND pr.region_id=iPsiteId
+	  AND pr.prod_id=a.sku
+	  AND pr.is_enabled='Y'
+	  AND pa.region_id=iPsiteId
+	  AND pa.prod_id=a.sku
+	  AND pa.avlb<60
     ORDER BY
       section_priority, b.section_id, c.priority, c.image_id;
 
@@ -1939,7 +1945,6 @@ END;
   AS
   BEGIN
     /* Get All Image Gallery Of Specified Sku */
-/*
     SELECT
       COUNT(1)
     INTO iPcount
@@ -1955,172 +1960,6 @@ END;
       AND a.sku = iPsku
       AND b.lang_id = iPlangId
       AND d.lang_id = iPlangId;
-*/
-    SELECT COUNT(1) INTO iPcount
-    FROM YA_PROD_GALLERY a
-		INNER JOIN YA_PROD_GALLERY_IMAGE c ON a.gallery_id=c.gallery_id
-		INNER JOIN YA_PROD_GALLERY_SECTION b ON b.section_id=c.section_id AND b.lang_id = iPlangId
-		INNER JOIN YA_PROD_GALLERY_DESC d ON c.image_id=d.image_id AND d.lang_id = iPlangId
-		INNER JOIN YA_PRODUCT p ON a.sku = p.sku
-																AND NOT (
-																	(p.account_id = 49 OR p.account_id = 50)
-																	AND (
-																		(INSTR(p.manu_part_num, 'TRAK')=1) OR
-																		(INSTR(p.manu_part_num, 'DFCL')=1) OR
-																		(INSTR(p.manu_part_num, 'KSCL')=1) OR
-																		(INSTR(p.manu_part_num, 'AICL')=1) OR
-																		(INSTR(p.manu_part_num, 'ESCL')=1) OR
-																		(INSTR(p.manu_part_num, 'SRCL')=1) OR
-																		(INSTR(p.manu_part_num, 'SECL')=1) OR
-																		(INSTR(p.manu_part_num, 'SICC')=1) OR
-																		(INSTR(p.manu_part_num, 'AIBL')=1) OR
-																		(INSTR(p.manu_part_num, 'DFBL')=1) OR
-																		(INSTR(p.manu_part_num, 'KSBL')=1) OR
-																		(INSTR(p.manu_part_num, 'SEBL')=1) OR
-																		(INSTR(p.manu_part_num, 'ESBL')=1) OR
-																		(INSTR(p.manu_part_num, 'SRBL')=1) OR
-																		(INSTR(p.manu_part_num, 'SVWC')=1) OR
-																		(INSTR(p.manu_part_num, 'KSC2')=1) OR
-																		(INSTR(p.manu_part_num, 'ESCB')=1) OR
-																		(INSTR(p.manu_part_num, 'SMCL')=1) OR
-																		(INSTR(p.manu_part_num, 'AICP')=1) OR
-																		(INSTR(p.manu_part_num, 'DFCZ')=1) OR
-																		(INSTR(p.manu_part_num, 'SQEX')=1) OR
-																		(INSTR(p.manu_part_num, 'QQCL')=1) OR
-																		(INSTR(p.manu_part_num, 'VVCL')=1) OR
-																		(INSTR(p.manu_part_num, 'MHCL')=1) OR
-																		(INSTR(p.manu_part_num, 'VCCM')=1) OR
-																		(INSTR(p.manu_part_num, 'BSCH')=1) OR
-																		(INSTR(p.manu_part_num, 'KDSD')=1)
-																	)
-																	AND NOT(
-																		(p.sku = 1004530006) OR
-																		(p.sku = 1004538153) OR
-																		(p.sku = 1004538151) OR
-																		(p.sku = 1004529988) OR
-																		(p.sku = 1004537530) OR
-																		(p.sku = 1004537531) OR
-																		(p.sku = 1004537543) OR
-																		(p.sku = 1004538278) OR
-																		(p.sku = 1004538279) OR
-																		(p.sku = 1004538413) OR
-																		(p.sku = 1004496908) OR
-																		(p.sku = 1004496927) OR
-																		(p.sku = 1004538307) OR
-																		(p.sku = 1004538283) OR
-																		(p.sku = 1004560562) OR
-																		(p.sku = 1004566733) OR
-																		-- 2007/01/05
-																		(p.sku = 1004598078) OR
-																		(p.sku = 1004598080) OR
-																		(p.sku = 1004562080) OR
-																		(p.sku = 1004560563) OR
-																		(p.sku = 1004604284) OR
-																		-- 2007/01/19
-																		(p.sku = 1004598156) OR
-																		(p.sku = 1004562964) OR
-																		(p.sku = 1004562962) OR
-																		(p.sku = 1004612172) OR
-																		(p.sku = 1004612170) OR
-																		(p.sku = 1004598144) OR
-																		(p.sku = 1004598135) OR
-																		(p.sku = 1004598136) OR
-																		(p.sku = 1004598111) OR
-																		(p.sku = 1004598112) OR
-																		(p.sku = 1004598108) OR
-																		(p.sku = 1004612147) OR
-																		(p.sku = 1004598133) OR
-																		(p.sku = 1004598134) OR
-																		(p.sku = 1004591138) OR
-																		(p.sku = 1004591082) OR
-																		(p.sku = 1004562983) OR
-																		(p.sku = 1004562990) OR
-																		-- 2007/02/09
-																		(p.sku = 1004613733) OR
-																		(p.sku = 1004598107) OR
-																		(p.sku = 1004623752) OR
-																		(p.sku = 1004636626) OR
-																		(p.sku = 1004623669) OR
-																		(p.sku = 1004620704) OR
-																		(p.sku = 1004609450) OR
-																		(p.sku = 1004613977) OR
-																		(p.sku = 1004614283) OR
-																		(p.sku = 1004614290) OR
-																		(p.sku = 1004612326) OR
-																		(p.sku = 1004612327) OR
-																		(p.sku = 1004612201) OR
-																		(p.sku = 1004614308) OR
-																		(p.sku = 1004620821) OR
-																		(p.sku = 1004606734) OR
-																		(p.sku = 1004614063) OR
-																		(p.sku = 1004613997) OR
-																		-- 2007/02/26
-																		(p.sku = 1004614302) OR
-																		(p.sku = 1004631315) OR
-																		(p.sku = 1004614303) OR
-																		(p.sku = 1004610416) OR
-																		(p.sku = 1004610417) OR
-																		(p.sku = 1004620801) OR
-																		(p.sku = 1004614590) OR
-																		(p.sku = 1004623732) OR
-																		(p.sku = 1004612143) OR
-																		(p.sku = 1004614316) OR
-																		(p.sku = 1004614454) OR
-																		(p.sku = 1004613980) OR
-																		(p.sku = 1004632066) OR
-																		(p.sku = 1004612262) OR
-																		(p.sku = 1004612263) OR
-																		(p.sku = 1004614300) OR
-																		(p.sku = 1004613976) OR
-																		-- 2007/03/27
-																		(p.sku = 1004648283) OR
-																		(p.sku = 1004645068) OR
-																		(p.sku = 1004610379) OR
-																		(p.sku = 1004648500) OR
-																		(p.sku = 1004649244) OR
-																		(p.sku = 1004631119) OR
-																		(p.sku = 1004687564) OR
-																		(p.sku = 1004687565) OR
-																		(p.sku = 1004613914) OR
-																		(p.sku = 1004636381) OR
-																		-- 2007/04/16
-																		(p.sku = 1004684198) OR
-																		(p.sku = 1004684199) OR
-																		(p.sku = 1004684211) OR
-																		(p.sku = 1004648330) OR
-																		(p.sku = 1004592322) OR
-																		(p.sku = 1004715246) OR
-																		(p.sku = 1004715239) OR
-																		(p.sku = 1004709779) OR
-																		(p.sku = 1004569806) OR
-																		(p.sku = 1004639310) OR
-																		(p.sku = 1004571180) OR
-																		(p.sku = 1004571186) OR
-																		(p.sku = 1004571197) OR
-																		(p.sku = 1004571206) OR
-																		(p.sku = 1004571183) OR
-																		-- 2007/05/07
-																		(p.sku = 1004742672) OR
-																		(p.sku = 1004742868) OR
-																		(p.sku = 1004742865) OR
-																		(p.sku = 1004742848) OR
-																		(p.sku = 1004684207) OR
-																		(p.sku = 1004771081) OR
-																		(p.sku = 1004684232) OR
-																		(p.sku = 1004684231) OR
-																		(p.sku = 1004749288) OR
-																		(p.sku = 1004778022) OR
-																		(p.sku = 1004749133) OR
-																		(p.sku = 1004749204) OR
-																		(p.sku = 1004749203) OR
-																		(p.sku = 1004708680) OR
-																		(p.sku = 1004786012) OR
-																		(p.sku = 1004786045) OR
-																		(p.sku = 1004712129)
-																	)
-																)
-    WHERE a.sku = iPsku;
-
     RETURN;
   END;
 
@@ -2184,7 +2023,7 @@ END;
 
     return;
   END GetBargainSuppInfoData;
-
+  
 
   PROCEDURE GetPublisherProductGroup (
     iPpublisherId IN INT,
@@ -2195,15 +2034,31 @@ END;
   BEGIN
     OPEN curPgetProductGroup FOR
     SELECT
-      p.sku, pl.prod_name_u
+      p.sku, pl.prod_name_u, pe.prod_name_u as ename
     FROM
       YA_PRODUCT p
+	left join prod_region pr on p.sku=pr.prod_id and pr.region_id=10
+    INNER JOIN YA_PROD_LANG pe ON p.sku = pe.sku AND pe.lang_id = 1
     INNER JOIN YA_PROD_LANG pl
     ON p.is_parent = 'Y'
-      AND p.sku IN (SELECT DISTINCT parent_sku FROM YA_PROD_REL WHERE sku IN (SELECT sku FROM YA_PRODUCT WHERE publisher_id = iPpublisherId))
+      AND p.sku IN
+		(SELECT DISTINCT parent_sku FROM YA_PROD_REL WHERE sku IN (
+			SELECT sku FROM YA_PRODUCT WHERE publisher_id = iPpublisherId
+			)
+                        			and parent_sku not in (
+                        -- exclude price range product group
+			1004466192,1004466191,1004466190,1004466136,1004466200,1004466199,1004466198,1004466197,
+                        1004466196,1004466195,1004466194,1004466192,1004466191,1004466190,1004466202
+
+				)
+
+				)
       AND p.sku = pl.sku
+ -- exclude people style product group
+      and p.sku not in (select sku from ya_prod_dept where dept_id in (select dept_id from ya_peoplestyle))
       AND pl.lang_id = iPlangId
-    GROUP BY p.sku, pl.prod_name_u
+	where (pr.is_enabled='Y' or pr.is_enabled is null)
+    GROUP BY p.sku, pl.prod_name_u, pe.prod_name_u
     ORDER BY p.sku DESC;
 /*
     SELECT
@@ -2244,8 +2099,8 @@ BEGIN
 		  pfr.publisher_id = iPpublisherId
 		  AND
 		  pl.file_id = pfr.file_id
-        INNER JOIN ya_content_filename cf ON
-		  cf.id = pfr.file_id
+		  AND
+		  pfr.dept_id = iPDeptId
         LEFT OUTER JOIN YA_PROD_LOT_LANG pll ON
           pl.prod_lot_id = pll.prod_lot_id
           AND pll.lang_id = iPlangId
@@ -2260,7 +2115,5 @@ BEGIN
       ORDER BY pl.lot_location, pl.priority;
 RETURN;
 END GetFrontPageProductLotsByPId;
-
 END Pkg_Fe_Productaccess;
-
 /
