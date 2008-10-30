@@ -14,7 +14,7 @@ CREATE TABLE Ya_Img_Lot_Lang (
 /
 
 ALTER TABLE Ya_Img_Lot_Lang
-ADD CONSTRAINT PK_Img_Lot_Lang PRIMARY KEY (Img_Lot_Lang_id)
+ADD CONSTRAINT PK_Img_Lot_Lang PRIMARY KEY (image_lot_id)
 USING INDEX TABLESPACE SSCommerceserver_Index
 /
 
