@@ -189,33 +189,43 @@ CREATE INDEX IX_Product_11 ON Ya_Product(release_date) TABLESPACE SSCommerceserv
 CREATE INDEX IX_Product_12 ON Ya_Product(sku, tw_enabled) TABLESPACE SSCommerceserver_Index
 /
 
+--Old Index IX_Product_14
 CREATE INDEX IX_Product_13 ON Ya_Product(preorder_deadline, is_parent) TABLESPACE SSCommerceserver_Index
 /
 
+--Old Index IX_Product_15
 CREATE INDEX IX_Product_14 ON Ya_Product(account_id, sku) TABLESPACE SSCommerceserver_Index
 /
 
+--Old Index IX_Product_16
 CREATE INDEX IX_Product_15 ON Ya_Product(us_launch_date) TABLESPACE SSCommerceserver_Index
 /
 
+--Old Index IX_Product_17
 CREATE INDEX IX_Product_16 ON Ya_Product(release_date, us_supplier_id) TABLESPACE SSCommerceserver_Index
 /
 
+--Old Index IX_Product_18
 CREATE INDEX IX_Product_17 ON Ya_Product(updated_date, sku, is_parent) TABLESPACE SSCommerceserver_Index
 /
 
+--Old Index IX_Product_19
 CREATE INDEX IX_Product_18 ON Ya_Product(key_code_type, key_code) TABLESPACE SSCommerceserver_Index
 /
 
+--Old Index IX_Product_20
 CREATE INDEX IX_Product_19 ON Ya_Product(release_date, sku) TABLESPACE SSCommerceserver_Index
 /
 
+--Old Index IX_Product_21
 CREATE INDEX IX_Product_20 ON Ya_Product(created_date, sku, bar_code) TABLESPACE SSCommerceserver_Index
 /
 
+--Old Index IX_Product_22
 CREATE INDEX IX_Product_21 ON Ya_Product(sku, key_code, key_code_type) TABLESPACE SSCommerceserver_Index
 /
 
+--Old Index IX_Product_23
 CREATE INDEX IX_Product_22 ON Ya_Product(content_id) TABLESPACE SSCommerceserver_Index
 /
 
