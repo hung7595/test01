@@ -1,5 +1,5 @@
 
-  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_ORDERACCESS" 
+  CREATE OR REPLACE PACKAGE "PKG_FE_ORDERACCESS" 
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -554,7 +554,7 @@ AS
 
 END Pkg_Fe_Orderaccess;
 /
-CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_ORDERACCESS" 
+CREATE OR REPLACE PACKAGE BODY "PKG_FE_ORDERACCESS" 
 AS
   PROCEDURE InsertSaleCode (
     iPorder_num IN INT,
@@ -633,6 +633,7 @@ AS
     IF (iLtemp < deciPdebit_amount) THEN
       BEGIN
         -- Raiseerror otherwise
+insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',sysdate,'SS_ADM','1 - iLtemp >= deciPdebit_amount' );        
         iPreturn := -1;
       END;
     ELSE
@@ -717,6 +718,7 @@ AS
           ROLLBACK;
         END;
       END IF;
+insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',sysdate,'SS_ADM','3 - OTHERS' );     
       iPreturn := -1;
     END;
   END DebitCreditBySite;
