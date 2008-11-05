@@ -8,7 +8,8 @@ AS
     curPresult1 OUT refCur,
     curPresult2 OUT refCur,
     curPresult3 OUT refCur,
-    curPresult4 OUT refCur
+    curPresult4 OUT refCur,
+	curPresult5 OUT refCur
   );
 
   /* proc_fe_GetCorporateCoupon */
@@ -84,7 +85,8 @@ AS
     curPresult1 OUT refCur,
     curPresult2 OUT refCur,
     curPresult3 OUT refCur,
-    curPresult4 OUT refCur
+    curPresult4 OUT refCur,
+	curPresult5 OUT refCur
   )
   AS
   BEGIN
@@ -103,10 +105,20 @@ AS
       AND constraint_type = 2;
 
     OPEN curPresult3 FOR
-    SELECT constraint_value FROM ya_coupon_constraint
-    WHERE coupon_code = cPcode AND constraint_type = 3;
-
-    OPEN curPresult4 FOR
+    SELECT constraint_value
+	FROM ya_coupon_constraint
+    WHERE 
+	  coupon_code = cPcode 
+	  AND constraint_type = 3;
+	
+	OPEN curPresult4 FOR
+	SELECT constraint_value
+	FROM ya_coupon_constraint
+    WHERE 
+	  coupon_code = cPcode 
+	  AND constraint_type = 4;
+	
+    OPEN curPresult5 FOR
     SELECT
       c.coupon_code,
       coupon_description,
