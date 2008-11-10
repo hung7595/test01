@@ -591,7 +591,7 @@ AS
     IF (iLtemp < deciPdebit_amount) THEN
       BEGIN
         -- Raiseerror otherwise
-        insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',sysdate,'SS_ADM','1 - iLtemp >= deciPdebit_amount' );                
+insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',sysdate,'SS_ADM','1 - iLtemp >= deciPdebit_amount (' || to_char(iLtemp) || ',' || to_char(deciPdebit_amount) || ')' );                
         iPreturn := -1;
       END;
     ELSE
@@ -676,7 +676,7 @@ AS
           ROLLBACK;
         END;
       END IF;
-      insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',sysdate,'SS_ADM','3 - OTHERS' );           
+insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',sysdate,'SS_ADM','3 - OTHERS' );           
       iPreturn := -1;
     END;
   END DebitCreditBySite;
