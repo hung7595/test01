@@ -1513,6 +1513,8 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
         AND nb.site_id = iPsite_id;
     END IF;
 
+    PKG_FE_ORDERACCESS.DeductOrderLtdQty(cPshopper_id, iPsite_id);
+
     -- remove basket's items
     DELETE FROM YA_NEW_BASKET
     WHERE
@@ -1613,7 +1615,6 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
       END;
     END IF;
 
-    PKG_FE_ORDERACCESS.DeductShadowOrderLtdQty(cPshopper_id, iPsite_id);
     /*
     IF (LENGTH(vcPlimited_sku_csv) > 0) THEN
       BEGIN
@@ -1799,6 +1800,8 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
             AND nb.site_id = iPsite_id;
         END IF;
 
+        PKG_FE_ORDERACCESS.DeductShadowOrderLtdQty(cPshopper_id, iPsite_id);
+
 		DELETE FROM YA_NEW_BASKET_SHADOW
         WHERE
           shopper_id = cPshopper_id
@@ -1920,7 +1923,6 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
           END;
         END IF;
 
-        PKG_FE_ORDERACCESS.DeductShadowOrderLtdQty(cPshopper_id, iPsite_id);
         /*
         IF LENGTH(vcPlimited_sku_csv) > 0 THEN
           BEGIN
@@ -2129,6 +2131,8 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
             AND nb.site_id = iPsite_id;
         END IF;
 
+        PKG_FE_ORDERACCESS.DeductOrderLtdQty(cPshopper_id, iPsite_id);
+
         DELETE FROM YA_NEW_BASKET
         WHERE
           shopper_id = cPshopper_id
@@ -2231,7 +2235,6 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
           END;
         END IF;
 
-        PKG_FE_ORDERACCESS.DeductOrderLtdQty(cPshopper_id, iPsite_id);
         /*
         IF LENGTH(vcPlimited_sku_csv) > 0 THEN
           BEGIN
