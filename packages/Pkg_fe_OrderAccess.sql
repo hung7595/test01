@@ -857,7 +857,15 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
           AND lq.frontend_quantity > 0
           AND (lq.site_id = iPsite_id 
             OR (lq.site_id = 99 AND iPsite_id in (1,7)));
-            
+    COMMIT;
+    RETURN;
+
+    EXCEPTION
+      WHEN OTHERS THEN
+        BEGIN
+          ROLLBACK;
+          RAISE;
+        END;             
   END DeductOrderLtdQty;
   
   PROCEDURE DeductShadowOrderLtdQty (
@@ -904,7 +912,15 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
           AND lq.frontend_quantity > 0
           AND (lq.site_id = iPsite_id 
             OR (lq.site_id = 99 AND iPsite_id in (1,7)));
-            
+    COMMIT;
+    RETURN;
+
+    EXCEPTION
+      WHEN OTHERS THEN
+        BEGIN
+          ROLLBACK;
+          RAISE;
+        END;    
   END DeductShadowOrderLtdQty;  
 
 /*
