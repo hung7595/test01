@@ -36,7 +36,8 @@ AS
   
   PROCEDURE GetExistingEmailList (
     iPnewsletter_id		IN	INT,
-	curPresult 			OUT 	curGgetNews
+		vcPmembershipType IN VARCHAR2,
+		curPresult 			OUT 	curGgetNews
   );
 
 END Pkg_fe_NewsletterAccess;
@@ -344,20 +345,32 @@ END;
     RETURN;
   END SubscribeNewsletterByEmail;
 
-PROCEDURE GetExistingEmailList (
-    iPnewsletter_id		IN	INT,
-	curPresult 			OUT 	curGgetNews
+	PROCEDURE GetExistingEmailList (
+    iPnewsletter_id		IN INT,
+		vcPmembershipType IN VARCHAR2,
+		curPresult 			OUT curGgetNews
   )
   AS
-  
-  BEGIN  
-    OPEN curPresult FOR
-      SELECT distinct email
-      FROM ya_newsletter_subscriber a
-      WHERE newsletter_id = iPnewsletter_id and status = 'A' and (not exists 
-	  (select * from ya_reminder_exclude_list b where b.shopper_id = a.shopper_id) or a.shopper_id is null);
+  BEGIN 
+		IF(iPnewsletter_id = 45) THEN
+			OPEN curPresult FOR 
+	    SELECT DISTINCT email
+	    FROM ya_newsletter_subscriber a
+      INNER JOIN loyalty_customer b ON b.ya_shopper_id = a.shopper_id AND b.site_id = 10
+      INNER JOIN loyalty_membership c ON b.loyalty_membership_id = c.id AND c.membership_year = to_char(sysdate, 'YYYY')
+      AND c.membership_name = vcPmembershipType
+	    WHERE newsletter_id = iPnewsletter_id AND status = 'A' AND (NOT EXISTS 
+		  (SELECT 1 FROM ya_reminder_exclude_list b WHERE b.shopper_id = a.shopper_id) OR a.shopper_id IS NULL);
+		ELSE
+			OPEN curPresult FOR 
+	    SELECT DISTINCT email
+	    FROM ya_newsletter_subscriber a
+	    WHERE newsletter_id = iPnewsletter_id AND status = 'A' and (NOT EXISTS 
+		  (SELECT 1 FROM ya_reminder_exclude_list b WHERE b.shopper_id = a.shopper_id) OR a.shopper_id IS NULL);
+		END IF;
     
   END GetExistingEmailList;
+	
 END Pkg_fe_NewsletterAccess;
 /
  
