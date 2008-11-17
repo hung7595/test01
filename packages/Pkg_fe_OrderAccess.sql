@@ -2755,7 +2755,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
     END;
 
 
-    IF iLstatus IN (-1,1) AND iLalipal_status IN (-1,1) THEN
+    IF iLstatus IN (-1,1) AND iLalipal_status IN (-1,0) THEN
       BEGIN
         IF iPorder_num IS NULL OR iPorder_num < 0 THEN
           SELECT SEQ_order.NEXTVAL INTO iPorder_num FROM DUAL;
@@ -3395,7 +3395,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
     END;
 
 
-    IF iLstatus IN (-1,1) AND iLalipay_status IN (-1,1) THEN
+    IF iLstatus IN (-1,1) AND iLalipay_status IN (-1,0) THEN
       BEGIN
         IF iPorder_num IS NULL OR iPorder_num < 0 THEN
           SELECT SEQ_order.NEXTVAL INTO iPorder_num FROM DUAL;
