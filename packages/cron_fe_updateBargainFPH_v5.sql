@@ -171,12 +171,12 @@ IS
       FETCH curP_productSku INTO iLsku;
       WHILE (curP_productSku%FOUND)
       LOOP
-          INSERT INTO ya_mirror_product_lot
-          (file_id, lot_location, sku, dept_id, active, priority, updated_user, updated_date)    
-          VALUES 
-          (iPfileId, iLcurr_lotLocation, iLsku, iPdept_preferred, 'Y', iLsku_Count, 'Corn Bargain FP v5', sysdate);
-          
           SELECT seq_ya_mirror_product_lot.nextval into iLnew_ProdlotId from dual;
+					
+          INSERT INTO ya_mirror_product_lot
+          (prod_lot_id, file_id, lot_location, sku, dept_id, active, priority, updated_user, updated_date)    
+          VALUES 
+          (iLnew_ProdlotId, iPfileId, iLcurr_lotLocation, iLsku, iPdept_preferred, 'Y', iLsku_Count, 'Corn Bargain FP v5', sysdate);
           
           INSERT INTO ya_product_lot
           (prod_lot_id, file_id, lot_location, sku, dept_id, active, priority, updated_user, updated_date)
