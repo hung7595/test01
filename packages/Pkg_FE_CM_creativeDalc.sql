@@ -574,6 +574,7 @@ IS
   iLcreativeGroupId INT;
   iLtype INT;
   iLstatus INT;
+  iLstatus2 INT;
   cLenable CHAR;
   cLname VARCHAR(100);
   curLfirstCursor refCur;
@@ -656,10 +657,10 @@ IS
     END;
       
     IF (iLvalid) > 0 THEN
-      SELECT creative_id, creative_group_id, type, status, enable, name 
-      INTO iLtempCreativeId, iLcreativeGroupId, iLtype, iLstatus, cLenable, cLname
-      FROM ya_cm_mirror_creative 
-      WHERE creative_id = iPcreativeId;
+	  SELECT mc.creative_id, mc.creative_group_id, mc.type, c.status, mc.status, mc.enable, mc.name 
+      INTO iLtempCreativeId, iLcreativeGroupId, iLtype, iLstatus,iLstatus2, cLenable, cLname
+      FROM ya_cm_mirror_creative mc, ya_cm_creative c
+      WHERE mc.creative_id = c.creative_id and mc.creative_id = iPcreativeId;
       
       IF (iLexist) < 1 THEN
         INSERT INTO ya_cm_creative 
@@ -672,9 +673,9 @@ IS
           SET 
           creative_group_id = iLcreativeGroupId, 
           type = iLtype, 
-          status = iLstatus, 
+          status = iLstatus2, 
           enable = cLenable, 
-          name = cLenable
+          name = cLname
           where creative_id = iLtempCreativeId and creative_id = iPcreativeId;
             
           UPDATE ya_cm_mirror_creative 
