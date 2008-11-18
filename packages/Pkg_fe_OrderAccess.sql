@@ -702,7 +702,7 @@ AS
       AND currency = cPcurrency
       AND ((site_id = iPsite_id AND site_id NOT IN (1,7)) OR (site_id IN (1,7) AND (iPsite_id = 1 OR iPsite_id = 7)));
 
-    deciLdebit_amount := round(deciPdebit_amount,5);
+    deciLdebit_amount := round(deciPdebit_amount,3);
     IF ( iLtemp < deciLdebit_amount) THEN
       BEGIN
         -- Raiseerror otherwise
