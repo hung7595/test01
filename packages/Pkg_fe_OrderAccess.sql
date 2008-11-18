@@ -702,11 +702,11 @@ AS
       AND currency = cPcurrency
       AND ((site_id = iPsite_id AND site_id NOT IN (1,7)) OR (site_id IN (1,7) AND (iPsite_id = 1 OR iPsite_id = 7)));
 
-    deciLdebit_amount := deciPdebit_amount;
-    IF (iLtemp < deciPdebit_amount) THEN
+    deciLdebit_amount := round(deciPdebit_amount,5);
+    IF ( iLtemp < deciLdebit_amount) THEN
       BEGIN
         -- Raiseerror otherwise
-insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',sysdate,'SS_ADM','1 - iLtemp >= deciPdebit_amount (' || to_char(iLtemp) || ',' || to_char(deciPdebit_amount) || ')' );                
+insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',sysdate,'SS_ADM','1 - iLtemp >= deciPdebit_amount (' || to_char(iLtemp) || ',' || to_char(deciPdebit_amount) || ',' || to_char(deciLdebit_amount) || ')' );                
         iPreturn := -1;
       END;
     ELSE
