@@ -37,6 +37,7 @@ AS
 
   PROCEDURE DeductShadowOrderLtdQty (
     cPshopper_id IN VARCHAR2,
+	cPguid IN VARCHAR2,
     iPsite_id IN INT
   );
 
@@ -985,6 +986,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
   
   PROCEDURE DeductShadowOrderLtdQty (
     cPshopper_id IN VARCHAR2,
+	cPguid IN VARCHAR2,
     iPsite_id IN INT
   )
   AS
@@ -1003,6 +1005,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
       (lq.site_id = iPsite_id 
         OR (lq.site_id = 99 AND iPsite_id in (1,7)))
       AND nb.shopper_id = cPshopper_id
+	  AND nb.paypal_uid = cPguid
       AND nb.site_id = iPsite_id
       AND nb.type = 0
       AND lq.frontend_quantity > 0
@@ -1015,6 +1018,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
       FROM ya_new_basket_shadow nb
       WHERE
         nb.shopper_id = cPshopper_id
+		AND nb.paypal_uid = cPguid
         AND nb.site_id = iPsite_id
         AND nb.type = 0
         AND lq.sku = nb.sku
@@ -1022,6 +1026,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
           OR (lq.site_id = 99 AND iPsite_id in (1,7)))
       ) WHERE lq.sku IN (SELECT nb2.sku FROM ya_new_basket_shadow nb2 
                           WHERE nb2.shopper_id = cPshopper_id
+							AND nb2.paypal_uid = cPguid
                             AND nb2.site_id = iPsite_id
                             AND nb2.type = 0)
           AND lq.frontend_quantity > 0
@@ -2568,7 +2573,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
             AND nb.site_id = iPsite_id;
         END IF;
 
-        PKG_FE_ORDERACCESS.DeductShadowOrderLtdQty(cPshopper_id, iPsite_id);
+        PKG_FE_ORDERACCESS.DeductShadowOrderLtdQty(cPshopper_id, cPguid, iPsite_id);
 		DELETE FROM YA_NEW_BASKET_SHADOW
         WHERE
           shopper_id = cPshopper_id
@@ -2757,17 +2762,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
 
     IF iLstatus IN (-1,1) AND iLalipal_status IN (-1,0) THEN
       BEGIN
-        IF iPorder_num IS NULL OR iPorder_num < 0 THEN
-          SELECT SEQ_order.NEXTVAL INTO iPorder_num FROM DUAL;
-        ELSE
-          SELECT SEQ_order.NEXTVAL INTO iLseq_currval FROM dual;
-          iLseq_diff := iPorder_num - iLseq_currval;
-          IF iLseq_diff <> 0 THEN
-            EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_order INCREMENT BY ' || iLseq_diff;
-            SELECT SEQ_order.NEXTVAL INTO iLseq_currval FROM dual;
-            EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_order INCREMENT BY 1';
-          END IF;
-        END IF;
+        SELECT SEQ_order.NEXTVAL INTO iPorder_num FROM DUAL;
 
         INSERT INTO ya_order
           (
@@ -2882,7 +2877,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
             AND nb.site_id = iPsite_id;
         END IF;
 		
-		PKG_FE_ORDERACCESS.DeductShadowOrderLtdQty(cPshopper_id, iPsite_id);
+		PKG_FE_ORDERACCESS.DeductShadowOrderLtdQty(cPshopper_id, cPguid, iPsite_id);
 
 		DELETE FROM YA_NEW_BASKET_SHADOW
         WHERE
@@ -3397,17 +3392,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
 
     IF iLstatus IN (-1,1) AND iLalipay_status IN (-1,0) THEN
       BEGIN
-        IF iPorder_num IS NULL OR iPorder_num < 0 THEN
-          SELECT SEQ_order.NEXTVAL INTO iPorder_num FROM DUAL;
-        ELSE
-          SELECT SEQ_order.NEXTVAL INTO iLseq_currval FROM dual;
-          iLseq_diff := iPorder_num - iLseq_currval;
-          IF iLseq_diff <> 0 THEN
-            EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_order INCREMENT BY ' || iLseq_diff;
-            SELECT SEQ_order.NEXTVAL INTO iLseq_currval FROM dual;
-            EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_order INCREMENT BY 1';
-          END IF;
-        END IF;
+        SELECT SEQ_order.NEXTVAL INTO iPorder_num FROM DUAL;
 
         INSERT INTO ya_order
           (
@@ -3521,7 +3506,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
             AND nb.site_id = iPsite_id;
         END IF;
 		
-		PKG_FE_ORDERACCESS.DeductShadowOrderLtdQty(cPshopper_id, iPsite_id);
+		PKG_FE_ORDERACCESS.DeductShadowOrderLtdQty(cPshopper_id, cLguid, iPsite_id);
 
         DELETE FROM YA_NEW_BASKET
         WHERE
