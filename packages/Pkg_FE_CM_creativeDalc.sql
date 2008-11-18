@@ -806,7 +806,7 @@ IS
       SELECT 1 INTO iLhaveContent
       FROM ya_cm_mirror_creative_btn_lang   
       WHERE creative_id = iPcreativeId 
-      AND lang_id = iLlangId; 
+      AND lang_id = iPlangId; 
       
       EXCEPTION WHEN no_data_found THEN
         iLhaveContent := -1;
@@ -817,7 +817,7 @@ IS
       INTO iLcreativeId, iLlangId, iLimageLoc, iLimageWidth, iLimageHeight, iLalt, iLlinkUrl
       FROM ya_cm_mirror_creative_btn_lang   
       WHERE creative_id = iPcreativeId 
-      AND lang_id = iLlangId; 
+      AND lang_id = iPlangId; 
     
       IF (iLexist) < 1 THEN
         INSERT INTO ya_cm_creative_button_lang 
