@@ -553,8 +553,7 @@ IS
       dept_id = iLdeptId, 
       enable = cLenable
       WHERE 
-      creative_group_id = iLtempCreativeGroupId 
-      AND creative_group_id = iPcreativeGroupId;
+      creative_group_id = iPcreativeGroupId;
     END IF;
     
     IF SQLCODE = 0 THEN
@@ -657,18 +656,23 @@ IS
     END;
       
     IF (iLvalid) > 0 THEN
-	  SELECT mc.creative_id, mc.creative_group_id, mc.type, c.status, mc.status, mc.enable, mc.name 
-      INTO iLtempCreativeId, iLcreativeGroupId, iLtype, iLstatus,iLstatus2, cLenable, cLname
-      FROM ya_cm_mirror_creative mc, ya_cm_creative c
-      WHERE mc.creative_id = c.creative_id and mc.creative_id = iPcreativeId;
-      
       IF (iLexist) < 1 THEN
+				SELECT creative_id, creative_group_id, type, status, status, enable, name 
+	      INTO iLtempCreativeId, iLcreativeGroupId, iLtype, iLstatus,iLstatus2, cLenable, cLname
+	      FROM ya_cm_mirror_creative
+	      WHERE creative_id = iPcreativeId;
+			
         INSERT INTO ya_cm_creative 
         (creative_id, creative_group_id, type, status, enable, name)
         VALUES
         (iLtempCreativeId, iLcreativeGroupId, iLtype, iLstatus, cLenable, cLname);
       ELSE
         IF (iLstatus = 2) THEN
+          SELECT mc.creative_id, mc.creative_group_id, mc.type, c.status, mc.status, mc.enable, mc.name 
+          INTO iLtempCreativeId, iLcreativeGroupId, iLtype, iLstatus,iLstatus2, cLenable, cLname
+          FROM ya_cm_mirror_creative mc, ya_cm_creative c
+          WHERE mc.creative_id = c.creative_id and mc.creative_id = iPcreativeId;
+          
           UPDATE ya_cm_creative 
           SET 
           creative_group_id = iLcreativeGroupId, 
@@ -695,19 +699,7 @@ IS
       END IF;
     END IF;
     
-    BEGIN
-      SELECT 1 INTO iLexist
-      FROM ya_cm_mirror_creative_location 
-      WHERE creative_id = iPcreativeId
-      AND ROWNUM<2;
-      
-      EXCEPTION WHEN no_data_found THEN
-        iLexist := -1;
-    END;
-    
-    IF (iLexist) > 0 THEN
-      PubCreativeLocation(iPcreativeId);
-    END IF;
+    PubCreativeLocation(iPcreativeId);
     
     IF SQLCODE = 0 THEN
       COMMIT;
