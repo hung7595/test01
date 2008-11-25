@@ -352,21 +352,99 @@ END;
   )
   AS
   BEGIN 
-		IF(iPnewsletter_id = 45) THEN
-			OPEN curPresult FOR 
-	    SELECT DISTINCT email
-	    FROM ya_newsletter_subscriber a
-      INNER JOIN loyalty_customer b ON b.ya_shopper_id = a.shopper_id AND b.site_id = 10
-      INNER JOIN loyalty_membership c ON b.loyalty_membership_id = c.id AND c.membership_year = to_char(sysdate, 'YYYY')
-      AND c.membership_name = vcPmembershipType
-	    WHERE newsletter_id = iPnewsletter_id AND status = 'A' AND (NOT EXISTS 
-		  (SELECT 1 FROM ya_reminder_exclude_list b WHERE b.shopper_id = a.shopper_id) OR a.shopper_id IS NULL);
+		IF (iPnewsletter_id = 45) THEN
+			IF (vcPmembershipType = 'Regular') THEN
+				OPEN curPresult FOR 
+		    SELECT DISTINCT regularEmailList.email AS email FROM
+				(
+					(
+						--email of monthly newsletter subscriber who don't have any YS membership
+						SELECT DISTINCT yns.email
+						FROM ya_newsletter_subscriber yns
+						LEFT JOIN loyalty_customer lc ON lc.ya_shopper_id = yns.shopper_id AND lc.site_id = 10
+						LEFT JOIN loyalty_membership lm ON lc.loyalty_membership_id = lm.id
+						WHERE yns.newsletter_id = 45 AND yns.status = 'A' 
+						AND 
+						(
+							NOT EXISTS
+							(
+								SELECT 1 FROM ya_reminder_exclude_list yrel WHERE yrel.shopper_id = yns.shopper_id
+							) 
+							OR yns.shopper_id IS NULL
+						) 
+						AND NOT EXISTS 
+						(
+							SELECT 1 FROM ya_shopper ya WHERE yns.shopper_id IS NOT NULL
+							AND ya.shopper_id = yns.shopper_id AND ya.member_type = 3
+						)
+						AND lm.membership_name IS NULL
+					)
+					UNION
+					(
+						--email of monthly newsletter subscriber who has this year's "Regular" membership
+						SELECT DISTINCT yns.email
+						FROM ya_newsletter_subscriber yns
+						LEFT JOIN loyalty_customer lc ON lc.ya_shopper_id = yns.shopper_id AND lc.site_id = 10
+						LEFT JOIN loyalty_membership lm ON lc.loyalty_membership_id = lm.id AND lm.membership_year = to_char(sysdate, 'YYYY')
+						WHERE yns.newsletter_id = 45 AND yns.status = 'A' AND 
+						(
+							NOT EXISTS
+							(
+								SELECT 1 FROM ya_reminder_exclude_list yrel WHERE yrel.shopper_id = yns.shopper_id
+							) 
+							OR yns.shopper_id IS NULL
+						) 
+						AND NOT EXISTS
+						(
+							SELECT 1 FROM ya_shopper ya WHERE yns.shopper_id IS NOT NULL
+							AND ya.shopper_id = yns.shopper_id AND ya.member_type = 3
+						)
+						AND lm.membership_name = vcPmembershipType
+					)
+				) regularEmailList;
+			ELSE
+				OPEN curPresult FOR 
+					--email of monthly newsletter subscriber who has this year's membership apart from "Regular"
+					SELECT DISTINCT yns.email
+					FROM ya_newsletter_subscriber yns
+					LEFT JOIN loyalty_customer lc ON lc.ya_shopper_id = yns.shopper_id AND lc.site_id = 10
+					LEFT JOIN loyalty_membership lm ON lc.loyalty_membership_id = lm.id AND lm.membership_year = to_char(sysdate, 'YYYY')
+					WHERE yns.newsletter_id = 45 AND yns.status = 'A' 
+					AND 
+					(
+						NOT EXISTS
+						(
+							SELECT 1 FROM ya_reminder_exclude_list yrel WHERE yrel.shopper_id = yns.shopper_id
+						) 
+						OR yns.shopper_id IS NULL
+					) 
+					AND NOT EXISTS 
+					(
+						SELECT 1 FROM ya_shopper ya WHERE yns.shopper_id IS NOT NULL
+						AND ya.shopper_id = yns.shopper_id 
+						AND ya.member_type = 3
+					)
+					AND (lm.membership_name = vcPmembershipType);
+			END IF;
 		ELSE
 			OPEN curPresult FOR 
+			--retrieve email list apart from monthly newsletter
 	    SELECT DISTINCT email
-	    FROM ya_newsletter_subscriber a
-	    WHERE newsletter_id = iPnewsletter_id AND status = 'A' and (NOT EXISTS 
-		  (SELECT 1 FROM ya_reminder_exclude_list b WHERE b.shopper_id = a.shopper_id) OR a.shopper_id IS NULL);
+	    FROM ya_newsletter_subscriber yns
+	    WHERE yns.newsletter_id = iPnewsletter_id AND yns.status = 'A' 
+			AND 
+			(
+				NOT EXISTS 
+			  (
+					SELECT 1 FROM ya_reminder_exclude_list yrel WHERE yrel.shopper_id = yns.shopper_id
+				) 
+				OR yns.shopper_id IS NULL
+			)
+			AND NOT EXISTS
+			(
+				SELECT 1 FROM ya_shopper ya WHERE yns.shopper_id IS NOT NULL
+				AND ya.shopper_id = yns.shopper_id AND ya.member_type = 3
+			);
 		END IF;
     
   END GetExistingEmailList;
