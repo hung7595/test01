@@ -3085,54 +3085,34 @@ PROCEDURE GetAllReviewsByShopperID (
 					AND reviewer_type = 'EDITORIAL'
 					AND review_approved='Y'
 					AND tmp_prodShare.child_sku in (
-						iPsku1,
-						iPsku2,
-						iPsku3,
-						iPsku4,
-						iPsku5,
-						iPsku6,
-						iPsku7,
-						iPsku8,
-						iPsku9,
-						iPsku10,
-						iPsku11,
-						iPsku12,
-						iPsku13,
-						iPsku14,
-						iPsku15,
-						iPsku16,
-						iPsku17,
-						iPsku18,
-						iPsku19,
-						iPsku20
+						iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,
+						iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,
+						iPsku11,iPsku12,iPsku13,iPsku14,iPsku15,
+						iPsku16,iPsku17,iPsku18,iPsku19,iPsku20
 					)
 					AND iPget_share = 1
+					AND NOT EXISTS (SELECT 1 FROM ya_product_title_rel WHERE product_title_child_sku=tmp_prodRat.sku)
 					UNION
 					SELECT m.* FROM ya_product_rating m
+					WHERE m.review_approved='Y'
+					AND m.reviewer_type = 'EDITORIAL'
+					AND m.sku in (
+						iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,
+						iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,
+						iPsku11,iPsku12,iPsku13,iPsku14,iPsku15,
+						iPsku16,iPsku17,iPsku18,iPsku19,iPsku20
+					)
+					AND NOT EXISTS (SELECT 1 FROM ya_product_title_rel WHERE product_title_child_sku=m.sku)
+					UNION
+					SELECT n.* FROM ya_product_rating n
 					WHERE review_approved='Y'
 					AND reviewer_type = 'EDITORIAL'
-					AND sku in (
-						iPsku1,
-						iPsku2,
-						iPsku3,
-						iPsku4,
-						iPsku5,
-						iPsku6,
-						iPsku7,
-						iPsku8,
-						iPsku9,
-						iPsku10,
-						iPsku11,
-						iPsku12,
-						iPsku13,
-						iPsku14,
-						iPsku15,
-						iPsku16,
-						iPsku17,
-						iPsku18,
-						iPsku19,
-						iPsku20
-					)
+					AND n.sku IN (SELECT product_title_parent_sku FROM ya_product_title_rel WHERE product_title_child_sku in (
+						iPsku1,iPsku2,iPsku3,iPsku4,iPsku5,
+						iPsku6,iPsku7,iPsku8,iPsku9,iPsku10,
+						iPsku11,iPsku12,iPsku13,iPsku14,iPsku15,
+						iPsku16,iPsku17,iPsku18,iPsku19,iPsku20
+					))
 				) prodRat
 				LEFT JOIN ya_shopper shopper ON prodRat.shopper_id=shopper.shopper_id
 				LEFT JOIN ya_review_reviewerName revName ON prodRat.shopper_id=revName.shopper_id,
