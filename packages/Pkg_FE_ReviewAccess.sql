@@ -1139,14 +1139,20 @@ is
               'EDITORIAL'
             )a1,
             (
-              SELECT parent_sku AS sku FROM ya_review_share_proReview WHERE child_sku=iPsku
+              SELECT parent_sku AS sku FROM ya_review_share_proReview WHERE child_sku=iPsku AND not exists (SELECT 1 from ya_product_title_rel where product_title_child_sku = parent_sku)
             )a2
             WHERE a1.sku = a2.sku
 
             UNION
 
             SELECT * FROM ya_product_rating WHERE review_approved='Y' AND reviewer_type =
-            'EDITORIAL' AND sku=iPsku
+            'EDITORIAL' AND sku=iPsku AND not exists (SELECT 1 from ya_product_title_rel where product_title_child_sku = sku)
+            
+            UNION
+            
+            SELECT * FROM ya_product_rating WHERE review_approved='Y' AND reviewer_type =
+            'EDITORIAL' AND sku in (SELECT product_title_parent_sku from ya_product_title_rel where product_title_child_sku = iPsku)
+            
           ) a,
           (
             SELECT * FROM ya_prod_rating_lang WHERE lang_id = iPlang_id
@@ -1198,19 +1204,26 @@ is
         cast(NVL(g.nonhelpful_num, 0) AS INT) AS nonhelpful_num
       FROM
       (
-         SELECT a1.* FROM
-         (
-           SELECT * FROM ya_product_rating WHERE review_approved='Y' AND reviewer_type = 'EDITORIAL'
-         )a1,
-         (
-           SELECT parent_sku as sku FROM ya_review_share_proReview WHERE child_sku=iPsku
-         )a2
-         WHERE a1.sku = a2.sku
+        SELECT a1.* FROM
+        (
+          SELECT * FROM ya_product_rating WHERE review_approved='Y' AND reviewer_type =
+          'EDITORIAL'
+        )a1,
+        (
+          SELECT parent_sku AS sku FROM ya_review_share_proReview WHERE child_sku=iPsku AND not exists (SELECT 1 from ya_product_title_rel where product_title_child_sku = parent_sku)
+        )a2
+        WHERE a1.sku = a2.sku
 
-         UNION
+        UNION
 
-         SELECT * FROM ya_product_rating WHERE review_approved='Y' AND reviewer_type = 'EDITORIAL'
-         AND sku=iPsku
+        SELECT * FROM ya_product_rating WHERE review_approved='Y' AND reviewer_type =
+        'EDITORIAL' AND sku=iPsku AND not exists (SELECT 1 from ya_product_title_rel where product_title_child_sku = sku)
+
+        UNION
+
+        SELECT * FROM ya_product_rating WHERE review_approved='Y' AND reviewer_type =
+        'EDITORIAL' AND sku in (SELECT product_title_parent_sku from ya_product_title_rel where product_title_child_sku = iPsku)
+      
       ) a
       LEFT JOIN ya_shopper d ON a.shopper_id=d.shopper_id
       LEFT JOIN ya_review_reviewerName e ON a.shopper_id=e.shopper_id,
