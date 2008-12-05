@@ -2553,6 +2553,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
           FROM YA_NEW_BASKET_SHADOW nb
             INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50001
           WHERE nb.shopper_id = cPshopper_id
+			AND nb.paypal_uid = cPguid
             AND nb.type = 0
             AND nb.site_id = iPsite_id;
         ELSIF iPsite_id = 7 THEN
@@ -2561,6 +2562,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
           FROM YA_NEW_BASKET_SHADOW nb
             INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50002
           WHERE nb.shopper_id = cPshopper_id
+			AND nb.paypal_uid = cPguid
             AND nb.type = 0
             AND nb.site_id = iPsite_id;
         ELSIF iPsite_id = 10 THEN
@@ -2569,6 +2571,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
           FROM YA_NEW_BASKET_SHADOW nb
             INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50003
           WHERE nb.shopper_id = cPshopper_id
+			AND nb.paypal_uid = cPguid
             AND nb.type = 0
             AND nb.site_id = iPsite_id;
         END IF;
