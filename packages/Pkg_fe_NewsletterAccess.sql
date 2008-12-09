@@ -352,7 +352,7 @@ END;
   )
   AS
   BEGIN 
-		IF (iPnewsletter_id = 45) THEN
+		IF (iPnewsletter_id = 45 and vcPmembershipType <> 'All') THEN
 			IF (vcPmembershipType = 'Regular') THEN
 				OPEN curPresult FOR 
 		    SELECT DISTINCT regularEmailList.email AS email FROM
