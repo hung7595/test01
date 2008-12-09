@@ -1,4 +1,5 @@
-CREATE OR REPLACE PACKAGE          "PKG_FE_COUPONACCESS"
+
+  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_COUPONACCESS" 
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -36,7 +37,7 @@ AS
     cPshopper_id IN CHAR,
     iPreturn OUT INT
   );
-  
+
   /* proc_fe_CreateNewShopperCoupon */
   PROCEDURE CreateNewShopperCoupon (
     cPshopper_id IN CHAR,
@@ -47,7 +48,7 @@ AS
     cPshopper_id IN CHAR,
     cPcoupon_code IN VARCHAR2
   );
-  
+
   PROCEDURE AddShopperToCouponUserGroup (
     cPshopper_id IN CHAR,
     cPcoupon_code IN VARCHAR2
@@ -76,9 +77,7 @@ AS
   );
 END Pkg_FE_CouponAccess;
 /
-
-
-create or replace PACKAGE BODY          "PKG_FE_COUPONACCESS"
+CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_COUPONACCESS" 
 AS
   PROCEDURE GetCoupon (
     cPcode IN VARCHAR2,
@@ -107,17 +106,17 @@ AS
     OPEN curPresult3 FOR
     SELECT constraint_value
 	FROM ya_coupon_constraint
-    WHERE 
-	  coupon_code = cPcode 
+    WHERE
+	  coupon_code = cPcode
 	  AND constraint_type = 3;
-	
+
 	OPEN curPresult4 FOR
 	SELECT constraint_value
 	FROM ya_coupon_constraint
-    WHERE 
-	  coupon_code = cPcode 
+    WHERE
+	  coupon_code = cPcode
 	  AND constraint_type = 4;
-	
+
     OPEN curPresult5 FOR
     SELECT
       c.coupon_code,
@@ -373,6 +372,10 @@ AS
 					SELECT 1 FROM order_info o INNER JOIN billing_info b ON o.id = b.order_info_id WHERE b.coupon = u.coupon_code AND o.cust_id = cPshopper_id
 				)
 			)
+			OR
+			(
+				c.coupon_code = 'YS08XMAS' and sysdate >to_date('20081210', 'YYYYMMDD')
+			)
 		)
 		AND (((site_id = iPsite_id or site_id=99) and iPsite_id not in (10)) or site_id = iPsite_id);
 	END GetShopperCoupon;
@@ -444,3 +447,4 @@ AS
 
 END Pkg_FE_CouponAccess;
 /
+ 
