@@ -1,5 +1,4 @@
-
-  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_COUPONACCESS" 
+CREATE OR REPLACE PACKAGE          "PKG_FE_COUPONACCESS"
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -37,7 +36,7 @@ AS
     cPshopper_id IN CHAR,
     iPreturn OUT INT
   );
-
+  
   /* proc_fe_CreateNewShopperCoupon */
   PROCEDURE CreateNewShopperCoupon (
     cPshopper_id IN CHAR,
@@ -48,7 +47,7 @@ AS
     cPshopper_id IN CHAR,
     cPcoupon_code IN VARCHAR2
   );
-
+  
   PROCEDURE AddShopperToCouponUserGroup (
     cPshopper_id IN CHAR,
     cPcoupon_code IN VARCHAR2
@@ -77,7 +76,9 @@ AS
   );
 END Pkg_FE_CouponAccess;
 /
-CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_COUPONACCESS" 
+
+
+create or replace PACKAGE BODY          "PKG_FE_COUPONACCESS"
 AS
   PROCEDURE GetCoupon (
     cPcode IN VARCHAR2,
@@ -88,35 +89,46 @@ AS
 	curPresult5 OUT refCur
   )
   AS
+	iLcoupon_code VARCHAR2(32);
   BEGIN
+	Begin
+		SELECT COUPON_CODE into iLcoupon_code
+		FROM YA_COUPON 
+		WHERE COUPON_CODE = UPPER( cPcode );
+      EXCEPTION WHEN NO_DATA_FOUND THEN
+      BEGIN
+        iLcoupon_code := NULL;
+      END;
+    END;
+	
     OPEN curPresult1 FOR
     SELECT constraint_value
     FROM ya_coupon_constraint
     WHERE
-      coupon_code = cPcode
+      coupon_code = iLcoupon_code
       AND constraint_type = 1;
 
     OPEN curPresult2 FOR
     SELECT constraint_value
     FROM ya_coupon_constraint
     WHERE
-      coupon_code = cPcode
+      coupon_code = iLcoupon_code
       AND constraint_type = 2;
 
     OPEN curPresult3 FOR
     SELECT constraint_value
 	FROM ya_coupon_constraint
-    WHERE
-	  coupon_code = cPcode
+    WHERE 
+	  coupon_code = iLcoupon_code 
 	  AND constraint_type = 3;
-
+	
 	OPEN curPresult4 FOR
 	SELECT constraint_value
 	FROM ya_coupon_constraint
-    WHERE
-	  coupon_code = cPcode
+    WHERE 
+	  coupon_code = iLcoupon_code 
 	  AND constraint_type = 4;
-
+	
     OPEN curPresult5 FOR
     SELECT
       c.coupon_code,
@@ -137,7 +149,7 @@ AS
       LEFT OUTER JOIN ya_coupon_corporate cc ON
         c.coupon_code = cc.coupon_code
     WHERE
-      c.coupon_code = cPcode;
+      c.coupon_code = iLcoupon_code;
 
     RETURN;
   END GetCoupon;
@@ -447,4 +459,3 @@ AS
 
 END Pkg_FE_CouponAccess;
 /
- 
