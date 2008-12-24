@@ -120,6 +120,18 @@ BEGIN
     Cron_fe_updateBargainFPH_v5.updateBargainFPH(234626,7,10961,116,1,10961); --GB
     CronJob_adm.pkg_cronjob.Step_End(16,16,iStepNo);
 
+    -- V5 - TV - HK -> 10678
+    CronJob_adm.pkg_cronjob.Step_Start(16,17,iHistNo,iStepNo);
+    Cron_fe_updateBargainFPH_v5.updateBargainFPH(234626,1,10678,147,1,10678); --US
+    Cron_fe_updateBargainFPH_v5.updateBargainFPH(234626,7,10678,117,1,10678); --GB
+    CronJob_adm.pkg_cronjob.Step_End(16,17,iStepNo);
+
+    -- V5 - TV - Mainlang China -> 6458
+    CronJob_adm.pkg_cronjob.Step_Start(16,18,iHistNo,iStepNo);
+    Cron_fe_updateBargainFPH_v5.updateBargainFPH(234626,1,6458,148,1,6458); --US
+    Cron_fe_updateBargainFPH_v5.updateBargainFPH(234626,7,6458,118,1,6458); --GB
+    CronJob_adm.pkg_cronjob.Step_End(16,18,iStepNo);
+
     Cronjob_adm.pkg_cronjob.Job_End(16,iHistNo);
   END IF;
 
