@@ -188,6 +188,13 @@ IS
   Cron_fe_BargainAccess.UpdateBargainSuppInfo(10961, 1); --US
   Cron_fe_BargainAccess.UpdateBargainSuppInfo(10961, 7); --GB
 
+-- V5 - TV - HK -> 10678
+  Cron_fe_BargainAccess.UpdateBargainSuppInfo(10678, 1); --US
+  Cron_fe_BargainAccess.UpdateBargainSuppInfo(10678, 7); --GB
+
+-- V5 - TV - Mainlang China -> 6458
+  Cron_fe_BargainAccess.UpdateBargainSuppInfo(6458, 1); --US
+  Cron_fe_BargainAccess.UpdateBargainSuppInfo(6458, 7); --GB
 
  END CronJobUpdateBargainSuppInfo;
 END Cron_fe_BargainAccess;
