@@ -947,7 +947,8 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
       INNER JOIN ya_new_basket nb ON lq.sku = nb.sku
     WHERE
       (lq.site_id = iPsite_id 
-        OR (lq.site_id = 99 AND iPsite_id in (1,7)))
+        OR (lq.site_id = 99 AND iPsite_id in (1,7))
+        OR (iPsite_id = 11 AND lq.site_id = 10))
       AND nb.shopper_id = cPshopper_id
       AND nb.site_id = iPsite_id
       AND nb.type = 0
@@ -965,14 +966,16 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
         AND nb.type = 0
         AND lq.sku = nb.sku
         AND (lq.site_id = iPsite_id 
-          OR (lq.site_id = 99 AND iPsite_id in (1,7)))
+          OR (lq.site_id = 99 AND iPsite_id in (1,7))
+          OR (iPsite_id = 11 AND lq.site_id = 10))
       ) WHERE lq.sku IN (SELECT nb2.sku FROM ya_new_basket nb2 
                           WHERE nb2.shopper_id = cPshopper_id
                             AND nb2.site_id = iPsite_id
                             AND nb2.type = 0)
           AND lq.frontend_quantity > 0
           AND (lq.site_id = iPsite_id 
-            OR (lq.site_id = 99 AND iPsite_id in (1,7)));
+            OR (lq.site_id = 99 AND iPsite_id in (1,7))
+            OR (iPsite_id = 11 AND lq.site_id = 10));
     COMMIT;
     RETURN;
 
@@ -1003,7 +1006,8 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
       INNER JOIN ya_new_basket_shadow nb ON lq.sku = nb.sku
     WHERE
       (lq.site_id = iPsite_id 
-        OR (lq.site_id = 99 AND iPsite_id in (1,7)))
+        OR (lq.site_id = 99 AND iPsite_id in (1,7))
+        OR (iPsite_id = 11 AND lq.site_id = 10))
       AND nb.shopper_id = cPshopper_id
 	  AND nb.paypal_uid = cPguid
       AND nb.site_id = iPsite_id
@@ -1023,7 +1027,8 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
         AND nb.type = 0
         AND lq.sku = nb.sku
         AND (lq.site_id = iPsite_id 
-          OR (lq.site_id = 99 AND iPsite_id in (1,7)))
+          OR (lq.site_id = 99 AND iPsite_id in (1,7))
+          OR (iPsite_id = 11 AND lq.site_id = 10))
       ) WHERE lq.sku IN (SELECT nb2.sku FROM ya_new_basket_shadow nb2 
                           WHERE nb2.shopper_id = cPshopper_id
 							AND nb2.paypal_uid = cPguid
@@ -1031,7 +1036,8 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
                             AND nb2.type = 0)
           AND lq.frontend_quantity > 0
           AND (lq.site_id = iPsite_id 
-            OR (lq.site_id = 99 AND iPsite_id in (1,7)));
+            OR (lq.site_id = 99 AND iPsite_id in (1,7))
+            OR (iPsite_id = 11 AND lq.site_id = 10));
     COMMIT;
     RETURN;
 

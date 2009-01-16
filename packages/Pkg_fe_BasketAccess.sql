@@ -1714,7 +1714,7 @@ END GetBasket;
   AND b.shopper_id = cPshopperId
   AND b.site_id = iPsiteId
   AND b.type = iPtype
-  AND lq.site_id in (99, iPSiteId)
+  AND lq.site_id in (99, iLOriginId)
   AND lq.frontend_quantity > 0
   ORDER BY lq.sku;
 
