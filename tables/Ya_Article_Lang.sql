@@ -9,8 +9,7 @@ CREATE TABLE Ya_Article_Lang (
 	submission_date          date                         ,
 	banner_image             nclob                        ,
 	body                     nclob                        ,
-	parsed_body              nclob
-		
+	parsed_body              nclob		
 )
 /
 

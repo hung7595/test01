@@ -17,11 +17,6 @@ ADD CONSTRAINT PK_Static_Content_Lang PRIMARY KEY (id)
 USING INDEX TABLESPACE SSCommerceserver_Index
 /
 
-ALTER TABLE Static_Content_Lang
-ADD CONSTRAINT FK_Static_Content_Lang_1 FOREIGN KEY (content_id)
-REFERENCES Static_Content(id)
-/
-
 
 CREATE PUBLIC SYNONYM Static_Content_Lang FOR Static_Content_Lang
 /
