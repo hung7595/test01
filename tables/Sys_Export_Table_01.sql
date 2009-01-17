@@ -94,5 +94,7 @@ COMMENT ON Sys_Export_Table_01 IS 'Data Pump Master Table EXPORT TABLE';
 CREATE UNIQUE INDEX UN_Sys_Export_Table_01 ON Sys_Export_Table_01 (process_order, duplicate) TABLESPACE SSCommerceserver_Index
 /
 
-CREATE INDEX IX_Sys_Export_Table_01_1 ON Sys_Export_Table_01 (Object_Schema, Object_Name, Object_Type) TABLESPACE SSCommerceserver_Index
+CREATE INDEX SYS_MTABLE_0020CF29E_IND_1 ON Sys_Export_Table_01 (Object_Schema, Object_Name, Object_Type) TABLESPACE SSCommerceserver_Index
+/
+
 /
