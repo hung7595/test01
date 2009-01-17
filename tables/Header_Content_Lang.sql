@@ -3,7 +3,7 @@ DROP TABLE Header_Content_Lang
 
 CREATE TABLE Header_Content_Lang (
 	id                         number                      NOT NULL ,
-	enabled                    number                      NOT NULL ,
+	header_content_id          number                      NOT NULL ,
 	locale                     varchar2(5)                 NOT NULL ,
 	header_text                clob                        ,
 	footer_text                clob	
