@@ -41,13 +41,12 @@ AS
     iPsite_id IN INT
   );
 
-  /*
   PROCEDURE UpdateLimitedQuantity (
     vcPsku_csv IN VARCHAR2,
     vcPqty_csv IN VARCHAR2,
     iPsite_id IN INT
   );
-*/
+
   /* proc_fe_InsertOrderXml */
 /*  
   PROCEDURE InsertOrderXml (
@@ -1049,7 +1048,6 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
         END;    
   END DeductShadowOrderLtdQty;  
 
-/*
   PROCEDURE UpdateLimitedQuantity (
     vcPsku_csv IN VARCHAR2,
     vcPqty_csv IN VARCHAR2,
@@ -1143,7 +1141,6 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
         END;
 
   END UpdateLimitedQuantity;
-*/  
 
 /*
   PROCEDURE InsertOrderXml (
@@ -2100,7 +2097,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
         AND nb.site_id = iPsite_id;
     END IF;
         
-    PKG_FE_ORDERACCESS.DeductOrderLtdQty(cPshopper_id, iPsite_id);
+--    PKG_FE_ORDERACCESS.DeductOrderLtdQty(cPshopper_id, iPsite_id);
     -- remove basket's items
     DELETE FROM YA_NEW_BASKET
     WHERE
@@ -2201,13 +2198,13 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
       END;
     END IF;
 
-    /*
+    
     IF (LENGTH(vcPlimited_sku_csv) > 0) THEN
       BEGIN
         UpdateLimitedQuantity(vcPlimited_sku_csv, vcPlimited_qty_csv, iPsite_id);
       END;
     END IF;
-    */
+    
 
   COMMIT;
 
@@ -2582,7 +2579,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
             AND nb.site_id = iPsite_id;
         END IF;
 
-        PKG_FE_ORDERACCESS.DeductShadowOrderLtdQty(cPshopper_id, cPguid, iPsite_id);
+--        PKG_FE_ORDERACCESS.DeductShadowOrderLtdQty(cPshopper_id, cPguid, iPsite_id);
 		DELETE FROM YA_NEW_BASKET_SHADOW
         WHERE
           shopper_id = cPshopper_id
@@ -2704,13 +2701,12 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
           END;
         END IF;
 
-        /*
         IF LENGTH(vcPlimited_sku_csv) > 0 THEN
           BEGIN
             UpdateLimitedQuantity(vcPlimited_sku_csv, vcPlimited_qty_csv, iPsite_id);
           END;
         END IF;
-        */
+
         UPDATE ya_paypal_order_mapping
         SET
           order_num = iPorder_num,
@@ -2889,7 +2885,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
             AND nb.site_id = iPsite_id;
         END IF;
 		
-		PKG_FE_ORDERACCESS.DeductShadowOrderLtdQty(cPshopper_id, cPguid, iPsite_id);
+--		PKG_FE_ORDERACCESS.DeductShadowOrderLtdQty(cPshopper_id, cPguid, iPsite_id);
 
 		DELETE FROM YA_NEW_BASKET_SHADOW
         WHERE
@@ -3011,13 +3007,13 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
             Pkg_Fe_Orderaccess.DebitCreditBySite(cPshopper_id, nPcredit_amount, iPorder_num, 'USD', iPsite_id, iLdebit_credit_return, cPtransaction_id, iPsite_id);
           END;
         END IF;
-	/*
+
         IF LENGTH(vcPlimited_sku_csv) > 0 THEN
           BEGIN
             UpdateLimitedQuantity(vcPlimited_sku_csv, vcPlimited_qty_csv, iPsite_id);
           END;
         END IF;
-	*/
+
         UPDATE ya_paydollar_order_mapping
         SET
           order_num = iPorder_num,
@@ -3218,7 +3214,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
             AND nb.site_id = iPsite_id;
         END IF;
 		
-		PKG_FE_ORDERACCESS.DeductOrderLtdQty(cPshopper_id, iPsite_id);
+--		PKG_FE_ORDERACCESS.DeductOrderLtdQty(cPshopper_id, iPsite_id);
 
         DELETE FROM YA_NEW_BASKET
         WHERE
@@ -3321,13 +3317,12 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
             Pkg_Fe_Orderaccess.DebitCreditBySite(cPshopper_id, nPcredit_amount, iPorder_num, 'USD', iPsite_id, iLdebit_credit_return, cPtransaction_id, iPsite_id);
           END;
         END IF;
-	/*
+
         IF LENGTH(vcPlimited_sku_csv) > 0 THEN
           BEGIN
             UpdateLimitedQuantity(vcPlimited_sku_csv, vcPlimited_qty_csv, iPsite_id);
           END;
         END IF;
-	*/
 
         UPDATE ya_paypal_order_mapping
         SET
@@ -3518,7 +3513,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
             AND nb.site_id = iPsite_id;
         END IF;
 		
-		PKG_FE_ORDERACCESS.DeductShadowOrderLtdQty(cPshopper_id, cLguid, iPsite_id);
+--		PKG_FE_ORDERACCESS.DeductShadowOrderLtdQty(cPshopper_id, cLguid, iPsite_id);
 
         DELETE FROM YA_NEW_BASKET
         WHERE
@@ -3621,13 +3616,13 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
             Pkg_Fe_Orderaccess.DebitCreditBySite(cPshopper_id, nPcredit_amount, iPorder_num, 'USD', iPsite_id, iLdebit_credit_return, cPtransaction_id, iPsite_id);
           END;
         END IF;
-	/*
+
         IF LENGTH(vcPlimited_sku_csv) > 0 THEN
           BEGIN
             UpdateLimitedQuantity(vcPlimited_sku_csv, vcPlimited_qty_csv, iPsite_id);
           END;
         END IF;
-	*/
+
         UPDATE ya_paydollar_order_mapping
         SET
           order_num = iPorder_num,
