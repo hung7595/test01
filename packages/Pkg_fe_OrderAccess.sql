@@ -1101,7 +1101,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
         SELECT sku, site_id, action_id, SYSDATE 
         FROM ya_limited_quantity 
         WHERE 
-        (site_id = iPsite_id OR site_id = 99)
+        (site_id = iPsite_id OR site_id = 99 OR (iPsite_id = 11 and site_id = 10))
         AND frontend_quantity - iLcurrent_qty <= 0
         AND frontend_quantity > 0
         AND sku = iLcurrent_sku;
