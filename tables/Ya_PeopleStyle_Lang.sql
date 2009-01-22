@@ -17,9 +17,5 @@ USING INDEX TABLESPACE SSCommerceserver_Index
 /
 
 
-CREATE INDEX IX_PeopleStyle_Lang_01 ON Ya_PeopleStyle_Lang(dept_id) TABLESPACE SSCommerceserver_Index
-/
-
-
 CREATE PUBLIC SYNONYM Ya_PeopleStyle_Lang FOR Ya_PeopleStyle_Lang
 /
