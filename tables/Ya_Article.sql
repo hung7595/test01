@@ -15,7 +15,6 @@ CREATE TABLE Ya_Article (
 	is_ya_us_enabled              varchar2(1)                    DEFAULT 'Y' NOT NULL ,
 	is_ya_gb_enabled              varchar2(1)                    DEFAULT 'Y' NOT NULL ,
 	is_ys_gb_enabled              varchar2(1)                    DEFAULT 'Y' NOT NULL
-	
 )
 /
 

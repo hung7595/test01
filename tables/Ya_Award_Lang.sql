@@ -11,7 +11,7 @@ CREATE TABLE Ya_Award_Lang (
 	updated_date                   date                     NOT NULL ,
 	status                         int                      NOT NULL ,
 	acdr                           char(1)                  ,
-	data_supplier_id               int          
+	data_supplier_id               int                      ,
 	action_owner                   varchar2(50)	
 )
 /

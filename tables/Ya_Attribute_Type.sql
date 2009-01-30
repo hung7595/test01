@@ -9,7 +9,7 @@ CREATE TABLE Ya_Attribute_Type (
 /
 
 ALTER TABLE Ya_Attribute_Type
-ADD CONSTRAINT PK_Attribute_Type PRIMARY KEY (attribute_id, lang_id)
+ADD CONSTRAINT PK_Attribute_Type PRIMARY KEY (attribute_type_id, lang_id)
 USING INDEX TABLESPACE SSCommerceserver_Index
 /
 
