@@ -4,7 +4,7 @@ DROP TABLE Ya_Grid
 CREATE TABLE Ya_Grid (
 	grid_id                         int                        NOT NULL ,
 	name                            varchar2(100)              NOT NULL ,
-	desc                            varchar2(100)              ,
+	"desc"                            varchar2(100)              ,
 	product_line_id                 int                        NOT NULL ,
 	created_user                    varchar2(50)               NOT NULL ,
 	created_date                    date                       NOT NULL ,

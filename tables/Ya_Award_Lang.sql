@@ -3,7 +3,7 @@ DROP TABLE Ya_Award_Lang
 
 CREATE TABLE Ya_Award_Lang (
 	award_id                       int                      NOT NULL ,
-	lang_id                        int                      NOT NULL
+	lang_id                        int                      NOT NULL ,
 	award_name                     nvarchar2(510)           ,
 	created_user                   varchar2(50)             ,
 	created_date                   date                     NOT NULL ,
