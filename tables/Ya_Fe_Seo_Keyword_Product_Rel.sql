@@ -1,3 +1,6 @@
+DROP TABLE Ya_Fe_Seo_Keyword_Product_Rel
+/
+
 CREATE TABLE Ya_Fe_Seo_Keyword_Product_Rel
 (
 	sku             int       NOT NULL ,

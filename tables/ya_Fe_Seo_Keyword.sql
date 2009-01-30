@@ -1,3 +1,6 @@
+DROP TABLE Ya_Fe_Seo_Keyword
+/
+
 CREATE TABLE Ya_Fe_Seo_Keyword 
 (
 	id                int                 NOT NULL ,
