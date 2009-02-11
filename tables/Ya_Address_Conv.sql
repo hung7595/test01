@@ -4,7 +4,6 @@ DROP TABLE Ya_Address_Conv
 CREATE TABLE Ya_Address_Conv (
 	address_id              int                NOT NULL ,
 	lang_id                 int
-
 )
 /
 

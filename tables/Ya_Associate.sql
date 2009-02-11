@@ -9,7 +9,7 @@ CREATE TABLE Ya_Associate (
 	shopper_id                      char(32)                  NOT NULL ,
 	site_id                         int                       NOT NULL ,
 	join_date                       date                      DEFAULT SYSDATE ,
-	comment                         varchar2(500)             ,
+	"comment"                       varchar2(500)             ,
 	payee_name                      varchar2(100)             ,
 	payee_address1                  varchar2(500)             ,
 	payee_address2                  varchar2(255)             ,

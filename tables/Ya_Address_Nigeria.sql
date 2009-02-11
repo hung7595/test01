@@ -22,7 +22,7 @@ CREATE TABLE Ya_Address_Nigeria (
 	fax_number                           varchar2(20)             ,
 	mobile_phone                         varchar2(20)             ,
 	email                                varchar2(255)            ,
-	site_id                              int                      ,
+	site_id                              int
 )
 /
 

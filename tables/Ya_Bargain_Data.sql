@@ -21,7 +21,7 @@ CREATE TABLE Ya_Bargain_Data (
 	limited_quantity                      int                       ,        
 	campaign_code                         int                       ,        
 	import_date                           date                      ,        
-	mark_dirty                            number(1)                 NOT NULL
+	mark_dirty                            number(1)                 NOT NULL ,
 	access_counter                        int
 )
 /

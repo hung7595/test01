@@ -7,7 +7,6 @@ CREATE TABLE Results (
 	comm_rate                  number(18,4)                ,
 	payment_option             int                         NOT NULL ,
 	rowguid                    varchar2(50)                NOT NULL
-
 )
 /
 
