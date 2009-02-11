@@ -1,4 +1,4 @@
-DROP TABLE Ya_Customer_Info
+DROP TABLE Yae_Customer_Info
 /
 
 CREATE TABLE Yae_Customer_Info (
@@ -19,5 +19,5 @@ USING INDEX TABLESPACE SSCommerceserver_Index
 /
 
 
-CREATE PUBLIC SYNONYM Ya_Customer_Info FOR Ya_Customer_Info
+CREATE PUBLIC SYNONYM Yae_Customer_Info FOR Yae_Customer_Info
 /
