@@ -4,7 +4,7 @@ DROP TABLE Ya_Themestore_Poll_Lang
 CREATE TABLE Ya_Themestore_Poll_Lang (
 	poll_id                   int                        NOT NULL ,
 	lang_id                   int                        NOT NULL ,
-	item_order                int                        NOT NULL
+	item_order                int                        NOT NULL ,
 	item_id                   int                        NOT NULL ,
 	item_type                 char(1)                    ,
 	item_content              nvarchar2(500)             ,
