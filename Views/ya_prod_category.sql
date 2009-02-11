@@ -9,4 +9,9 @@ CREATE OR REPLACE FORCE VIEW SS_ADM.YA_PROD_CATEGORY (SKU, CAT) AS
        GROUP BY prodAttr.sku
  ) t1
  inner join ya_prod_type_mapper mapping
-ON mapping.priority = t1.id;
+ON mapping.priority = t1.id
+/
+
+
+CREATE PUBLIC SYNONYM Ya_Prod_Category FOR Ya_Prod_Category
+/
