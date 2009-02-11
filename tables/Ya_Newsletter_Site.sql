@@ -9,7 +9,7 @@ CREATE TABLE Ya_Newsletter_Site (
 /
 
 ALTER TABLE Ya_Newsletter_Site
-ADD CONSTRAINT PK_Newsletter_Site PRIMARY KEY (newsletter_id, lang_id)
+ADD CONSTRAINT PK_Newsletter_Site PRIMARY KEY (newsletter_id, site_id)
 USING INDEX TABLESPACE SSCommerceserver_Index
 /
 

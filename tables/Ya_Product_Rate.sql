@@ -4,6 +4,7 @@ DROP TABLE Ya_Product_Rate
 CREATE TABLE Ya_Product_Rate (
 	sku                         int                  NOT NULL ,
 	rating                      int                  NOT NULL
+)
 /
 
 ALTER TABLE Ya_Product_Rate

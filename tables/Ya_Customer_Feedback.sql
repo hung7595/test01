@@ -5,7 +5,7 @@ CREATE TABLE Ya_Customer_Feedback (
 	shopper_id                char(32)                ,
 	question_id               int                     NOT NULL ,
 	site_id                   int                     NOT NULL ,
-	answer                    varchar2(500)           NOT NULL
+	answer                    varchar2(500)           NOT NULL ,
 	datetime                  date                    DEFAULT SYSDATE NOT NULL ,
 	unique_key                varchar2(50)            DEFAULT SYS_GUID()
 )

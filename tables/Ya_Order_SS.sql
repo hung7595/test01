@@ -28,7 +28,7 @@ CREATE TABLE Ya_Order_SS (
 	gift_flag                             char(1)                      ,        
 	gift_message                          varchar2(255)                ,        
 	associate_id                          int                          ,        
-	comment                               varchar2(255)                ,        
+	"comment"                             varchar2(255)                ,        
 	site_id                               int                          ,        
 	ip_address                            varchar2(50)                 ,        
 	shopper_email                         varchar2(255)                ,        

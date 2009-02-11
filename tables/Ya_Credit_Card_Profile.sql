@@ -33,7 +33,7 @@ CREATE TABLE Ya_Credit_Card_Profile (
 /
 
 ALTER TABLE Ya_Credit_Card_Profile
-ADD CONSTRAINT PK_Credit_Card_Profile PRIMARY KEY (coupon_code, shopper_id)
+ADD CONSTRAINT PK_Credit_Card_Profile PRIMARY KEY (shopper_id, profile_id)
 USING INDEX TABLESPACE SSCommerceserver_Index
 /
 

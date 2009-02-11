@@ -21,10 +21,6 @@ CREATE TABLE Ya_Order_Log (
 )
 /
 
-ALTER TABLE Ya_Order_Log
-ADD CONSTRAINT PK_Order_Log PRIMARY KEY (order_id, row_id)
-USING INDEX TABLESPACE SSCommerceserver_Index
-/
 
 
 CREATE INDEX IX_Order_Log_01 ON Ya_Order_Log(order_num) TABLESPACE SSCommerceserver_Index

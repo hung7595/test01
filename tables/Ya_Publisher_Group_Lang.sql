@@ -4,7 +4,7 @@ DROP TABLE Ya_Publisher_Group_Lang
 CREATE TABLE Ya_Publisher_Group_Lang (
 	publisher_group_id               int                          NOT NULL ,
 	lang_id                          int                          NOT NULL ,
-	publisher_name                   varchar2(100)                NOT NULL
+	publisher_name                   varchar2(100)                NOT NULL ,
 	publisher_name_u                 nvarchar2(100)
 )	
 /

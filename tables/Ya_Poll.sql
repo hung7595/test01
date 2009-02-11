@@ -5,7 +5,7 @@ CREATE TABLE Ya_Poll (
 	poll_id                      int                     NOT NULL ,
 	poll_topic                   varchar2(500)           ,
 	site_id                      int                     ,
-	created_datetime             date                    NOT NULL
+	created_datetime             date                    NOT NULL ,
 	rowguid                      varchar2(50)            DEFAULT SYS_GUID() NOT NULL
 )
 /

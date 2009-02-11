@@ -5,7 +5,7 @@ CREATE TABLE Ya_CS_Support_Form (
 	email                          varchar2(50)                   NOT NULL ,
 	order_num_str                  varchar2(100)                  NOT NULL ,
 	subject                        varchar2(100)                  ,
-	comment                        varchar2(4000)                 ,
+	"comment"                      varchar2(4000)                 ,
 	request_datetime               date                           DEFAULT SYSDATE NOT NULL ,
 	id                             varchar2(50)                   DEFAULT SYS_GUID() NOT NULL ,
 	status                         varchar2(10)                   DEFAULT 'NewArrival' NOT NULL ,
