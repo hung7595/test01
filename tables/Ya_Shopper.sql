@@ -5,7 +5,7 @@ CREATE TABLE Ya_Shopper (
 	shopper_id                          char(32)                    NOT NULL ,
 	created_date                        date                        ,
 	password                            varchar2(255)               ,
-	email                               varchar2(255)               NOT NULL
+	email                               varchar2(255)               NOT NULL ,
 	firstname                           varchar2(60)                ,        
 	lastname                            varchar2(100)               ,        
 	username                            varchar2(100)               ,        
@@ -25,7 +25,7 @@ CREATE TABLE Ya_Shopper (
 	salt                                varchar2(20)                ,        
 	ae_id                               int                         ,        
 	rowguid                             varchar2(50)                DEFAULT SYS_GUID() NOT NULL ,
-	correspondence_email	            varchar2(25   5)
+	correspondence_email	            varchar2(255)
 )	
 /
 

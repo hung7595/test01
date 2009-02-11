@@ -8,7 +8,7 @@ CREATE TABLE Ya_Address_Conv (
 /
 
 ALTER TABLE Ya_Address_Conv
-ADD CONSTRAINT PK_Address PRIMARY KEY (address_id)
+ADD CONSTRAINT PK_Address_Conv PRIMARY KEY (address_id)
 USING INDEX TABLESPACE SSCommerceserver_Index
 /
 
