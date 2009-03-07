@@ -22,8 +22,8 @@ AS
   )
   AS
   BEGIN
-    -- from 7:30am to 10:00am (HKT)
-    IF sysdate >= to_date('2008-08-08 23:00:00', 'YYYY-MM-DD HH24:MI:SS') and sysdate <= to_date('2008-08-09 02:00:00', 'YYYY-MM-DD HH24:MI:SS') THEN
+	-- from 2:00am to 6:00am(HKT)
+    IF sysdate >= to_date('2009-03-07 18:00:00', 'YYYY-MM-DD HH24:MI:SS') and sysdate <= to_date('2009-03-07 22:00:00', 'YYYY-MM-DD HH24:MI:SS') THEN
       BEGIN
         SELECT 1 INTO iPreturn FROM DUAL;
       END;
