@@ -516,6 +516,10 @@ AS
 		cPremark IN NVARCHAR2
   );
 
+	PROCEDURE GetEditorReviewSkuList (
+    iPsite_id IN INT,
+    curPresult OUT refCur
+  );
 	-- Review Approval -- END -----------------------------------------------------------------------------------------------------------------------------------------------
 END Pkg_FE_ReviewAccess;
 /
@@ -4231,6 +4235,18 @@ PROCEDURE GetAllReviewsByShopperID (
 			END;
     END IF;
 	END UpdateReviewStatus;
+
+	PROCEDURE GetEditorReviewSkuList (
+    iPsite_id IN INT,
+    curPresult OUT refCur
+  )
+	AS
+	BEGIN
+    OPEN curPresult FOR
+			SELECT sku, lang_id
+			FROM ya_emag_editor_review_prod
+			WHERE site_id = iPsite_id;
+	END GetEditorReviewSkuList;
 
 	-- Review Approval -- END -----------------------------------------------------------------------------------------------------------------------------------------------
 
