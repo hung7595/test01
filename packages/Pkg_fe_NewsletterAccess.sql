@@ -36,6 +36,7 @@ AS
   
   PROCEDURE GetExistingEmailList (
     iPnewsletter_id		IN	INT,
+		iPsite_id IN INT,
 		vcPmembershipType IN VARCHAR2,
 		curPresult 			OUT 	curGgetNews
   );
@@ -347,6 +348,7 @@ END;
 
 	PROCEDURE GetExistingEmailList (
     iPnewsletter_id		IN INT,
+		iPsite_id IN INT,
 		vcPmembershipType IN VARCHAR2,
 		curPresult 			OUT curGgetNews
   )
@@ -368,7 +370,7 @@ END;
 						(
 							NOT EXISTS
 							(
-								SELECT 1 FROM ya_reminder_exclude_list yrel WHERE yrel.shopper_id = yns.shopper_id
+								SELECT 1 FROM ya_reminder_exclude_list yrel WHERE yrel.site_id = iPsite_id AND yrel.shopper_id = yns.shopper_id
 							) 
 							OR yns.shopper_id IS NULL
 						) 
@@ -390,7 +392,7 @@ END;
 						(
 							NOT EXISTS
 							(
-								SELECT 1 FROM ya_reminder_exclude_list yrel WHERE yrel.shopper_id = yns.shopper_id
+								SELECT 1 FROM ya_reminder_exclude_list yrel WHERE yrel.site_id = iPsite_id AND yrel.shopper_id = yns.shopper_id
 							) 
 							OR yns.shopper_id IS NULL
 						) 
@@ -414,7 +416,7 @@ END;
 					(
 						NOT EXISTS
 						(
-							SELECT 1 FROM ya_reminder_exclude_list yrel WHERE yrel.shopper_id = yns.shopper_id
+							SELECT 1 FROM ya_reminder_exclude_list yrel WHERE yrel.site_id = iPsite_id AND yrel.shopper_id = yns.shopper_id
 						) 
 						OR yns.shopper_id IS NULL
 					) 
@@ -428,7 +430,7 @@ END;
 			END IF;
 		ELSE
 			OPEN curPresult FOR 
-			--retrieve email list apart from monthly newsletter
+			--retrieve email list apart from monthly membership newsletter
 	    SELECT DISTINCT email
 	    FROM ya_newsletter_subscriber yns
 	    WHERE yns.newsletter_id = iPnewsletter_id AND yns.status = 'A' 
@@ -436,7 +438,7 @@ END;
 			(
 				NOT EXISTS 
 			  (
-					SELECT 1 FROM ya_reminder_exclude_list yrel WHERE yrel.shopper_id = yns.shopper_id
+					SELECT 1 FROM ya_reminder_exclude_list yrel WHERE yrel.site_id = iPsite_id AND yrel.shopper_id = yns.shopper_id
 				) 
 				OR yns.shopper_id IS NULL
 			)

@@ -385,12 +385,12 @@ IS
     iLtemp := LENGTH(RTRIM(cPselectedCsv));
     IF(iLtemp) > 1 THEN
       BEGIN
-      SELECT 1 INTO iLInExcludeList FROM ya_reminder_exclude_list WHERE shopper_id = cPshopper_id;
+      SELECT 1 INTO iLInExcludeList FROM ya_reminder_exclude_list WHERE site_id = iPsite_id AND shopper_id = cPshopper_id;
         EXCEPTION WHEN NO_DATA_FOUND THEN
         iLInExcludeList := -1;
       END;
       IF(iLInExcludeList) > 0 THEN
-        DELETE FROM ya_reminder_exclude_list WHERE shopper_id = cPshopper_id;
+        DELETE FROM ya_reminder_exclude_list WHERE site_id = iPsite_id AND shopper_id = cPshopper_id;
       END IF;
     BEGIN
       iLendAnswerPos := INSTR(cPselectedCsv, ',');
