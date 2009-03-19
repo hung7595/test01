@@ -3,7 +3,7 @@ DROP TABLE Ya_Attribute_Type
 
 CREATE TABLE Ya_Attribute_Type (
 	attribute_type_id              int                      NOT NULL ,
-	attribute_type_name            int                      ,
+	attribute_type_name            VARCHAR2(50)                      ,
 	lang_id                        varchar2(255)            NOT NULL
 )
 /
