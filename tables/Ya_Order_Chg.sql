@@ -13,3 +13,7 @@ ALTER TABLE Ya_Order_Chg
 ADD CONSTRAINT PK_Order_Chg PRIMARY KEY (id)
 USING INDEX TABLESPACE SSCommerceserver_Index
 /
+
+
+CREATE PUBLIC SYNONYM Ya_Order_Chg FOR Ya_Order_Chg
+/
