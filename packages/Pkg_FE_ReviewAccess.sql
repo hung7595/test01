@@ -1,7 +1,7 @@
 
 REM START SS_ADM PKG_FE_REVIEWACCESS
 
-  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_REVIEWACCESS" 
+  CREATE OR REPLACE PACKAGE "PKG_FE_REVIEWACCESS" 
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -523,7 +523,11 @@ AS
 	-- Review Approval -- END -----------------------------------------------------------------------------------------------------------------------------------------------
 END Pkg_FE_ReviewAccess;
 /
-CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_REVIEWACCESS" 
+
+
+
+
+CREATE OR REPLACE PACKAGE BODY "PKG_FE_REVIEWACCESS" 
 is
   PROCEDURE GetUserReviewsBySku (
     iPsku IN INT,
