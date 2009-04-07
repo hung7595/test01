@@ -1422,12 +1422,23 @@ END FillProductBooksInformation;
   AS
   BEGIN
     OPEN curPgetProduct1 FOR
-    SELECT nb.sku, nvl(p.publisher_id, -1)
-    FROM ya_product p
-      INNER JOIN ya_new_basket nb ON p.sku = nb.sku
-    WHERE nb.shopper_id = cPshopper_id
-      AND nb.site_id = iPsite_id
-      AND nb.type = 0;
+    SELECT DISTINCT sku, pid
+    FROM
+    (
+      SELECT nb.sku, nvl(p.publisher_id, -1) as pid
+      FROM ya_product p
+        INNER JOIN ya_new_basket nb ON p.sku = nb.sku
+      WHERE nb.shopper_id = cPshopper_id
+        AND nb.site_id = iPsite_id
+        AND nb.type = 0
+      UNION
+      SELECT nbs.sku, nvl(p2.publisher_id, -1) as pid
+      FROM ya_product p2
+        INNER JOIN ya_new_basket_shadow nbs ON p2.sku = nbs.sku
+      WHERE nbs.shopper_id = cPshopper_id
+        AND nbs.site_id = iPsite_id
+        AND nbs.type = 0
+    ); 
   END GetProductBasePublisher;
 
   PROCEDURE GetProductBase (
