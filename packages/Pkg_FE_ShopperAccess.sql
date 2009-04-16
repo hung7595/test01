@@ -92,7 +92,10 @@ AS
   AS
    iLHasRecord INT := 0;
   BEGIN
-    select count(*) into iLHasRecord from loyalty_customer where ya_shopper_id = cPshopper_id;
+    select count(*) into iLHasRecord 
+    from loyalty_customer c
+	    inner join loyalty_membership m on c.loyalty_membership_id = m.id and m.membership_year = to_char(sysdate,'YYYY')
+    where c.ya_shopper_id = cPshopper_id;
 
     If iLHasRecord>0 and iPsite_id=10 Then
       OPEN curPresult FOR
