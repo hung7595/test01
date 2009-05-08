@@ -22,8 +22,8 @@ AS
   )
   AS
   BEGIN
-	-- from 0:00am to 2:00pm(HKT) -- Asiapay uregent maintenance
-    IF sysdate >= to_date('2009-05-06 16:00:00', 'YYYY-MM-DD HH24:MI:SS') and sysdate <= to_date('2009-05-07 6:00:00', 'YYYY-MM-DD HH24:MI:SS') THEN
+	-- from 2:30am to 5:30am(HKT) -- City Bank Maintanence
+    IF sysdate >= to_date('2009-05-09 18:30:00', 'YYYY-MM-DD HH24:MI:SS') and sysdate <= to_date('2009-05-09 21:30:00', 'YYYY-MM-DD HH24:MI:SS') THEN
       BEGIN
         SELECT 1 INTO iPreturn FROM DUAL;
       END;
