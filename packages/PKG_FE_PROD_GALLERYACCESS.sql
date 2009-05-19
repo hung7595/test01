@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE PKG_FE_PROD_GALLERYACCESS AS
+create or replace PACKAGE PKG_FE_PROD_GALLERYACCESS AS
 TYPE CUR_RETURN IS REF CURSOR;
 
 PROCEDURE AddImage
@@ -125,8 +125,7 @@ PROCEDURE UpdateSectionInfo
 END PKG_FE_PROD_GALLERYACCESS;
 /
 
-
-CREATE OR REPLACE PACKAGE BODY PKG_FE_PROD_GALLERYACCESS AS
+create or replace PACKAGE BODY PKG_FE_PROD_GALLERYACCESS AS
 
   PROCEDURE AddImage
 (
@@ -152,13 +151,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_PROD_GALLERYACCESS AS
     IF intCounter > 0 then
       SELECT gallery_id into intGalleryId  FROM ya_prod_gallery WHERE sku=iPSku and rownum = 1;
     ELSE
-        SELECT count(*) into intCounter FROM ya_prod_gallery;
-        IF intCounter > 0 then
-          SELECT MAX(gallery_id) into intGalleryId  FROM ya_prod_gallery;
-          intGalleryId := intGalleryId + 1;
-        ELSE
-          intGalleryId := 1;
-        END IF;
+        Select seq_prod_gallery_image.NEXTVAL into intGalleryId from DUAL;
         INSERT INTO ya_prod_gallery(gallery_id, sku) VALUES(intGalleryId, iPSku);
     END IF;
 
@@ -553,5 +546,4 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_PROD_GALLERYACCESS AS
   END UpdateSectionInfo;
 
 END PKG_FE_PROD_GALLERYACCESS;
-
 /
