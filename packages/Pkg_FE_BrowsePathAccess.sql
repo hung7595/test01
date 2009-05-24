@@ -50,7 +50,7 @@ IS
     SELECT
       dp.dept_id,
       NVL(dl.dept_name, dle.dept_name) AS dept_name,
-      dpt.page_location
+      '' as page_location
     FROM
       ya_browse_dept_path dp,
       ya_dept dpt,

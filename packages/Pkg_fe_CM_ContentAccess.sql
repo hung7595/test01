@@ -309,14 +309,6 @@ AS
 
 END Pkg_fe_CM_ContentAccess;
 /
-
-
-
-
-
-
-
-
 CREATE OR REPLACE PACKAGE BODY "PKG_FE_CM_CONTENTACCESS" 
 IS
 
@@ -345,16 +337,11 @@ IS
 	    d5.description AS desc_gb
 	  FROM
 	    ya_product p
-	    LEFT JOIN ya_prod_lang pl1 ON (pl1.sku = p.sku AND pl1.lang_id = 1)
-	    LEFT JOIN ya_prod_lang pl2 ON (pl2.sku = p.sku AND pl2.lang_id = 2)
-	    LEFT JOIN ya_prod_lang pl3 ON (pl3.sku = p.sku AND pl3.lang_id = 3)
-	    LEFT JOIN ya_prod_lang pl4 ON (pl4.sku = p.sku AND pl4.lang_id = 4)
-	    LEFT JOIN ya_prod_lang pl5 ON (pl5.sku = p.sku AND pl5.lang_id = 5)
-	    LEFT JOIN ya_description d1 ON (d1.description_id = case when pl1.tw_description_id is not null then pl1.tw_description_id when pl1.us_description_id is not null then pl1.us_description_id when pl1.jp_description_id is not null then pl1.jp_description_id end)
-	    LEFT JOIN ya_description d2 ON (d2.description_id = case when pl2.tw_description_id is not null then pl2.tw_description_id when pl2.us_description_id is not null then pl2.us_description_id when pl2.jp_description_id is not null then pl2.jp_description_id end)
-	    LEFT JOIN ya_description d3 ON (d3.description_id = case when pl3.tw_description_id is not null then pl3.tw_description_id when pl3.us_description_id is not null then pl3.us_description_id when pl3.jp_description_id is not null then pl3.jp_description_id end)
-	    LEFT JOIN ya_description d4 ON (d4.description_id = case when pl4.tw_description_id is not null then pl4.tw_description_id when pl4.us_description_id is not null then pl4.us_description_id when pl4.jp_description_id is not null then pl4.jp_description_id end)
-	    LEFT JOIN ya_description d5 ON (d5.description_id = case when pl5.tw_description_id is not null then pl5.tw_description_id when pl5.us_description_id is not null then pl5.us_description_id when pl5.jp_description_id is not null then pl5.jp_description_id end)
+	    LEFT OUTER JOIN ya_description d1 ON d1.lang_id = 1 AND d1.sku = p.sku
+	    LEFT OUTER JOIN ya_description d2 ON d2.lang_id = 2 AND d2.sku = p.sku
+	    LEFT OUTER JOIN ya_description d3 ON d3.lang_id = 3 AND d3.sku = p.sku
+	    LEFT OUTER JOIN ya_description d4 ON d4.lang_id = 4 AND d4.sku = p.sku
+	    LEFT OUTER JOIN ya_description d5 ON d5.lang_id = 5 AND d5.sku = p.sku
 	  WHERE
 	    p.sku = iPsku;
 
@@ -436,8 +423,8 @@ il.updated_date
     OPEN curPresult1 FOR
 	  SELECT
 	    pl.file_id, pl.prod_lot_id, pl.lot_location, pl.priority, nvl(pll.lang_id,1) AS lang_id,
-		pl.sku, nvl(prl.prod_name_u,'') AS prod_name_u , pl.dept_id,
-		nvl(pll.description,'') AS description, nvl(pl.updated_user,'')  AS updated_user, pl.updated_date
+		  pl.sku, nvl(prl.prod_name,'') AS prod_name_u , pl.dept_id,
+		  nvl(pll.description,'') AS description, nvl(pl.updated_user,'')  AS updated_user, pl.updated_date
 	  FROM
 		ya_mirror_product_lot pl
 	  LEFT JOIN ya_mirror_prod_lot_lang pll ON pl.prod_lot_id = pll.prod_lot_id
@@ -528,7 +515,7 @@ il.updated_date
 	    AND pr.ORIGIN_ID = pa.ORIGIN_ID
 	    AND pa.ORIGIN_ID = 7
 	    AND cpi.site_id IN (7, 99)
-	    AND p.is_parent = 'N'
+	    AND p.is_prod_grp_parent = 'N'
 	    AND
 	    (
 	      pa.AVLB >=60 OR
@@ -557,7 +544,7 @@ il.updated_date
 	    AND pr.ORIGIN_ID = pa.ORIGIN_ID
 	    AND pa.ORIGIN_ID = 1
 	    AND cpi.site_id IN (1, 99)
-	    AND p.is_parent = 'N'
+	    AND p.is_prod_grp_parent = 'N'
 	    AND
 	    (
 	      pa.AVLB >=60 OR
@@ -843,7 +830,7 @@ il.updated_date
     --ya_prod_lang
     OPEN curPresult3 FOR
 	  SELECT
-	    nvl(prl.prod_name_u,'') as prod_name_u,
+	    nvl(prl.prod_name,'') as prod_name_u,
 	    lang_id
 	  FROM
 	    ya_prod_lang prl,
@@ -875,7 +862,7 @@ il.updated_date
 	WHILE (iLexistValue > 0)
 	LOOP
             iLexistValue := 0;
-	            select seq_ya_mirror_product_lot.nextval into iPproductLotId from dual;
+	            select ss_adm.seq_ya_mirror_product_lot.nextval into iPproductLotId from dual;
                 select count(*) into iLexistValue from ya_mirror_product_lot where PROD_LOT_ID = iPproductLotId;
 	END LOOP;
 
@@ -948,7 +935,7 @@ il.updated_date
 	WHILE (iLexistValue > 0)
 	LOOP
             iLexistValue := 0;
-	            select seq_ya_mirror_image_lot.nextval into iPimageLotId from dual;
+	            select ss_adm.seq_ya_mirror_image_lot.nextval into iPimageLotId from dual;
                 select count(*) into iLexistValue from ya_mirror_image_lot where IMAGE_LOT_ID = iPimageLotId;
 	END LOOP;
 
@@ -1018,7 +1005,7 @@ il.updated_date
 	WHILE (iLexistValue > 0)
 	LOOP
             iLexistValue := 0;
-	            select seq_ya_mirror_text_lot.nextval into iPtextLotId from dual;
+	            select ss_adm.seq_ya_mirror_text_lot.nextval into iPtextLotId from dual;
                 select count(*) into iLexistValue from ya_mirror_text_lot where TEXT_LOT_ID = iPtextLotId;
 	END LOOP;
 

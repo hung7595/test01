@@ -128,9 +128,9 @@ BEGIN
 
   OPEN curPout4 FOR
   SELECT 
-    ol.id as order_line_id, ol.prod_id as sku, p.account_id as account_id, pl.prod_name_u as product_name, old.qnty as quantity, ol.unit_price as unit_price, old.sts as status, 
+    ol.id as order_line_id, ol.prod_id as sku, p.account_id as account_id, pl.prod_name as product_name, old.qnty as quantity, ol.unit_price as unit_price, old.sts as status, 
     ol.shipment_unit, ol.promotion_id as promotion_id, ol.original_unit_price as original_unit_price, pa.avlb as avlb, ol.parent_id, ol.misc_info,
-    p.release_date, pr.is_preorder, pr.preorder_start, pr.preorder_end, pe.prod_name_u as eng_prod_name, ol.parent_line_id, ol.shipment_grp
+    p.release_date, pr.is_preorder, pr.preorder_start, pr.preorder_end, pe.prod_name as eng_prod_name, ol.parent_line_id, ol.shipment_grp
   FROM (select * from order_info where cust_id = cPshopperId and id = iLorderInfoId) oi
   inner join order_line ol on oi.id = ol.order_info_id
   inner join order_line_dtl old on ol.id = old.order_line_id
@@ -305,7 +305,7 @@ PROCEDURE AddOrderChange
 )
 IS
 BEGIN
-  select SEQ_YA_ORDER_CHG.nextval into iPorderChangeId from dual;
+  select ss_adm.SEQ_YA_ORDER_CHG.nextval into iPorderChangeId from dual;
   insert into ya_order_chg(id, order_number, action_id, change_date) 
   values(iPorderChangeId, iPorderNumber, iPactionId, sysdate);
 END AddOrderChange;
@@ -318,7 +318,7 @@ PROCEDURE AddOrderChangeLine
 )
 IS
 BEGIN
-  select SEQ_YA_ORDER_CHG_LN.nextval into iPorderChangeLineId from dual;
+  select ss_adm.SEQ_YA_ORDER_CHG_LN.nextval into iPorderChangeLineId from dual;
   insert into ya_order_chg_ln(id, order_change_id, action_id) 
   values(iPorderChangeLineId, iPorderChangeId, iPactionId);
 END AddOrderChangeLine;

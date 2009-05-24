@@ -71,7 +71,7 @@ PROCEDURE GetRmaLineByRmaId
 AS
 BEGIN
   OPEN curPout FOR
-  SELECT ypl.prod_name_u,rd.sku,ol.shipment_unit,ol.unit_price,rd.qnty, rd.sts
+  SELECT ypl.prod_name,rd.sku,ol.shipment_unit,ol.unit_price,rd.qnty, rd.sts
   FROM rma r, rma_dtl rd, ya_prod_lang ypl, order_info o, order_line ol
   WHERE rd.rma_id = iPRmaId
   AND ypl.lang_id = iPLangId
@@ -92,7 +92,7 @@ PROCEDURE GetRmaLineByRmaRefNum
 AS
 BEGIN
   OPEN curPout FOR
-  SELECT ypl.prod_name_u,rd.sku,ol.shipment_unit,ol.unit_price,rd.qnty, rd.sts
+  SELECT ypl.prod_name,rd.sku,ol.shipment_unit,ol.unit_price,rd.qnty, rd.sts
   FROM rma r
   INNER JOIN rma_dtl rd ON r.id = rd.rma_id
   INNER JOIN ya_prod_lang ypl ON ypl.sku = rd.sku 

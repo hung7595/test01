@@ -24,36 +24,30 @@ IS
       BEGIN
         OPEN curPgetCountry FOR
         SELECT cl.country_id,
-               c.country_name
+               cl.country_name
         FROM ya_country_lang cl,
-             ya_country c,
-             ya_country_lang cs
-        WHERE c.country_id = cl.country_id
-          AND c.country_id = cs.country_id
+             ya_country_lang cs,
+             ya_site_canship_country sc
+        WHERE cl.country_id = cs.country_id
+          AND cl.country_id = sc.country_id
           AND cl.lang_id = iPlang_id
-          AND (c.us_canship = 'Y' OR c.tw_canship = 'Y')
-          AND cs.lang_id = 1
-          AND cl.lang_id = iPlang_id
+          AND cs.lang_id in (1,7)
+          AND sc.site_id = iPsite_id
         ORDER BY cs.country_name;
       END;
     ELSE
       BEGIN
         OPEN curPgetCountry FOR
         SELECT cl.country_id,
-               c.country_name
+               cl.country_name
         FROM ya_country_lang cl,
-             ya_country c,
-             ya_country_lang cs
-        WHERE c.country_id = cl.country_id
-          AND c.country_id = cs.country_id
+             ya_country_lang cs,
+             ya_site_canship_country sc
+        WHERE cl.country_id = cs.country_id
+          AND cl.country_id = sc.country_id
           AND cs.lang_id = 1
           AND cl.lang_id = iPlang_id
-          AND CASE iPsite_id
-                WHEN 1 THEN c.us_canship
-                WHEN 7 THEN c.tw_canship
-                WHEN 10 THEN c.YS_CANSHIP
-				WHEN 11 THEN c.YS_CANSHIP
-              END = 'Y'
+          AND sc.site_id = iPsite_id
         ORDER BY cs.country_name;
       END;
     END IF;

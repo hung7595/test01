@@ -192,33 +192,33 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	END LOOP;
 		
 --/****STEP 2 : CREATE DEPARTMENT*****/  
-    INSERT INTO ya_dept(dept_id,us_enabled, tw_enabled,ys_enabled,jp_enabled,
-                us_ws_enabled,hk_ws_enabled,tw_ws_enabled,jp_ws_enabled,
-		us_disp_seq, hk_disp_seq, tw_disp_seq, jp_disp_seq,
-		us_ws_disp_seq, hk_ws_disp_seq, tw_ws_disp_seq, jp_ws_disp_seq,
-		created_date, updated_date, created_user, updated_user)
-	VALUES(iLDeptId,cPusEnabled,cPtwEnabled,cPysEnabled,'N',
-                'N','N','N','N',
-		iPdispSeq,iPdispSeq,iPdispSeq,iPdispSeq,
-		iPdispSeq,iPdispSeq,iPdispSeq,iPdispSeq,
-		sysdate,sysdate,cPuser,cPuser);
-		
-        iPdeptId :=iLDeptId;
+    INSERT INTO ya_dept(dept_id, created_date, updated_date, created_user, updated_user)
+	  VALUES(iLDeptId, sysdate, sysdate, cPuser, cPuser);
+	  
+	  /* update department-site setting */
+	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled)
+	  VALUES (iLDeptId, 1, cPusEnabled);
+	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled)
+	  VALUES (iLDeptId, 7, cPtwEnabled);
+	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled)
+	  VALUES (iLDeptId, 10, cPysEnabled);
+	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled)
+	  VALUES (iLDeptId, 11, cPysEnabled);	  
+	  	  		
+    iPdeptId :=iLDeptId;
 --/****STEP 3 : DEPARTMENT LANGUAGE, NEED TO MODIFY THIS PART*****/
 	--1.1.1 prepare language translation of 5 languages, it also need in the part 1.6
 	--1.1.2 insert department language in ya_dept_lang
-	INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description)
-	VALUES(iLDeptId, 1, cPdeptNameEn, cPdeptNameEnU, cPdeptDescription);
-	INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description)
-	VALUES(iLDeptId, 2, cPdeptNameB5, cPdeptNameB5U, cPdeptDescription);
-	INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description)
-	VALUES(iLDeptId, 3, cPdeptNameJp, cPdeptNameJpU, cPdeptDescription);
-	INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description)
-	VALUES(iLDeptId, 4, cPdeptNameKr, cPdeptNameKrU, cPdeptDescription);
-	INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description)
-	VALUES(iLDeptId, 5, cPdeptNameGb, cPdeptNameGbU, cPdeptDescription);
-	INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description)
-	VALUES(iLDeptId, 6, Null,Null, cPdeptDescription);
+	  INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description)
+	  VALUES(iLDeptId, 1, cPdeptNameEn, cPdeptNameEnU, cPdeptDescription);
+	  INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description)
+	  VALUES(iLDeptId, 2, cPdeptNameB5, cPdeptNameB5U, cPdeptDescription);
+	  INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description)
+	  VALUES(iLDeptId, 3, cPdeptNameJp, cPdeptNameJpU, cPdeptDescription);
+	  INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description)
+	  VALUES(iLDeptId, 4, cPdeptNameKr, cPdeptNameKrU, cPdeptDescription);
+	  INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description)
+	  VALUES(iLDeptId, 5, cPdeptNameGb, cPdeptNameGbU, cPdeptDescription);
 
 --/****STEP 4 : CREATE DEPARTMENT RELATIONSHIP*****/
 	IF iPparentDeptId>0 THEN
@@ -520,7 +520,10 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
   BEGIN
     
     OPEN curPresult1 FOR	  
-		 SELECT dp.dept_id, CASE WHEN dl.dept_name IS NULL THEN dle.dept_name WHEN dl.dept_name IS NOT NULL THEN dl.dept_name END as dept_name, dpt.page_location
+		 SELECT dp.dept_id, CASE 
+		                      WHEN dl.dept_name IS NULL THEN dle.dept_name 
+		                      WHEN dl.dept_name IS NOT NULL THEN dl.dept_name 
+		                    END as dept_name, null as page_location
       FROM ya_browse_dept_path dp,
            ya_dept dpt,
            ya_dept_lang dle,

@@ -131,23 +131,26 @@ AS
       article.out_tracking_no out_tracking_no
     FROM
       ya_article_lang lang,
-      ya_article article
+      ya_article article, ya_article_site article_site
     WHERE lang.article_id = article.article_id
-    AND lang.article_id = iParticle_id
-    AND lang.lang_id = iPlang_id
-    AND article.enable = 'Y'
-    AND article.status = 8;
+      AND lang.article_id = iParticle_id
+      AND lang.lang_id = iPlang_id
+      AND article.article_id = article_site.article_id
+      AND article_site.site_id = iPoriginId
+      AND article_site.is_enabled = 'Y'
+      AND article.status = 8;
 
     /* the mentioned products */
     OPEN curPgetArticle2 FOR
     SELECT
       NVL(lang.sku,0) sku,
-      lang.prod_name_u prod_name,
+      lang.prod_name prod_name,
       prod.cover_img_loc cover_img_loc,
       pa.avlb
     FROM
       ya_article_rel rel,
       ya_article article,
+      ya_article_site article_site,
       ya_product prod,
       ya_prod_lang lang,
       prod_avlb pa
@@ -161,11 +164,13 @@ AS
       AND rel.enable = 'Y'
       AND rel.rel_type = 1
       AND lang.lang_id = iPlang_id
-      AND article.enable = 'Y'
+      AND article.article_id = article_site.article_id
+      AND article_site.site_id = iPoriginId
+      AND article_site.is_enabled = 'Y'
       AND article.status = 8
-      AND pa.origin_id = iPoriginId
+      AND pa.origin_id = article_site.site_id
       AND pa.category = 1
-      AND pa.region_id = iPoriginId
+      AND pa.region_id = article_site.site_id
     ORDER BY rel.priority ASC;
 
     /* get the mentioned artists */
@@ -181,16 +186,18 @@ AS
     FROM
       ya_artist_lang artist,
       ya_article_rel rel,
-      ya_article article
+      ya_article article, ya_article_site article_site
     WHERE artist.artist_id = rel.rel_id
-    AND rel.lang_id = artist.lang_id
-    AND article.article_id = rel.article_id
-    AND article.enable = 'Y'
-    AND article.status = 8
-    AND rel.enable = 'Y'
-    AND rel.article_id = iParticle_id
-    AND rel.rel_type = 4
-    AND artist.lang_id = iPlang_id
+      AND rel.lang_id = artist.lang_id
+      AND article.article_id = rel.article_id
+      AND article.article_id = article_site.article_id
+      AND article_site.site_id = iPoriginId
+      AND article_site.is_enabled = 'Y'
+      AND article.status = 8
+      AND rel.enable = 'Y'
+      AND rel.article_id = iParticle_id
+      AND rel.rel_type = 4
+      AND artist.lang_id = iPlang_id
     ORDER BY rel.priority ASC;
 
     /* get the mentioned director */
@@ -206,16 +213,18 @@ AS
     FROM
       ya_artist_lang artist,
       ya_article_rel rel,
-      ya_article article
+      ya_article article, ya_article_site article_site
     WHERE artist.artist_id = rel.rel_id
-    AND rel.lang_id = artist.lang_id
-    AND article.article_id = rel.article_id
-    AND article.enable = 'Y'
-    AND article.status = 8
-    AND rel.enable = 'Y'
-    AND rel.article_id = iParticle_id
-    AND rel.rel_type = 5
-    AND artist.lang_id = iPlang_id
+      AND rel.lang_id = artist.lang_id
+      AND article.article_id = rel.article_id
+      AND article.article_id = article_site.article_id
+      AND article_site.site_id = iPoriginId
+      AND article_site.is_enabled = 'Y'
+      AND article.status = 8
+      AND rel.enable = 'Y'
+      AND rel.article_id = iParticle_id
+      AND rel.rel_type = 5
+      AND artist.lang_id = iPlang_id
     ORDER BY rel.priority ASC;
 
     /* get the categories */
@@ -226,16 +235,18 @@ AS
     FROM
       ya_article_rel rel,
       ya_dept_lang dept,
-      ya_article article
+      ya_article article, ya_article_site article_site
     WHERE rel.rel_id = dept.dept_id
-    AND dept.lang_id = rel.lang_id
-    AND rel.article_id = article.article_id
-    AND article.enable = 'Y'
-    AND article.status = 8
-    AND rel.enable = 'Y'
-    AND rel.article_id = iParticle_id
-    AND (rel.rel_type = 2 OR rel.rel_type = 3)
-    AND dept.lang_id = iPlang_id
+      AND dept.lang_id = rel.lang_id
+      AND rel.article_id = article.article_id
+      AND article.article_id = article_site.article_id
+      AND article_site.site_id = iPoriginId
+      AND article_site.is_enabled = 'Y'    
+      AND article.status = 8
+      AND rel.enable = 'Y'
+      AND rel.article_id = iParticle_id
+      AND (rel.rel_type = 2 OR rel.rel_type = 3)
+      AND dept.lang_id = iPlang_id
     ORDER BY rel.priority ASC;
   RETURN;
   END;
@@ -275,7 +286,7 @@ AS
     OPEN curPgetPreview2 FOR
     SELECT
       NVL(lang.sku,0) sku,
-      lang.prod_name_u prod_name,
+      lang.prod_name prod_name,
       prod.cover_img_loc cover_img_loc,
       pa.avlb
     FROM
@@ -285,16 +296,16 @@ AS
       ya_prod_lang lang,
       prod_avlb pa
     WHERE article.article_id = rel.article_id
-    AND rel.rel_id = prod.sku
-    AND rel.rel_id = lang.sku
-    AND rel.lang_id = lang.lang_id
-    AND rel.rel_id = pa.prod_id
-    AND rel.article_id = iParticle_id
-    AND rel.rel_type = 1
-    AND lang.lang_id = iPlang_id
-    AND pa.origin_id = iPoriginId
-    AND pa.category = 1
-    AND pa.region_id = iPoriginId
+      AND rel.rel_id = prod.sku
+      AND rel.rel_id = lang.sku
+      AND rel.lang_id = lang.lang_id
+      AND rel.rel_id = pa.prod_id
+      AND rel.article_id = iParticle_id
+      AND rel.rel_type = 1
+      AND lang.lang_id = iPlang_id
+      AND pa.origin_id = iPoriginId
+      AND pa.category = 1
+      AND pa.region_id = iPoriginId
     ORDER BY rel.priority asc;
 
     /* get the mentioned artists */
@@ -312,11 +323,11 @@ AS
       ya_article_rel rel,
       ya_article article
     WHERE artist.artist_id = rel.rel_id
-    AND rel.lang_id = artist.lang_id
-    AND article.article_id = rel.article_id
-    AND rel.article_id = iParticle_id
-    AND rel.rel_type = 4
-    AND artist.lang_id = iPlang_id
+      AND rel.lang_id = artist.lang_id
+      AND article.article_id = rel.article_id
+      AND rel.article_id = iParticle_id
+      AND rel.rel_type = 4
+      AND artist.lang_id = iPlang_id
     ORDER BY rel.priority asc;
 
     /* get the mentioned director */
@@ -334,11 +345,11 @@ AS
       ya_article_rel rel,
       ya_article article
     WHERE artist.artist_id = rel.rel_id
-    AND rel.lang_id = artist.lang_id
-    AND article.article_id = rel.article_id
-    AND rel.article_id = iParticle_id
-    AND rel.rel_type = 5
-    AND artist.lang_id = iPlang_id
+      AND rel.lang_id = artist.lang_id
+      AND article.article_id = rel.article_id
+      AND rel.article_id = iParticle_id
+      AND rel.rel_type = 5
+      AND artist.lang_id = iPlang_id
     ORDER BY rel.priority asc;
 
     /* get the categories */
@@ -398,10 +409,9 @@ AS
     FROM ya_article article,
          ya_article_lang lang
     WHERE article.article_id = lang.article_id (+)
-    AND lang.article_id = iParticleId
-    AND article.status = 8
-    AND article.enable = iLenable;
-
+      AND lang.article_id = iParticleId
+      AND article.status = 8
+      AND exists (SELECT 1 FROM ya_article_site article_site WHERE article_site.article_id = article.article_id AND article_site.is_enabled = iLenable);
     RETURN;
   END;
 
@@ -447,10 +457,10 @@ AS
       ya_article a,
       ya_article_lang l
     WHERE a.article_id = l.article_id
-    AND l.lang_id = iPlangId
-    AND a.enable = 'Y'
-    AND a.status = 8
-    AND a.product_group_sku = iPprodId
+      AND exists (select 1 from ya_article_site ars where ars.article_id = a.article_id and ars.is_enabled = 'Y')
+      AND l.lang_id = iPlangId
+      AND a.status = 8
+      AND a.product_group_sku = iPprodId
     ORDER BY a.created_date desc, a.article_id asc;
     return;
   END;
@@ -466,9 +476,9 @@ AS
 			'SELECT product_group_sku, a.article_id, nvl(l.lang_id, 0) as lang_id, a.in_tracking_no, a.out_tracking_no, l.title ' ||
 			'FROM ya_article a ' ||
 			'LEFT JOIN ya_article_lang l ON a.article_id = l.article_id ' ||
-			'WHERE a.enable = ''Y'' ' ||
-			'AND a.status = 8 ' ||
-			'AND a.product_group_sku IN (' ||	cPprodId_csv ||	')';
+			'WHERE exists (SELECT 1 FROM ya_article_site article_site WHERE article_site.article_id = a.article_id AND article_site.is_enabled = ''Y'') ' ||
+			' AND a.status = 8 ' ||
+			' AND a.product_group_sku IN (' ||	cPprodId_csv ||	')';
 
 		OPEN curPgetProduct FOR cLsql;
     return;
@@ -493,7 +503,7 @@ AS
       ya_article_lang l
     WHERE a.article_id = l.article_id
     AND l.lang_id = iPlangId
-    AND a.enable = 'Y'
+    AND exists (SELECT 1 FROM ya_article_site article_site WHERE article_site.article_id = a.article_id AND article_site.is_enabled = 'Y') 
     AND a.status = 8
     AND a.article_id in
       (
@@ -529,7 +539,7 @@ AS
       ON a.article_id = l.article_id
       AND l.lang_id = iPlangId
     WHERE
-      a.enable = 'Y'
+      exists (SELECT 1 FROM ya_article_site article_site WHERE article_site.article_id = a.article_id AND article_site.is_enabled = 'Y') 
       AND a.status = 8
       AND a.article_id IN
       (
@@ -563,7 +573,7 @@ AS
           ya_article article
         WHERE lang.article_id = article.article_id
         AND lang.lang_id = iPlangId
-        AND article.enable = 'Y'
+        AND exists (SELECT 1 FROM ya_article_site article_site WHERE article_site.article_id = article.article_id AND article_site.is_enabled = 'Y') 
         AND article.status = 8
       );
     EXCEPTION
@@ -578,46 +588,17 @@ AS
   )
   AS
   BEGIN
-    Case iPsiteId
-      -- YA US Site
-      When 1 then
-        SELECT COUNT(*) AS num INTO oPcount
-          FROM
-          (
-            SELECT * FROM ya_article_lang lang, ya_article article
-            WHERE lang.article_id = article.article_id
-            AND lang.lang_id = iPlangId
-            AND article.enable = 'Y'
-            AND article.status = 8
-            AND article.IS_YA_US_ENABLED = 'Y'
-          );
-      -- YA GB Site
-      When 7 then
-        SELECT COUNT(*) AS num INTO oPcount
-          FROM
-          (
-            SELECT * FROM ya_article_lang lang, ya_article article
-            WHERE lang.article_id = article.article_id
-            AND lang.lang_id = iPlangId
-            AND article.enable = 'Y'
-            AND article.status = 8
-            AND article.IS_YA_GB_ENABLED = 'Y'
-          );
-      -- YS GB Site
-      When 10 then
-        SELECT COUNT(*) AS num INTO oPcount
-          FROM
-          (
-            SELECT * FROM ya_article_lang lang, ya_article article
-            WHERE lang.article_id = article.article_id
-            AND lang.lang_id = iPlangId
-            AND article.enable = 'Y'
-            AND article.status = 8
-            AND article.IS_YS_GB_ENABLED = 'Y'
-          );
-      ELSE
-        oPcount := 0;
-    End case;
+    SELECT COUNT(*) AS num INTO oPcount
+      FROM
+      (
+        SELECT * FROM ya_article_lang lang, ya_article article, ya_article_site article_site
+        WHERE lang.article_id = article.article_id
+          AND lang.lang_id = iPlangId
+          AND article.status = 8
+          AND article.article_id = article_site.article_id
+          AND article_site.site_id = iPsiteId
+          AND article_site.is_enabled = 'Y'
+      );  
     EXCEPTION
       WHEN NO_DATA_FOUND THEN
         oPcount := 0;
@@ -652,9 +633,9 @@ AS
           ya_article_lang lang,
           ya_article article
         WHERE lang.article_id = article.article_id
-        AND lang.lang_id = iPlang_Id
-        AND article.enable = 'Y'
-        AND article.status = 8
+          AND lang.lang_id = iPlang_Id
+          AND exists (SELECT 1 FROM ya_article_site article_site WHERE article_site.article_id = article.article_id AND article_site.is_enabled = 'Y')
+          AND article.status = 8
         ORDER BY lang.submission_date DESC
       ) innerQuery
       WHERE ROWNUM < (iPstart_rec + iProw_num + 1)
@@ -671,115 +652,37 @@ AS
   )
   AS
   BEGIN
-    /* get the article */
-    Case iPsite_Id
-      -- YA US Site
-      When 1 then
-        OPEN curPresult FOR
-        SELECT * FROM
-        (
-          SELECT innerQuery.*, rownum rnum
-          from
-          (
-            SELECT
-              NVL(article.product_group_sku,0) product_group_sku,
-              lang.title title,
-              lang.author author,
-              lang.parsed_body parsed_body,
-              lang.banner_image banner_image,
-              article.in_tracking_no in_tracking_no,
-              article.out_tracking_no out_tracking_no,
-              NVL(article.article_id,0) article_id,
-              lang.submission_date submission_date
-            FROM
-              ya_article_lang lang,
-              ya_article article
-            WHERE lang.article_id = article.article_id
-            AND lang.lang_id = iPlang_Id
-            AND article.enable = 'Y'
-            AND article.status = 8
-            AND article.IS_YA_US_ENABLED = 'Y'
-            ORDER BY lang.submission_date DESC
-          ) innerQuery
-          WHERE ROWNUM < (iPstart_rec + iProw_num + 1)
-        )
-        WHERE rnum > iPstart_rec;
-      -- YA GB Site
-      When 7 then
-                OPEN curPresult FOR
-        SELECT * FROM
-        (
-          SELECT innerQuery.*, rownum rnum
-          from
-          (
-            SELECT
-              NVL(article.product_group_sku,0) product_group_sku,
-              lang.title title,
-              lang.author author,
-              lang.parsed_body parsed_body,
-              lang.banner_image banner_image,
-              article.in_tracking_no in_tracking_no,
-              article.out_tracking_no out_tracking_no,
-              NVL(article.article_id,0) article_id,
-              lang.submission_date submission_date
-            FROM
-              ya_article_lang lang,
-              ya_article article
-            WHERE lang.article_id = article.article_id
-            AND lang.lang_id = iPlang_Id
-            AND article.enable = 'Y'
-            AND article.status = 8
-            AND article.IS_YA_GB_ENABLED = 'Y'
-            ORDER BY lang.submission_date DESC
-          ) innerQuery
-          WHERE ROWNUM < (iPstart_rec + iProw_num + 1)
-        )
-        WHERE rnum > iPstart_rec;
-      -- YS GB Site
-      When 10 then
-        OPEN curPresult FOR
-        SELECT * FROM
-        (
-          SELECT innerQuery.*, rownum rnum
-          from
-          (
-            SELECT
-              NVL(article.product_group_sku,0) product_group_sku,
-              lang.title title,
-              lang.author author,
-              lang.parsed_body parsed_body,
-              lang.banner_image banner_image,
-              article.in_tracking_no in_tracking_no,
-              article.out_tracking_no out_tracking_no,
-              NVL(article.article_id,0) article_id,
-              lang.submission_date submission_date
-            FROM
-              ya_article_lang lang,
-              ya_article article
-            WHERE lang.article_id = article.article_id
-            AND lang.lang_id = iPlang_Id
-            AND article.enable = 'Y'
-            AND article.status = 8
-            AND article.IS_YS_GB_ENABLED = 'Y'
-            ORDER BY lang.submission_date DESC
-          ) innerQuery
-          WHERE ROWNUM < (iPstart_rec + iProw_num + 1)
-        )
-        WHERE rnum > iPstart_rec;
-      Else
-        OPEN curPresult FOR
+    OPEN curPresult FOR
+    SELECT * FROM
+    (
+      SELECT innerQuery.*, rownum rnum
+      from
+      (
         SELECT
-          '' product_group_sku,
-          '' title,
-          '' author,
-          '' parsed_body,
-          '' banner_image,
-          0 in_tracking_no,
-          0 out_tracking_no,
-          0 article_id,
-          sysdate submission_date
-        FROM dual;
-    End Case;
+          NVL(article.product_group_sku,0) product_group_sku,
+          lang.title title,
+          lang.author author,
+          lang.parsed_body parsed_body,
+          lang.banner_image banner_image,
+          article.in_tracking_no in_tracking_no,
+          article.out_tracking_no out_tracking_no,
+          NVL(article.article_id,0) article_id,
+          lang.submission_date submission_date
+        FROM
+          ya_article_lang lang,
+          ya_article article,
+          ya_article_site article_site
+        WHERE lang.article_id = article.article_id
+          AND lang.lang_id = iPlang_Id
+          AND article.status = 8
+          AND article_site.article_id = article.article_id
+          AND article_site.site_id = iPsite_Id
+          AND article_site.is_enabled = 'Y'
+        ORDER BY lang.submission_date DESC
+      ) innerQuery
+      WHERE ROWNUM < (iPstart_rec + iProw_num + 1)
+    )
+    WHERE rnum > iPstart_rec;
   END GetArticlesBySiteIdLangId;
 
   /* proc_fe_GetNewArticleByArticleId */
@@ -811,16 +714,16 @@ AS
       ya_article_lang lang,
       ya_article article
     WHERE lang.article_id = article.article_id
-    AND lang.article_id = iParticle_id
-    AND lang.lang_id = iPlang_id
-    AND article.enable = 'Y'
-    AND article.status = 8;
+      AND lang.article_id = iParticle_id
+      AND lang.lang_id = iPlang_id
+      AND exists (SELECT 1 FROM ya_article_site article_site WHERE article_site.article_id = article.article_id AND article_site.is_enabled = 'Y')
+      AND article.status = 8;
 
     /* the mentioned products */
     OPEN curPgetArticle2 FOR
     SELECT
       NVL(lang.sku,0) sku,
-      lang.prod_name_u prod_name,
+      lang.prod_name prod_name,
       prod.cover_img_loc cover_img_loc,
       pa.avlb
     FROM
@@ -828,7 +731,8 @@ AS
       ya_article article,
       ya_product prod,
       ya_prod_lang lang,
-      prod_avlb pa
+      prod_avlb pa,
+      ya_article_site article_site
     WHERE
       article.article_id = rel.article_id
       AND rel.rel_id = prod.sku
@@ -839,11 +743,13 @@ AS
       AND rel.enable = 'Y'
       AND rel.rel_type = 1
       AND lang.lang_id = iPlang_id
-      AND article.enable = 'Y'
+      AND article_site.article_id = article.article_id
+      AND article_site.site_id = iPoriginId
+      AND article_site.is_enabled = 'Y'
       AND article.status = 8
-      AND pa.origin_id = iPoriginId
+      AND pa.origin_id = article_site.site_id
       AND pa.category = 1
-      AND pa.region_id = iPoriginId
+      AND pa.region_id = article_site.site_id
     ORDER BY rel.priority ASC;
 
     /* get the mentioned artists */
@@ -859,16 +765,19 @@ AS
     FROM
       ya_artist_lang artist,
       ya_article_rel rel,
-      ya_article article
+      ya_article article,
+      ya_article_site article_site
     WHERE artist.artist_id = rel.rel_id
-    AND rel.lang_id = artist.lang_id
-    AND article.article_id = rel.article_id
-    AND article.enable = 'Y'
-    AND article.status = 8
-    AND rel.enable = 'Y'
-    AND rel.article_id = iParticle_id
-    AND rel.rel_type = 4
-    AND artist.lang_id = iPlang_id
+      AND rel.lang_id = artist.lang_id
+      AND article.article_id = rel.article_id
+      AND article_site.article_id = article.article_id
+      AND article_site.site_id = iPoriginId
+      AND article_site.is_enabled = 'Y'
+      AND article.status = 8
+      AND rel.enable = 'Y'
+      AND rel.article_id = iParticle_id
+      AND rel.rel_type = 4
+      AND artist.lang_id = iPlang_id
     ORDER BY rel.priority ASC;
 
     /* get the mentioned director */
@@ -884,16 +793,19 @@ AS
     FROM
       ya_artist_lang artist,
       ya_article_rel rel,
-      ya_article article
+      ya_article article,
+      ya_article_site article_site
     WHERE artist.artist_id = rel.rel_id
-    AND rel.lang_id = artist.lang_id
-    AND article.article_id = rel.article_id
-    AND article.enable = 'Y'
-    AND article.status = 8
-    AND rel.enable = 'Y'
-    AND rel.article_id = iParticle_id
-    AND rel.rel_type = 5
-    AND artist.lang_id = iPlang_id
+      AND rel.lang_id = artist.lang_id
+      AND article.article_id = rel.article_id
+      AND article_site.article_id = article.article_id
+      AND article_site.site_id = iPoriginId
+      AND article_site.is_enabled = 'Y'
+      AND article.status = 8
+      AND rel.enable = 'Y'
+      AND rel.article_id = iParticle_id
+      AND rel.rel_type = 5
+      AND artist.lang_id = iPlang_id
     ORDER BY rel.priority ASC;
 
     /* get the categories */
@@ -904,16 +816,19 @@ AS
     FROM
       ya_article_rel rel,
       ya_dept_lang dept,
-      ya_article article
+      ya_article article,
+      ya_article_site article_site
     WHERE rel.rel_id = dept.dept_id
     --AND dept.lang_id = rel.lang_id
-    AND rel.article_id = article.article_id
-    AND article.enable = 'Y'
-    AND article.status = 8
-    AND rel.enable = 'Y'
-    AND rel.article_id = iParticle_id
-    AND (rel.rel_type = 2 OR rel.rel_type = 3)
-    AND dept.lang_id = iPlang_id
+      AND rel.article_id = article.article_id
+      AND article_site.article_id = article.article_id
+      AND article_site.site_id = iPoriginId
+      AND article_site.is_enabled = 'Y'
+      AND article.status = 8
+      AND rel.enable = 'Y'
+      AND rel.article_id = iParticle_id
+      AND (rel.rel_type = 2 OR rel.rel_type = 3)
+      AND dept.lang_id = iPlang_id
     ORDER BY rel.priority ASC;
   RETURN;
   END;

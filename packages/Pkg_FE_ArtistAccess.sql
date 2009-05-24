@@ -128,7 +128,7 @@ IS
     iLsequenceid INT;
     icounter INT;
   BEGIN
-    EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_artist_int_table';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE ss_adm.temp_artist_int_table';
 
     iLstartpos := 1;
     iCounter := 1;
@@ -141,14 +141,14 @@ IS
         WHILE  iLendpos  >  0
         LOOP
         BEGIN
-          INSERT INTO temp_artist_int_table (COLUMN1, COLUMN2) VALUES (iCounter, CAST(substr(cLartistCsv,1,iLendpos-1) AS int));
+          INSERT INTO ss_adm.temp_artist_int_table (COLUMN1, COLUMN2) VALUES (iCounter, CAST(substr(cLartistCsv,1,iLendpos-1) AS int));
           cLartistCsv := SUBSTR(cLartistCsv, iLendpos+1);
           iLendpos := INSTR(cLartistCsv, ',');
           iCounter := iCounter + 1;
         END;
         END LOOP;
 
-      INSERT INTO temp_artist_int_table (COLUMN1, COLUMN2) VALUES (iCounter, CAST(cLartistCsv AS int));
+      INSERT INTO ss_adm.temp_artist_int_table (COLUMN1, COLUMN2) VALUES (iCounter, CAST(cLartistCsv AS int));
       END;
     END IF;
 
@@ -172,7 +172,7 @@ IS
       al2.suffix,
       ''
     FROM
-      temp_artist_int_table tp
+      ss_adm.temp_artist_int_table tp
       INNER JOIN ya_artist a ON tp.COLUMN2 = a.artist_id
       INNER JOIN ya_artist_lang al ON a.artist_id = al.artist_id
       LEFT JOIN ya_artist_lang al2 ON a.artist_id = al2.artist_id AND al2.lang_id = 1
@@ -250,7 +250,6 @@ IS
             INNER JOIN ya_artist_dept ad ON
               ad.artist_id = a.artist_id
               AND ad.dept_id = iPdept_id
-              AND us_enabled = 'Y'
             inner join ya_artist_lang al ON
               al.artist_id = a.artist_id
               AND al.lang_id=1
@@ -300,7 +299,6 @@ IS
             INNER JOIN ya_artist_dept ad ON
               ad.artist_id = a.artist_id
               AND ad.dept_id = iPdept_id
-              AND tw_enabled = 'Y'
             inner join ya_artist_lang al ON
               al.artist_id = a.artist_id
               AND al.lang_id=1
@@ -543,27 +541,17 @@ IS
       ya_artist_dept ad,
       ya_artist_lang al
     WHERE pa.artist_id = a.artist_id
-    AND pa.dept_id IN (iPdept_id, iLdept_id2)
-    AND a.gender = cPgender
-    AND ad.artist_id = a.artist_id
-    AND ad.dept_id = pa.dept_id
-    AND ((CASE cLsite_prefix
-      WHEN 'us' THEN ad.us_enabled
-      WHEN 'us_ws' THEN ad.us_ws_enabled
-      WHEN 'jp' THEN ad.jp_enabled
-      WHEN 'jp_ws' THEN ad.jp_ws_enabled
-      WHEN 'hk' THEN ad.hk_enabled
-      WHEN 'hk_ws' THEN ad.hk_ws_enabled
-      WHEN 'tw' THEN ad.tw_enabled
-      WHEN 'tw_ws' THEN ad.tw_ws_enabled
-      ELSE 'Y'  END)='Y')
-    AND al.artist_id = a.artist_id
-    AND al.lang_id = 1
-    AND
-      (
-        regexp_like((al.lastname_u || al.firstname_u || al.akaname_u), cLsearch_str)
-        OR regexp_like((al.lastname_u || al.firstname_u || al.akaname_u), cLsearch_str_lower)
-      )
+      AND pa.dept_id IN (iPdept_id, iLdept_id2)
+      AND a.gender = cPgender
+      AND ad.artist_id = a.artist_id
+      AND ad.dept_id = pa.dept_id
+      AND al.artist_id = a.artist_id
+      AND al.lang_id = 1
+      AND
+        (
+          regexp_like((al.lastname_u || al.firstname_u || al.akaname_u), cLsearch_str)
+          OR regexp_like((al.lastname_u || al.firstname_u || al.akaname_u), cLsearch_str_lower)
+        )
     ORDER BY al.lastname_u || al.firstname_u || al.akaname_u;
     RETURN;
   END GetPopularArtistByInitial;
@@ -594,17 +582,7 @@ IS
     SELECT dept_id
     FROM ya_artist_dept ad
     WHERE ad.artist_id = iPartist_id
-    AND ad.dept_id <> 0
-    AND ((CASE cLsite_prefix
-      WHEN 'us' THEN ad.us_enabled
-      WHEN 'us_ws' THEN ad.us_ws_enabled
-      WHEN 'jp' THEN ad.jp_enabled
-      WHEN 'jp_ws' THEN ad.jp_ws_enabled
-      WHEN 'hk' THEN ad.hk_enabled
-      WHEN 'hk_ws' THEN ad.hk_ws_enabled
-      WHEN 'tw' THEN ad.tw_enabled
-      WHEN 'tw_ws' THEN ad.tw_ws_enabled
-      ELSE 'Y'  END)='Y')
+      AND ad.dept_id <> 0
     ORDER BY ad.dept_id;
     RETURN;
   END GetDeptIDListByArtistID;
@@ -634,7 +612,6 @@ IS
             WHERE
               pd.sku = pa.sku
               AND pa.artist_id = iPartist_id
-              AND pd.us_enabled = 'Y'
               AND dept_id IN
                 (
                   83,7,106,163,164,97,160,161,848,162,
@@ -664,7 +641,6 @@ IS
             WHERE
               pd.sku = pa.sku
               AND pa.artist_id = iPartist_id
-              AND pd.tw_enabled = 'Y'
               AND dept_id IN
               (
                 83,7,106,163,164,97,160,161,848,162,
@@ -691,31 +667,19 @@ IS
     curPresult1 OUT curG
   )
   AS
-    cLsite_prefix VARCHAR2(10);
   BEGIN
   /* Gets the child departments info of any root department(music, videos etc) of a given artist */
-    cLsite_prefix :=
-      CASE iPsite_id
-        WHEN 1 THEN 'us'
-        WHEN 2 THEN 'us_ws'
-        WHEN 3 THEN 'jp'
-        WHEN 4 THEN 'jp_ws'
-        WHEN 5 THEN 'hk'
-        WHEN 6 THEN 'hk_ws'
-        WHEN 7 THEN 'tw'
-        WHEN 8 THEN 'tw_ws'
-        ELSE 'us'
-      END;
+
 
     OPEN curPresult1 FOR
     SELECT
       ad.artist_id,
       ad.dept_id,
-      ad.us_enabled,
-      ad.hk_enabled,
-      ad.jp_enabled,
-      ad.tw_enabled,
-      ad.us_ws_enabled,
+      'Y',
+      'Y',
+      'Y',
+      'Y',
+      'Y',
       NVL(dl.dept_name, dl2.dept_name)
     FROM
       ya_artist_dept ad
@@ -732,24 +696,7 @@ IS
           SELECT dept_id
           FROM ya_dept_rel
           WHERE parent_dept_id = iProot_dept_id
-        )
-      AND
-      (
-        (
-          CASE cLsite_prefix
-            WHEN 'us' THEN ad.us_enabled
-            WHEN 'us_ws' THEN ad.us_ws_enabled
-            WHEN 'jp' THEN ad.jp_enabled
-            WHEN 'jp_ws' THEN ad.jp_ws_enabled
-            WHEN 'hk' THEN ad.hk_enabled
-            WHEN 'hk_ws' THEN ad.hk_ws_enabled
-            WHEN 'tw' THEN ad.tw_enabled
-            WHEN 'tw_ws' THEN ad.tw_ws_enabled
-            ELSE 'Y'
-          END
-        ) = 'Y'
-      );
-
+        );
     RETURN;
   END GetArtistDeptInfo;
 
@@ -843,21 +790,7 @@ IS
     --@gender : M - Male, F - Female, G - Group, C -- Toys Character
   )
   AS
-    cLsitePrefix VARCHAR2(10);
   BEGIN
-
-    SELECT CASE iPsiteId
-      WHEN 1 THEN 'us'
-      WHEN 2 THEN 'us_ws'
-      WHEN 3 THEN 'jp'
-      WHEN 4 THEN 'jp_ws'
-      WHEN 5 THEN 'hk'
-      WHEN 6 THEN 'hk_ws'
-      WHEN 7 THEN 'tw'
-      WHEN 8 THEN 'tw_ws'
-      ELSE 'us'
-      END INTO cLsitePrefix FROM dual;
-
     IF (iPpublisherId > 0) THEN
       OPEN curPartist FOR
       SELECT a.artist_id, al.firstname_u AS e_firstname_u,  al.lastname_u AS e_lastname_u,
@@ -873,17 +806,7 @@ IS
               SELECT al.lang_id, al.artist_id, al.firstname_u, al.lastname_u, al.akaname_u,
                 al.suffix, al.prefix
               FROM ya_artist_lang al
-              INNER JOIN ya_artist_dept ad ON ad.artist_id=al.artist_id AND dept_id = iPdeptId AND
-                 ((CASE cLsitePrefix
-                 WHEN 'us' THEN ad.us_enabled
-                 WHEN 'us_ws' THEN ad.us_ws_enabled
-                 WHEN 'jp' THEN ad.jp_enabled
-                 WHEN 'jp_ws' THEN ad.jp_ws_enabled
-                 WHEN 'hk' THEN ad.hk_enabled
-                 WHEN 'hk_ws' THEN ad.hk_ws_enabled
-                 WHEN 'tw' THEN ad.tw_enabled
-                 WHEN 'tw_ws' THEN ad.tw_ws_enabled
-                 ELSE 'Y'  END)='Y')
+              INNER JOIN ya_artist_dept ad ON ad.artist_id=al.artist_id AND dept_id = iPdeptId
               WHERE
               al.lang_id IN (1, iPlangId)
            ) al ON al.artist_id = a.artist_id AND  al.lang_id=1 AND a.gender=cPgender
@@ -913,17 +836,7 @@ IS
               SELECT al.lang_id, al.artist_id, al.firstname_u, al.lastname_u, al.akaname_u,
                 al.suffix, al.prefix
               FROM ya_artist_lang al
-              INNER JOIN ya_artist_dept ad ON ad.artist_id=al.artist_id AND dept_id = iPdeptId AND
-                 ((CASE cLsitePrefix
-                 WHEN 'us' THEN ad.us_enabled
-                 WHEN 'us_ws' THEN ad.us_ws_enabled
-                 WHEN 'jp' THEN ad.jp_enabled
-                 WHEN 'jp_ws' THEN ad.jp_ws_enabled
-                 WHEN 'hk' THEN ad.hk_enabled
-                 WHEN 'hk_ws' THEN ad.hk_ws_enabled
-                 WHEN 'tw' THEN ad.tw_enabled
-                 WHEN 'tw_ws' THEN ad.tw_ws_enabled
-                 ELSE 'Y'  END)='Y')
+              INNER JOIN ya_artist_dept ad ON ad.artist_id=al.artist_id AND dept_id = iPdeptId
               WHERE
               al.lang_id IN (1, iPlangId)
            ) al ON al.artist_id = a.artist_id AND  al.lang_id=1 AND a.gender=cPgender

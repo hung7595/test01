@@ -85,7 +85,7 @@ AS
 BEGIN
   OPEN curPout FOR
   SELECT
-    cast(pl.sku as varchar2(10)), pl.prod_name_u as PRODUCT_NAME, SHIPMENT_UNIT, UNIT_PRICE, QNTY 
+    cast(pl.sku as varchar2(10)), pl.prod_name as PRODUCT_NAME, SHIPMENT_UNIT, UNIT_PRICE, QNTY 
   FROM 
     invoice i
   INNER JOIN invoice_line il on i.ID = il.invoice_id 

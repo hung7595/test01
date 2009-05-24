@@ -53,7 +53,11 @@ AS
     cPcoupon_code IN VARCHAR2
   );
 
-	/* proc_fe_CreateNewShopperCoupon */
+  PROCEDURE CreateHallmarkWelcomeCoupon (
+    cPshopper_id IN CHAR,
+    cPcoupon_code OUT VARCHAR2
+  );
+
   PROCEDURE CreateNewShopperCoupon_woCode (
     cPshopper_id IN CHAR,
     curPresult OUT refCur
@@ -328,6 +332,35 @@ AS
       (cPcoupon_code, cPshopper_id, sysdate);
     COMMIT;
   END AddShopperToCouponUserGroup;
+
+  PROCEDURE CreateHallmarkWelcomeCoupon (
+    cPshopper_id IN CHAR,
+    cPcoupon_code OUT VARCHAR2
+  )
+  AS
+		iLcount INT;
+  BEGIN
+		-- Generate Coupon
+		SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO cPcoupon_code FROM dual;
+
+		-- Make sure unique coupon code
+		SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = cPcoupon_code;
+		WHILE (iLcount = 1)
+			LOOP
+					SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO cPcoupon_code FROM dual;
+					SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = cPcoupon_code;
+			END LOOP;
+
+		-- Insert data into table
+
+		INSERT INTO ya_coupon
+			(shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value,expiration_date, all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, create_date)
+		VALUES
+			(cPshopper_id, cPcoupon_code, 'YS New Customer Coupon 060711', 'YesStyle New Customer US$5 Coupon', 5, add_months(SYSDATE, 1), 'O', 'N', 1, 10, 5, 'frontend', SYSDATE);
+
+		COMMIT;
+		RETURN;
+  END CreateHallmarkWelcomeCoupon;
 
   PROCEDURE CreateNewShopperCoupon_woCode (
     cPshopper_id IN CHAR,

@@ -52,7 +52,7 @@ IS
     pl.priority,
     NVL(pll.lang_id,1) AS lang_id, 
     pl.sku,
-    NVL(prl.prod_name_u,'') AS prod_name_u , 
+    NVL(prl.prod_name,'') AS prod_name_u , 
     pl.dept_id,       
     NVL(pll.description,'') AS description,       
     NVL(pl.updated_user,'')  AS updated_user,    
@@ -98,9 +98,9 @@ IS
       SELECT a.sku , a.lang_id
       FROM
       (
-        SELECT sku,lang_id,prod_name_u 
+        SELECT sku,lang_id,prod_name 
         FROM ya_prod_lang 
-        WHERE prod_name_u LIKE cPkeyword || '%'
+        WHERE prod_name LIKE cPkeyword || '%'
       ) a
       ORDER BY a.sku, a.lang_id DESC
     )
@@ -108,12 +108,12 @@ IS
     
     -- Get Final Result
     OPEN curPresult1 FOR
-    SELECT DISTINCT a.sku,a.lang_id,a.prod_name_u
+    SELECT DISTINCT a.sku,a.lang_id,a.prod_name
     FROM
     (
-      SELECT sku,lang_id,prod_name_u 
+      SELECT sku,lang_id,prod_name 
       FROM ya_prod_lang 
-      WHERE prod_name_u LIKE cPkeyword || '%'
+      WHERE prod_name LIKE cPkeyword || '%'
     ) a
     WHERE
     (

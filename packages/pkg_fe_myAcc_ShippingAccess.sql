@@ -115,7 +115,7 @@ BEGIN
   
   open curPout3 for 
   select sl.id, sl.shipment_id, p.sku, sl.qnty, ol.unit_price, sl.sts, sl.shipment_unit, pl.prod_name, p.account_id, pa.avlb, ol.parent_id,
-  p.release_date, pr.is_preorder, pr.preorder_start, pr.preorder_end, pe.prod_name_u as eng_prod_name
+  p.release_date, pr.is_preorder, pr.preorder_start, pr.preorder_end, pe.prod_name as eng_prod_name
   from shipment s 
   inner join shipment_line sl on s.id = sl.shipment_id 
   inner join order_line ol on sl.order_line_id = ol.id
@@ -207,7 +207,7 @@ BEGIN
 
   open curPout3 for 
   select sl.id, sl.shipment_id, p.sku, sl.qnty, ol.unit_price, sl.sts, sl.shipment_unit, pl.prod_name, p.account_id, pa.avlb, ol.parent_id,
-  p.release_date, pr.is_preorder, pr.preorder_start, pr.preorder_end, pe.prod_name_u as eng_prod_name
+  p.release_date, pr.is_preorder, pr.preorder_start, pr.preorder_end, pe.prod_name as eng_prod_name
   from 
   (
     select s.* from shipment s

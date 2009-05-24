@@ -3,7 +3,7 @@ AS
   TYPE refcur IS ref CURSOR;
    PROCEDURE GetShadowPromotionItems (
     cPshopper_id	IN	CHAR,
-	cPpayPal_uid	IN  CHAR,
+	  cPpayPal_uid	IN  CHAR,
     iPsite_id		IN	INT,
     curPgetPromotion	OUT	refcur
   );
@@ -69,7 +69,7 @@ IS
     WHERE
       b.shopper_id = cPshopper_id
       AND b.site_id = iPsite_id
-	  AND b.paypal_uid=cPpayPal_uid
+	    AND b.paypal_uid = cPpayPal_uid
       AND (c.sku IS NOT NULL OR p.sku IS NOT NULL)
       AND b.type = 0;
 
@@ -196,12 +196,12 @@ IS
         pgp.threshold,
         pgp.start_date,
         CASE
-          WHEN length(plgift.prod_name_u) = 0 THEN plgift_en.prod_name_u
-          ELSE nvl(plgift.prod_name_u, plgift_en.prod_name_u)
+          WHEN length(plgift.prod_name) = 0 THEN plgift_en.prod_name
+          ELSE nvl(plgift.prod_name, plgift_en.prod_name)
         END,
         CASE
-          WHEN length(plgrp.prod_name_u) = 0 THEN plgrp_en.prod_name_u
-          ELSE NVL(plgrp.prod_name_u, plgrp_en.prod_name_u)
+          WHEN length(plgrp.prod_name) = 0 THEN plgrp_en.prod_name
+          ELSE NVL(plgrp.prod_name, plgrp_en.prod_name)
         END
       FROM
         ya_product_group_promotion pgp,
@@ -228,12 +228,12 @@ IS
           pgp.threshold,
           pgp.start_date,
           CASE
-            WHEN length(plgift.prod_name_u) = 0 THEN plgift_en.prod_name_u
-            ELSE nvl(plgift.prod_name_u, plgift_en.prod_name_u)
+            WHEN length(plgift.prod_name) = 0 THEN plgift_en.prod_name
+            ELSE nvl(plgift.prod_name, plgift_en.prod_name)
           END,
           CASE
-            WHEN length(plgrp.prod_name_u) = 0 THEN plgrp_en.prod_name_u
-            ELSE nvl(plgrp.prod_name_u, plgrp_en.prod_name_u)
+            WHEN length(plgrp.prod_name) = 0 THEN plgrp_en.prod_name
+            ELSE nvl(plgrp.prod_name, plgrp_en.prod_name)
           END
         FROM
           ya_product_group_promotion pgp,

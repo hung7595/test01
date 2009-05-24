@@ -29,10 +29,14 @@ AS
   AS  
   BEGIN
     OPEN curPresult FOR
-      SELECT cl.country_id, c.country_name
+      SELECT cl.country_id, cl.country_name
       FROM ya_country_lang cl,
-          (select * from ya_country where country_id = iPcountry_id AND (us_canship = 'Y' OR tw_canship = 'Y')) c
-      WHERE c.country_id = cl.country_id
+          ya_country c,
+          ya_site_canship_country sc
+      WHERE c.country_id = iPcountry_id
+        AND c.country_id = cl.country_id
+        AND c.country_id = sc.country_id
+        AND sc.site_id in (1,7)
         AND cl.lang_id = iPlang_id;
   RETURN;
   END GetCountry;
@@ -47,14 +51,15 @@ AS
     IF iPsite_id = 99 THEN   /* All Site */
       BEGIN
         OPEN curPresult FOR
-          SELECT cl.country_id, c.country_name
+          SELECT cl.country_id, cl.country_name
           FROM ya_country_lang cl,
               ya_country c,
-              ya_country_lang cs
+              ya_country_lang cs,
+              ya_site_canship_country sc
           WHERE c.country_id = cl.country_id
             AND c.country_id = cs.country_id
-            AND cl.lang_id = iPlang_id
-            AND (c.us_canship = 'Y' OR c.tw_canship = 'Y')
+            AND c.country_id = sc.country_id
+            AND sc.site_id in (1,7)
             AND cs.lang_id = 1
             AND cl.lang_id = iPlang_id
           ORDER BY cs.country_name;
@@ -62,18 +67,17 @@ AS
     ELSE
       BEGIN
         OPEN curPresult FOR
-          SELECT cl.country_id, c.country_name
+          SELECT cl.country_id, cl.country_name
           FROM ya_country_lang cl,
               ya_country c,
-              ya_country_lang cs
+              ya_country_lang cs,
+              ya_site_canship_country sc
           WHERE c.country_id = cl.country_id
             AND c.country_id = cs.country_id
+            AND c.country_id = sc.country_id
+            AND sc.site_id = iPsite_id
             AND cs.lang_id = 1
             AND cl.lang_id = iPlang_id
-            AND CASE iPsite_id
-                  WHEN 1 THEN c.us_canship
-                  WHEN 7 THEN c.tw_canship
-                END = 'Y'
           ORDER BY cs.country_name;
       END;
     END IF;

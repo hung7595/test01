@@ -346,43 +346,18 @@ IS
   )
   AS
   BEGIN
-    IF iPsiteId = 1 THEN
-      BEGIN
-        SELECT COUNT(1)
-        INTO iPchildrenCount
-        FROM
-          ya_dept_rel dr,
-          ya_dept d
-        WHERE
-          dr.dept_id = d.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.us_enabled = 'Y';
-      END;
-    ELSIF iPsiteId = 7 Then
-      BEGIN
-        SELECT COUNT(1)
-        INTO iPchildrenCount
-        FROM
-          ya_dept_rel dr,
-          ya_dept d
-        WHERE
-          dr.dept_id = d.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.tw_enabled = 'Y';
-      END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 Then
-      BEGIN
-        SELECT COUNT(1)
-        INTO iPchildrenCount
-        FROM
-          ya_dept_rel dr,
-          ya_dept d
-        WHERE
-          dr.dept_id = d.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.ys_enabled = 'Y';
-      END;
-    END IF;
+    SELECT COUNT(1)
+    INTO iPchildrenCount
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = ds.dept_id
+      AND dr.parent_dept_id = iPdeptId
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y';
     RETURN;
   END IsLeaf;
 
@@ -405,7 +380,6 @@ IS
       AND dl.lang_id = iPlangId;
     RETURN;
   END GetDeptName;
-
 
   PROCEDURE GetCampaignDeptTree (
     iPdeptId IN INT,
@@ -439,274 +413,102 @@ IS
          SELECT null INTO iLgrantDeptId FROM dual;
     END;
 
-    IF iPsiteId = 1 THEN
-      BEGIN
-        /* Parent */
-        OPEN curPparent FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?',
-          CASE
-            WHEN d.dept_id = iLparentDeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE d.dept_id = dr.dept_id
-        AND d.dept_id = dl.dept_id
-        AND dr.parent_dept_id = iLgrantDeptId
-        AND dl.lang_id = iPlangId
-        AND d.us_enabled = 'Y'
-        AND EXISTS (
-                   SELECT 1
-                   FROM
-                     ya_prod_dept pd,
-                     ya_campaign c
-                   WHERE pd.sku = c.sku
-                   AND c.campaign_code = iPcampaignCode
-                   AND pd.dept_id = d.dept_id
-                   )
-        ORDER BY us_disp_seq;
+    /* Parent */
+    OPEN curPparent FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'brPrdDept.aspx?',
+      CASE
+        WHEN d.dept_id = iLparentDeptId THEN 'Y'
+        ELSE 'N'
+      END AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLgrantDeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND EXISTS (
+                SELECT 1
+                FROM
+                  ya_prod_dept pd,
+                  ya_campaign c
+                WHERE pd.sku = c.sku
+                AND c.campaign_code = iPcampaignCode
+                AND pd.dept_id = d.dept_id
+                )
+    ORDER BY dl.dept_name;
 
-        /* Sibling */
-        OPEN curPsibling FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?',
-          CASE
-            WHEN d.dept_id = iPdeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE d.dept_id = dr.dept_id
-        AND d.dept_id = dl.dept_id
-        AND dr.parent_dept_id = iLparentDeptId
-        AND dl.lang_id = iPlangId
-        AND d.us_enabled = 'Y'
-        AND EXISTS (
-                   SELECT 1
-                   FROM
-                     ya_prod_dept pd,
-                     ya_campaign c
-                   WHERE pd.sku = c.sku
-                   AND c.campaign_code = iPcampaignCode
-                   AND pd.dept_id = d.dept_id
-                   )
-        ORDER BY us_disp_seq;
+    /* Sibling */
+    OPEN curPsibling FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'brPrdDept.aspx?',
+      CASE
+        WHEN d.dept_id = iPdeptId THEN 'Y'
+        ELSE 'N'
+      END AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLparentDeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND EXISTS (
+                SELECT 1
+                FROM
+                  ya_prod_dept pd,
+                  ya_campaign c
+                WHERE pd.sku = c.sku
+                  AND c.campaign_code = iPcampaignCode
+                  AND pd.dept_id = d.dept_id
+                )
+    ORDER BY dl.dept_name;
 
-        /* Child */
-        OPEN curPchild FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?',
-          'N' AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE d.dept_id = dr.dept_id
-        AND d.dept_id = dl.dept_id
-        AND dr.parent_dept_id = iPdeptId
-        AND dl.lang_id = iPlangId
-        AND d.us_enabled = 'Y'
-        AND EXISTS (
-                   SELECT 1
-                   FROM
-                     ya_prod_dept pd,
-                     ya_campaign c
-                   WHERE pd.sku = c.sku
-                   AND c.campaign_code = iPcampaignCode
-                   AND pd.dept_id = d.dept_id
-                   )
-        ORDER BY us_disp_seq;
-      END;
-    ELSIF iPsiteId = 7 THEN
-      BEGIN
-        /* Parent */
-        OPEN curPparent FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?',
-          CASE
-            WHEN d.dept_id = iLparentDeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE d.dept_id = dr.dept_id
-        AND d.dept_id = dl.dept_id
-        AND dr.parent_dept_id = iLgrantDeptId
-        AND dl.lang_id = iPlangId
-        AND d.tw_enabled = 'Y'
-        AND EXISTS (
-                   SELECT 1
-                   FROM
-                     ya_prod_dept pd,
-                     ya_campaign c
-                   WHERE pd.sku = c.sku
-                   AND c.campaign_code = iPcampaignCode
-                   AND pd.dept_id = d.dept_id
-                   )
-        ORDER BY tw_disp_seq;
+    /* Child */
+    OPEN curPchild FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'brPrdDept.aspx?',
+      'N' AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iPdeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND EXISTS (
+                SELECT 1
+                FROM
+                  ya_prod_dept pd,
+                  ya_campaign c
+                WHERE pd.sku = c.sku
+                AND c.campaign_code = iPcampaignCode
+                AND pd.dept_id = d.dept_id
+                )
+    ORDER BY dl.dept_name;
 
-        /* Sibling */
-        OPEN curPsibling FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?',
-          CASE
-            WHEN d.dept_id = iPdeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE d.dept_id = dr.dept_id
-        AND d.dept_id = dl.dept_id
-        AND dr.parent_dept_id = iLparentDeptId
-        AND dl.lang_id = iPlangId
-        AND d.tw_enabled = 'Y'
-        AND EXISTS (
-                   SELECT 1
-                   FROM
-                     ya_prod_dept pd,
-                     ya_campaign c
-                   WHERE pd.sku = c.sku
-                   AND c.campaign_code = iPcampaignCode
-                   AND pd.dept_id = d.dept_id
-                   )
-        ORDER BY tw_disp_seq;
-
-        /* Child */
-        OPEN curPchild FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?',
-          'N' AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE d.dept_id = dr.dept_id
-        AND d.dept_id = dl.dept_id
-        AND dr.parent_dept_id = iPdeptId
-        AND dl.lang_id = iPlangId
-        AND d.tw_enabled = 'Y'
-        AND EXISTS (
-                   SELECT 1
-                   FROM
-                     ya_prod_dept pd,
-                     ya_campaign c
-                   WHERE pd.sku = c.sku
-                   AND c.campaign_code = iPcampaignCode
-                   AND pd.dept_id = d.dept_id
-                   )
-        ORDER BY tw_disp_seq;
-      END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-      BEGIN
-        /* Parent */
-        OPEN curPparent FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?',
-          CASE
-            WHEN d.dept_id = iLparentDeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE d.dept_id = dr.dept_id
-        AND d.dept_id = dl.dept_id
-        AND dr.parent_dept_id = iLgrantDeptId
-        AND dl.lang_id = iPlangId
-        AND d.ys_enabled = 'Y'
-        AND EXISTS (
-                   SELECT 1
-                   FROM
-                     ya_prod_dept pd,
-                     ya_campaign c
-                   WHERE pd.sku = c.sku
-                   AND c.campaign_code = iPcampaignCode
-                   AND pd.dept_id = d.dept_id
-                   )
-        ORDER BY hk_disp_seq;
-
-        /* Sibling */
-        OPEN curPsibling FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?',
-          CASE
-            WHEN d.dept_id = iPdeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE d.dept_id = dr.dept_id
-        AND d.dept_id = dl.dept_id
-        AND dr.parent_dept_id = iLparentDeptId
-        AND dl.lang_id = iPlangId
-        AND d.ys_enabled = 'Y'
-        AND EXISTS (
-                   SELECT 1
-                   FROM
-                     ya_prod_dept pd,
-                     ya_campaign c
-                   WHERE pd.sku = c.sku
-                   AND c.campaign_code = iPcampaignCode
-                   AND pd.dept_id = d.dept_id
-                   )
-        ORDER BY hk_disp_seq;
-
-        /* Child */
-        OPEN curPchild FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?',
-          'N' AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE d.dept_id = dr.dept_id
-        AND d.dept_id = dl.dept_id
-        AND dr.parent_dept_id = iPdeptId
-        AND dl.lang_id = iPlangId
-        AND d.ys_enabled = 'Y'
-        AND EXISTS (
-                   SELECT 1
-                   FROM
-                     ya_prod_dept pd,
-                     ya_campaign c
-                   WHERE pd.sku = c.sku
-                   AND c.campaign_code = iPcampaignCode
-                   AND pd.dept_id = d.dept_id
-                   )
-        ORDER BY hk_disp_seq;
-      END;
-    END IF;
     RETURN;
   END GetCampaignDeptTree;
 
@@ -741,202 +543,78 @@ IS
         iLgrantDeptId := -1;
     END;
 
-    IF iPsiteId = 1 THEN
-      BEGIN
-        /* Parent */
-        OPEN curPparent FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?',
-          CASE
-            WHEN d.dept_id = iLparentDeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLgrantDeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-        ORDER BY us_disp_seq;
+    /* Parent */
+    OPEN curPparent FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'brPrdDept.aspx?',
+      CASE
+        WHEN d.dept_id = iLparentDeptId THEN 'Y'
+        ELSE 'N'
+      END AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLgrantDeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+    ORDER BY dl.dept_name;
 
-        /* Sibling */
-        OPEN curPsibling FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?',
-          CASE
-            WHEN d.dept_id = iPdeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentDeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-        ORDER BY us_disp_seq;
+    /* Sibling */
+    OPEN curPsibling FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'brPrdDept.aspx?',
+      CASE
+        WHEN d.dept_id = iPdeptId THEN 'Y'
+        ELSE 'N'
+      END AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLparentDeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+    ORDER BY dl.dept_name;
 
-        /* Child */
-        OPEN curPchild FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?',
-          'N' AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-        ORDER BY us_disp_seq;
-      END;
-    ELSIF iPsiteId = 7 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            CASE
-              WHEN d.dept_id = iLparentDeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLgrantDeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-          ORDER BY tw_disp_seq;
+    /* Child */
+    OPEN curPchild FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'brPrdDept.aspx?',
+      'N' AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iPdeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+    ORDER BY dl.dept_name;
 
-          /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            CASE
-              WHEN d.dept_id = iPdeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLparentDeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-          ORDER BY tw_disp_seq;
-
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            'N' AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iPdeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-          ORDER BY tw_disp_seq;
-        END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            CASE
-              WHEN d.dept_id = iLparentDeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLgrantDeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-          ORDER BY hk_disp_seq;
-
-          /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            CASE
-              WHEN d.dept_id = iPdeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLparentDeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-          ORDER BY hk_disp_seq;
-
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            'N' AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iPdeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-          ORDER BY hk_disp_seq;
-        END;
-    END IF;
     RETURN;
   END GetDeptTree;
 
@@ -972,256 +650,95 @@ IS
         iLgrantDeptId := -1;
     END;
 
-    IF iPsiteId = 1 THEN
-      BEGIN
-        /* Parent */
-        OPEN curPparent FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?',
-          CASE
-            WHEN d.dept_id = iLparentDeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLgrantDeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND d.dept_id NOT IN
-            (
-              SELECT dept_id
-              FROM ya_dept_attr
-              WHERE attribute_id = 84
-            ) /* adult attribute */
-        ORDER BY us_disp_seq;
+    /* Parent */
+    OPEN curPparent FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'brPrdDept.aspx?',
+      CASE
+        WHEN d.dept_id = iLparentDeptId THEN 'Y'
+        ELSE 'N'
+      END AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLgrantDeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND d.dept_id NOT IN
+        (
+          SELECT dept_id
+          FROM ya_dept_attr
+          WHERE attribute_id = 84
+        ) /* adult attribute */
+    ORDER BY dl.dept_name;
 
-        /* Sibling */
-        OPEN curPsibling FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?',
-          CASE
-            WHEN d.dept_id = iPdeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentDeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND d.dept_id NOT IN
-            (
-              SELECT dept_id
-              FROM ya_dept_attr
-              WHERE attribute_id = 84
-            ) /* adult attribute */
-        ORDER BY us_disp_seq;
+    /* Sibling */
+    OPEN curPsibling FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'brPrdDept.aspx?',
+      CASE
+        WHEN d.dept_id = iPdeptId THEN 'Y'
+        ELSE 'N'
+      END AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLparentDeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND d.dept_id NOT IN
+        (
+          SELECT dept_id
+          FROM ya_dept_attr
+          WHERE attribute_id = 84
+        ) /* adult attribute */
+    ORDER BY dl.dept_name;
 
-        /* Child */
-        OPEN curPchild FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?',
-          'N' AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND d.dept_id NOT IN
-            (
-              SELECT dept_id
-              FROM ya_dept_attr
-              WHERE attribute_id = 84
-            ) /* adult attribute */
-        ORDER BY us_disp_seq;
-      END;
-    ELSIF iPsiteId = 7 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            CASE
-              WHEN d.dept_id = iLparentDeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLgrantDeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE attribute_id = 84
-              ) /* adult attribute */
-          ORDER BY tw_disp_seq;
-
-          /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            CASE
-              WHEN d.dept_id = iPdeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLparentDeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE attribute_id = 84
-              ) /* adult attribute */
-          ORDER BY tw_disp_seq;
-
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            'N' AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iPdeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE attribute_id = 84
-              ) /* adult attribute */
-          ORDER BY tw_disp_seq;
-        END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            CASE
-              WHEN d.dept_id = iLparentDeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLgrantDeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE attribute_id = 84
-              ) /* adult attribute */
-          ORDER BY hk_disp_seq;
-
-          /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            CASE
-              WHEN d.dept_id = iPdeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLparentDeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE attribute_id = 84
-              ) /* adult attribute */
-          ORDER BY hk_disp_seq;
-
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            'N' AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iPdeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE attribute_id = 84
-              ) /* adult attribute */
-          ORDER BY hk_disp_seq;
-        END;
-    END IF;
+    /* Child */
+    OPEN curPchild FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'brPrdDept.aspx?',
+      'N' AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iPdeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND d.dept_id NOT IN
+        (
+          SELECT dept_id
+          FROM ya_dept_attr
+          WHERE attribute_id = 84
+        ) /* adult attribute */
+    ORDER BY dl.dept_name;
     RETURN;
   END GetNonAdultDeptTree;
 
@@ -1258,301 +775,111 @@ IS
         iLgrantDeptId := -1;
     END;
 
-    IF iPsiteId = 1 THEN
-      BEGIN
-        /* Parent */
-        OPEN curPparent FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?',
-          CASE
-            WHEN d.dept_id = iLparentDeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLgrantDeptId
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_prod_attr pa,
-                ya_prod_dept pd
-              WHERE
-                pa.sku = pd.sku
-                AND pd.dept_id = d.dept_id
-                AND pa.attribute_id = iPattrId
-            )
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-        ORDER BY us_disp_seq;
-
-        /* Sibling */
-        OPEN curPsibling FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?',
-          CASE
-            WHEN d.dept_id = iPdeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentDeptId
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_prod_attr pa,
-                ya_prod_dept pd
-              WHERE
-                pa.sku = pd.sku
-                AND pd.dept_id = d.dept_id
-                AND pa.attribute_id = iPattrId
-            )
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-        ORDER BY us_disp_seq;
-
-        /* Child */
-        OPEN curPchild FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?',
-          'N' AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_prod_attr pa,
-                ya_prod_dept pd
-              WHERE
-                pa.sku = pd.sku
-                AND pd.dept_id = d.dept_id
-                AND pa.attribute_id = iPattrId
-            )
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-        ORDER BY us_disp_seq;
-      END;
-    ELSIF iPsiteId = 7 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            CASE
-              WHEN d.dept_id = iLparentDeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
+    /* Parent */
+    OPEN curPparent FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'brPrdDept.aspx?',
+      CASE
+        WHEN d.dept_id = iLparentDeptId THEN 'Y'
+        ELSE 'N'
+      END AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLgrantDeptId
+      AND EXISTS
+        (
+          SELECT 1
           FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
+            ya_prod_attr pa,
+            ya_prod_dept pd
           WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLgrantDeptId
-            AND EXISTS
-              (
-                SELECT 1
-                FROM
-                  ya_prod_attr pa,
-                  ya_prod_dept pd
-                WHERE
-                  pa.sku = pd.sku
-                  AND pd.dept_id = d.dept_id
-                  AND pa.attribute_id = iPattrId
-              )
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-          ORDER BY tw_disp_seq;
+            pa.sku = pd.sku
+            AND pd.dept_id = d.dept_id
+            AND pa.attribute_id = iPattrId
+        )
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+    ORDER BY dl.dept_name;
 
-          /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            CASE
-              WHEN d.dept_id = iPdeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
+    /* Sibling */
+    OPEN curPsibling FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'brPrdDept.aspx?',
+      CASE
+        WHEN d.dept_id = iPdeptId THEN 'Y'
+        ELSE 'N'
+      END AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLparentDeptId
+      AND EXISTS
+        (
+          SELECT 1
           FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
+            ya_prod_attr pa,
+            ya_prod_dept pd
           WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLparentDeptId
-            AND EXISTS
-              (
-                SELECT 1
-                FROM
-                  ya_prod_attr pa,
-                  ya_prod_dept pd
-                WHERE
-                  pa.sku = pd.sku
-                  AND pd.dept_id = d.dept_id
-                  AND pa.attribute_id = iPattrId
-              )
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-          ORDER BY tw_disp_seq;
+            pa.sku = pd.sku
+            AND pd.dept_id = d.dept_id
+            AND pa.attribute_id = iPattrId
+        )
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+    ORDER BY dl.dept_name;
 
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            'N' AS IsVein
+    /* Child */
+    OPEN curPchild FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'brPrdDept.aspx?',
+      'N' AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iPdeptId
+      AND EXISTS
+        (
+          SELECT 1
           FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
+            ya_prod_attr pa,
+            ya_prod_dept pd
           WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iPdeptId
-            AND EXISTS
-              (
-                SELECT 1
-                FROM
-                  ya_prod_attr pa,
-                  ya_prod_dept pd
-                WHERE
-                  pa.sku = pd.sku
-                  AND pd.dept_id = d.dept_id
-                  AND pa.attribute_id = iPattrId
-              )
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-          ORDER BY tw_disp_seq;
-        END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            CASE
-              WHEN d.dept_id = iLparentDeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLgrantDeptId
-            AND EXISTS
-              (
-                SELECT 1
-                FROM
-                  ya_prod_attr pa,
-                  ya_prod_dept pd
-                WHERE
-                  pa.sku = pd.sku
-                  AND pd.dept_id = d.dept_id
-                  AND pa.attribute_id = iPattrId
-              )
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-          ORDER BY hk_disp_seq;
+            pa.sku = pd.sku
+            AND pd.dept_id = d.dept_id
+            AND pa.attribute_id = iPattrId
+        )
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+    ORDER BY dl.dept_name;
 
-          /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            CASE
-              WHEN d.dept_id = iPdeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLparentDeptId
-            AND EXISTS
-              (
-                SELECT 1
-                FROM
-                  ya_prod_attr pa,
-                  ya_prod_dept pd
-                WHERE
-                  pa.sku = pd.sku
-                  AND pd.dept_id = d.dept_id
-                  AND pa.attribute_id = iPattrId
-              )
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-          ORDER BY hk_disp_seq;
-
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            'N' AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iPdeptId
-            AND EXISTS
-              (
-                SELECT 1
-                FROM
-                  ya_prod_attr pa,
-                  ya_prod_dept pd
-                WHERE
-                  pa.sku = pd.sku
-                  AND pd.dept_id = d.dept_id
-                  AND pa.attribute_id = iPattrId
-              )
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-          ORDER BY hk_disp_seq;
-        END;
-    END IF;
     RETURN;
   END GetDeptAttrTree;
 
@@ -1590,352 +917,128 @@ IS
         iLgrantDeptId := -1;
     END;
 
-    IF iPsiteId = 1 THEN
-      BEGIN
-        /* Parent */
-        OPEN curPparent FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?',
-          CASE
-            WHEN d.dept_id = iLparentDeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
+    /* Parent */
+    OPEN curPparent FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'brPrdDept.aspx?',
+      CASE
+        WHEN d.dept_id = iLparentDeptId THEN 'Y'
+        ELSE 'N'
+      END AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLgrantDeptId
+      AND EXISTS
+        (
+          SELECT 1
+          FROM
+            ya_prod_attr pa,
+            ya_prod_dept pd
+          WHERE
+            pa.sku = pd.sku
+            AND pd.dept_id = d.dept_id
+            AND pa.attribute_id = iPattrId
+        )
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND d.dept_id NOT IN
+        (
+          SELECT dept_id
+          FROM ya_dept_attr
+          WHERE attribute_id = 84
+        ) /* adult attribute */
+    ORDER BY dl.dept_name;
+
+    /* Sibling */
+    OPEN curPsibling FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'brPrdDept.aspx?',
+      CASE
+        WHEN d.dept_id = iPdeptId THEN 'Y'
+        ELSE 'N'
+      END AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLparentDeptId
+      AND EXISTS
+      (
+        SELECT 1
         FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
+          ya_prod_attr pa,
+          ya_prod_dept pd
         WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLgrantDeptId
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_prod_attr pa,
-                ya_prod_dept pd
-              WHERE
-                pa.sku = pd.sku
-                AND pd.dept_id = d.dept_id
-                AND pa.attribute_id = iPattrId
-            )
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND d.dept_id NOT IN
-            (
-              SELECT dept_id
-              FROM ya_dept_attr
-              WHERE attribute_id = 84
-            ) /* adult attribute */
-        ORDER BY us_disp_seq;
+          pa.sku = pd.sku
+          AND pd.dept_id = d.dept_id
+          AND pa.attribute_id = iPattrId
+      )
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND d.dept_id NOT IN
+        (
+          SELECT dept_id
+          FROM ya_dept_attr
+          WHERE attribute_id = 84
+        ) /* adult attribute */
+    ORDER BY dl.dept_name;
 
-        /* Sibling */
-        OPEN curPsibling FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?',
-          CASE
-            WHEN d.dept_id = iPdeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentDeptId
-          AND EXISTS
-          (
-            SELECT 1
-            FROM
-              ya_prod_attr pa,
-              ya_prod_dept pd
-            WHERE
-              pa.sku = pd.sku
-              AND pd.dept_id = d.dept_id
-              AND pa.attribute_id = iPattrId
-          )
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND d.dept_id NOT IN
-            (
-              SELECT dept_id
-              FROM ya_dept_attr
-              WHERE attribute_id = 84
-            ) /* adult attribute */
-        ORDER BY us_disp_seq;
+    /* Child */
+    OPEN curPchild FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'brPrdDept.aspx?', 'N' AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iPdeptId
+      AND EXISTS
+        (
+          SELECT 1
+          FROM
+            ya_prod_attr pa,
+            ya_prod_dept pd
+          WHERE
+            pa.sku = pd.sku
+            AND pd.dept_id = d.dept_id
+            AND pa.attribute_id = iPattrId
+        )
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND d.dept_id NOT IN
+        (
+          SELECT dept_id
+          FROM ya_dept_attr
+          WHERE attribute_id = 84
+        ) /* adult attribute */
+    ORDER BY dl.dept_name;
 
-        /* Child */
-        OPEN curPchild FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?', 'N' AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_prod_attr pa,
-                ya_prod_dept pd
-              WHERE
-                pa.sku = pd.sku
-                AND pd.dept_id = d.dept_id
-                AND pa.attribute_id = iPattrId
-            )
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND d.dept_id NOT IN
-            (
-              SELECT dept_id
-              FROM ya_dept_attr
-              WHERE attribute_id = 84
-            ) /* adult attribute */
-        ORDER BY us_disp_seq;
-      END;
-    ELSIF iPsiteId = 7 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            CASE
-              WHEN d.dept_id = iLparentDeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLgrantDeptId
-            AND EXISTS
-              (
-                SELECT 1
-                FROM
-                  ya_prod_attr pa,
-                  ya_prod_dept pd
-                WHERE
-                  pa.sku = pd.sku
-                  AND pd.dept_id = d.dept_id
-                  AND pa.attribute_id = iPattrId
-              )
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE attribute_id = 84
-              ) /* adult attribute */
-          ORDER BY tw_disp_seq;
-
-          /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            CASE
-              WHEN d.dept_id = iPdeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLparentDeptId
-            AND EXISTS
-              (
-                SELECT 1
-                FROM
-                  ya_prod_attr pa,
-                  ya_prod_dept pd
-                WHERE
-                  pa.sku = pd.sku
-                  AND pd.dept_id = d.dept_id
-                  AND pa.attribute_id = iPattrId
-              )
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE attribute_id = 84
-              ) /* adult attribute */
-          ORDER BY tw_disp_seq;
-
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?', 'N' AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iPdeptId
-            AND EXISTS
-              (
-                SELECT 1
-                FROM
-                  ya_prod_attr pa,
-                  ya_prod_dept pd
-                WHERE
-                  pa.sku = pd.sku
-                  AND pd.dept_id = d.dept_id
-                  AND pa.attribute_id = iPattrId
-              )
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE attribute_id = 84
-              ) /* adult attribute */
-          ORDER BY tw_disp_seq;
-        END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            CASE
-              WHEN d.dept_id = iLparentDeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLgrantDeptId
-            AND EXISTS
-              (
-                SELECT 1
-                FROM
-                  ya_prod_attr pa,
-                  ya_prod_dept pd
-                WHERE
-                  pa.sku = pd.sku
-                  AND pd.dept_id = d.dept_id
-                  AND pa.attribute_id = iPattrId
-              )
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE attribute_id = 84
-              ) /* adult attribute */
-          ORDER BY hk_disp_seq;
-
-          /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            CASE
-              WHEN d.dept_id = iPdeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLparentDeptId
-            AND EXISTS
-              (
-                SELECT 1
-                FROM
-                  ya_prod_attr pa,
-                  ya_prod_dept pd
-                WHERE
-                  pa.sku = pd.sku
-                  AND pd.dept_id = d.dept_id
-                  AND pa.attribute_id = iPattrId
-              )
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE attribute_id = 84
-              ) /* adult attribute */
-          ORDER BY hk_disp_seq;
-
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?', 'N' AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iPdeptId
-            AND EXISTS
-              (
-                SELECT 1
-                FROM
-                  ya_prod_attr pa,
-                  ya_prod_dept pd
-                WHERE
-                  pa.sku = pd.sku
-                  AND pd.dept_id = d.dept_id
-                  AND pa.attribute_id = iPattrId
-              )
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE attribute_id = 84
-              ) /* adult attribute */
-          ORDER BY hk_disp_seq;
-        END;
-    END IF;
     RETURN;
   END GetNonAdultDeptAttrTree;
 
@@ -1973,378 +1076,137 @@ IS
         iLgrantDeptId := -1;
     END;
 
-    IF iPsiteId = 1 THEN
-      BEGIN
-        /* Parent */
-        OPEN curPparent FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?',
-          CASE
-            WHEN d.dept_id = iLparentDeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLgrantDeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND d.dept_id NOT IN
-            (
-              SELECT dept_id
-              FROM ya_dept_attr
-              WHERE
-                cPhasAdult = 'N'
-                AND attribute_id = 84
-            ) /* adult attribute */
-          AND d.dept_id IN
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_prod_rel pr
-              WHERE
-                pr.sku = pd.sku
-                AND parent_sku = iPpid
-              GROUP BY pd.dept_id
-            )
-        ORDER BY us_disp_seq;
-
-        /* Sibling */
-        OPEN curPsibling FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?',
-          CASE
-            WHEN d.dept_id = iPdeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentDeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND d.dept_id NOT IN
-            (
-              SELECT dept_id
-              FROM ya_dept_attr
-              WHERE
-                cPhasAdult = 'N'
-                AND attribute_id = 84
-            ) /* adult attribute */
-          AND d.dept_id IN
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_prod_rel pr
-              WHERE
-                pr.sku = pd.sku
-                AND parent_sku = iPpid
-              GROUP BY pd.dept_id
-            )
-        ORDER BY us_disp_seq;
-
-        /* Child */
-        OPEN curPchild FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPrdDept.aspx?',
-          'N' AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND d.dept_id NOT IN
-            (
-              SELECT dept_id
-              FROM ya_dept_attr
-              WHERE
-                cPhasAdult = 'N'
-                AND attribute_id = 84
-            ) /* adult attribute */
-          AND d.dept_id IN
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_prod_rel pr
-              WHERE
-                pr.sku = pd.sku
-                AND parent_sku = iPpid
-              GROUP BY pd.dept_id
-            )
-        ORDER BY us_disp_seq;
-      END;
-    ELSIF iPsiteId = 7 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            CASE
-              WHEN d.dept_id = iLparentDeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
+    /* Parent */
+    OPEN curPparent FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'brPrdDept.aspx?',
+      CASE
+        WHEN d.dept_id = iLparentDeptId THEN 'Y'
+        ELSE 'N'
+      END AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLgrantDeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND d.dept_id NOT IN
+        (
+          SELECT dept_id
+          FROM ya_dept_attr
           WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLgrantDeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE
-                  cPhasAdult = 'N'
-                  AND attribute_id = 84
-              ) /* adult attribute */
-            AND d.dept_id IN
-              (
-                SELECT pd.dept_id
-                FROM
-                  ya_prod_dept pd,
-                  ya_prod_rel pr
-                WHERE
-                  pr.sku = pd.sku
-                  AND parent_sku = iPpid
-                GROUP BY pd.dept_id
-              )
-          ORDER BY tw_disp_seq;
+            cPhasAdult = 'N'
+            AND attribute_id = 84
+        ) /* adult attribute */
+      AND d.dept_id IN
+        (
+          SELECT pd.dept_id
+          FROM
+            ya_prod_dept pd,
+            ya_prod_rel pr
+          WHERE
+            pr.sku = pd.sku
+            AND parent_sku = iPpid
+          GROUP BY pd.dept_id
+        )
+    ORDER BY dl.dept_name;
 
-          /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            CASE
-              WHEN d.dept_id = iPdeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
+    /* Sibling */
+    OPEN curPsibling FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'brPrdDept.aspx?',
+      CASE
+        WHEN d.dept_id = iPdeptId THEN 'Y'
+        ELSE 'N'
+      END AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLparentDeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND d.dept_id NOT IN
+        (
+          SELECT dept_id
+          FROM ya_dept_attr
           WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLparentDeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE
-                  cPhasAdult = 'N'
-                  AND attribute_id = 84
-              ) /* adult attribute */
-            AND d.dept_id IN
-              (
-                SELECT pd.dept_id
-                FROM
-                  ya_prod_dept pd,
-                  ya_prod_rel pr
-                WHERE
-                  pr.sku = pd.sku
-                  AND parent_sku = iPpid
-                GROUP BY pd.dept_id
-              )
-          ORDER BY tw_disp_seq;
+            cPhasAdult = 'N'
+            AND attribute_id = 84
+        ) /* adult attribute */
+      AND d.dept_id IN
+        (
+          SELECT pd.dept_id
+          FROM
+            ya_prod_dept pd,
+            ya_prod_rel pr
+          WHERE
+            pr.sku = pd.sku
+            AND parent_sku = iPpid
+          GROUP BY pd.dept_id
+        )
+    ORDER BY dl.dept_name;
 
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            'N' AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
+    /* Child */
+    OPEN curPchild FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'brPrdDept.aspx?',
+      'N' AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iPdeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND d.dept_id NOT IN
+        (
+          SELECT dept_id
+          FROM ya_dept_attr
           WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iPdeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE
-                  cPhasAdult = 'N'
-                  AND attribute_id = 84
-              ) /* adult attribute */
-            AND d.dept_id IN
-              (
-                SELECT pd.dept_id
-                FROM
-                  ya_prod_dept pd,
-                  ya_prod_rel pr
-                WHERE
-                  pr.sku = pd.sku
-                  AND parent_sku = iPpid
-                GROUP BY pd.dept_id
-              )
-          ORDER BY tw_disp_seq;
-        END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            CASE
-              WHEN d.dept_id = iLparentDeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
+            cPhasAdult = 'N'
+            AND attribute_id = 84
+        ) /* adult attribute */
+      AND d.dept_id IN
+        (
+          SELECT pd.dept_id
           FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
+            ya_prod_dept pd,
+            ya_prod_rel pr
           WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLgrantDeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE
-                  cPhasAdult = 'N'
-                  AND attribute_id = 84
-              ) /* adult attribute */
-            AND d.dept_id IN
-              (
-                SELECT pd.dept_id
-                FROM
-                  ya_prod_dept pd,
-                  ya_prod_rel pr
-                WHERE
-                  pr.sku = pd.sku
-                  AND parent_sku = iPpid
-                GROUP BY pd.dept_id
-              )
-          ORDER BY hk_disp_seq;
+            pr.sku = pd.sku
+            AND parent_sku = iPpid
+          GROUP BY pd.dept_id
+        )
+    ORDER BY dl.dept_name;
 
-          /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            CASE
-              WHEN d.dept_id = iPdeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLparentDeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE
-                  cPhasAdult = 'N'
-                  AND attribute_id = 84
-              ) /* adult attribute */
-            AND d.dept_id IN
-              (
-                SELECT pd.dept_id
-                FROM
-                  ya_prod_dept pd,
-                  ya_prod_rel pr
-                WHERE
-                  pr.sku = pd.sku
-                  AND parent_sku = iPpid
-                GROUP BY pd.dept_id
-              )
-          ORDER BY hk_disp_seq;
-
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brPrdDept.aspx?',
-            'N' AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iPdeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE
-                  cPhasAdult = 'N'
-                  AND attribute_id = 84
-              ) /* adult attribute */
-            AND d.dept_id IN
-              (
-                SELECT pd.dept_id
-                FROM
-                  ya_prod_dept pd,
-                  ya_prod_rel pr
-                WHERE
-                  pr.sku = pd.sku
-                  AND parent_sku = iPpid
-                  AND pd.tw_enabled = 'Y'
-                GROUP BY pd.dept_id
-              )
-          ORDER BY hk_disp_seq;
-        END;
-    END IF;
     RETURN;
   END GetSkuDeptTree;
-
-
 
   PROCEDURE GetArtistDeptTree (
     iPdeptId IN INT,
@@ -2378,292 +1240,108 @@ IS
         iLgrantDeptId := -1;
     END;
 
-    IF iPsiteId = 1 THEN
-      BEGIN
-        /* Parent */
-        OPEN curPparent FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-         'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) || '&' || 'amp;',
-         CASE
-           WHEN d.dept_id  = iLparentDeptId THEN 'Y'
-           ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLgrantDeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND d.dept_id IN
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_product_artist pa
-              WHERE
-                pd.sku = pa.sku
-                AND pa.artist_id = iPartistId
-            )
-        ORDER BY us_disp_seq;
-
-        /* Sibling */
-        OPEN curPsibling FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) || '&' || 'amp;',
-          CASE
-            WHEN d.dept_id = iPdeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentDeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND d.dept_id IN
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_product_artist pa
-              WHERE
-                pd.sku = pa.sku
-                AND pa.artist_id = iPartistId
-            )
-        ORDER BY us_disp_seq;
-
-        /* Child */
-        OPEN curPchild FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) || '&' || 'amp;',
-          'N' AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND d.dept_id IN
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_product_artist pa
-              WHERE
-                pd.sku = pa.sku
-                AND pa.artist_id = iPartistId
-            )
-        ORDER BY us_disp_seq;
-      END;
-    ELSIF iPsiteId = 7 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) || '&' || 'amp;',
-            CASE
-              WHEN d.dept_id = iLparentDeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
+    /* Parent */
+    OPEN curPparent FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) || '&' || 'amp;',
+      CASE
+        WHEN d.dept_id  = iLparentDeptId THEN 'Y'
+        ELSE 'N'
+      END AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLgrantDeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND d.dept_id IN
+        (
+          SELECT pd.dept_id
           FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
+            ya_prod_dept pd,
+            ya_product_artist pa
           WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLgrantDeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND d.dept_id IN
-              (
-                SELECT pd.dept_id
-                FROM
-                  ya_prod_dept pd,
-                  ya_product_artist pa
-                WHERE
-                  pd.sku = pa.sku
-                  AND pa.artist_id = iPartistId
-              )
-          ORDER BY tw_disp_seq;
+            pd.sku = pa.sku
+            AND pa.artist_id = iPartistId
+        )
+    ORDER BY dl.dept_name;
 
-          /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) || '&' || 'amp;',
-            CASE
-              WHEN d.dept_id = iPdeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
+    /* Sibling */
+    OPEN curPsibling FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) || '&' || 'amp;',
+      CASE
+        WHEN d.dept_id = iPdeptId THEN 'Y'
+        ELSE 'N'
+      END AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLparentDeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND d.dept_id IN
+        (
+          SELECT pd.dept_id
           FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
+            ya_prod_dept pd,
+            ya_product_artist pa
           WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLparentDeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND d.dept_id IN
-              (
-                SELECT pd.dept_id
-                FROM
-                  ya_prod_dept pd,
-                  ya_product_artist pa
-                WHERE
-                  pd.sku = pa.sku
-                  AND pa.artist_id = iPartistId
-              )
-          ORDER BY tw_disp_seq;
+            pd.sku = pa.sku
+            AND pa.artist_id = iPartistId
+        )
+    ORDER BY dl.dept_name;
 
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) || '&' || 'amp;',
-            'N' AS IsVein
+    /* Child */
+    OPEN curPchild FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) || '&' || 'amp;',
+      'N' AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iPdeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND d.dept_id IN
+        (
+          SELECT pd.dept_id
           FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
+            ya_prod_dept pd,
+            ya_product_artist pa
           WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iPdeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND d.dept_id IN
-              (
-                SELECT pd.dept_id
-                FROM
-                  ya_prod_dept pd,
-                  ya_product_artist pa
-                WHERE
-                  pd.sku = pa.sku
-                  AND pa.artist_id = iPartistId
-              )
-          ORDER BY tw_disp_seq;
-        END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) || '&' || 'amp;',
-            CASE
-              WHEN d.dept_id = iLparentDeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLgrantDeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND d.dept_id IN
-              (
-                SELECT pd.dept_id
-                FROM
-                  ya_prod_dept pd,
-                  ya_product_artist pa
-                WHERE
-                  pd.sku = pa.sku
-                  AND pa.artist_id = iPartistId
-              )
-          ORDER BY hk_disp_seq;
+            pd.sku = pa.sku
+            AND pa.artist_id = iPartistId
+        )
+    ORDER BY dl.dept_name;
 
-          /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) || '&' || 'amp;',
-            CASE
-              WHEN d.dept_id = iPdeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLparentDeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND d.dept_id IN
-              (
-                SELECT pd.dept_id
-                FROM
-                  ya_prod_dept pd,
-                  ya_product_artist pa
-                WHERE
-                  pd.sku = pa.sku
-                  AND pa.artist_id = iPartistId
-              )
-          ORDER BY hk_disp_seq;
-
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) || '&' || 'amp;',
-            'N' AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iPdeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND d.dept_id IN
-              (
-                SELECT pd.dept_id
-                FROM
-                  ya_prod_dept pd,
-                  ya_product_artist pa
-                WHERE
-                  pd.sku = pa.sku
-                  AND pa.artist_id = iPartistId
-              )
-          ORDER BY hk_disp_seq;
-        END;
-    END IF;
     RETURN;
   END GetArtistDeptTree;
 
@@ -2700,341 +1378,111 @@ IS
         iLgrantDeptId := -1;
     END;
 
-    IF iPsiteId = 1 THEN
-      BEGIN
-        /* Parent */
-        OPEN curPparent FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) || '&' || 'amp;',
-          CASE
-            WHEN d.dept_id = iLparentDeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLgrantDeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND d.dept_id NOT IN (SELECT dept_id FROM ya_dept_attr WHERE attribute_id = 84) /* adult attribute */
-          AND d.dept_id IN
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_product_artist pa
-              WHERE
-                pd.sku = pa.sku
-                AND pa.artist_id = iPartistId
-            )
-        ORDER BY us_disp_seq;
-
-        /* Sibling */
-        OPEN curPsibling FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) || '&' || 'amp;',
-          CASE
-            WHEN d.dept_id = iPdeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentDeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND d.dept_id NOT IN
-            (
-              SELECT dept_id
-              FROM ya_dept_attr
-              WHERE attribute_id = 84
-            ) /* adult attribute */
-          AND d.dept_id IN
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_product_artist pa
-              WHERE
-                pd.sku = pa.sku
-                AND pa.artist_id = iPartistId
-            )
-        ORDER BY us_disp_seq;
-
-        /* Child */
-        OPEN curPchild FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) || '&' || 'amp;',
-          'N' AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND d.dept_id NOT IN
-            (
-              SELECT dept_id
-              FROM ya_dept_attr
-              WHERE attribute_id = 84
-            ) /* adult attribute */
-          AND d.dept_id IN
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_product_artist pa
-              WHERE
-                pd.sku = pa.sku
-                AND pa.artist_id = iPartistId
-            )
-        ORDER BY us_disp_seq;
-      END;
-    ELSIF iPsiteId = 7 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) ||'&' || 'amp;',
-            CASE
-              WHEN d.dept_id = iLparentDeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
+    /* Parent */
+    OPEN curPparent FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) || '&' || 'amp;',
+      CASE
+        WHEN d.dept_id = iLparentDeptId THEN 'Y'
+        ELSE 'N'
+      END AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLgrantDeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = iPsiteId
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND d.dept_id NOT IN (SELECT dept_id FROM ya_dept_attr WHERE attribute_id = 84) /* adult attribute */
+      AND d.dept_id IN
+        (
+          SELECT pd.dept_id
           FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
+            ya_prod_dept pd,
+            ya_product_artist pa
           WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLgrantDeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE attribute_id = 84
-              ) /* adult attribute */
-            AND d.dept_id IN
-              (
-                SELECT pd.dept_id
-                FROM
-                  ya_prod_dept pd,
-                  ya_product_artist pa
-                WHERE
-                  pd.sku = pa.sku
-                  AND pa.artist_id = iPartistId
-              )
-          ORDER BY tw_disp_seq;
+            pd.sku = pa.sku
+            AND pa.artist_id = iPartistId
+        )
+    ORDER BY dl.dept_name;
 
-          /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) || '&' || 'amp;',
-            CASE
-              WHEN d.dept_id = iPdeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
+    /* Sibling */
+    OPEN curPsibling FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) || '&' || 'amp;',
+      CASE
+        WHEN d.dept_id = iPdeptId THEN 'Y'
+        ELSE 'N'
+      END AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLparentDeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = iPsiteId
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND d.dept_id NOT IN (SELECT dept_id FROM ya_dept_attr WHERE attribute_id = 84) /* adult attribute */
+      AND d.dept_id IN
+        (
+          SELECT pd.dept_id
           FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
+            ya_prod_dept pd,
+            ya_product_artist pa
           WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLparentDeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE attribute_id = 84
-              ) /* adult attribute */
-            AND d.dept_id IN
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_product_artist pa
-              WHERE
-                pd.sku = pa.sku
-                AND pa.artist_id = iPartistId
-            )
-          ORDER BY tw_disp_seq;
+            pd.sku = pa.sku
+            AND pa.artist_id = iPartistId
+        )
+    ORDER BY dl.dept_name;
 
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) || '&' || 'amp;',
-            'N' AS IsVein
+    /* Child */
+    OPEN curPchild FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) || '&' || 'amp;',
+      'N' AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iPdeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = iPsiteId
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND d.dept_id NOT IN (SELECT dept_id FROM ya_dept_attr WHERE attribute_id = 84) /* adult attribute */
+      AND d.dept_id IN
+        (
+          SELECT pd.dept_id
           FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
+            ya_prod_dept pd,
+            ya_product_artist pa
           WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iPdeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE attribute_id = 84
-              ) /* adult attribute */
-            AND d.dept_id IN
-              (
-                SELECT pd.dept_id
-                FROM
-                  ya_prod_dept pd,
-                  ya_product_artist pa
-                WHERE
-                  pd.sku = pa.sku
-                  AND pa.artist_id = iPartistId
-              )
-          ORDER BY tw_disp_seq;
-        END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) ||'&' || 'amp;',
-            CASE
-              WHEN d.dept_id = iLparentDeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLgrantDeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE attribute_id = 84
-              ) /* adult attribute */
-            AND d.dept_id IN
-              (
-                SELECT pd.dept_id
-                FROM
-                  ya_prod_dept pd,
-                  ya_product_artist pa
-                WHERE
-                  pd.sku = pa.sku
-                  AND pa.artist_id = iPartistId
-              )
-          ORDER BY hk_disp_seq;
+            pd.sku = pa.sku
+            AND pa.artist_id = iPartistId
+        )
+    ORDER BY dl.dept_name;
 
-          /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) || '&' || 'amp;',
-            CASE
-              WHEN d.dept_id = iPdeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLparentDeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE attribute_id = 84
-              ) /* adult attribute */
-            AND d.dept_id IN
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_product_artist pa
-              WHERE
-                pd.sku = pa.sku
-                AND pa.artist_id = iPartistId
-            )
-          ORDER BY hk_disp_seq;
-
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || CAST(iPartistId AS varchar2(10)) || '&' || 'amp;',
-            'N' AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iPdeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND d.dept_id NOT IN
-              (
-                SELECT dept_id
-                FROM ya_dept_attr
-                WHERE attribute_id = 84
-              ) /* adult attribute */
-            AND d.dept_id IN
-              (
-                SELECT pd.dept_id
-                FROM
-                  ya_prod_dept pd,
-                  ya_product_artist pa
-                WHERE
-                  pd.sku = pa.sku
-                  AND pa.artist_id = iPartistId
-              )
-          ORDER BY hk_disp_seq;
-        END;
-    END IF;
     RETURN;
   END GetNonAdultArtistDeptTree;
 
@@ -3048,15 +1496,7 @@ IS
     curPtree OUT refCur
   )
   AS
-    cLsite_prefix VARCHAR2(10);
   BEGIN
-    cLsite_prefix :=
-      CASE iPsite_id
-        WHEN 1 THEN 'us'
-        WHEN 7 THEN 'tw'
-        ELSE 'us'
-      END;
-
     OPEN curPtree FOR
     SELECT
       DISTINCT pd.dept_id,
@@ -3072,6 +1512,10 @@ IS
       LEFT OUTER JOIN ya_dept_lang dl2 ON
         dl2.dept_id = dl.dept_id
         AND dl2.lang_id = 1
+      INNER JOIN ya_dept_site ds ON
+        pd.dept_id = ds.dept_id
+        AND ds.site_id = iPsite_id
+        AND ds.is_enabled = 'Y'
     WHERE
       sku IN
         (
@@ -3080,15 +1524,6 @@ IS
           WHERE parent_sku = iPsku
         )
       AND pd.dept_id <> 0
-      AND
-        (
-          (
-            CASE cLsite_prefix
-              WHEN 'us' THEN us_enabled
-              WHEN 'tw' THEN tw_enabled
-              ELSE 'Y'  END
-          )='Y'
-        )
     ORDER BY pd.dept_id;
     RETURN;
   END GetGroupDeptTree;
@@ -3127,310 +1562,114 @@ IS
         iLgrantDeptId := -1;
     END;
 
-    IF iPsiteId = 1 THEN
-      BEGIN
-        /* Parent */
-        OPEN curPparent FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPubDept.aspx?gid=' || CAST(iPpublisherGroupId AS varchar2 (10)) || '&' || 'amp;',
-          CASE
-            WHEN d.dept_id = iLparentDeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLgrantDeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND d.dept_id IN
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_product p,
-                ya_publisher_group_rel pg
-              WHERE
-                pd.sku = p.sku
-                AND p.publisher_id = pg.publisher_id
-                AND pg.publisher_group_id = iPpublisherGroupId
-            )
-        ORDER BY us_disp_seq;
+    /* Parent */
+    OPEN curPparent FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'brPubDept.aspx?gid=' || CAST(iPpublisherGroupId AS varchar2 (10)) || '&' || 'amp;',
+      CASE
+        WHEN d.dept_id = iLparentDeptId THEN 'Y'
+        ELSE 'N'
+      END AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLgrantDeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND d.dept_id IN
+        (
+          SELECT pd.dept_id
+          FROM
+            ya_prod_dept pd,
+            ya_product p,
+            ya_publisher_group_rel pg
+          WHERE
+            pd.sku = p.sku
+            AND p.publisher_id = pg.publisher_id
+            AND pg.publisher_group_id = iPpublisherGroupId
+        )
+    ORDER BY dl.dept_name;
 
-        /* Sibling */
-        OPEN curPsibling FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPubDept.aspx?gid=' || CAST(iPpublisherGroupId AS varchar2 (10)) || '&' || 'amp;',
-          CASE
-            WHEN d.dept_id = iPdeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentDeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND d.dept_id IN
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_product p,
-                ya_publisher_group_rel pg
-              WHERE
-                pd.sku = p.sku
-                AND p.publisher_id = pg.publisher_id
-                AND pg.publisher_group_id = iPpublisherGroupId
-            )
-        ORDER BY us_disp_seq;
+    /* Sibling */
+    OPEN curPsibling FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'brPubDept.aspx?gid=' || CAST(iPpublisherGroupId AS varchar2 (10)) || '&' || 'amp;',
+      CASE
+        WHEN d.dept_id = iPdeptId THEN 'Y'
+        ELSE 'N'
+      END AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLparentDeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND d.dept_id IN
+        (
+          SELECT pd.dept_id
+          FROM
+            ya_prod_dept pd,
+            ya_product p,
+            ya_publisher_group_rel pg
+          WHERE
+            pd.sku = p.sku
+            AND p.publisher_id = pg.publisher_id
+            AND pg.publisher_group_id = iPpublisherGroupId
+        )
+    ORDER BY dl.dept_name;
 
-        /* Child */
-        OPEN curPchild FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPubDept.aspx?gid=' || CAST(iPpublisherGroupId AS varchar2 (10)) || '&' || 'amp;',
-          'N' AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND d.dept_id IN
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_product p,
-                ya_publisher_group_rel pg
-              WHERE
-                pd.sku = p.sku
-                AND p.publisher_id = pg.publisher_id
-                AND pg.publisher_group_id = iPpublisherGroupId
-            )
-        ORDER BY us_disp_seq;
-      END;
-    ELSIF iPsiteId = 7 THEN
-      BEGIN
-        /* Parent */
-        OPEN curPparent FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPubDept.aspx?gid=' || CAST(iPpublisherGroupId AS varchar2 (10)) || '&' || 'amp;',
-          CASE
-            WHEN d.dept_id = iLparentDeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLgrantDeptId
-          AND dl.lang_id = iPlangId
-          AND d.tw_enabled = 'Y'
-          AND d.dept_id IN
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_product p,
-                ya_publisher_group_rel pg
-              WHERE
-                pd.sku = p.sku
-                AND p.publisher_id = pg.publisher_id
-                AND pg.publisher_group_id = iPpublisherGroupId
-            )
-        ORDER BY tw_disp_seq;
+    /* Child */
+    OPEN curPchild FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'brPubDept.aspx?gid=' || CAST(iPpublisherGroupId AS varchar2 (10)) || '&' || 'amp;',
+      'N' AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iPdeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND d.dept_id IN
+        (
+          SELECT pd.dept_id
+          FROM
+            ya_prod_dept pd,
+            ya_product p,
+            ya_publisher_group_rel pg
+          WHERE
+            pd.sku = p.sku
+            AND p.publisher_id = pg.publisher_id
+            AND pg.publisher_group_id = iPpublisherGroupId
+        )
+    ORDER BY dl.dept_name;
 
-        /* Sibling */
-        OPEN curPsibling FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPubDept.aspx?gid=' || CAST(iPpublisherGroupId AS varchar2 (10)) || '&' || 'amp;',
-          CASE
-            WHEN d.dept_id = iPdeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentDeptId
-          AND dl.lang_id = iPlangId
-          AND d.tw_enabled = 'Y'
-          AND d.dept_id IN
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_product p,
-                ya_publisher_group_rel pg
-              WHERE
-                pd.sku = p.sku
-                AND p.publisher_id = pg.publisher_id
-                AND pg.publisher_group_id = iPpublisherGroupId
-            )
-        ORDER BY tw_disp_seq;
-
-        /* Child */
-        OPEN curPchild FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPubDept.aspx?gid=' || CAST(iPpublisherGroupId AS varchar2 (10)) || '&' || 'amp;',
-          'N' AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND dl.lang_id = iPlangId
-          AND d.tw_enabled = 'Y'
-          AND d.dept_id IN
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_product p,
-                ya_publisher_group_rel pg
-              WHERE
-                pd.sku = p.sku
-                AND p.publisher_id = pg.publisher_id
-                AND pg.publisher_group_id = iPpublisherGroupId
-            )
-        ORDER BY tw_disp_seq;
-      END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-      BEGIN
-        /* Parent */
-        OPEN curPparent FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPubDept.aspx?gid=' || CAST(iPpublisherGroupId AS varchar2 (10)) || '&' || 'amp;',
-          CASE
-            WHEN d.dept_id = iLparentDeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLgrantDeptId
-          AND dl.lang_id = iPlangId
-          AND d.ys_enabled = 'Y'
-          AND d.dept_id IN
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_product p,
-                ya_publisher_group_rel pg
-              WHERE
-                pd.sku = p.sku
-                AND p.publisher_id = pg.publisher_id
-                AND pg.publisher_group_id = iPpublisherGroupId
-            )
-        ORDER BY hk_disp_seq;
-
-        /* Sibling */
-        OPEN curPsibling FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPubDept.aspx?gid=' || CAST(iPpublisherGroupId AS varchar2 (10)) || '&' || 'amp;',
-          CASE
-            WHEN d.dept_id = iPdeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentDeptId
-          AND dl.lang_id = iPlangId
-          AND d.ys_enabled = 'Y'
-          AND d.dept_id IN
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_product p,
-                ya_publisher_group_rel pg
-              WHERE
-                pd.sku = p.sku
-                AND p.publisher_id = pg.publisher_id
-                AND pg.publisher_group_id = iPpublisherGroupId
-            )
-        ORDER BY hk_disp_seq;
-
-        /* Child */
-        OPEN curPchild FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brPubDept.aspx?gid=' || CAST(iPpublisherGroupId AS varchar2 (10)) || '&' || 'amp;',
-          'N' AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND dl.lang_id = iPlangId
-          AND d.ys_enabled = 'Y'
-          AND d.dept_id IN
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_product p,
-                ya_publisher_group_rel pg
-              WHERE
-                pd.sku = p.sku
-                AND p.publisher_id = pg.publisher_id
-                AND pg.publisher_group_id = iPpublisherGroupId
-            )
-        ORDER BY hk_disp_seq;
-      END;
-    END IF;
     RETURN;
   END GetPublisherGroupDeptTree;
 
@@ -3447,112 +1686,44 @@ IS
   )
   AS
   BEGIN
-    IF iPsiteId = 1 THEN
-      BEGIN
-        OPEN curPtree FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'brprddept.aspx?',
-          'N' as IsVein
-        FROM
-         ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dl.dept_id
-          AND d.dept_id IN (iPchineseDept, iPjapaneseDept, iPkoreanDept, iPwesternDept)
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-        UNION
-        SELECT
-          0,
-          dl.dept_name,
-          'brprddept.aspx?',
-          'N' AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_bargain db,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = db.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND db.site_id = iPsiteId
-          AND db.enabled = 'Y';
-      END;
-    ELSIF iPsiteId = 7 THEN
-        BEGIN
-          OPEN curPtree FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brprddept.aspx?',
-            'N' AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dl.dept_id
-            AND d.dept_id IN (iPchineseDept, iPjapaneseDept, iPkoreanDept, iPwesternDept)
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-          UNION
-          SELECT
-            0,
-            dl.dept_name,
-            'brprddept.aspx?',
-            'N' as IsVein
-          FROM
-            ya_dept d,
-            ya_dept_bargain db,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = db.dept_id
-            AND d.dept_id = dl.dept_id
-            AND d.dept_id = iPdeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND db.site_id = iPsiteId
-            AND db.enabled = 'Y';
-        END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-        BEGIN
-          OPEN curPtree FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'brprddept.aspx?',
-            'N' AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dl.dept_id
-            AND d.dept_id IN (iPchineseDept, iPjapaneseDept, iPkoreanDept, iPwesternDept)
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-          UNION
-          SELECT
-            0,
-            dl.dept_name,
-            'brprddept.aspx?',
-            'N' as IsVein
-          FROM
-            ya_dept d,
-            ya_dept_bargain db,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = db.dept_id
-            AND d.dept_id = dl.dept_id
-            AND d.dept_id = iPdeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND db.site_id = iPsiteId
-            AND db.enabled = 'Y';
-        END;
-    END IF;
+    OPEN curPtree FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'brprddept.aspx?',
+      'N' as IsVein
+    FROM
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dl.dept_id
+      AND d.dept_id IN (iPchineseDept, iPjapaneseDept, iPkoreanDept, iPwesternDept)
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+    UNION
+    SELECT
+      0,
+      dl.dept_name,
+      'brprddept.aspx?',
+      'N' AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_bargain db,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = db.dept_id
+      AND d.dept_id = dl.dept_id
+      AND d.dept_id = iPdeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND db.site_id = ds.site_id
+      AND db.enabled = 'Y';
     RETURN;
   END GetProductLangDetptTree;
 
@@ -3579,202 +1750,77 @@ IS
         iLgrantDeptId := -1;
     END;
 
-    IF iPsiteId = 1 THEN
-      BEGIN
-        /* Parent */
-        OPEN curPparent FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          d.page_location,
-          'N'
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl,
-          ya_dept_upcoming du
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = du.dept_id
-          AND dr.parent_dept_id = iLgrantDeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-        ORDER BY us_disp_seq;
+    /* Parent */
+    OPEN curPparent FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      null,
+      'N'
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_upcoming du,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND d.dept_id = du.dept_id
+      AND dr.parent_dept_id = iLgrantDeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+    ORDER BY dl.dept_name;
 
-        /* Sibling */
-        OPEN curPsibling FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          d.page_location,
-          'N'
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl,
-          ya_dept_upcoming du
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = du.dept_id
-          AND dr.parent_dept_id = (SELECT dp.parent_dept_id FROM ya_dept_rel dp WHERE dp.dept_id = iPdeptId)
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-        ORDER BY us_disp_seq;
+    /* Sibling */
+    OPEN curPsibling FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      null,
+      'N'
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_upcoming du,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND d.dept_id = du.dept_id
+      AND dr.parent_dept_id = (SELECT dp.parent_dept_id FROM ya_dept_rel dp WHERE dp.dept_id = iPdeptId)
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+    ORDER BY dl.dept_name;
 
-        /* Child */
-        OPEN curPchild FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          d.page_location,
-          'N'
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl,
-          ya_dept_upcoming du
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = du.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-        ORDER BY us_disp_seq;
-      END;
-    ELSIF iPsiteId = 7 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            d.page_location,
-            'N'
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl,
-            ya_dept_upcoming du
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND d.dept_id = du.dept_id
-            AND dr.parent_dept_id = iLgrantDeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-          ORDER BY tw_disp_seq;
-
-        /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            d.page_location,
-            'N'
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl,
-            ya_dept_upcoming du
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND d.dept_id = du.dept_id
-            AND dr.parent_dept_id = (SELECT dp.parent_dept_id FROM ya_dept_rel dp WHERE dp.dept_id = iPdeptId)
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-          ORDER BY tw_disp_seq;
-
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            d.page_location,
-            'N'
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl,
-            ya_dept_upcoming du
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND d.dept_id = du.dept_id
-            AND dr.parent_dept_id = iPdeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-          ORDER BY tw_disp_seq;
-        END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            d.page_location,
-            'N'
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl,
-            ya_dept_upcoming du
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND d.dept_id = du.dept_id
-            AND dr.parent_dept_id = iLgrantDeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-          ORDER BY hk_disp_seq;
-
-        /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            d.page_location,
-            'N'
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl,
-            ya_dept_upcoming du
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND d.dept_id = du.dept_id
-            AND dr.parent_dept_id = (SELECT dp.parent_dept_id FROM ya_dept_rel dp WHERE dp.dept_id = iPdeptId)
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-          ORDER BY hk_disp_seq;
-
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            d.page_location,
-            'N'
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl,
-            ya_dept_upcoming du
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND d.dept_id = du.dept_id
-            AND dr.parent_dept_id = iPdeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-          ORDER BY hk_disp_seq;
-        END;
-    END IF;
+    /* Child */
+    OPEN curPchild FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      null,
+      'N'
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_upcoming du,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND d.dept_id = du.dept_id
+      AND dr.parent_dept_id = iPdeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+    ORDER BY dl.dept_name;
     RETURN;
   END GetUpcommingDeptTree;
 
@@ -3790,67 +1836,26 @@ IS
   )
   AS
   BEGIN
-    IF iPsiteId = 1 THEN
-      BEGIN
-        OPEN curPtree FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          d.page_location,
-          'N'
-        FROM
-          ya_dept d,
-          ya_dept_lang dl,
-          ya_dept_upcoming du
-        WHERE
-          d.dept_id = dl.dept_id
-          AND d.dept_id = du.dept_id
-          AND d.dept_id IN (iPchineseDept, iPjapaneseDept, iPkoreanDept, iPwesternDept)
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-        ORDER BY us_disp_seq;
-      END;
-    ELSIF iPsiteId = 7 THEN
-        BEGIN
-          OPEN curPtree FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            d.page_location,
-            'N'
-          FROM
-            ya_dept d,
-            ya_dept_lang dl,
-            ya_dept_upcoming du
-          WHERE
-            d.dept_id = dl.dept_id
-            AND d.dept_id = du.dept_id
-            AND d.dept_id IN (iPchineseDept, iPjapaneseDept, iPkoreanDept, iPwesternDept)
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-          ORDER BY tw_disp_seq;
-        END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-        BEGIN
-          OPEN curPtree FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            d.page_location,
-            'N'
-          FROM
-            ya_dept d,
-            ya_dept_lang dl,
-            ya_dept_upcoming du
-          WHERE
-            d.dept_id = dl.dept_id
-            AND d.dept_id = du.dept_id
-            AND d.dept_id IN (iPchineseDept, iPjapaneseDept, iPkoreanDept, iPwesternDept)
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-          ORDER BY hk_disp_seq;
-        END;
-    END IF;
+    OPEN curPtree FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      null,
+      'N'
+    FROM
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_upcoming du,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dl.dept_id
+      AND d.dept_id = du.dept_id
+      AND d.dept_id IN (iPchineseDept, iPjapaneseDept, iPkoreanDept, iPwesternDept)
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+    ORDER BY dl.dept_name;
     RETURN;
   END GetUpcommingLangDeptTree;
 
@@ -3882,261 +1887,100 @@ IS
         iLgrantDeptId := -1;
     END;
 
-    IF iPsiteId = 1 THEN
-      BEGIN
-        /* Parent */
-        OPEN curPparent FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          d.page_location,
-          'N'
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLgrantDeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND d.dept_id IN
-            (
-              SELECT dept_id
-              FROM ya_product_ranking
-              WHERE
-                site_id = iPsiteId
-                AND type_id = iLtypeId
-            )
-        ORDER BY us_disp_seq;
-
-        /* Sibling */
-        OPEN curPsibling FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          d.page_location,
-          'N'
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id =
-            (
-              SELECT dp.parent_dept_id
-              FROM ya_dept_rel dp
-              WHERE dp.dept_id = iPdeptId
-            )
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND d.dept_id IN
-            (
-              SELECT dept_id
-              FROM ya_product_ranking
-              WHERE
-                site_id = iPsiteId
-                AND type_id = iLtypeId
-            )
-        ORDER BY us_disp_seq;
-
-        /* Child */
-        OPEN curPchild FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          d.page_location,
-          'N'
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND d.dept_id IN
-            (
-              SELECT dept_id
-              FROM ya_product_ranking
-              WHERE
-                site_id = iPsiteId
-                AND type_id = iLtypeId
-            )
-        ORDER BY us_disp_seq;
-      END;
-    ELSIF iPsiteId = 7 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            d.page_location,
-            'N'
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
+    /* Parent */
+    OPEN curPparent FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      null,
+      'N'
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLgrantDeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND d.dept_id IN
+        (
+          SELECT dept_id
+          FROM ya_product_ranking
           WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLgrantDeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND d.dept_id IN
-              (
-                SELECT dept_id
-                FROM ya_product_ranking
-                WHERE
-                  site_id = iPsiteId
-                  AND type_id = iLtypeId
-              )
-          ORDER BY tw_disp_seq;
+            site_id = iPsiteId
+            AND type_id = iLtypeId
+        )
+    ORDER BY dl.dept_name;
 
-          /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            d.page_location,
-            'N'
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
+    /* Sibling */
+    OPEN curPsibling FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      null,
+      'N'
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id =
+        (
+          SELECT dp.parent_dept_id
+          FROM ya_dept_rel dp
+          WHERE dp.dept_id = iPdeptId
+        )
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND d.dept_id IN
+        (
+          SELECT dept_id
+          FROM ya_product_ranking
           WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = (SELECT dp.parent_dept_id FROM ya_dept_rel dp WHERE dp.dept_id = iPdeptId)
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND d.dept_id IN
-              (
-                SELECT dept_id
-                FROM ya_product_ranking
-                WHERE
-                  site_id = iPsiteId
-                  AND type_id = iLtypeId
-              )
-          ORDER BY tw_disp_seq;
+            site_id = iPsiteId
+            AND type_id = iLtypeId
+        )
+    ORDER BY dl.dept_name;
 
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            d.page_location,
-            'N'
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
+    /* Child */
+    OPEN curPchild FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      null,
+      'N'
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iPdeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND d.dept_id IN
+        (
+          SELECT dept_id
+          FROM ya_product_ranking
           WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iPdeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND d.dept_id IN
-              (
-                SELECT dept_id
-                FROM ya_product_ranking
-                WHERE
-                  site_id = iPsiteId
-                  AND type_id = iLtypeId
-              )
-          ORDER BY tw_disp_seq;
-        END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            d.page_location,
-            'N'
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLgrantDeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND d.dept_id IN
-              (
-                SELECT dept_id
-                FROM ya_product_ranking
-                WHERE
-                  site_id = iPsiteId
-                  AND type_id = iLtypeId
-              )
-          ORDER BY hk_disp_seq;
-
-          /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            d.page_location,
-            'N'
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = (SELECT dp.parent_dept_id FROM ya_dept_rel dp WHERE dp.dept_id = iPdeptId)
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND d.dept_id IN
-              (
-                SELECT dept_id
-                FROM ya_product_ranking
-                WHERE
-                  site_id = iPsiteId
-                  AND type_id = iLtypeId
-              )
-          ORDER BY hk_disp_seq;
-
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            d.page_location,
-            'N'
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iPdeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND d.dept_id IN
-              (
-                SELECT dept_id
-                FROM ya_product_ranking
-                WHERE
-                  site_id = iPsiteId
-                  AND type_id = iLtypeId
-              )
-          ORDER BY hk_disp_seq;
-        END;
-    END IF;
+            site_id = iPsiteId
+            AND type_id = iLtypeId
+        )
+    ORDER BY dl.dept_name;
     RETURN;
   END GetTopSellersDeptTree;
 
@@ -4172,235 +2016,88 @@ IS
         iLgrantDeptId := -1;
     END;
 
-    IF iPsite_Id = 1 THEN
-      BEGIN
-        /* Parent */
-        OPEN curPparent FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          d.page_location,
-          'N'
-        FROM
-          ya_dept d
-          INNER JOIN ya_dept_rel dr ON
-            d.dept_id = dr.dept_id
-          INNER JOIN ya_dept_lang dl ON
-            d.dept_id = dl.dept_id
-          INNER JOIN ya_dept_bargain db ON
-            d.dept_id = db.dept_id
-        WHERE
-          dr.parent_dept_id = iLgrantDeptId
-          AND dl.lang_id = iPlang_Id
-          AND d.us_enabled = 'Y'
-          AND db.site_id = iPsite_Id
-          AND db.enabled = 'Y'
-        ORDER BY us_disp_seq;
+    /* Parent */
+    OPEN curPparent FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      null,
+      'N'
+    FROM
+      ya_dept d
+      INNER JOIN ya_dept_rel dr ON
+        d.dept_id = dr.dept_id
+      INNER JOIN ya_dept_lang dl ON
+        d.dept_id = dl.dept_id
+      INNER JOIN ya_dept_bargain db ON
+        d.dept_id = db.dept_id
+      INNER JOIN ya_dept_site ds ON
+        d.dept_id = ds.dept_id
+        AND ds.site_id = iPsite_Id
+    WHERE
+      dr.parent_dept_id = iLgrantDeptId
+      AND dl.lang_id = iPlang_Id
+      AND ds.is_enabled = 'Y'
+      AND db.site_id = iPsite_Id
+      AND db.enabled = 'Y'
+    ORDER BY dl.dept_name;
 
-        /* Sibling */
-        OPEN curPsibling FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          d.page_location,
-          'N'
-        FROM
-          ya_dept d
-          INNER JOIN ya_dept_rel dr ON
-            d.dept_id = dr.dept_id
-          INNER JOIN ya_dept_lang dl ON
-            d.dept_id = dl.dept_id
-          INNER JOIN ya_dept_bargain db ON
-            d.dept_id = db.dept_id
-        WHERE
-          dr.parent_dept_id =
-            (
-              SELECT dp.parent_dept_id
-              FROM ya_dept_rel dp
-              WHERE dp.dept_id = iPdept_Id
-            )
-          AND dl.lang_id = iPlang_Id
-          AND d.us_enabled = 'Y'
-          AND db.site_id = iPsite_Id
-          AND db.enabled = 'Y'
-        ORDER BY us_disp_seq;
+    /* Sibling */
+    OPEN curPsibling FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      null,
+      'N'
+    FROM
+      ya_dept d
+      INNER JOIN ya_dept_rel dr ON
+        d.dept_id = dr.dept_id
+      INNER JOIN ya_dept_lang dl ON
+        d.dept_id = dl.dept_id
+      INNER JOIN ya_dept_bargain db ON
+        d.dept_id = db.dept_id
+      INNER JOIN ya_dept_site ds ON
+        d.dept_id = ds.dept_id
+        AND ds.site_id = iPsite_Id
+    WHERE
+      dr.parent_dept_id =
+        (
+          SELECT dp.parent_dept_id
+          FROM ya_dept_rel dp
+          WHERE dp.dept_id = iPdept_Id
+        )
+      AND dl.lang_id = iPlang_Id
+      AND ds.is_enabled = 'Y'
+      AND db.site_id = iPsite_Id
+      AND db.enabled = 'Y'
+    ORDER BY dl.dept_name;
 
-        /* Child */
-        OPEN curPchild FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          d.page_location,
-          'N'
-        FROM
-          ya_dept d
-          INNER JOIN ya_dept_rel dr ON
-            d.dept_id = dr.dept_id
-          INNER JOIN ya_dept_lang dl ON
-            d.dept_id = dl.dept_id
-          INNER JOIN ya_dept_bargain db ON
-            d.dept_id = db.dept_id
-        WHERE
-          dr.parent_dept_id = iPdept_Id
-          AND dl.lang_id = iPlang_Id
-          AND d.us_enabled = 'Y'
-          AND db.site_id = iPsite_Id
-          AND db.enabled = 'Y'
-        ORDER BY us_disp_seq;
-      END;
-    ELSIF iPsite_Id = 7 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            d.page_location,
-            'N'
-          FROM
-            ya_dept d
-            INNER JOIN ya_dept_rel dr ON
-              d.dept_id = dr.dept_id
-            INNER JOIN ya_dept_lang dl ON
-              d.dept_id = dl.dept_id
-            INNER JOIN ya_dept_bargain db ON
-              d.dept_id = db.dept_id
-          WHERE
-            dr.parent_dept_id = iLgrantDeptId
-            AND dl.lang_id = iPlang_Id
-            AND d.tw_enabled = 'Y'
-            AND db.site_id = iPsite_Id
-            AND db.enabled = 'Y'
-          ORDER BY tw_disp_seq;
-
-          /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            d.page_location,
-            'N'
-          FROM
-            ya_dept d
-            INNER JOIN ya_dept_rel dr ON
-              d.dept_id = dr.dept_id
-            INNER JOIN ya_dept_lang dl ON
-              d.dept_id = dl.dept_id
-            INNER JOIN ya_dept_bargain db ON
-              d.dept_id = db.dept_id
-          WHERE
-            dr.parent_dept_id =
-              (
-                SELECT dp.parent_dept_id
-                FROM ya_dept_rel dp
-                WHERE dp.dept_id = iPdept_Id
-              )
-            AND dl.lang_id = iPlang_Id
-            AND d.tw_enabled = 'Y'
-            AND db.site_id = iPsite_Id
-            AND db.enabled = 'Y'
-          ORDER BY tw_disp_seq;
-
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            d.page_location,
-            'N'
-          FROM
-            ya_dept d
-            INNER JOIN ya_dept_rel dr ON
-              d.dept_id = dr.dept_id
-            INNER JOIN ya_dept_lang dl ON
-              d.dept_id = dl.dept_id
-            INNER JOIN ya_dept_bargain db ON
-              d.dept_id = db.dept_id
-          WHERE
-            dr.parent_dept_id = iPdept_Id
-            AND dl.lang_id = iPlang_Id
-            AND d.tw_enabled = 'Y'
-            AND db.site_id = iPsite_Id
-            AND db.enabled = 'Y'
-          ORDER BY tw_disp_seq;
-        END;
-    ELSIF iPsite_Id = 10 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            d.page_location,
-            'N'
-          FROM
-            ya_dept d
-            INNER JOIN ya_dept_rel dr ON
-              d.dept_id = dr.dept_id
-            INNER JOIN ya_dept_lang dl ON
-              d.dept_id = dl.dept_id
-            INNER JOIN ya_dept_bargain db ON
-              d.dept_id = db.dept_id
-          WHERE
-            dr.parent_dept_id = iLgrantDeptId
-            AND dl.lang_id = iPlang_Id
-            AND d.ys_enabled = 'Y'
-            AND db.site_id = iPsite_Id
-            AND db.enabled = 'Y'
-          ORDER BY hk_disp_seq;
-
-          /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            d.page_location,
-            'N'
-          FROM
-            ya_dept d
-            INNER JOIN ya_dept_rel dr ON
-              d.dept_id = dr.dept_id
-            INNER JOIN ya_dept_lang dl ON
-              d.dept_id = dl.dept_id
-            INNER JOIN ya_dept_bargain db ON
-              d.dept_id = db.dept_id
-          WHERE
-            dr.parent_dept_id =
-              (
-                SELECT dp.parent_dept_id
-                FROM ya_dept_rel dp
-                WHERE dp.dept_id = iPdept_Id
-              )
-            AND dl.lang_id = iPlang_Id
-            AND d.ys_enabled = 'Y'
-            AND db.site_id = iPsite_Id
-            AND db.enabled = 'Y'
-          ORDER BY hk_disp_seq;
-
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            d.page_location,
-            'N'
-          FROM
-            ya_dept d
-            INNER JOIN ya_dept_rel dr ON
-              d.dept_id = dr.dept_id
-            INNER JOIN ya_dept_lang dl ON
-              d.dept_id = dl.dept_id
-            INNER JOIN ya_dept_bargain db ON
-              d.dept_id = db.dept_id
-          WHERE
-            dr.parent_dept_id = iPdept_Id
-            AND dl.lang_id = iPlang_Id
-            AND d.ys_enabled = 'Y'
-            AND db.site_id = iPsite_Id
-            AND db.enabled = 'Y'
-          ORDER BY hk_disp_seq;
-        END;
-    END IF;
+    /* Child */
+    OPEN curPchild FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      null,
+      'N'
+    FROM
+      ya_dept d
+      INNER JOIN ya_dept_rel dr ON
+        d.dept_id = dr.dept_id
+      INNER JOIN ya_dept_lang dl ON
+        d.dept_id = dl.dept_id
+      INNER JOIN ya_dept_bargain db ON
+        d.dept_id = db.dept_id
+      INNER JOIN ya_dept_site ds ON
+        d.dept_id = ds.dept_id
+        AND ds.site_id = iPsite_Id
+    WHERE
+      dr.parent_dept_id = iPdept_Id
+      AND dl.lang_id = iPlang_Id
+      AND ds.is_enabled = 'Y'
+      AND db.site_id = iPsite_Id
+      AND db.enabled = 'Y'
+    ORDER BY dl.dept_name;
     RETURN;
   END GetBargainDeptTree;
 
@@ -4417,77 +2114,28 @@ IS
   )
   AS
   BEGIN
-    IF iPsiteId = 1 THEN
-      BEGIN
-        OPEN curPtree FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          d.page_location,
-          'N'
-        FROM
-          ya_dept d,
-          ya_dept_lang dl,
-          ya_dept_bargain db
-        WHERE
-          d.dept_id = dl.dept_id
-          AND d.dept_id = db.dept_id
-          AND d.dept_id IN (iPchineseDept, iPjapaneseDept, iPkoreanDept, iPwesternDept)
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND db.site_id = iPsiteId
-          AND db.enabled = 'Y'
-        ORDER BY us_disp_seq;
-      END;
-    ELSIF iPsiteId = 7 THEN
-      BEGIN
-        OPEN curPtree FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          d.page_location,
-          'N'
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl,
-          ya_dept_bargain db
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = db.dept_id
-          AND d.dept_id IN (iPchineseDept, iPjapaneseDept, iPkoreanDept, iPwesternDept)
-          AND dl.lang_id = iPlangId
-          AND d.tw_enabled = 'Y'
-          AND db.site_id = iPsiteId
-          AND db.enabled = 'Y'
-        ORDER BY tw_disp_seq;
-      END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-      BEGIN
-        OPEN curPtree FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          d.page_location,
-          'N'
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl,
-          ya_dept_bargain db
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = db.dept_id
-          AND d.dept_id IN (iPchineseDept, iPjapaneseDept, iPkoreanDept, iPwesternDept)
-          AND dl.lang_id = iPlangId
-          AND d.ys_enabled = 'Y'
-          AND db.site_id = iPsiteId
-          AND db.enabled = 'Y'
-        ORDER BY hk_disp_seq;
-      END;
-    END IF;
+    OPEN curPtree FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      null,
+      'N'
+    FROM
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_bargain db,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dl.dept_id
+      AND d.dept_id = db.dept_id
+      AND d.dept_id IN (iPchineseDept, iPjapaneseDept, iPkoreanDept, iPwesternDept)
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND db.site_id = iPsiteId
+      AND db.enabled = 'Y'
+    ORDER BY dl.dept_name;
     RETURN;
   END GetBargainLangDeptTree;
 
@@ -4529,329 +2177,129 @@ IS
         iLparentId := -1;
     END;
 
-    IF iPsiteId = 1 THEN
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          dl.lang_id,
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iLparentId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY
-          d.us_disp_seq,
-          d.dept_id, dl.lang_id;
+    OPEN curPresult1 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      dl.lang_id,
+      dl.dept_name,
+      ''
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND d.dept_id = iLparentId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId          
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY
+      dl.dept_name,
+      d.dept_id, dl.lang_id;
 
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          dl.lang_id,
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND exists
-            (
-              SELECT 1
-              FROM
-                ya_prod_dept pd,
-                ya_product_artist pa
-              WHERE
-                pd.sku = pa.sku
-                AND pa.artist_id = iPartistId
-                AND pd.dept_id = d.dept_id
-                AND ROWNUM = 1
-            )
-          AND dr.parent_dept_id = iLparentId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
+    OPEN curPresult2 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      dl.lang_id,
+      dl.dept_name,
+      ''
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND exists
+        (
+          SELECT 1
+          FROM
+            ya_prod_dept pd,
+            ya_product_artist pa
+          WHERE
+            pd.sku = pa.sku
+            AND pa.artist_id = iPartistId
+            AND pd.dept_id = d.dept_id
+            AND ROWNUM = 1
+        )
+      AND dr.parent_dept_id = iLparentId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId          
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY
+      dl.dept_name,
+      d.dept_id, dl.lang_id;
 
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          dl.lang_id,
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY
-          d.us_disp_seq,
-          d.dept_id, dl.lang_id;
+    OPEN curPresult3 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      dl.lang_id,
+      dl.dept_name,
+      ''
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND d.dept_id = iPdeptId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId          
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY
+      dl.dept_name,
+      d.dept_id, dl.lang_id;
 
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          dl.lang_id,
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND exists
-            (
-              SELECT 1
-              FROM
-                ya_prod_dept pd,
-                ya_product_artist pa
-              WHERE
-                pd.sku = pa.sku
-                AND pa.artist_id = iPartistId
-                AND pd.dept_id = d.dept_id
-                AND ROWNUM = 1
-            )
-          AND dr.parent_dept_id = iPdeptId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
-      END;
-    ELSIF iPsiteId = 7 Then
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          dl.lang_id,
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iLparentId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          dl.lang_id,
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND exists
-          (
-            SELECT 1
-            FROM
-              ya_prod_dept pd,
-              ya_product_artist pa
-            WHERE
-              pd.sku = pa.sku
-              AND pa.artist_id = iPartistId
-              AND pd.dept_id = d.dept_id
-              AND ROWNUM = 1
-          )
-          AND dr.parent_dept_id = iLparentId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          dl.lang_id,
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          dl.lang_id,
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND exists
-            (
-              SELECT 1
-              FROM
-                ya_prod_dept pd,
-                ya_product_artist pa
-              WHERE
-                pd.sku = pa.sku
-                AND pa.artist_id = iPartistId
-                AND pd.dept_id = d.dept_id
-                AND ROWNUM = 1
-            )
-          AND dr.parent_dept_id = iPdeptId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-      END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 Then
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          dl.lang_id,
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iLparentId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          dl.lang_id,
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND exists
-          (
-            SELECT 1
-            FROM
-              ya_prod_dept pd,
-              ya_product_artist pa
-            WHERE
-              pd.sku = pa.sku
-              AND pa.artist_id = iPartistId
-              AND pd.dept_id = d.dept_id
-              AND ROWNUM = 1
-          )
-          AND dr.parent_dept_id = iLparentId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          dl.lang_id,
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          dl.lang_id,
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND exists
-            (
-              SELECT 1
-              FROM
-                ya_prod_dept pd,
-                ya_product_artist pa
-              WHERE
-                pd.sku = pa.sku
-                AND pa.artist_id = iPartistId
-                AND pd.dept_id = d.dept_id
-                AND ROWNUM = 1
-            )
-          AND dr.parent_dept_id = iPdeptId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-      END;
-    END IF;
+    OPEN curPresult4 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      dl.lang_id,
+      dl.dept_name,
+      ''
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND exists
+        (
+          SELECT 1
+          FROM
+            ya_prod_dept pd,
+            ya_product_artist pa
+          WHERE
+            pd.sku = pa.sku
+            AND pa.artist_id = iPartistId
+            AND pd.dept_id = d.dept_id
+            AND ROWNUM = 1
+        )
+      AND dr.parent_dept_id = iPdeptId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId          
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY
+      dl.dept_name,
+      d.dept_id, dl.lang_id;
     RETURN;
   END GetArtistDeptTree2;
 
@@ -4878,333 +2326,125 @@ IS
         iLparentId := -1;
     END;
 
-    IF iPsiteId = 1 THEN
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          dl.lang_id,
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iLparentId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
+    OPEN curPresult1 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      dl.lang_id,
+      dl.dept_name,
+      null
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND d.dept_id = iLparentId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
 
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          CAST(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_prod_rel pr,
-                ya_product p,
-                ya_prod_dept pd
-              WHERE
-                p.sku=pr.sku
-                AND pd.sku = p.sku
-                AND pd.dept_id = dr.dept_id
-                AND pr.parent_sku=iPgroup_sku
-                AND ROWNUM = 1
-            )
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
+    OPEN curPresult2 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      CAST(dl.lang_id as int),
+      dl.dept_name,
+      null
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLparentId
+      AND EXISTS
+        (
+          SELECT 1
+          FROM
+            ya_prod_rel pr,
+            ya_product p,
+            ya_prod_dept pd
+          WHERE
+            p.sku=pr.sku
+            AND pd.sku = p.sku
+            AND pd.dept_id = dr.dept_id
+            AND pr.parent_sku=iPgroup_sku
+            AND ROWNUM = 1
+        )
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
 
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          CAST(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
+    OPEN curPresult3 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      CAST(dl.lang_id as int),
+      dl.dept_name,
+      null
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND d.dept_id = iPdeptId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
 
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          CAST(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_prod_rel pr,
-                ya_product p,
-                ya_prod_dept pd
-              WHERE
-                p.sku=pr.sku
-                AND pd.sku = p.sku
-                AND pd.dept_id = dr.dept_id
-                AND pr.parent_sku=iPgroup_sku
-                AND ROWNUM = 1
-            )
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
-      END;
-    ELSIF iPsiteId = 7 THEN
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          CAST(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iLparentId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          CAST(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_prod_rel pr,
-                ya_product p,
-                ya_prod_dept pd
-              WHERE
-                p.sku=pr.sku
-                AND pd.sku = p.sku
-                AND pd.dept_id = dr.dept_id
-                AND pr.parent_sku=iPgroup_sku
-            )
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          CAST(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          CAST(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_prod_rel pr,
-                ya_product p,
-                ya_prod_dept pd
-              WHERE
-                p.sku=pr.sku
-                AND pd.sku = p.sku
-                AND pd.dept_id = dr.dept_id
-                AND pr.parent_sku=iPgroup_sku
-            )
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-      END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          CAST(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iLparentId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          CAST(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_prod_rel pr,
-                ya_product p,
-                ya_prod_dept pd
-              WHERE
-                p.sku=pr.sku
-                AND pd.sku = p.sku
-                AND pd.dept_id = dr.dept_id
-                AND pr.parent_sku=iPgroup_sku
-            )
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          CAST(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          CAST(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_prod_rel pr,
-                ya_product p,
-                ya_prod_dept pd
-              WHERE
-                p.sku=pr.sku
-                AND pd.sku = p.sku
-                AND pd.dept_id = dr.dept_id
-                AND pr.parent_sku=iPgroup_sku
-            )
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-      END;
-    END IF;
+    OPEN curPresult4 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      CAST(dl.lang_id as int),
+      dl.dept_name,
+      null
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iPdeptId
+      AND EXISTS
+        (
+          SELECT 1
+          FROM
+            ya_prod_rel pr,
+            ya_product p,
+            ya_prod_dept pd
+          WHERE
+            p.sku=pr.sku
+            AND pd.sku = p.sku
+            AND pd.dept_id = dr.dept_id
+            AND pr.parent_sku=iPgroup_sku
+            AND ROWNUM = 1
+        )
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
     RETURN;
   END GetBrowseEngBookSeriesDeptTree;
 
@@ -5231,325 +2471,121 @@ IS
         iLparentId := -1;
     END;
 
-    IF iPsiteId = 1 THEN
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          CAST(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iLparentId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
+    OPEN curPresult1 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      CAST(dl.lang_id as int),
+      dl.dept_name,
+      null
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND d.dept_id = iLparentId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
 
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          CAST(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND EXISTS
+    OPEN curPresult2 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      CAST(dl.lang_id as int),
+      dl.dept_name,
+      null
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLparentId
+      AND EXISTS
+        (
+          SELECT 1
+          FROM ya_prod_dept d1
+          WHERE d1.sku IN
             (
-              SELECT 1
-              FROM ya_prod_dept d1
-              WHERE d1.sku IN
-                (
-                  SELECT c.sku
-                  FROM ya_campaign c
-                  WHERE c.campaign_code = iPcc
-                )
-              AND d1.dept_id = d.dept_id
-           )
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          CAST(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          CAST(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND EXISTS
-            (
-              SELECT 1
-              FROM ya_prod_dept d1
-              WHERE d1.sku in
-                (
-                  SELECT c.sku
-                  FROM ya_campaign c
-                  WHERE c.campaign_code = iPcc
-                )
-              and d1.dept_id = d.dept_id
+              SELECT c.sku
+              FROM ya_campaign c
+              WHERE c.campaign_code = iPcc
             )
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
-      END;
-    ELSIF iPsiteId = 7 Then
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          CAST(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iLparentId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
+          AND d1.dept_id = d.dept_id
+        )
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
+    
+    OPEN curPresult3 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      CAST(dl.lang_id as int),
+      dl.dept_name,
+      null
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND d.dept_id = iPdeptId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
 
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          CAST(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND EXISTS
+    OPEN curPresult4 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      CAST(dl.lang_id as int),
+      dl.dept_name,
+      null
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iPdeptId
+      AND EXISTS
+        (
+          SELECT 1
+          FROM ya_prod_dept d1
+          WHERE d1.sku in
             (
-              SELECT 1
-              FROM ya_prod_dept d1
-              WHERE d1.sku in
-                (
-                  SELECT c.sku
-                  FROM ya_campaign c
-                  WHERE c.campaign_code = iPcc
-                )
-              and d1.dept_id = d.dept_id
+              SELECT c.sku
+              FROM ya_campaign c
+              WHERE c.campaign_code = iPcc
             )
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          CAST(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          CAST(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND EXISTS
-            (
-              SELECT 1
-              FROM ya_prod_dept d1
-              WHERE d1.sku in
-                (
-                  SELECT c.sku
-                  FROM ya_campaign c
-                  WHERE c.campaign_code = iPcc
-                )
-              and d1.dept_id = d.dept_id
-            )
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-      END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 Then
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          CAST(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iLparentId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          CAST(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND EXISTS
-            (
-              SELECT 1
-              FROM ya_prod_dept d1
-              WHERE d1.sku in
-                (
-                  SELECT c.sku
-                  FROM ya_campaign c
-                  WHERE c.campaign_code = iPcc
-                )
-              and d1.dept_id = d.dept_id
-            )
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          CAST(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          CAST(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND EXISTS
-            (
-              SELECT 1
-              FROM ya_prod_dept d1
-              WHERE d1.sku in
-                (
-                  SELECT c.sku
-                  FROM ya_campaign c
-                  WHERE c.campaign_code = iPcc
-                )
-              and d1.dept_id = d.dept_id
-            )
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-      END;
-    END IF;
+          and d1.dept_id = d.dept_id
+        )
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
     RETURN;
   END GetBrowseCampaignTree;
 
@@ -5574,345 +2610,127 @@ IS
         iLparentId := -1;
     END;
 
-    IF iPsiteId = 1 THEN
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          NVL(dr.parent_dept_id, -1),
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id (+) = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iLparentId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
+    OPEN curPresult1 FOR
+    SELECT
+      d.dept_id,
+      NVL(dr.parent_dept_id, -1),
+      0,
+      cast(dl.lang_id as int),
+      dl.dept_name,
+      null,
+      0
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id (+) = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND d.dept_id = iLparentId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
 
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int) lang_id,
-          dl.dept_name,
-          d.page_location,
-          d.us_disp_seq
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl,
-          ya_prod_dept pd,
-          ya_product p3
-        WHERE 1 = 1
-          AND d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND d.dept_id = pd.dept_id
-          AND pd.sku = p3.sku
-          AND p3.is_parent = 'Y'
-        GROUP BY
-        d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int) ,
-          dl.dept_name,
-          d.page_location,
-          d.us_disp_seq
-       ORDER BY d.us_disp_seq, d.dept_id, lang_id;
+    OPEN curPresult2 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      cast(dl.lang_id as int) lang_id,
+      dl.dept_name,
+      null,
+      0
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_prod_dept pd,
+      ya_product p3,
+      ya_dept_site ds
+    WHERE 1 = 1
+      AND d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLparentId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+      AND d.dept_id = pd.dept_id
+      AND pd.sku = p3.sku
+      AND p3.is_prod_grp_parent = 'Y'
+    GROUP BY
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      cast(dl.lang_id as int) ,
+      dl.dept_name,
+      null
+    ORDER BY dl.dept_name, d.dept_id, lang_id;
 
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
+    OPEN curPresult3 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      cast(dl.lang_id as int),
+      dl.dept_name,
+      null,
+      0
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND d.dept_id = iPdeptId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
 
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int) lang_id,
-          dl.dept_name,
-          d.page_location,
-          d.us_disp_seq
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl,
-          ya_prod_dept pd,
-          ya_product p3
-        WHERE 1 = 1
-          AND d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND d.dept_id = pd.dept_id
-          AND pd.sku = p3.sku
-          AND p3.is_parent = 'Y'
-        GROUP BY
-        d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int) ,
-          dl.dept_name,
-          d.page_location,
-          d.us_disp_seq
-       ORDER BY d.us_disp_seq, d.dept_id, lang_id;
-
-      END;
-    ELSIF iPsiteId = 7 Then
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iLparentId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int) lang_id,
-          dl.dept_name,
-          d.page_location,
-          d.tw_disp_seq
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl,
-          ya_prod_dept pd,
-          ya_product p3
-        WHERE 1 = 1
-          AND d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND d.dept_id = pd.dept_id
-          AND pd.sku = p3.sku
-          AND p3.is_parent = 'Y'
-        GROUP BY
-        d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int) ,
-          dl.dept_name,
-          d.page_location,
-          d.tw_disp_seq
-       ORDER BY d.tw_disp_seq, d.dept_id, lang_id;
-
-
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int) lang_id,
-          dl.dept_name,
-          d.page_location,
-          d.tw_disp_seq
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl,
-          ya_prod_dept pd,
-          ya_product p3
-        WHERE 1 = 1
-          AND d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND d.dept_id = pd.dept_id
-          AND pd.sku = p3.sku
-          AND p3.is_parent = 'Y'
-        GROUP BY
-        d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int) ,
-          dl.dept_name,
-          d.page_location,
-          d.tw_disp_seq
-       ORDER BY d.tw_disp_seq, d.dept_id, lang_id;
-
-      END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 Then
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iLparentId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int) lang_id,
-          dl.dept_name,
-          d.page_location,
-          d.hk_disp_seq
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl,
-          ya_prod_dept pd,
-          ya_product p3
-        WHERE 1 = 1
-          AND d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND d.dept_id = pd.dept_id
-          AND pd.sku = p3.sku
-          AND p3.is_parent = 'Y'
-        GROUP BY
-        d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int) ,
-          dl.dept_name,
-          d.page_location,
-          d.hk_disp_seq
-       ORDER BY d.hk_disp_seq, d.dept_id, lang_id;
-
-
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int) lang_id,
-          dl.dept_name,
-          d.page_location,
-          d.tw_disp_seq
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl,
-          ya_prod_dept pd,
-          ya_product p3
-        WHERE 1 = 1
-          AND d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND d.dept_id = pd.dept_id
-          AND pd.sku = p3.sku
-          AND p3.is_parent = 'Y'
-        GROUP BY
-        d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int) ,
-          dl.dept_name,
-          d.page_location,
-          d.tw_disp_seq
-       ORDER BY d.hk_disp_seq, d.dept_id, lang_id;
-
-      END;
-    END IF;
+    OPEN curPresult4 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      cast(dl.lang_id as int) lang_id,
+      dl.dept_name,
+      null,
+      0
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_prod_dept pd,
+      ya_product p3,
+      ya_dept_site ds
+    WHERE 1 = 1
+      AND d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iPdeptId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+      AND d.dept_id = pd.dept_id
+      AND pd.sku = p3.sku
+      AND p3.is_prod_grp_parent = 'Y'
+    GROUP BY
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      cast(dl.lang_id as int) ,
+      dl.dept_name,
+      null
+    ORDER BY dl.dept_name, d.dept_id, lang_id;
     RETURN;
   END GetBrowseGrpDeptTree;
-
 
   PROCEDURE GetBrowseDeptTree (
     iPdeptId IN INT,
@@ -5924,335 +2742,123 @@ IS
   )
   AS
   BEGIN
-    IF iPsiteId = 1 THEN
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          NVL(dr.parent_dept_id, -1),
-          (
-          SELECT COUNT(1)
-          FROM ya_dept_rel dr2,
-               ya_dept d2
-          WHERE dr2.dept_id = d2.dept_id
-          AND dr2.parent_dept_id = d.dept_id
-          ),
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id (+) = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = (SELECT parent_dept_id FROM ya_dept_rel WHERE dept_id = iPdeptId)
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
+    OPEN curPresult1 FOR
+    SELECT
+      d.dept_id,
+      NVL(dr.parent_dept_id, -1),
+      (
+      SELECT COUNT(1)
+      FROM ya_dept_rel dr2,
+            ya_dept d2
+      WHERE dr2.dept_id = d2.dept_id
+      AND dr2.parent_dept_id = d.dept_id
+      ),
+      cast(dl.lang_id as int),
+      dl.dept_name,
+      null
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id (+) = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND d.dept_id = (SELECT parent_dept_id FROM ya_dept_rel WHERE dept_id = iPdeptId)
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
 
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          NVL(dr.parent_dept_id, -1),
-          (
-          SELECT COUNT(*)
-          FROM ya_dept_rel dr2,
-               ya_dept d2
-          WHERE dr2.dept_id = d2.dept_id
-          AND dr2.parent_dept_id = d.dept_id
-          ),
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id (+) = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = (SELECT parent_dept_id FROM ya_dept_rel WHERE dept_id = iPdeptId)
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
+    OPEN curPresult2 FOR
+    SELECT
+      d.dept_id,
+      NVL(dr.parent_dept_id, -1),
+      (
+      SELECT COUNT(*)
+      FROM ya_dept_rel dr2,
+            ya_dept d2
+      WHERE dr2.dept_id = d2.dept_id
+      AND dr2.parent_dept_id = d.dept_id
+      ),
+      cast(dl.lang_id as int),
+      dl.dept_name,
+      null
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id (+) = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = (SELECT parent_dept_id FROM ya_dept_rel WHERE dept_id = iPdeptId)
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
 
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          (
-          SELECT COUNT(*)
-          FROM
-            ya_dept_rel dr2,
-            ya_dept d2
-          WHERE dr2.dept_id = d2.dept_id
-          AND dr2.parent_dept_id = d.dept_id
-          ),
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
+    OPEN curPresult3 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      (
+      SELECT COUNT(*)
+      FROM
+        ya_dept_rel dr2,
+        ya_dept d2
+      WHERE dr2.dept_id = d2.dept_id
+      AND dr2.parent_dept_id = d.dept_id
+      ),
+      cast(dl.lang_id as int),
+      dl.dept_name,
+      null
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND d.dept_id = iPdeptId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
 
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          (
-          SELECT COUNT(*)
-          FROM
-            ya_dept_rel dr2,
-            ya_dept d2
-          WHERE dr2.dept_id = d2.dept_id
-          AND dr2.parent_dept_id = d.dept_id
-          ),
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
-      END;
-    ELSIF iPsiteId = 7 THEN
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          NVL(dr.parent_dept_id, -1),
-          (
-          SELECT COUNT(*)
-          FROM
-            ya_dept_rel dr2,
-            ya_dept d2
-          WHERE dr2.dept_id = d2.dept_id
-          AND dr2.parent_dept_id = d.dept_id
-          ),
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id (+) = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = (SELECT parent_dept_id FROM ya_dept_rel WHERE dept_id = iPdeptId)
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          NVL(dr.parent_dept_id, -1),
-          (
-          SELECT COUNT(*)
-          FROM
-            ya_dept_rel dr2,
-            ya_dept d2
-          WHERE dr2.dept_id = d2.dept_id
-          AND dr2.parent_dept_id = d.dept_id
-          ),
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id (+) = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = (SELECT parent_dept_id FROM ya_dept_rel WHERE dept_id = iPdeptId)
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          (
-          SELECT COUNT(*)
-          FROM
-            ya_dept_rel dr2,
-            ya_dept d2
-          WHERE dr2.dept_id = d2.dept_id
-          AND dr2.parent_dept_id = d.dept_id
-          ),
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          (
-          SELECT COUNT(*)
-          FROM
-            ya_dept_rel dr2,
-            ya_dept d2
-          WHERE dr2.dept_id = d2.dept_id
-          AND dr2.parent_dept_id = d.dept_id
-          ),
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-      END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          NVL(dr.parent_dept_id, -1),
-          (
-          SELECT COUNT(*)
-          FROM
-            ya_dept_rel dr2,
-            ya_dept d2
-          WHERE dr2.dept_id = d2.dept_id
-          AND dr2.parent_dept_id = d.dept_id
-          ),
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id (+) = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = (SELECT parent_dept_id FROM ya_dept_rel WHERE dept_id = iPdeptId)
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          NVL(dr.parent_dept_id, -1),
-          (
-          SELECT COUNT(*)
-          FROM
-            ya_dept_rel dr2,
-            ya_dept d2
-          WHERE dr2.dept_id = d2.dept_id
-          AND dr2.parent_dept_id = d.dept_id
-          ),
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id (+) = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = (SELECT parent_dept_id FROM ya_dept_rel WHERE dept_id = iPdeptId)
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          (
-          SELECT COUNT(*)
-          FROM
-            ya_dept_rel dr2,
-            ya_dept d2
-          WHERE dr2.dept_id = d2.dept_id
-          AND dr2.parent_dept_id = d.dept_id
-          ),
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          (
-          SELECT COUNT(*)
-          FROM
-            ya_dept_rel dr2,
-            ya_dept d2
-          WHERE dr2.dept_id = d2.dept_id
-          AND dr2.parent_dept_id = d.dept_id
-          ),
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-      END;
-    END IF;
+    OPEN curPresult4 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      (
+      SELECT COUNT(*)
+      FROM
+        ya_dept_rel dr2,
+        ya_dept d2
+      WHERE dr2.dept_id = d2.dept_id
+      AND dr2.parent_dept_id = d.dept_id
+      ),
+      cast(dl.lang_id as int),
+      dl.dept_name,
+      null
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iPdeptId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
   RETURN;
   END GetBrowseDeptTree;
 
@@ -6279,320 +2885,119 @@ IS
         iLparentId := -1;
     END;
 
-    IF iPsiteId = 1 THEN
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          NVL(dr.parent_dept_id, -1),
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id (+) = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iLparentId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
+    OPEN curPresult1 FOR
+    SELECT
+      d.dept_id,
+      NVL(dr.parent_dept_id, -1),
+      0,
+      cast(dl.lang_id as int),
+      dl.dept_name,
+      null
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id (+) = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND d.dept_id = iLparentId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
 
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_prod_dept pd,
-                ya_product_list p3
-              WHERE
-                pd.sku = p3.sku
-                AND pd.dept_id = d.dept_id
-                AND p3.type_id = iPtypeId
-            )
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
+    OPEN curPresult2 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      cast(dl.lang_id as int),
+      dl.dept_name,
+      null
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLparentId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+      AND EXISTS
+        (
+          SELECT 1
+          FROM
+            ya_prod_dept pd,
+            ya_product_list p3
+          WHERE
+            pd.sku = p3.sku
+            AND pd.dept_id = d.dept_id
+            AND p3.type_id = iPtypeId
+        )
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
 
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
+    OPEN curPresult3 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      cast(dl.lang_id as int),
+      dl.dept_name,
+      null
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND d.dept_id = iPdeptId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
 
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
+    OPEN curPresult4 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      cast(dl.lang_id as int),
+      dl.dept_name,
+      null
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iPdeptId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+      AND EXISTS
+      (
+        SELECT 1
         FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
+          ya_prod_dept pd,
+          ya_product_list p3
         WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND EXISTS
-          (
-            SELECT 1
-            FROM
-              ya_prod_dept pd,
-              ya_product_list p3
-            WHERE
-              pd.sku = p3.sku
-              AND pd.dept_id = d.dept_id
-              AND p3.type_id = iPtypeId
-          )
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
-      END;
-    ELSIF iPsiteId = 7 THEN
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iLparentId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_prod_dept pd,
-                ya_product_list p3
-              WHERE
-                pd.sku = p3.sku
-                AND pd.dept_id = d.dept_id
-                AND p3.type_id = iPtypeId
-            )
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_prod_dept pd,
-                ya_product_list p3
-              WHERE
-                pd.sku = p3.sku
-                AND pd.dept_id = d.dept_id
-                AND p3.type_id = iPtypeId
-            )
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-      END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iLparentId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_prod_dept pd,
-                ya_product_list p3
-              WHERE
-                pd.sku = p3.sku
-                AND pd.dept_id = d.dept_id
-                AND p3.type_id = iPtypeId
-            )
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          d.page_location
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_prod_dept pd,
-                ya_product_list p3
-              WHERE
-                pd.sku = p3.sku
-                AND pd.dept_id = d.dept_id
-                AND p3.type_id = iPtypeId
-                AND pd.tw_enabled = 'Y'
-            )
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-      END;
-    END IF;
+          pd.sku = p3.sku
+          AND pd.dept_id = d.dept_id
+          AND p3.type_id = iPtypeId
+      )
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
   RETURN;
   END GetProductListDeptTree;
 
@@ -6619,338 +3024,131 @@ IS
         iLparentId := -1;
     END;
 
-    IF iPsiteId = 1 THEN
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iLparentId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
+    OPEN curPresult1 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      cast(dl.lang_id as int),
+      dl.dept_name,
+      ''
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND d.dept_id = iLparentId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
 
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND exists
-            (
-              SELECT 1
-              FROM
-                ya_prod_dept pd,
-                ya_product p
-              WHERE
-                pd.sku = p.sku
-                AND pd.dept_id IN
-                  (
-                    select dept_id
-                    from ya_dept_rel
-                    where parent_dept_id =iLparentId
-                  )
-                AND pd.dept_id = d.dept_id
-                AND p.us_supplier_id = iPsupplierId
-            )
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
+    OPEN curPresult2 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      cast(dl.lang_id as int),
+      dl.dept_name,
+      ''
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLparentId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+      AND exists
+        (
+          SELECT 1
+          FROM
+            ya_prod_dept pd,
+            ya_product p,
+            prod_region pr
+          WHERE
+            pd.sku = p.sku
+            AND p.sku = pr.prod_id
+            AND pr.region_id = ds.site_id
+            AND pd.dept_id IN
+              (
+                select dept_id
+                from ya_dept_rel
+                where parent_dept_id =iLparentId
+              )
+            AND pd.dept_id = d.dept_id
+            AND pr.supplier_id = iPsupplierId
+        )
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
 
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
+    OPEN curPresult3 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      cast(dl.lang_id as int),
+      dl.dept_name,
+      ''
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND d.dept_id = iPdeptId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
 
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND exists
-            (
-              SELECT 1
-              FROM
-                ya_prod_dept pd,
-                ya_product p
-              WHERE
-                pd.sku = p.sku
-                AND pd.dept_id = d.dept_id
-                AND p.us_supplier_id = iPsupplierId
-            )
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
-      END;
-    ELSIF iPsiteId = 7 THEN
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iLparentId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND exists
-            (
-              SELECT 1
-              FROM
-                ya_prod_dept pd,
-                ya_product p
-              WHERE
-                pd.sku = p.sku
-                AND pd.dept_id IN
-                  (
-                    select dept_id
-                    from ya_dept_rel
-                    where parent_dept_id = iLparentId
-                  )
-                AND pd.dept_id = d.dept_id
-                AND p.tw_supplier_id = iPsupplierId
-            )
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND exists
-            (
-              SELECT 1
-              FROM
-                ya_prod_dept pd,
-                ya_product p
-              WHERE
-                pd.sku = p.sku
-                AND pd.dept_id = d.dept_id
-                AND p.tw_supplier_id = iPsupplierId
-            )
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-      END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iLparentId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND exists
-            (
-              SELECT 1
-              FROM
-                ya_prod_dept pd,
-                ya_product p
-              WHERE
-                pd.sku = p.sku
-                AND p.tw_enabled = 'Y'
-                AND pd.dept_id IN
-                  (
-                    select dept_id
-                    from ya_dept_rel
-                    where parent_dept_id = iLparentId
-                  )
-                AND pd.dept_id = d.dept_id
-                AND p.tw_supplier_id = iPsupplierId
-            )
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND exists
-            (
-              SELECT 1
-              FROM
-                ya_prod_dept pd,
-                ya_product p
-              WHERE
-                pd.sku = p.sku
-                AND pd.dept_id = d.dept_id
-                AND p.tw_supplier_id = iPsupplierId
-            )
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-      END;
-    END IF;
+    OPEN curPresult4 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      cast(dl.lang_id as int),
+      dl.dept_name,
+      ''
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iPdeptId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+      AND exists
+        (
+          SELECT 1
+          FROM
+            ya_prod_dept pd,
+            ya_product p,
+            prod_region pr
+          WHERE
+            pd.sku = p.sku
+            AND p.sku = pr.prod_id
+            AND pr.region_id = ds.site_id
+            AND pd.dept_id = d.dept_id
+            AND pr.supplier_id = iPsupplierId
+        )
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
   RETURN;
   END GetSupplierDeptTree;
 
@@ -6977,331 +3175,123 @@ IS
         iLparentId := -1;
     END;
 
-    IF iPsiteId = 1 THEN
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iLparentId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
+    OPEN curPresult1 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      cast(dl.lang_id as int),
+      dl.dept_name,
+      ''
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND d.dept_id = iLparentId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
 
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND exists
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_product p,
-                ya_publisher_group_rel gr
-              WHERE
-                pd.sku = p.sku
-                AND p.publisher_id = gr.publisher_id
-                AND pd.dept_id = d.dept_id
-                AND gr.publisher_group_id = iPpublisherGroupId
-            )
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
+    OPEN curPresult2 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      cast(dl.lang_id as int),
+      dl.dept_name,
+      ''
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLparentId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+      AND exists
+        (
+          SELECT pd.dept_id
+          FROM
+            ya_prod_dept pd,
+            ya_product p,
+            ya_publisher_group_rel gr
+          WHERE
+            pd.sku = p.sku
+            AND p.publisher_id = gr.publisher_id
+            AND pd.dept_id = d.dept_id
+            AND gr.publisher_group_id = iPpublisherGroupId
+        )
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
 
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
+    OPEN curPresult3 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      cast(dl.lang_id as int),
+      dl.dept_name,
+      ''
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND d.dept_id = iPdeptId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
 
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.us_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND exists
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_product p,
-                ya_publisher_group_rel gr
-              WHERE
-                pd.sku = p.sku
-                AND p.publisher_id = gr.publisher_id
-                AND pd.dept_id = d.dept_id
-                AND gr.publisher_group_id = iPpublisherGroupId
-            )
-        ORDER BY d.us_disp_seq, d.dept_id, dl.lang_id;
-      END;
-    ELSIF iPsiteId = 7 THEN
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iLparentId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND exists
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_product p,
-                ya_publisher_group_rel gr
-              WHERE
-                pd.sku = p.sku
-                AND p.publisher_id = gr.publisher_id
-                AND pd.dept_id = d.dept_id
-                AND gr.publisher_group_id = iPpublisherGroupId
-            )
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.tw_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND exists
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_product p,
-                ya_publisher_group_rel gr
-              WHERE
-                pd.sku = p.sku
-                AND p.publisher_id = gr.publisher_id
-                AND pd.dept_id = d.dept_id
-                AND gr.publisher_group_id = iPpublisherGroupId
-            )
-        ORDER BY d.tw_disp_seq, d.dept_id, dl.lang_id;
-      END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-      BEGIN
-        OPEN curPresult1 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iLparentId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult2 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND exists
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_product p,
-                ya_publisher_group_rel gr
-              WHERE
-                pd.sku = p.sku
-                AND p.publisher_id = gr.publisher_id
-                AND pd.dept_id = d.dept_id
-                AND gr.publisher_group_id = iPpublisherGroupId
-            )
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult3 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND d.dept_id = iPdeptId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-
-        OPEN curPresult4 FOR
-        SELECT
-          d.dept_id,
-          dr.parent_dept_id,
-          0,
-          cast(dl.lang_id as int),
-          dl.dept_name,
-          ''
-        FROM
-          ya_dept_rel dr,
-          ya_dept d,
-          ya_dept_lang dl
-        WHERE
-          dr.dept_id = d.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.ys_enabled = 'Y'
-          AND dl.lang_id <= 5
-          AND exists
-            (
-              SELECT pd.dept_id
-              FROM
-                ya_prod_dept pd,
-                ya_product p,
-                ya_publisher_group_rel gr
-              WHERE
-                pd.sku = p.sku
-                AND p.publisher_id = gr.publisher_id
-                AND pd.dept_id = d.dept_id
-                AND gr.publisher_group_id = iPpublisherGroupId
-            )
-        ORDER BY d.hk_disp_seq, d.dept_id, dl.lang_id;
-      END;
-    END IF;
+    OPEN curPresult4 FOR
+    SELECT
+      d.dept_id,
+      dr.parent_dept_id,
+      0,
+      cast(dl.lang_id as int),
+      dl.dept_name,
+      ''
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iPdeptId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id <= 5
+      AND exists
+        (
+          SELECT pd.dept_id
+          FROM
+            ya_prod_dept pd,
+            ya_product p,
+            ya_publisher_group_rel gr
+          WHERE
+            pd.sku = p.sku
+            AND p.publisher_id = gr.publisher_id
+            AND pd.dept_id = d.dept_id
+            AND gr.publisher_group_id = iPpublisherGroupId
+        )
+    ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
   RETURN;
   END GetPublisherGroupDeptTree2;
 
@@ -7314,67 +3304,26 @@ IS
   )
   AS
   BEGIN
-    IF iPsiteId = 1 THEN
-      BEGIN
-        SELECT COUNT(1)
-        INTO iPreturn
-        FROM
-          ya_dept_rel dr,
-          ya_dept d
-        WHERE
-          dr.parent_dept_id = iPdeptId
-          AND d.us_enabled = 'Y'
-          AND dr.dept_id = d.dept_id
-          AND EXISTS
-            (
-              SELECT 1
-              FROM ya_product p
-              WHERE
-                p.is_parent = 'Y'
-            )
-          AND ROWNUM = 1;
-      END;
-    ELSIF iPsiteId = 7 THEN
-      BEGIN
-        SELECT COUNT(1)
-        INTO iPreturn
-        FROM
-          ya_dept_rel dr,
-          ya_dept d
-        WHERE
-          dr.parent_dept_id = iPdeptId
-          AND d.tw_enabled = 'Y'
-          AND dr.dept_id = d.dept_id
-          AND EXISTS
-            (
-              SELECT 1
-              FROM ya_product p
-              WHERE
-                p.is_parent = 'Y'
-            )
-          AND ROWNUM = 1;
-      END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-      BEGIN
-        SELECT COUNT(1)
-        INTO iPreturn
-        FROM
-          ya_dept_rel dr,
-          ya_dept d
-        WHERE
-          dr.parent_dept_id = iPdeptId
-          AND d.ys_enabled = 'Y'
-          AND dr.dept_id = d.dept_id
-          AND EXISTS
-            (
-              SELECT 1
-              FROM ya_product p
-              WHERE
-                p.is_parent = 'Y'
-            )
-          AND ROWNUM = 1;
-      END;
-    END IF;
+    SELECT COUNT(1)
+    INTO iPreturn
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_site ds
+    WHERE
+      dr.parent_dept_id = iPdeptId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dr.dept_id = d.dept_id
+      AND EXISTS
+        (
+          SELECT 1
+          FROM ya_product p
+          WHERE
+            p.is_prod_grp_parent = 'Y'
+        )
+      AND ROWNUM = 1;
     EXCEPTION WHEN NO_DATA_FOUND THEN
       dbms_output.put_line('no row return');
     RETURN;
@@ -7390,82 +3339,31 @@ IS
   )
   AS
   BEGIN
-    IF iPsiteId = 1 THEN
-      BEGIN
-        SELECT COUNT(1)
-        INTO iPreturn
-        FROM
-          ya_dept_rel dr,
-          ya_dept d
-        WHERE
-          dr.dept_id = d.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.ys_enabled = 'Y'
-          AND dr.dept_id = d.dept_id
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_prod_dept pd,
-                ya_product_list pl
-              WHERE
-                pd.sku = pl.sku
-                AND pl.type_id = iPtypeId
-                AND pd.dept_id = d.dept_id
-            )
-          AND ROWNUM = 1;
-      END;
-    ELSIF iPsiteId = 7 THEN
-      BEGIN
-        SELECT COUNT(1)
-        INTO iPreturn
-        FROM
-          ya_dept_rel dr,
-          ya_dept d
-        WHERE
-          dr.dept_id = d.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.ys_enabled = 'Y'
-          AND dr.dept_id = d.dept_id
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_prod_dept pd,
-                ya_product_list pl
-              WHERE
-                pd.sku = pl.sku
-                AND pl.type_id = iPtypeId
-                AND pd.dept_id = d.dept_id
-            )
-          AND ROWNUM = 1;
-      END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-      BEGIN
-        SELECT COUNT(1)
-        INTO iPreturn
-        FROM
-          ya_dept_rel dr,
-          ya_dept d
-        WHERE
-          dr.dept_id = d.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND d.ys_enabled = 'Y'
-          AND dr.dept_id = d.dept_id
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_prod_dept pd,
-                ya_product_list pl
-              WHERE
-                pd.sku = pl.sku
-                AND pl.type_id = iPtypeId
-                AND pd.dept_id = d.dept_id
-            )
-          AND ROWNUM = 1;
-      END;
-    END IF;
+    SELECT COUNT(1)
+    INTO iPreturn
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_site ds
+    WHERE
+      dr.dept_id = d.dept_id
+      AND dr.parent_dept_id = iPdeptId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dr.dept_id = d.dept_id
+      AND EXISTS
+        (
+          SELECT 1
+          FROM
+            ya_prod_dept pd,
+            ya_product_list pl
+          WHERE
+            pd.sku = pl.sku
+            AND pl.type_id = iPtypeId
+            AND pd.dept_id = d.dept_id
+        )
+      AND ROWNUM = 1;
     EXCEPTION WHEN NO_DATA_FOUND THEN
       iPreturn := -1;
     RETURN;
@@ -7481,79 +3379,30 @@ IS
   )
   AS
   BEGIN
-    IF iPsiteId = 1 THEN
-      BEGIN
-        SELECT COUNT(1)
-        INTO iPreturn
-        FROM
-          ya_dept_rel dr,
-          ya_dept d
-        WHERE
-          dr.parent_dept_id = iPdeptId
-          AND d.us_enabled = 'Y'
-          AND dr.dept_id = d.dept_id
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_prod_dept pd,
-                ya_product_artist pa
-              WHERE
-                pd.sku = pa.sku
-                AND pa.artist_id = iPartistId
-                AND pd.dept_id = d.dept_id
-            )
-          AND ROWNUM = 1;
-      END;
-    ELSIF iPsiteId = 7 THEN
-      BEGIN
-        SELECT COUNT(1)
-        INTO iPreturn
-        FROM
-          ya_dept_rel dr,
-          ya_dept d
-        WHERE
-          dr.parent_dept_id = iPdeptId
-          AND d.tw_enabled = 'Y'
-          AND dr.dept_id = d.dept_id
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_prod_dept pd,
-                ya_product_artist pa
-              WHERE
-                pd.sku = pa.sku
-                AND pa.artist_id = iPartistId
-                AND pd.dept_id = d.dept_id
-            )
-          AND ROWNUM = 1;
-      END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-      BEGIN
-        SELECT COUNT(1)
-        INTO iPreturn
-        FROM
-          ya_dept_rel dr,
-          ya_dept d
-        WHERE
-          dr.parent_dept_id = iPdeptId
-          AND d.ys_enabled = 'Y'
-          AND dr.dept_id = d.dept_id
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_prod_dept pd,
-                ya_product_artist pa
-              WHERE
-                pd.sku = pa.sku
-                AND pa.artist_id = iPartistId
-                AND pd.dept_id = d.dept_id
-            )
-          AND ROWNUM = 1;
-      END;
-    END IF;
+    SELECT COUNT(1)
+    INTO iPreturn
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_site ds
+    WHERE
+      dr.parent_dept_id = iPdeptId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dr.dept_id = d.dept_id
+      AND EXISTS
+        (
+          SELECT 1
+          FROM
+            ya_prod_dept pd,
+            ya_product_artist pa
+          WHERE
+            pd.sku = pa.sku
+            AND pa.artist_id = iPartistId
+            AND pd.dept_id = d.dept_id
+        )
+      AND ROWNUM = 1;
     EXCEPTION WHEN NO_DATA_FOUND THEN
       dbms_output.put_line('no row return');
     RETURN;
@@ -7569,68 +3418,27 @@ IS
   )
   AS
   BEGIN
-    IF iPsiteId = 1 THEN
-      BEGIN
-        SELECT COUNT(1)
-        INTO iPreturn
-        FROM
-          ya_dept_rel dr,
-          ya_dept d
-        WHERE
-          dr.parent_dept_id = iPdeptId
-          AND d.us_enabled = 'Y'
-          AND dr.dept_id = d.dept_id
-          AND EXISTS
-            (
-              SELECT 1
-              FROM ya_product p
-              WHERE
-                p.us_supplier_id = iPsupplierId
-            )
-          AND ROWNUM = 1;
-      END;
-    ELSIF iPsiteId = 7 THEN
-      BEGIN
-        SELECT COUNT(1)
-        INTO iPreturn
-        FROM
-          ya_dept_rel dr,
-          ya_dept d
-        WHERE
-          dr.parent_dept_id = iPdeptId
-          AND d.tw_enabled = 'Y'
-          AND dr.dept_id = d.dept_id
-          AND EXISTS
-            (
-              SELECT 1
-              FROM ya_product p
-              WHERE
-                p.tw_supplier_id = iPsupplierId
-            )
-          AND ROWNUM = 1;
-      END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-      BEGIN
-        SELECT COUNT(1)
-        INTO iPreturn
-        FROM
-          ya_dept_rel dr,
-          ya_dept d
-        WHERE
-          dr.parent_dept_id = iPdeptId
-          AND d.ys_enabled = 'Y'
-          AND dr.dept_id = d.dept_id
-          AND EXISTS
-            (
-              SELECT 1
-              FROM ya_product p
-              WHERE
-                p.tw_supplier_id = iPsupplierId
-            )
-          AND ROWNUM = 1;
-      END;
-    END IF;
-
+    SELECT COUNT(1)
+    INTO iPreturn
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_site ds
+    WHERE
+      dr.parent_dept_id = iPdeptId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dr.dept_id = d.dept_id
+      AND EXISTS
+        (
+          SELECT 1
+          FROM ya_product p
+            INNER JOIN prod_region pr ON p.sku = pr.prod_id AND pr.region_id = iPsiteId
+          WHERE
+            pr.supplier_id = iPsupplierId
+        )
+      AND ROWNUM = 1;
     EXCEPTION WHEN NO_DATA_FOUND THEN
       dbms_output.put_line('no row return');
     RETURN;
@@ -7646,77 +3454,29 @@ IS
   )
   AS
   BEGIN
-    IF iPsiteId = 1 THEN
-      BEGIN
-        SELECT COUNT(1)
-        INTO iPreturn
-        FROM
-          ya_dept_rel dr,
-          ya_dept d
-        WHERE
-          dr.parent_dept_id = iPdeptId
-          AND d.us_enabled = 'Y'
-          AND dr.dept_id = d.dept_id
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_product p,
-                ya_publisher_group_rel gr
-              WHERE
-                p.publisher_id = gr.publisher_id
-                AND gr.publisher_group_id = iPpublisherGroupId
-            )
-          AND ROWNUM = 1;
-      END;
-    ELSIF iPsiteId = 7 THEN
-      BEGIN
-        SELECT COUNT(1)
-        INTO iPreturn
-        FROM
-          ya_dept_rel dr,
-          ya_dept d
-        WHERE
-          dr.parent_dept_id = iPdeptId
-          AND d.tw_enabled = 'Y'
-          AND dr.dept_id = d.dept_id
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_product p,
-                ya_publisher_group_rel gr
-              WHERE
-                p.publisher_id = gr.publisher_id
-                AND gr.publisher_group_id = iPpublisherGroupId
-            )
-          AND ROWNUM = 1;
-      END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-      BEGIN
-        SELECT COUNT(1)
-        INTO iPreturn
-        FROM
-          ya_dept_rel dr,
-          ya_dept d
-        WHERE
-          dr.parent_dept_id = iPdeptId
-          AND d.ys_enabled = 'Y'
-          AND dr.dept_id = d.dept_id
-          AND EXISTS
-            (
-              SELECT 1
-              FROM
-                ya_product p,
-                ya_publisher_group_rel gr
-              WHERE
-                p.publisher_id = gr.publisher_id
-                AND gr.publisher_group_id = iPpublisherGroupId
-            )
-          AND ROWNUM = 1;
-      END;
-    END IF;
-
+    SELECT COUNT(1)
+    INTO iPreturn
+    FROM
+      ya_dept_rel dr,
+      ya_dept d,
+      ya_dept_site ds
+    WHERE
+      dr.parent_dept_id = iPdeptId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND dr.dept_id = d.dept_id
+      AND EXISTS
+        (
+          SELECT 1
+          FROM
+            ya_product p,
+            ya_publisher_group_rel gr
+          WHERE
+            p.publisher_id = gr.publisher_id
+            AND gr.publisher_group_id = iPpublisherGroupId
+        )
+      AND ROWNUM = 1;
     EXCEPTION WHEN NO_DATA_FOUND THEN
       dbms_output.put_line('no row return');
     RETURN;
@@ -7816,106 +3576,41 @@ IS
   )
   AS
   BEGIN
-    IF iPsite_id = 1 THEN
-      OPEN curPresult FOR
-      SELECT
-        dl.dept_id,
-        dl.dept_name_u
-      FROM
-        ya_dept_rel dr
-        INNER JOIN ya_dept d ON
-          dr.dept_id = d.dept_id
-        INNER JOIN ya_dept_lang dl ON
-          dr.dept_id = dl.dept_id
-      WHERE
-        dr.parent_dept_id = iPdept_id
-        AND d.us_enabled = 'Y'
-        AND dl.lang_id = iPlang_id
-        AND EXISTS
-          (
-            SELECT 1
-            FROM ya_prod_dept pd
-            WHERE
-              pd.dept_id = dr.dept_id
-              AND EXISTS
-                (
-                  SELECT 1
-                  FROM ya_bargain_product bp
-                  WHERE
-                    bp.sku = pd.sku
-                    AND bp.site_id = iPsite_id
-                    AND bp.sale_start <= SYSDATE()
-                    AND bp.sale_end >= SYSDATE()
-                )
-          )
-      ORDER BY d.us_disp_seq;
-    ELSIF iPsite_id = 7 THEN
-      OPEN curPresult FOR
-      SELECT
-        dl.dept_id,
-        dl.dept_name_u
-      FROM
-        ya_dept_rel dr
-        INNER JOIN ya_dept d ON
-          dr.dept_id = d.dept_id
-        INNER JOIN ya_dept_lang dl ON
-          dr.dept_id = dl.dept_id
-      WHERE
-        dr.parent_dept_id = iPdept_id
-        AND d.tw_enabled = 'Y'
-        AND dl.lang_id = iPlang_id
-        AND EXISTS
-          (
-            SELECT 1
-            FROM ya_prod_dept pd
-            WHERE
-              pd.dept_id = dr.dept_id
-              AND EXISTS
-                (
-                  select 1
-                  FROM ya_bargain_product bp
-                  WHERE
-                    bp.sku = pd.sku
-                    AND bp.site_id = iPsite_id
-                    AND bp.sale_start <= SYSDATE()
-                    AND bp.sale_end >= SYSDATE()
-                )
-          )
-      ORDER BY d.tw_disp_seq;
-    ELSIF iPsite_id = 10 THEN
-      OPEN curPresult FOR
-      SELECT
-        dl.dept_id,
-        dl.dept_name_u
-      FROM
-        ya_dept_rel dr
-        INNER JOIN ya_dept d ON
-          dr.dept_id = d.dept_id
-        INNER JOIN ya_dept_lang dl ON
-          dr.dept_id = dl.dept_id
-      WHERE
-        dr.parent_dept_id = iPdept_id
-        AND d.ys_enabled = 'Y'
-        AND dl.lang_id = iPlang_id
-        AND EXISTS
-          (
-            SELECT 1
-            FROM ya_prod_dept pd
-            WHERE
-              pd.dept_id = dr.dept_id
-              AND EXISTS
-                (
-                  select 1
-                  FROM ya_bargain_product bp
-                  WHERE
-                    bp.sku = pd.sku
-                    AND bp.site_id = iPsite_id
-                    AND bp.sale_start <= SYSDATE()
-                    AND bp.sale_end >= SYSDATE()
-                )
-          )
-      ORDER BY d.hk_disp_seq;      
-    END IF;
+    OPEN curPresult FOR
+    SELECT
+      dl.dept_id,
+      dl.dept_name_u
+    FROM
+      ya_dept_rel dr
+      INNER JOIN ya_dept d ON
+        dr.dept_id = d.dept_id
+      INNER JOIN ya_dept_lang dl ON
+        dr.dept_id = dl.dept_id
+      INNER JOIN ya_dept_site ds ON
+        d.dept_id = ds.dept_id
+        AND ds.site_id = iPsite_id
+    WHERE
+      dr.parent_dept_id = iPdept_id
+      AND ds.is_enabled = 'Y'
+      AND dl.lang_id = iPlang_id
+      AND EXISTS
+        (
+          SELECT 1
+          FROM ya_prod_dept pd
+          WHERE
+            pd.dept_id = dr.dept_id
+            AND EXISTS
+              (
+                SELECT 1
+                FROM ya_bargain_product bp
+                WHERE
+                  bp.sku = pd.sku
+                  AND bp.site_id = iPsite_id
+                  AND bp.sale_start <= SYSDATE()
+                  AND bp.sale_end >= SYSDATE()
+              )
+        )
+    ORDER BY dl.dept_name;
   END GetBargainDept;
 
   PROCEDURE GetPublisherDeptTree (
@@ -7949,256 +3644,95 @@ IS
         iLgrantDeptId := -1;
     END;
 
-    IF iPsiteId = 1 THEN
-      BEGIN
-        /* Parent */
-        OPEN curPparent FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'artIdxDept.aspx?aid='|| cast(iPpublisherId as varchar2(10)) || '&' || 'amp;',
-          CASE
-            WHEN d.dept_id = iLparentDeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLgrantDeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND exists (
-            SELECT 1
-            FROM ya_publisher_dept pd
-            WHERE pd.publisher_id = iPpublisherId
-            AND d.dept_id = pd.dept_id
-          )
-        ORDER BY us_disp_seq;
+    /* Parent */
+    OPEN curPparent FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'artIdxDept.aspx?aid='|| cast(iPpublisherId as varchar2(10)) || '&' || 'amp;',
+      CASE
+        WHEN d.dept_id = iLparentDeptId THEN 'Y'
+        ELSE 'N'
+      END AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLgrantDeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND exists (
+        SELECT 1
+        FROM ya_publisher_dept pd
+        WHERE pd.publisher_id = iPpublisherId
+        AND d.dept_id = pd.dept_id
+      )
+    ORDER BY dl.dept_name;
 
-        /* Sibling */
-        OPEN curPsibling FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'artIdxDept.aspx?aid='|| cast(iPpublisherId as varchar2(10)) || '&' || 'amp;',
-          CASE
-            WHEN d.dept_id = iPdeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentDeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND exists (
-            SELECT 1
-            FROM ya_publisher_dept pd
-            WHERE pd.publisher_id = iPpublisherId
-            AND d.dept_id = pd.dept_id
-          )
-        ORDER BY us_disp_seq;
+    /* Sibling */
+    OPEN curPsibling FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'artIdxDept.aspx?aid='|| cast(iPpublisherId as varchar2(10)) || '&' || 'amp;',
+      CASE
+        WHEN d.dept_id = iPdeptId THEN 'Y'
+        ELSE 'N'
+      END AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLparentDeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND exists (
+        SELECT 1
+        FROM ya_publisher_dept pd
+        WHERE pd.publisher_id = iPpublisherId
+        AND d.dept_id = pd.dept_id
+      )
+    ORDER BY dl.dept_name;
 
-        /* Child */
-        OPEN curPchild FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-          'artIdxDept.aspx?aid='|| cast(iPpublisherId as varchar2(10)) || '&' || 'amp;',
-          'N' AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND exists (
-            SELECT 1
-            FROM ya_publisher_dept pd
-            WHERE pd.publisher_id = iPpublisherId
-            AND d.dept_id = pd.dept_id
-          )
-        ORDER BY us_disp_seq;
-      END;
-    ELSIF iPsiteId = 7 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || cast(iPpublisherId as varchar2(10)) || '&' || 'amp;',
-            CASE
-              WHEN d.dept_id = iLparentDeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLgrantDeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND exists (
-              SELECT 1
-              FROM ya_publisher_dept pd
-              WHERE pd.publisher_id = iPpublisherId
-              AND d.dept_id = pd.dept_id
-            )
-          ORDER BY tw_disp_seq;
-
-          /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || cast(iPpublisherId as varchar2(10)) || '&' || 'amp;',
-            CASE
-              WHEN d.dept_id = iPdeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLparentDeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND exists (
-              SELECT 1
-              FROM ya_publisher_dept pd
-              WHERE pd.publisher_id = iPpublisherId
-              AND d.dept_id = pd.dept_id
-            )
-          ORDER BY tw_disp_seq;
-
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || cast(iPpublisherId as varchar2(10)) || '&' || 'amp;',
-            'N' AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iPdeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND exists (
-              SELECT 1
-              FROM ya_publisher_dept pd
-              WHERE pd.publisher_id = iPpublisherId
-              AND d.dept_id = pd.dept_id
-            )
-          ORDER BY tw_disp_seq;
-        END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || cast(iPpublisherId as varchar2(10)) || '&' || 'amp;',
-            CASE
-              WHEN d.dept_id = iLparentDeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLgrantDeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND exists (
-              SELECT 1
-              FROM ya_publisher_dept pd
-              WHERE pd.publisher_id = iPpublisherId
-              AND d.dept_id = pd.dept_id
-            )
-          ORDER BY hk_disp_seq;
-
-          /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || cast(iPpublisherId as varchar2(10)) || '&' || 'amp;',
-            CASE
-              WHEN d.dept_id = iPdeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLparentDeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND exists (
-              SELECT 1
-              FROM ya_publisher_dept pd
-              WHERE pd.publisher_id = iPpublisherId
-              AND d.dept_id = pd.dept_id
-            )
-          ORDER BY hk_disp_seq;
-
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || cast(iPpublisherId as varchar2(10)) || '&' || 'amp;',
-            'N' AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iPdeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND exists (
-              SELECT 1
-              FROM ya_publisher_dept pd
-              WHERE pd.publisher_id = iPpublisherId
-              AND d.dept_id = pd.dept_id
-            )
-          ORDER BY hk_disp_seq;
-        END;
-    END IF;
+    /* Child */
+    OPEN curPchild FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'artIdxDept.aspx?aid='|| cast(iPpublisherId as varchar2(10)) || '&' || 'amp;',
+      'N' AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iPdeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND exists (
+        SELECT 1
+        FROM ya_publisher_dept pd
+        WHERE pd.publisher_id = iPpublisherId
+        AND d.dept_id = pd.dept_id
+      )
+    ORDER BY dl.dept_name;
     RETURN;
   END GetPublisherDeptTree;
 
@@ -8234,274 +3768,101 @@ IS
         iLgrantDeptId := -1;
     END;
 
-    IF iPsiteId = 1 THEN
-      BEGIN
-        /* Parent */
-        OPEN curPparent FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-         'artIdxDept.aspx?aid=' || cast(iPartistId as varchar2(10)) || '&' || 'amp;',
-          CASE
-            WHEN d.dept_id = iLparentDeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLgrantDeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND exists (
-            SELECT 1
-            FROM ya_publisher_dept pd, ya_artist_dept ad
-            WHERE pd.dept_id = ad.dept_id
-            AND d.dept_id = pd.dept_id
-            AND pd.publisher_id = iPpublisherId
-            AND ad.artist_id = iPartistId
-          )
-        ORDER BY us_disp_seq;
+    /* Parent */
+    OPEN curPparent FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'artIdxDept.aspx?aid=' || cast(iPartistId as varchar2(10)) || '&' || 'amp;',
+      CASE
+        WHEN d.dept_id = iLparentDeptId THEN 'Y'
+        ELSE 'N'
+      END AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLgrantDeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND exists (
+        SELECT 1
+        FROM ya_publisher_dept pd, ya_artist_dept ad
+        WHERE pd.dept_id = ad.dept_id
+        AND d.dept_id = pd.dept_id
+        AND pd.publisher_id = iPpublisherId
+        AND ad.artist_id = iPartistId
+      )
+    ORDER BY dl.dept_name;
 
-        /* Sibling */
-        OPEN curPsibling FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-         'artIdxDept.aspx?aid=' || cast(iPartistId as varchar2(10)) || '&' || 'amp;',
-          CASE
-            WHEN d.dept_id = iPdeptId THEN 'Y'
-            ELSE 'N'
-          END AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iLparentDeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND exists (
-            SELECT 1
-            FROM ya_publisher_dept pd, ya_artist_dept ad
-            WHERE pd.dept_id = ad.dept_id
-            AND d.dept_id = pd.dept_id
-            AND pd.publisher_id = iPpublisherId
-            AND ad.artist_id = iPartistId
-          )
-        ORDER BY us_disp_seq;
+    /* Sibling */
+    OPEN curPsibling FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'artIdxDept.aspx?aid=' || cast(iPartistId as varchar2(10)) || '&' || 'amp;',
+      CASE
+        WHEN d.dept_id = iPdeptId THEN 'Y'
+        ELSE 'N'
+      END AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iLparentDeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND exists (
+        SELECT 1
+        FROM ya_publisher_dept pd, ya_artist_dept ad
+        WHERE pd.dept_id = ad.dept_id
+        AND d.dept_id = pd.dept_id
+        AND pd.publisher_id = iPpublisherId
+        AND ad.artist_id = iPartistId
+      )
+    ORDER BY dl.dept_name;
 
-        /* Child */
-        OPEN curPchild FOR
-        SELECT
-          d.dept_id,
-          dl.dept_name,
-         'artIdxDept.aspx?aid=' || cast(iPartistId as varchar2(10)) || '&' || 'amp;',
-          'N' AS IsVein
-        FROM
-          ya_dept d,
-          ya_dept_rel dr,
-          ya_dept_lang dl
-        WHERE
-          d.dept_id = dr.dept_id
-          AND d.dept_id = dl.dept_id
-          AND dr.parent_dept_id = iPdeptId
-          AND dl.lang_id = iPlangId
-          AND d.us_enabled = 'Y'
-          AND exists (
-            SELECT 1
-            FROM ya_publisher_dept pd, ya_artist_dept ad
-            WHERE pd.dept_id = ad.dept_id
-            AND d.dept_id = pd.dept_id
-            AND pd.publisher_id = iPpublisherId
-            AND ad.artist_id = iPartistId
-          )
-        ORDER BY us_disp_seq;
-      END;
-    ELSIF iPsiteId = 7 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || cast(iPartistId as varchar2(10)) || '&' || 'amp;',
-            CASE
-              WHEN d.dept_id = iLparentDeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLgrantDeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND exists (
-              SELECT 1
-              FROM ya_publisher_dept pd, ya_artist_dept ad
-              WHERE pd.dept_id = ad.dept_id
-              AND d.dept_id = pd.dept_id
-              AND pd.publisher_id = iPpublisherId
-              AND ad.artist_id = iPartistId
-            )
-          ORDER BY tw_disp_seq;
-
-          /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || cast(iPartistId as varchar2(10)) || '&' || 'amp;',
-            CASE
-              WHEN d.dept_id = iPdeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLparentDeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND exists (
-              SELECT 1
-              FROM ya_publisher_dept pd, ya_artist_dept ad
-              WHERE pd.dept_id = ad.dept_id
-              AND d.dept_id = pd.dept_id
-              AND pd.publisher_id = iPpublisherId
-              AND ad.artist_id = iPartistId
-            )
-          ORDER BY tw_disp_seq;
-
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || cast(iPartistId as varchar2(10)) || '&' || 'amp;',
-            'N' AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iPdeptId
-            AND dl.lang_id = iPlangId
-            AND d.tw_enabled = 'Y'
-            AND exists (
-              SELECT 1
-              FROM ya_publisher_dept pd, ya_artist_dept ad
-              WHERE pd.dept_id = ad.dept_id
-              AND d.dept_id = pd.dept_id
-              AND pd.publisher_id = iPpublisherId
-              AND ad.artist_id = iPartistId
-            )
-          ORDER BY tw_disp_seq;
-        END;
-    ELSIF iPsiteId = 10 OR iPsiteId = 11 THEN
-        BEGIN
-          /* Parent */
-          OPEN curPparent FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || cast(iPartistId as varchar2(10)) || '&' || 'amp;',
-            CASE
-              WHEN d.dept_id = iLparentDeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLgrantDeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND exists (
-              SELECT 1
-              FROM ya_publisher_dept pd, ya_artist_dept ad
-              WHERE pd.dept_id = ad.dept_id
-              AND d.dept_id = pd.dept_id
-              AND pd.publisher_id = iPpublisherId
-              AND ad.artist_id = iPartistId
-            )
-          ORDER BY hk_disp_seq;
-
-          /* Sibling */
-          OPEN curPsibling FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || cast(iPartistId as varchar2(10)) || '&' || 'amp;',
-            CASE
-              WHEN d.dept_id = iPdeptId THEN 'Y'
-              ELSE 'N'
-            END AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iLparentDeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND exists (
-              SELECT 1
-              FROM ya_publisher_dept pd, ya_artist_dept ad
-              WHERE pd.dept_id = ad.dept_id
-              AND d.dept_id = pd.dept_id
-              AND pd.publisher_id = iPpublisherId
-              AND ad.artist_id = iPartistId
-            )
-          ORDER BY hk_disp_seq;
-
-          /* Child */
-          OPEN curPchild FOR
-          SELECT
-            d.dept_id,
-            dl.dept_name,
-            'artIdxDept.aspx?aid=' || cast(iPartistId as varchar2(10)) || '&' || 'amp;',
-            'N' AS IsVein
-          FROM
-            ya_dept d,
-            ya_dept_rel dr,
-            ya_dept_lang dl
-          WHERE
-            d.dept_id = dr.dept_id
-            AND d.dept_id = dl.dept_id
-            AND dr.parent_dept_id = iPdeptId
-            AND dl.lang_id = iPlangId
-            AND d.ys_enabled = 'Y'
-            AND exists (
-              SELECT 1
-              FROM ya_publisher_dept pd, ya_artist_dept ad
-              WHERE pd.dept_id = ad.dept_id
-              AND d.dept_id = pd.dept_id
-              AND pd.publisher_id = iPpublisherId
-              AND ad.artist_id = iPartistId
-            )
-          ORDER BY hk_disp_seq;
-        END;
-    END IF;
+    /* Child */
+    OPEN curPchild FOR
+    SELECT
+      d.dept_id,
+      dl.dept_name,
+      'artIdxDept.aspx?aid=' || cast(iPartistId as varchar2(10)) || '&' || 'amp;',
+      'N' AS IsVein
+    FROM
+      ya_dept d,
+      ya_dept_rel dr,
+      ya_dept_lang dl,
+      ya_dept_site ds
+    WHERE
+      d.dept_id = dr.dept_id
+      AND d.dept_id = dl.dept_id
+      AND dr.parent_dept_id = iPdeptId
+      AND dl.lang_id = iPlangId
+      AND d.dept_id = ds.dept_id
+      AND ds.site_id = iPsiteId
+      AND ds.is_enabled = 'Y'
+      AND exists (
+        SELECT 1
+        FROM ya_publisher_dept pd, ya_artist_dept ad
+        WHERE pd.dept_id = ad.dept_id
+        AND d.dept_id = pd.dept_id
+        AND pd.publisher_id = iPpublisherId
+        AND ad.artist_id = iPartistId
+      )
+    ORDER BY dl.dept_name;
     RETURN;
   END GetArtPubDeptTree;
 END Pkg_FE_DepartmentAccess;
