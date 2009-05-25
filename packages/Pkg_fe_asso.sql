@@ -1478,7 +1478,7 @@ dtEndDate := ADD_MONTHS(dtStartDate, 1);
 
 IF (iCreditStatus<>1) THEN
 	OPEN cur_out1 FOR
-	SELECT  TO_CHAR(order_date, 'mm/dd/yyyy') AS order_date, TO_CHAR(last_change_date, 'mm/dd/yyyy') AS posting_date, YA_PROD_LANG.prod_name_u AS prod_name, yalo.sku, SUM(yalo.quantity) AS items,
+	SELECT  TO_CHAR(order_date, 'mm/dd/yyyy') AS order_date, TO_CHAR(last_change_date, 'mm/dd/yyyy') AS posting_date, YA_PROD_LANG.prod_name AS prod_name, yalo.sku, SUM(yalo.quantity) AS items,
 		SUM(yalo.unit_price * yalo.quantity) AS price, link_id,
 	                      NVL(yg.group_id, 18) AS group_id
 	FROM       (SELECT order_date, last_change_date, sku, quantity, unit_price, credit_status, yal.link_id, credit_amount
@@ -1495,7 +1495,7 @@ IF (iCreditStatus<>1) THEN
 		   (SELECT * FROM YA_GROUP WHERE division_id=1) yg
 	                       ON yg.account_id = YA_PRODUCT.account_id
 	WHERE      (YA_PROD_LANG.lang_id = iLangId)
-	GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, yg.group_id, link_id,
+	GROUP BY YA_PROD_LANG.prod_name,  yalo.sku, yg.group_id, link_id,
 	TO_CHAR(order_date, 'mm/dd/yyyy'), TO_CHAR(last_change_date, 'mm/dd/yyyy')
 	ORDER BY group_id, posting_date, prod_name;
 END IF;
@@ -1505,7 +1505,7 @@ IF (iCreditStatus<>2) THEN
 		OPEN cur_out2 FOR
 		SELECT  TO_CHAR(order_date, 'mm/dd/yyyy') AS order_date,
 			TO_CHAR(last_change_date, 'mm/dd/yyyy') AS posting_date,
-			YA_PROD_LANG.prod_name_u AS prod_name,
+			YA_PROD_LANG.prod_name AS prod_name,
 			yalo.sku,
 			SUM(yalo.quantity) AS items,
 			SUM(yalo.unit_price * yalo.quantity) AS price,
@@ -1536,12 +1536,12 @@ IF (iCreditStatus<>2) THEN
 			) yg
 			ON yg.account_id = YA_PRODUCT.account_id
 		WHERE      (YA_PROD_LANG.lang_id = iLangId)
-		GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, yg.group_id, link_id,
+		GROUP BY YA_PROD_LANG.prod_name,  yalo.sku, yg.group_id, link_id,
 		TO_CHAR(order_date, 'mm/dd/yyyy'), TO_CHAR(last_change_date, 'mm/dd/yyyy')
 		ORDER BY group_id, posting_date, prod_name;
 	ELSE
 		OPEN cur_out1 FOR
-		SELECT  TO_CHAR(order_date, 'mm/dd/yyyy') AS order_date, TO_CHAR(last_change_date, 'mm/dd/yyyy') AS posting_date, YA_PROD_LANG.prod_name_u AS prod_name, yalo.sku, SUM(yalo.quantity) AS items,
+		SELECT  TO_CHAR(order_date, 'mm/dd/yyyy') AS order_date, TO_CHAR(last_change_date, 'mm/dd/yyyy') AS posting_date, YA_PROD_LANG.prod_name AS prod_name, yalo.sku, SUM(yalo.quantity) AS items,
 			SUM(yalo.unit_price * yalo.quantity) AS price, link_id,
 		                      NVL(yg.group_id, 18) AS group_id
 		FROM       (SELECT order_date, last_change_date, sku, quantity, unit_price, credit_status, yal.link_id
@@ -1558,7 +1558,7 @@ IF (iCreditStatus<>2) THEN
 			   (SELECT * FROM YA_GROUP WHERE division_id=1) yg
 		                       ON yg.account_id = YA_PRODUCT.account_id
 		WHERE      (YA_PROD_LANG.lang_id = iLangId)
-		GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, yg.group_id, link_id,
+		GROUP BY YA_PROD_LANG.prod_name,  yalo.sku, yg.group_id, link_id,
 		TO_CHAR(order_date, 'mm/dd/yyyy'), TO_CHAR(last_change_date, 'mm/dd/yyyy')
 		ORDER BY group_id, posting_date, prod_name;
 	END IF;
@@ -1836,9 +1836,9 @@ IF (iNeedGroup = 1) THEN
 		OPEN cur_out01 FOR
 		SELECT  TO_CHAR(order_date, 'mm/dd/yyyy') AS order_date, TO_CHAR(last_change_date, 'mm/dd/yyyy') AS posting_date,
 			CASE
-				WHEN (YA_PROD_LANG.prod_name_u IS NULL OR YA_PROD_LANG.prod_name_u = '')
-				THEN (SELECT prod_name_u FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
-				ELSE YA_PROD_LANG.prod_name_u
+				WHEN (YA_PROD_LANG.prod_name IS NULL OR YA_PROD_LANG.prod_name = '')
+				THEN (SELECT prod_name FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
+				ELSE YA_PROD_LANG.prod_name
 				END
 			AS prod_name,
 			yalo.sku, SUM(yalo.quantity) AS items,
@@ -1868,7 +1868,7 @@ IF (iNeedGroup = 1) THEN
 			(SELECT * FROM YA_GROUP WHERE division_id=1) yg
 			ON yg.account_id = YA_PRODUCT.account_id
 		WHERE      (YA_PROD_LANG.lang_id = tiLangId)
-		GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, yg.group_id, link_id,
+		GROUP BY YA_PROD_LANG.prod_name,  yalo.sku, yg.group_id, link_id,
 			TO_CHAR(order_date, 'mm/dd/yyyy'), TO_CHAR(last_change_date, 'mm/dd/yyyy')
 		ORDER BY group_id, posting_date, prod_name;
 
@@ -1901,9 +1901,9 @@ IF (iNeedGroup = 1) THEN
 		OPEN cur_temp03 FOR
 		SELECT   TO_CHAR(yalo.order_date, 'mm/dd/yyyy') AS order_date,
 			CASE
-				WHEN (YA_PROD_LANG.prod_name_u IS NULL OR YA_PROD_LANG.prod_name_u = '')
-				THEN (SELECT prod_name_u FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
-				ELSE YA_PROD_LANG.prod_name_u
+				WHEN (YA_PROD_LANG.prod_name IS NULL OR YA_PROD_LANG.prod_name = '')
+				THEN (SELECT prod_name FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
+				ELSE YA_PROD_LANG.prod_name
 				END
 			AS prod_name, yalo.sku,
 			SUM(yalo.quantity) AS items,
@@ -1934,7 +1934,7 @@ IF (iNeedGroup = 1) THEN
 			(SELECT * FROM YA_GROUP WHERE division_id=1) yg
 		ON yg.account_id = YA_PRODUCT.account_id
 		WHERE      (YA_PROD_LANG.lang_id = tiLangId OR YA_PROD_LANG.lang_id = 1)
-		GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, yg.group_id, order_date, link_id
+		GROUP BY YA_PROD_LANG.prod_name,  yalo.sku, yg.group_id, order_date, link_id
 		ORDER BY group_id, order_date, prod_name;
 
 		IF (cur_out01 IS NULL) THEN
@@ -2242,10 +2242,10 @@ IF (iNeedGroup = 0) THEN
       SELECT * FROM (
          SELECT
             CASE
-               WHEN (YA_PROD_LANG.prod_name_u IS NULL OR YA_PROD_LANG.prod_name_u = '')
-               THEN (SELECT prod_name_u FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
+               WHEN (YA_PROD_LANG.prod_name IS NULL OR YA_PROD_LANG.prod_name = '')
+               THEN (SELECT prod_name FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
                ELSE
-               YA_PROD_LANG.prod_name_u
+               YA_PROD_LANG.prod_name
                END
             AS prod_name,
             yalo.sku,
@@ -2271,7 +2271,7 @@ IF (iNeedGroup = 0) THEN
             LEFT OUTER  JOIN YA_PRODUCT ON yalo.sku = YA_PRODUCT.sku
             LEFT OUTER  JOIN YA_PROD_LANG ON yalo.sku = YA_PROD_LANG.sku
          WHERE      (YA_PROD_LANG.lang_id = tiLangId)
-         GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, link_id
+         GROUP BY YA_PROD_LANG.prod_name,  yalo.sku, link_id
          ORDER BY items DESC)
       WHERE (ROWNUM<=20);
 
@@ -2312,10 +2312,10 @@ IF (iNeedGroup = 0) THEN
 			SELECT  TO_CHAR(order_date, 'mm/dd/yyyy') AS order_date,
 				TO_CHAR(last_change_date, 'mm/dd/yyyy') AS posting_date,
 				CASE
-					WHEN (YA_PROD_LANG.prod_name_u IS NULL OR YA_PROD_LANG.prod_name_u = '')
-					THEN (SELECT prod_name_u FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
+					WHEN (YA_PROD_LANG.prod_name IS NULL OR YA_PROD_LANG.prod_name = '')
+					THEN (SELECT prod_name FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
 					ELSE
-					YA_PROD_LANG.prod_name_u
+					YA_PROD_LANG.prod_name
 					END
 				AS prod_name,
 				yalo.sku,
@@ -2340,7 +2340,7 @@ IF (iNeedGroup = 0) THEN
 				LEFT OUTER  JOIN YA_PRODUCT ON yalo.sku = YA_PRODUCT.sku
 				LEFT OUTER  JOIN YA_PROD_LANG ON yalo.sku = YA_PROD_LANG.sku
 			WHERE      (YA_PROD_LANG.lang_id = tiLangId)
-			GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, link_id,
+			GROUP BY YA_PROD_LANG.prod_name,  yalo.sku, link_id,
 				TO_CHAR(order_date, 'mm/dd/yyyy'), TO_CHAR(last_change_date, 'mm/dd/yyyy')
 			ORDER BY posting_date, prod_name;
 
@@ -2381,9 +2381,9 @@ IF (iNeedGroup = 0) THEN
 			OPEN cur_temp10 FOR
 			SELECT  TO_CHAR(order_date, 'mm/dd/yyyy') AS order_date, TO_CHAR(last_change_date, 'mm/dd/yyyy') AS posting_date,
 			                CASE
-					WHEN (YA_PROD_LANG.prod_name_u IS NULL OR YA_PROD_LANG.prod_name_u = '')
-					THEN (SELECT prod_name_u FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
-					ELSE YA_PROD_LANG.prod_name_u
+					WHEN (YA_PROD_LANG.prod_name IS NULL OR YA_PROD_LANG.prod_name = '')
+					THEN (SELECT prod_name FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
+					ELSE YA_PROD_LANG.prod_name
 					END
 				AS prod_name,
 				yalo.sku, SUM(yalo.quantity) AS items,
@@ -2415,7 +2415,7 @@ IF (iNeedGroup = 0) THEN
 					) yg
 				ON yg.account_id = YA_PRODUCT.account_id
 			WHERE      (YA_PROD_LANG.lang_id = tiLangId)
-			GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, yg.group_id, link_id,
+			GROUP BY YA_PROD_LANG.prod_name,  yalo.sku, yg.group_id, link_id,
 				TO_CHAR(order_date, 'mm/dd/yyyy'), TO_CHAR(last_change_date, 'mm/dd/yyyy')
 			ORDER BY group_id, posting_date, prod_name;
 
@@ -2912,9 +2912,9 @@ IF (iNeedGroup = 1) THEN
 		OPEN cur_out01 FOR
 		SELECT  TO_CHAR(order_date, 'mm/dd/yyyy') AS order_date, TO_CHAR(last_change_date, 'mm/dd/yyyy') AS posting_date,
 			CASE
-				WHEN (YA_PROD_LANG.prod_name_u IS NULL OR YA_PROD_LANG.prod_name_u = '')
-				THEN (SELECT prod_name_u FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
-				ELSE YA_PROD_LANG.prod_name_u
+				WHEN (YA_PROD_LANG.prod_name IS NULL OR YA_PROD_LANG.prod_name = '')
+				THEN (SELECT prod_name FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
+				ELSE YA_PROD_LANG.prod_name
 				END
 			AS prod_name,
 			yalo.sku, SUM(yalo.quantity) AS items,
@@ -2940,7 +2940,7 @@ IF (iNeedGroup = 1) THEN
 			(SELECT * FROM YA_GROUP WHERE division_id=1) yg
 			ON yg.account_id = YA_PRODUCT.account_id
 		WHERE      (YA_PROD_LANG.lang_id = tiLangId)
-		GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, yg.group_id, link_id,
+		GROUP BY YA_PROD_LANG.prod_name,  yalo.sku, yg.group_id, link_id,
 			TO_CHAR(order_date, 'mm/dd/yyyy'), TO_CHAR(last_change_date, 'mm/dd/yyyy')
 		ORDER BY group_id, posting_date, prod_name;
 
@@ -2967,9 +2967,9 @@ IF (iNeedGroup = 1) THEN
 		OPEN cur_temp03 FOR
 		SELECT   TO_CHAR(yalo.order_date, 'mm/dd/yyyy') AS order_date,
 			CASE
-				WHEN (YA_PROD_LANG.prod_name_u IS NULL OR YA_PROD_LANG.prod_name_u = '')
-				THEN (SELECT prod_name_u FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
-				ELSE YA_PROD_LANG.prod_name_u
+				WHEN (YA_PROD_LANG.prod_name IS NULL OR YA_PROD_LANG.prod_name = '')
+				THEN (SELECT prod_name FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
+				ELSE YA_PROD_LANG.prod_name
 				END
 			AS prod_name, yalo.sku,
 			SUM(yalo.quantity) AS items,
@@ -2994,7 +2994,7 @@ IF (iNeedGroup = 1) THEN
 			(SELECT * FROM YA_GROUP WHERE division_id=1) yg
 		ON yg.account_id = YA_PRODUCT.account_id
 		WHERE      (YA_PROD_LANG.lang_id = tiLangId OR YA_PROD_LANG.lang_id = 1)
-		GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, yg.group_id, order_date, link_id
+		GROUP BY YA_PROD_LANG.prod_name,  yalo.sku, yg.group_id, order_date, link_id
 		ORDER BY group_id, order_date, prod_name;
 
 		IF (cur_out01 IS NULL) THEN
@@ -3278,10 +3278,10 @@ IF (iNeedGroup = 0) THEN
       SELECT * FROM(
          SELECT
             CASE
-               WHEN (YA_PROD_LANG.prod_name_u IS NULL OR YA_PROD_LANG.prod_name_u = '')
-               THEN (SELECT prod_name_u FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
+               WHEN (YA_PROD_LANG.prod_name IS NULL OR YA_PROD_LANG.prod_name = '')
+               THEN (SELECT prod_name FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
                ELSE
-               YA_PROD_LANG.prod_name_u
+               YA_PROD_LANG.prod_name
                END
             AS prod_name,
             yalo.sku,
@@ -3301,7 +3301,7 @@ IF (iNeedGroup = 0) THEN
             LEFT OUTER  JOIN YA_PRODUCT ON yalo.sku = YA_PRODUCT.sku
             LEFT OUTER  JOIN YA_PROD_LANG ON yalo.sku = YA_PROD_LANG.sku
          WHERE      (YA_PROD_LANG.lang_id = tiLangId)
-         GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, link_id
+         GROUP BY YA_PROD_LANG.prod_name,  yalo.sku, link_id
          ORDER BY items DESC)
       WHERE (ROWNUM<=20);
 
@@ -3342,10 +3342,10 @@ IF (iNeedGroup = 0) THEN
 			SELECT  TO_CHAR(order_date, 'mm/dd/yyyy') AS order_date,
 				TO_CHAR(last_change_date, 'mm/dd/yyyy') AS posting_date,
 				CASE
-					WHEN (YA_PROD_LANG.prod_name_u IS NULL OR YA_PROD_LANG.prod_name_u = '')
-					THEN (SELECT prod_name_u FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
+					WHEN (YA_PROD_LANG.prod_name IS NULL OR YA_PROD_LANG.prod_name = '')
+					THEN (SELECT prod_name FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
 					ELSE
-					YA_PROD_LANG.prod_name_u
+					YA_PROD_LANG.prod_name
 					END
 				AS prod_name,
 				yalo.sku,
@@ -3364,7 +3364,7 @@ IF (iNeedGroup = 0) THEN
 				LEFT OUTER  JOIN YA_PRODUCT ON yalo.sku = YA_PRODUCT.sku
 				LEFT OUTER  JOIN YA_PROD_LANG ON yalo.sku = YA_PROD_LANG.sku
 			WHERE      (YA_PROD_LANG.lang_id = tiLangId)
-			GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, link_id,
+			GROUP BY YA_PROD_LANG.prod_name,  yalo.sku, link_id,
 				TO_CHAR(order_date, 'mm/dd/yyyy'), TO_CHAR(last_change_date, 'mm/dd/yyyy')
 			ORDER BY posting_date, prod_name;
 
@@ -3405,9 +3405,9 @@ IF (iNeedGroup = 0) THEN
 			OPEN cur_temp10 FOR
 			SELECT  TO_CHAR(order_date, 'mm/dd/yyyy') AS order_date, TO_CHAR(last_change_date, 'mm/dd/yyyy') AS posting_date,
 			                CASE
-					WHEN (YA_PROD_LANG.prod_name_u IS NULL OR YA_PROD_LANG.prod_name_u = '')
-					THEN (SELECT prod_name_u FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
-					ELSE YA_PROD_LANG.prod_name_u
+					WHEN (YA_PROD_LANG.prod_name IS NULL OR YA_PROD_LANG.prod_name = '')
+					THEN (SELECT prod_name FROM YA_PROD_LANG WHERE sku=yalo.sku AND lang_id = 1)
+					ELSE YA_PROD_LANG.prod_name
 					END
 				AS prod_name,
 				yalo.sku, SUM(yalo.quantity) AS items,
@@ -3433,7 +3433,7 @@ IF (iNeedGroup = 0) THEN
 					) yg
 				ON yg.account_id = YA_PRODUCT.account_id
 			WHERE      (YA_PROD_LANG.lang_id = tiLangId)
-			GROUP BY YA_PROD_LANG.prod_name_u,  yalo.sku, yg.group_id, link_id,
+			GROUP BY YA_PROD_LANG.prod_name,  yalo.sku, yg.group_id, link_id,
 				TO_CHAR(order_date, 'mm/dd/yyyy'), TO_CHAR(last_change_date, 'mm/dd/yyyy')
 			ORDER BY group_id, posting_date, prod_name;
 
