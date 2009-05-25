@@ -4,7 +4,7 @@ CREATE OR REPLACE FORCE VIEW SS_ADM.VIEWASSOLINKORDERLANG (LINK_ID, ORDER_NUM, O
     alo.order_num,
     alo.order_date,
     alo.sku,
-    pl.prod_name_u AS product_name,
+    pl.prod_name AS product_name,
     alo.credit_status,
     alo.last_change_date,
     alo.quantity,
