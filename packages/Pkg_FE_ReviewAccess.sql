@@ -121,13 +121,30 @@ IS
     curPresult OUT refCur
   )
   AS
-    dtLlast_date_posted DATE;
-    dtLoldest_date_posted DATE;
-    iLstart_rec INT;
-    iLlast_rating_id INT;
   BEGIN
-    OPEN curPresult	FOR
-    SELECT 1 FROM ya_product WHERE 1=0;
+    OPEN curPresult FOR
+    SELECT -1 as rating_id, pa.id as review_id, pa.sku,
+    0 as product_rating,
+    prl.date_posted, 'Y' as review_approved,
+    '' as shopper_id,
+    '' as reviewer,
+    'EDITORIAL' as reviewer_type,
+    prl.lang_id,
+    '' as title,
+    prl.review,
+    '' as review_img_loc,
+    0 as review_img_width,
+    0 as review_img_height,
+    '' as firstname, '' as lastname, '' as nickname,
+    0 as displaymode,
+    0 as helpful_num,
+    0 as nonhelpful_num
+    FROM ya_profess_review pa
+      INNER JOIN ya_profess_review_lang prl ON pa.id = prl.profess_review_id
+    WHERE pa.sku = iPsku
+      OR pa.sku IN (SELECT 1 from ya_product_title_rel where product_title_child_sku = sku)
+      OR pa.sku IN (SELECT product_title_parent_sku from ya_product_title_rel where product_title_child_sku = iPsku)
+      OR pa.sku IN (SELECT parent_sku AS sku FROM ya_review_share_proReview WHERE child_sku=iPsku AND not exists (SELECT 1 from ya_product_title_rel where product_title_child_sku = parent_sku));
     RETURN;
   END GetProReviewBySku;
 
