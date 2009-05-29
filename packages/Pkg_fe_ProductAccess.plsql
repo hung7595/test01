@@ -152,6 +152,19 @@ AS
     iPsiteId		IN	INT,
     curPgetFrontpage	OUT	refCur
   ); /* For get brand page product lot */
+
+  PROCEDURE InsertTrackItDownData (
+    iPsku		IN	INT,
+    iPsite_id		IN	INT,
+    cPemail		IN	VARCHAR2
+  );
+
+  PROCEDURE InsertFutureReleaseData (
+    iPsku		IN	INT,
+    iPsite_id		IN	INT,
+    cPemail		IN	VARCHAR2,
+    cPname		IN	VARCHAR2
+  );  
 END Pkg_Fe_Productaccess;
 /
 CREATE OR REPLACE PACKAGE BODY "PKG_FE_PRODUCTACCESS" 
@@ -969,5 +982,77 @@ END;
         ORDER BY pl.lot_location, pl.priority;
   RETURN;
   END GetFrontPageProductLotsByPId;
+
+  PROCEDURE InsertTrackItDownData (
+    iPsku IN INT,
+    iPsite_id IN INT,
+    cPemail IN VARCHAR2
+    )
+  AS
+  BEGIN
+    INSERT INTO YA_TRACK_IT_DOWN (
+      site_id,
+      sku,
+      email
+      )
+    SELECT
+      iPsite_id,
+      iPsku,
+      cPemail
+    FROM dual
+    WHERE NOT EXISTS
+      (
+        SELECT 1
+        FROM YA_TRACK_IT_DOWN
+        WHERE sku = iPsku
+        AND site_id = iPsite_id
+        AND email = cPemail
+        AND ROWNUM = 1
+      );
+
+    IF SQLCODE <> 0 THEN
+      ROLLBACK;
+    ELSE
+      COMMIT;
+    END IF;
+  END InsertTrackItDownData;
+
+  PROCEDURE InsertFutureReleaseData (
+    iPsku IN INT,
+    iPsite_id IN INT,
+    cPemail IN VARCHAR2,
+    cPname IN VARCHAR2
+    )
+  AS
+  BEGIN
+    INSERT INTO YA_FUTURE_RELEASE (
+      site_id,
+      sku,
+      customer_email,
+      customer_name
+      )
+    SELECT
+      iPsite_id,
+      iPsku,
+      cPemail,
+      cPname
+    FROM DUAL
+    WHERE NOT EXISTS
+      (
+        SELECT 1
+        FROM YA_FUTURE_RELEASE
+        WHERE
+          sku = iPsku
+          AND site_id = iPsite_id
+          AND customer_email = cPemail
+          AND ROWNUM = 1
+      );
+
+    IF SQLCODE <> 0 THEN
+      ROLLBACK;
+    ELSE
+      COMMIT;
+    END IF;
+  END InsertFutureReleaseData;  
 END Pkg_Fe_Productaccess;
 /
