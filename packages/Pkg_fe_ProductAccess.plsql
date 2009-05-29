@@ -236,19 +236,17 @@ IS
           pl.lot_location,
           pll.description,
           pl.dept_id,
-          PLI.desc_img_loc,
-          NVL(PLI.desc_img_width,0),
-          NVL(PLI.desc_img_height,0),
-          NULL, --dl.dept_name,
-          -1, --NVL(ps.dept_id, -1),
+          '' as desc_img_loc,
+          0 as desc_img_width,
+          0 as desc_img_height,
+          NULL,
+          -1,
           pll.remark
         FROM
           YA_PRODUCT_LOT pl
           LEFT OUTER JOIN YA_PROD_LOT_LANG pll ON
             pl.prod_lot_id = pll.prod_lot_id
             AND pll.lang_id = iPlangId
-          LEFT OUTER JOIN YA_PROD_LOT_LANG PLI ON
-            PLI.prod_lot_id = pl.prod_lot_id
           INNER JOIN prod_region pr ON
             pl.sku = pr.prod_id
 		    AND pr.region_id=iPsiteId
@@ -544,9 +542,9 @@ END;
       TEMP_PRODUCT_INT_TABLE pt
       INNER JOIN YA_PRODUCT p ON
         pt.column1 = p.sku
-      INNER JOIN backend_adm.prod_avlb pa ON
+      INNER JOIN prod_avlb pa ON
         pt.column1 = pa.prod_id AND pa.region_id = iLRegionId
-      INNER JOIN backend_adm.prod_region pr ON
+      INNER JOIN prod_region pr ON
         pt.column1 = pr.prod_id AND pr.region_id = iLRegionId
       LEFT OUTER JOIN YA_AVAILABILITY_OVERRIDE o ON
         pr.supplier_id = o.supplier_id
