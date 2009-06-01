@@ -1,5 +1,5 @@
 
-  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_SHOPPERACCESS" 
+  CREATE OR REPLACE PACKAGE "PKG_FE_SHOPPERACCESS" 
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -54,7 +54,7 @@ AS
   );
 END Pkg_FE_ShopperAccess;
 /
-CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_SHOPPERACCESS" 
+CREATE OR REPLACE PACKAGE BODY "PKG_FE_SHOPPERACCESS" 
 AS
   PROCEDURE GetShopperDataBySessionId (
     cPsession_id IN CHAR,
@@ -315,6 +315,12 @@ AS
         iLtemp := 0;
     END;
 
+    IF cPsiteId = 10 THEN
+      BEGIN
+        INSERT INTO ya_survey_customer_list (shopper_id, survey_code, email, completed, created_datetime, updated_datetime)
+        SELECT shopper_id, 100, email, 'N', sysdate, sysdate FROM ya_shopper WHERE shopper_id = cPshopper_id;
+      END;
+    END IF;
     IF iLtemp = 0 THEN -- Email Not Exist
       BEGIN
         INSERT INTO ya_customer_profile
