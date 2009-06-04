@@ -683,25 +683,18 @@ END;
       AND pa.avlb < o.availability_id
     INNER JOIN
       (
-        select pa2.prod_id, pa2.origin_id as region_id 
-        from prod_region pa2 
-        where pa2.origin_id = iPsiteId
-          and pa2.category_id = 1
-          and pa2.region_id = pa2.origin_id
-/*      
-        select pa2.prod_id, nvl(rm.region_id, pa2.origin_id) as region_id 
-        from prod_region pa2 
+        select pa2.prod_id, nvl(rm.region_id, pa2.origin_id) as region_id         
+        from prod_region pa2
           left outer join
           (
             select rm.region_id, rm.origin_id, rm.category
             from ya_region_mapping rm
             where country_id = iPcountryId
-          ) rm on pa2.origin_id = rm.origin_id 
+          ) rm on pa2.origin_id = rm.origin_id and exists( select 1 from prod_region pr2 where rm.region_id = pr2.region_id and pr2.prod_id = pa2.prod_id )
           and pa2.category_id = rm.category
         where pa2.origin_id = iPsiteId
           and pa2.category_id = 1
           and pa2.region_id = pa2.origin_id
-*/
       ) t ON
         pa.prod_id = t.prod_id
         AND pa.region_id = t.region_id
@@ -772,25 +765,18 @@ END;
       AND pr.category_id = 1
     INNER JOIN
       (
-        select pa2.prod_id, pa2.origin_id as region_id 
-        from prod_region pa2 
-        where pa2.origin_id = iPsiteId
-          and pa2.category_id = 1
-          and pa2.region_id = pa2.origin_id
-/*      
-        select pa2.prod_id, nvl(rm.region_id, pa2.origin_id) as region_id 
-        from prod_region pa2 
+        select pa2.prod_id, nvl(rm.region_id, pa2.origin_id) as region_id         
+        from prod_region pa2
           left outer join
           (
             select rm.region_id, rm.origin_id, rm.category
             from ya_region_mapping rm
             where country_id = iPcountryId
-          ) rm on pa2.origin_id = rm.origin_id 
+          ) rm on pa2.origin_id = rm.origin_id and exists( select 1 from prod_region pr2 where rm.region_id = pr2.region_id and pr2.prod_id = pa2.prod_id )
           and pa2.category_id = rm.category
         where pa2.origin_id = iPsiteId
           and pa2.category_id = 1
           and pa2.region_id = pa2.origin_id
-*/                
       ) t ON
         pr.prod_id = t.prod_id
         AND pr.region_id = t.region_id
@@ -925,25 +911,18 @@ END GetShadowBasketWithWarranty;
       AND pr.region_id = pa.region_id
     INNER JOIN
       (
-        select pa2.prod_id, pa2.origin_id as region_id 
-        from prod_region pa2 
-        where pa2.origin_id = iPsiteId
-          and pa2.category_id = 1
-          and pa2.region_id = pa2.origin_id
-/*      
-        select pa2.prod_id, nvl(rm.region_id, pa2.origin_id) as region_id 
-        from prod_region pa2 
+        select pa2.prod_id, nvl(rm.region_id, pa2.origin_id) as region_id         
+        from prod_region pa2
           left outer join
           (
             select rm.region_id, rm.origin_id, rm.category
             from ya_region_mapping rm
             where country_id = iPcountryId
-          ) rm on pa2.origin_id = rm.origin_id 
+          ) rm on pa2.origin_id = rm.origin_id and exists( select 1 from prod_region pr2 where rm.region_id = pr2.region_id and pr2.prod_id = pa2.prod_id )
           and pa2.category_id = rm.category
         where pa2.origin_id = iPsiteId
           and pa2.category_id = 1
           and pa2.region_id = pa2.origin_id
-*/           
       ) t ON
         pa.prod_id = t.prod_id
         AND pa.region_id = t.region_id
@@ -1015,25 +994,18 @@ END GetShadowBasketWithWarranty;
       AND pr.category_id = 1 --not wholesale
     INNER JOIN
       (
-        select pa2.prod_id, pa2.origin_id as region_id 
-        from prod_region pa2 
-        where pa2.origin_id = iPsiteId
-          and pa2.category_id = 1
-          and pa2.region_id = pa2.origin_id
-/*      
-        select pa2.prod_id, nvl(rm.region_id, pa2.origin_id) as region_id 
-        from prod_region pa2 
+        select pa2.prod_id, nvl(rm.region_id, pa2.origin_id) as region_id         
+        from prod_region pa2
           left outer join
           (
             select rm.region_id, rm.origin_id, rm.category
             from ya_region_mapping rm
             where country_id = iPcountryId
-          ) rm on pa2.origin_id = rm.origin_id 
+          ) rm on pa2.origin_id = rm.origin_id and exists( select 1 from prod_region pr2 where rm.region_id = pr2.region_id and pr2.prod_id = pa2.prod_id )
           and pa2.category_id = rm.category
         where pa2.origin_id = iPsiteId
           and pa2.category_id = 1
           and pa2.region_id = pa2.origin_id
-*/        
       ) t ON
         pr.prod_id = t.prod_id
         AND pr.region_id = t.region_id
@@ -1180,25 +1152,18 @@ END GetBasketWithWarranty;
         AND pa.category = 1
       INNER JOIN
         (
-        select pa2.prod_id, pa2.origin_id as region_id 
-        from prod_region pa2 
-        where pa2.origin_id = iLOriginId
-          and pa2.category_id = 1
-          and pa2.region_id = pa2.origin_id
-/*        
-          select pa2.prod_id, nvl(rm.region_id, pa2.origin_id) as region_id 
-          from prod_region pa2 
+          select pa2.prod_id, nvl(rm.region_id, pa2.origin_id) as region_id         
+          from prod_region pa2
             left outer join
             (
               select rm.region_id, rm.origin_id, rm.category
               from ya_region_mapping rm
               where country_id = iPcountryId
-            ) rm on pa2.origin_id = rm.origin_id 
+            ) rm on pa2.origin_id = rm.origin_id and exists( select 1 from prod_region pr2 where rm.region_id = pr2.region_id and pr2.prod_id = pa2.prod_id )
             and pa2.category_id = rm.category
           where pa2.origin_id = iLOriginId
             and pa2.category_id = 1
-            and pa2.region_id = pa2.origin_id
-*/          
+            and pa2.region_id = pa2.origin_id        
         ) t ON
           pa.prod_id = t.prod_id
           AND pa.region_id = t.region_id
@@ -1276,25 +1241,18 @@ END GetBasketWithWarranty;
         AND pr.origin_id = iLOriginId
       INNER JOIN
         (
-        select pa2.prod_id, pa2.origin_id as region_id 
-        from prod_region pa2 
-        where pa2.origin_id = iLOriginId
-          and pa2.category_id = 1
-          and pa2.region_id = pa2.origin_id
-/*                  
-          select pa2.prod_id, nvl(rm.region_id, pa2.origin_id) as region_id 
-          from prod_region pa2 
+          select pa2.prod_id, nvl(rm.region_id, pa2.origin_id) as region_id         
+          from prod_region pa2
             left outer join
             (
               select rm.region_id, rm.origin_id, rm.category
               from ya_region_mapping rm
               where country_id = iPcountryId
-            ) rm on pa2.origin_id = rm.origin_id 
+            ) rm on pa2.origin_id = rm.origin_id and exists( select 1 from prod_region pr2 where rm.region_id = pr2.region_id and pr2.prod_id = pa2.prod_id )
             and pa2.category_id = rm.category
           where pa2.origin_id = iLOriginId
             and pa2.category_id = 1
-            and pa2.region_id = pa2.origin_id
-*/            
+            and pa2.region_id = pa2.origin_id        
         ) t ON
           pr.prod_id = t.prod_id
           AND pr.region_id = t.region_id        
@@ -1480,25 +1438,18 @@ END GetBasketWithWarranty;
           AND (bpr.prod_id = pb.partner_sku OR bpr.prod_id = pb.sku)
       INNER JOIN
         (
-        select pa2.prod_id, pa2.origin_id as region_id 
-        from prod_region pa2 
-        where pa2.origin_id = iPsite_id
-          and pa2.category_id = 1
-          and pa2.region_id = pa2.origin_id
-/*        
-          select pa2.prod_id, nvl(rm.region_id, pa2.origin_id) as region_id 
-          from prod_region pa2 
+          select pa2.prod_id, nvl(rm.region_id, pa2.origin_id) as region_id         
+          from prod_region pa2
             left outer join
             (
               select rm.region_id, rm.origin_id, rm.category
               from ya_region_mapping rm
-              where country_id = iPcountry_id
-            ) rm on pa2.origin_id = rm.origin_id 
+              where country_id = ipcountry_id
+            ) rm on pa2.origin_id = rm.origin_id and exists( select 1 from prod_region pr2 where rm.region_id = pr2.region_id and pr2.prod_id = pa2.prod_id )
             and pa2.category_id = rm.category
           where pa2.origin_id = iPsite_id
             and pa2.category_id = 1
             and pa2.region_id = pa2.origin_id
-*/            
         ) t ON
           bpr.prod_id = t.prod_id
           AND bpr.region_id = t.region_id
@@ -1598,25 +1549,18 @@ END GetBasketWithWarranty;
             AND bpa.category = bpr.category_id
           INNER JOIN
             (
-        select pa2.prod_id, pa2.origin_id as region_id 
-        from prod_region pa2 
-        where pa2.origin_id = iPsite_id
-          and pa2.category_id = 1
-          and pa2.region_id = pa2.origin_id
-/*                      
-              select pa2.prod_id, nvl(rm.region_id, pa2.origin_id) as region_id 
-              from prod_region pa2 
+              select pa2.prod_id, nvl(rm.region_id, pa2.origin_id) as region_id         
+              from prod_region pa2
                 left outer join
                 (
                   select rm.region_id, rm.origin_id, rm.category
                   from ya_region_mapping rm
-                  where country_id = iPcountry_id
-                ) rm on pa2.origin_id = rm.origin_id 
+                  where country_id = ipcountry_id
+                ) rm on pa2.origin_id = rm.origin_id and exists( select 1 from prod_region pr2 where rm.region_id = pr2.region_id and pr2.prod_id = pa2.prod_id )
                 and pa2.category_id = rm.category
               where pa2.origin_id = iPsite_id
                 and pa2.category_id = 1
-                and pa2.region_id = pa2.origin_id
-*/                
+                and pa2.region_id = pa2.origin_id            
             ) t ON
               bpr.prod_id = t.prod_id
               AND bpr.region_id = t.region_id    
