@@ -57,6 +57,18 @@ AS
     curPresult OUT refCur
 	);  
 
+	PROCEDURE GetPagedSpotlightReviewByDate (
+		iPtotal_vote INT,
+		iPpositive_vote INT,
+		iPlang_id INT,
+		dPstart_date DATE,
+		dPend_date DATE,
+		iPpage_number IN INT,
+		iPpage_size IN INT,
+		iPnum_record OUT INT,
+    curPresult OUT refCur
+	);
+
 	PROCEDURE GetEditorReviewsBySku (
     iPsite_id IN INT,
     iPlang_id IN INT,
@@ -551,7 +563,7 @@ IS
 					ltrim(nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname))
 				), 'Anonymous'
 			) as reivewer,
-			r.shopper_id,s.email,-1 as rating_id,r.title,(case review_approved when 'Y' then 'Approved' end) as status,r.lang_id,r.reviewer_type
+			r.shopper_id,s.email,-1 as rating_id,r.title,(case review_approved when 'Y' then 'Approved' else 'Rejected' end) as status,r.lang_id,r.reviewer_type
 			from
 			(
 				select
@@ -562,8 +574,8 @@ IS
 				from ya_review_helpful rh
 				group by rh.review_id
 			)  summary
-			  inner join ya_customer_review r on summary.review_id = r.id
-			  left join ya_shopper s on s.shopper_id=r.shopper_id
+			  right outer join ya_customer_review r on summary.review_id = r.id
+			  left outer join ya_shopper s on s.shopper_id=r.shopper_id
 			  inner join ya_prod_lang pn on pn.sku=r.sku and pn.lang_id=r.lang_id
 			WHERE	r.id not in (select review_id from ya_review_exclude_list where exclude_for='S')
   			and r.sku = iPsku
@@ -594,6 +606,183 @@ IS
 		RETURN;
 	END GetPagedSpotlightReviewBySKU;
 
+
+	PROCEDURE GetPagedSpotlightReviewByDate (
+		iPtotal_vote INT,
+		iPpositive_vote INT,
+		iPlang_id INT,
+		dPstart_date DATE,
+		dPend_date DATE,
+		iPpage_number IN INT,
+		iPpage_size IN INT,
+		iPnum_record OUT INT,
+    curPresult OUT refCur
+	)
+	AS
+    -- range of records to extract for the specified page
+    iLfrom_id INT;
+    iLto_id INT;
+		iLtmp_table_id INT;
+	BEGIN
+		-- Empty temp table
+		EXECUTE IMMEDIATE 'TRUNCATE TABLE ss_adm.temp_spotlight_review_report';
+
+		INSERT INTO ss_adm.temp_spotlight_review_report
+		(
+			id,
+			positive,
+			total,
+			perc,
+			sku,
+			prod_name_u,
+			date_posted,
+			review_id,
+			review,
+			reviewer,
+			shopper_id,
+			email,
+			rating_id,
+			title,
+			status,
+			lang_id,
+			reviewer_type
+		)
+		SELECT ROWNUM,
+		Y, total, perc, sku, prod_name, date_posted, review_id, review,
+		reivewer, shopper_id, email, rating_id, title, status, lang_id, reviewer_type
+		FROM
+		(
+			select
+			nvl(summary.Y, 0) as Y, nvl(summary.total, 0) as total, nvl(summary.perc, 0) as perc, r.sku, pn.prod_name, r.date_posted, r.id as review_id, r.review,
+			nvl(
+				nvl(
+					LTrim(
+						(
+						SELECT
+							CASE display_mode
+								WHEN 0 THEN s.nickname
+								WHEN 1 THEN s.firstname
+								WHEN 2 THEN s.firstname || ' ' || s.lastname
+								WHEN 3 THEN s.lastname || ' ' || s.firstname
+							end
+						FROM ya_review_reviewerName rn
+						inner join ya_shopper s on rn.shopper_id=s.shopper_id
+						WHERE rn.shopper_id=r.shopper_id)
+					),
+					ltrim(nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname))
+				), 'Anonymous'
+			) as reivewer,
+			r.shopper_id,s.email,-1 as rating_id,r.title,(case r.review_approved when 'Y' then 'Approved' else 'Rejected' end) as status,r.lang_id,r.reviewer_type
+			from
+			(
+				select
+				rh.review_id,
+				sum(case rh.review_helpful when 'Y' then 1 else 0 end) as Y,
+				(sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)  ) as total,
+				cast(round(sum(case rh.review_helpful when 'Y' then 1 else 0 end) / cast((sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)) as float) * 100,0) as int) as perc
+				from ya_review_helpful rh
+				group by rh.review_id
+			)  summary
+			  right outer join ya_customer_review r on summary.review_id = r.id
+			  left outer join ya_shopper s on s.shopper_id=r.shopper_id
+			  inner join ya_prod_lang pn on pn.sku=r.sku and pn.lang_id=r.lang_id
+			WHERE	r.review_approved='Y'
+			  and (pn.lang_id = iPlang_id OR iPlang_id = 0)
+			  and r.reviewer_type=1 -- user
+			  and  r.id in(
+				  select review_id
+				  from ya_review_helpful rh
+				  group by review_id
+				  having sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)>=iPtotal_vote
+				  and	cast(round(sum(case rh.review_helpful when 'Y' then 1 else 0 end) / cast((sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)) as float) * 100,0) as int)>=iPpositive_vote
+			  )
+			  and	(r.date_posted >= dPstart_date AND r.date_posted <= dPend_date)
+			  and	r.id not in (select review_id from ya_review_exclude_list where exclude_for='S')
+			order by date_posted desc
+		) inner_table;
+
+		SELECT COUNT(*) INTO iLtmp_table_id FROM temp_spotlight_review_report;
+
+		INSERT INTO temp_spotlight_review_report
+		(
+			id,
+			positive,
+			total,
+			perc,
+			sku,
+			prod_name_u,
+			date_posted,
+			review_id,
+			review,
+			reviewer,
+			shopper_id,
+			email,
+			rating_id,
+			title,
+			status,
+			lang_id
+		)
+		SELECT iLtmp_table_id + ROWNUM,
+		Y, total, perc, sku, prod_name, date_posted, review_id, review,
+		reivewer, shopper_id, email, rating_id, title, status, lang_id
+		FROM
+		(
+			select
+			nvl(summary.Y, 0) as Y, nvl(summary.total, 0) as total, nvl(summary.perc, 0) as perc, r.sku, pn.prod_name, date_posted, r.id as review_id, r.review,
+			nvl(ltrim(nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname)), 'Anonymous') as reivewer,
+			r.shopper_id,s.email,-1 as rating_id,r.title,(case r.review_approved when 'Y' then 'Approved' end) as status,r.lang_id
+			from
+			(
+				select
+				rh.review_id,
+				sum(case rh.review_helpful when 'Y' then 1 else 0 end) as Y,
+				(sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)  ) as total,
+				cast(round(sum(case rh.review_helpful when 'Y' then 1 else 0 end) / cast((sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)) as float) * 100,0) as int) as perc
+				from ya_review_helpful rh
+				group by rh.review_id
+			)  summary
+			  left outer join ya_customer_review r on summary.review_id = r.id
+			  left outer join ya_shopper s on s.shopper_id=r.shopper_id
+			  inner join ya_prod_lang pn on pn.sku=r.sku and pn.lang_id=r.lang_id
+			WHERE r.review_approved='Y'
+			  and r.lang_id=iPlang_id
+			  and r.reviewer_type=1 --user
+			  and r.id in
+			  (
+				  select review_id
+				  from ya_review_helpful rh
+				  group by review_id
+				  having sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)>=iPtotal_vote
+				  and cast(round(sum(case rh.review_helpful when 'Y' then 1 else 0 end) / cast((sum(case rh.review_helpful when 'Y' then 1 else 0 end) + sum(case rh.review_helpful when 'N' then 1 else 0 end)) as float) * 100,0) as int)>=iPpositive_vote
+			  )
+			  and	(r.date_posted >= dPstart_date AND r.date_posted <= dPend_date)
+			  and	r.id not in (select review_id from ya_review_exclude_list where exclude_for='S')
+			order by r.date_posted desc
+		) inner_table;
+
+    --Return Total Record count
+    SELECT count(1) INTO iPnum_record From temp_spotlight_review_report;
+
+    -- calculate the first and last ID of the range of topics we need
+		iLfrom_id := ((iPpage_number - 1) * iPpage_size) + 1;
+    iLto_id := iPpage_number * iPpage_size;
+
+    -- select the page of records
+		OPEN curPresult	FOR
+			SELECT * FROM
+			(
+				SELECT innerQuery.*, rownum AS rnum
+				from(
+					SELECT * FROM temp_spotlight_review_report
+				) innerQuery
+				WHERE ROWNUM <= iLto_id
+			)
+			WHERE rnum >= iLfrom_id;
+
+    COMMIT;
+		RETURN;
+	END GetPagedSpotlightReviewByDate;
+	
 	PROCEDURE GetEditorReviewsBySku (
     iPsite_id IN INT,
     iPlang_id IN INT,

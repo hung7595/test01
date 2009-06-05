@@ -759,7 +759,7 @@ END;
       AND a.sku = iPsku
       AND b.lang_id = iPlangId
       AND d.lang_id = iPlangId
-			AND c.section_id = 0
+			AND c.section_id <> 81
     ORDER BY
       section_priority, b.section_id, c.priority, c.image_id;
 
