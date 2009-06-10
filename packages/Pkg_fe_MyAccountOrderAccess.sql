@@ -235,7 +235,7 @@ AS
       INNER JOIN lookup sml ON s.method = sml.code AND sml.lang_type = iLlang_id AND sml.category = 'shippingMethod'
       INNER JOIN lookup scl ON s.country = scl.code AND scl.lang_type = -1 AND scl.category = 'country'
       INNER JOIN YA_PRODUCT pd ON ol.prod_id = pd.sku
-	  INNER JOIN prod_region pr ON ol.prod_id=pr.prod_id AND pr.region_id = o.origin_id
+	    INNER JOIN prod_region pr ON ol.prod_id=pr.prod_id AND (pr.region_id = o.origin_id or (pr.region_id = 10 and o.origin_id = 11))
       INNER JOIN YA_PROD_LANG pl ON ol.prod_id = pl.sku AND pl.lang_id = iLlang_id
       INNER JOIN YA_PROD_LANG pe ON ol.prod_id = pe.sku AND pe.lang_id = 1
     WHERE o.origin_order_id = cPorder_id
