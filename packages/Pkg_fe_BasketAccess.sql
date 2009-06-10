@@ -817,7 +817,22 @@ END GetShadowBasketWithWarranty;
   AS
     dtLnullDate DATE := TO_DATE('01-01-1900','DD-MM-YYYY');
     iLShipmentUnitConst INT;
+    iLRegionId INT;
+    iLOriginId INT;    
   BEGIN
+
+  IF iPsiteId = 11 THEN
+		begin
+		  iLRegionId := 10;
+		  iLOriginId := 10;
+		end;
+	ELSE
+		begin
+		  iLRegionId := iPsiteId;
+		  iLOriginId := iPsiteId;
+		end;
+  END IF;
+  
   /* Attribute Info */
   OPEN curPgetBasket1 FOR
   SELECT
@@ -902,7 +917,7 @@ END GetShadowBasketWithWarranty;
     ya_new_basket pt
     INNER JOIN prod_avlb pa ON
       pa.prod_id = pt.sku
-      AND pa.origin_id = pt.site_id
+      AND pa.origin_id = iLOriginId
       AND pa.category = 1
     INNER JOIN prod_region pr ON
       pa.prod_id = pr.prod_id
@@ -920,7 +935,7 @@ END GetShadowBasketWithWarranty;
             where country_id = iPcountryId
           ) rm on pa2.origin_id = rm.origin_id and exists( select 1 from prod_region pr2 where rm.region_id = pr2.region_id and pr2.prod_id = pa2.prod_id )
           and pa2.category_id = rm.category
-        where pa2.origin_id = iPsiteId
+        where pa2.origin_id = iLOriginId
           and pa2.category_id = 1
           and pa2.region_id = pa2.origin_id
       ) t ON
@@ -932,6 +947,8 @@ END GetShadowBasketWithWarranty;
       AND pa.avlb < o.availability_id      
     WHERE
       pt.shopper_id = cPshopperId
+      AND pt.site_id = iPsiteId
+      AND pt.type = iPtype      
     ORDER BY pt.sku;
 
   /* Campaign Code */
@@ -990,7 +1007,7 @@ END GetShadowBasketWithWarranty;
       AND ple.lang_id = 1 -- English
     INNER JOIN prod_region pr ON
       b.sku = pr.prod_id
-      AND pr.origin_id = b.site_id
+      AND pr.origin_id = iLOriginId
       AND pr.category_id = 1 --not wholesale
     INNER JOIN
       (
@@ -1003,7 +1020,7 @@ END GetShadowBasketWithWarranty;
             where country_id = iPcountryId
           ) rm on pa2.origin_id = rm.origin_id and exists( select 1 from prod_region pr2 where rm.region_id = pr2.region_id and pr2.prod_id = pa2.prod_id )
           and pa2.category_id = rm.category
-        where pa2.origin_id = iPsiteId
+        where pa2.origin_id = iLOriginId
           and pa2.category_id = 1
           and pa2.region_id = pa2.origin_id
       ) t ON
@@ -1179,6 +1196,7 @@ END GetBasketWithWarranty;
     WHERE
       pt.shopper_id = cPshopperId
       AND pa.region_id = iLRegionId
+      AND pt.type = iPtype
     ORDER BY pt.sku;
 
     /* Campaign Code */
