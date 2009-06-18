@@ -22,8 +22,7 @@ AS
   )
   AS
   BEGIN
-	-- from 2:30am to 5:30am(HKT) -- City Bank Maintanence
-    IF sysdate >= to_date('2009-05-09 18:30:00', 'YYYY-MM-DD HH24:MI:SS') and sysdate <= to_date('2009-05-09 21:30:00', 'YYYY-MM-DD HH24:MI:SS') THEN
+    IF sysdate >= to_date('2009-06-20 19:00:00', 'YYYY-MM-DD HH24:MI:SS') and sysdate <= to_date('2009-06-20 23:00:00', 'YYYY-MM-DD HH24:MI:SS') THEN
       BEGIN
         SELECT 1 INTO iPreturn FROM DUAL;
       END;
