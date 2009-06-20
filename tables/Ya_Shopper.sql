@@ -25,7 +25,8 @@ CREATE TABLE Ya_Shopper (
 	salt                                varchar2(20)                ,        
 	ae_id                               int                         ,        
 	rowguid                             varchar2(50)                DEFAULT SYS_GUID() NOT NULL ,
-	correspondence_email	            varchar2(255)
+	correspondence_email	            varchar2(255)               ,
+	type_id                             number(4)                   DEFAULT 1 NOT NULL
 )	
 /
 
