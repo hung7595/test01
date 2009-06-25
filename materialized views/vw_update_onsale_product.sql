@@ -14,7 +14,7 @@ SELECT pr.prod_id as sku, pr.region_id as site_id, pr.sale_price, round(1-(pr.sa
  AND pr.list_price > pr.sale_price
  AND pr.sale_price_start <= sysdate
  AND pr.sale_price_end >= sysdate
- AND pr.prod_id not in (1019656242, 1019656255, 1019656243, 1019656246, 1019656240, 1019656252, 1019656259, 1019656247, 1019656244, 1019656245, 1019656254, 1019656247)
+ AND pr.prod_id not in (1019656233,1019656231,1019656258,1019656234,1019656235,1019656236,1019656237,1019656238,1019656239,1019656248,1019656251,1019656250,1019656253,1019656249)
 UNION
 SELECT pr.prod_id as sku, 11 as site_id, pr.sale_price, round(1-(pr.sale_price/pr.list_price),2) as discount
     from prod_region pr
@@ -27,5 +27,5 @@ SELECT pr.prod_id as sku, 11 as site_id, pr.sale_price, round(1-(pr.sale_price/p
  AND pr.list_price > pr.sale_price
  AND pr.sale_price_start <= sysdate
  AND pr.sale_price_end >= sysdate
- AND pr.prod_id not in (1019656242, 1019656255, 1019656243, 1019656246, 1019656240, 1019656252, 1019656259, 1019656247, 1019656244, 1019656245, 1019656254, 1019656247)
+ AND pr.prod_id not in (1019656233,1019656231,1019656258,1019656234,1019656235,1019656236,1019656237,1019656238,1019656239,1019656248,1019656251,1019656250,1019656253,1019656249)
 /
