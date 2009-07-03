@@ -23,3 +23,17 @@ CREATE PUBLIC SYNONYM Ya_Fe_Seo_Keyword  FOR Ya_Fe_Seo_Keyword
 /
 
 
+CREATE OR REPLACE TRIGGER TRAL_ya_fe_seo_keyword
+AFTER INSERT OR UPDATE OR DELETE 
+ON ya_fe_seo_keyword 
+FOR EACH ROW 
+BEGIN
+    
+  INSERT INTO ya_se_sku_update
+  SELECT seq_se_sku_update.nextval, a.* FROM (
+     SELECT distinct sku, 'YA_FE_SEO_KEYWORD', sysdate
+     FROM ya_fe_seo_keyword_product_rel fskp
+     WHERE keyword_id IN (:new.id, :old.id)) a;
+
+END;
+/
