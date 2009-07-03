@@ -31,8 +31,8 @@ IS
         WHERE cl.country_id = cs.country_id
           AND cl.country_id = sc.country_id
           AND cl.lang_id = iPlang_id
-          AND cs.lang_id in (1,7)
-          AND sc.site_id = iPsite_id
+          AND cs.lang_id = 1
+          AND sc.site_id in (1,7)
         ORDER BY cs.country_name;
       END;
     ELSE
