@@ -156,7 +156,10 @@ IS
     WHERE pa.sku IN (
       SELECT iPsku FROM dual
       UNION
-      SELECT product_title_parent_sku from ya_product_title_rel where product_title_child_sku = iPsku
+      SELECT product_title_parent_sku 
+      from ya_product_title_rel 
+      where product_title_child_sku = iPsku
+      and not exists (select 1 from ya_profess_review where sku = product_title_child_sku)
       );
       
 --      OR EXISTS (SELECT 1 from ya_product_title_rel where product_title_child_sku = pa.sku)
