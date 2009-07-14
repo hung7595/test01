@@ -932,7 +932,8 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
           FE_last_change_datetime = SYSDATE
         WHERE
           sku = iLcurrent_sku
-          AND (site_id = iPsite_id OR site_id = 99 OR (iPsite_id = 11 and site_id = 10));
+          AND (site_id = iPsite_id OR site_id = 99 OR (iPsite_id = 11 and site_id = 10))
+          AND frontend_quantity > 0;
 
         IF (iLsku_pointer > 0) THEN
           BEGIN
