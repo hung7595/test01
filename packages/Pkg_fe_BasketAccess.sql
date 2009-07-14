@@ -1112,12 +1112,29 @@ END GetBasketWithWarranty;
 
     /* Limited Quantity */
     OPEN curPgetBasket2 FOR
+    SELECT sku, case when lmqnty < crqnty and lmqnty > 0 then lmqnty else crqnty end 
+    FROM (
+      SELECT
+        nb.sku,  
+        nvl(lq.frontend_quantity, 0) as lmqnty,
+        nvl(cr.avlb_qnty, 0) as crqnty
+      FROM
+        ya_new_basket nb
+        LEFT OUTER JOIN ya_limited_quantity lq on nb.sku = lq.sku and lq.frontend_quantity > 0 and lq.site_id in (99, iLOriginId)
+        LEFT OUTER JOIN clearance cr on nb.sku = cr.prod_id and cr.avlb_qnty > 0 and cr.sts = 1
+      WHERE nb.shopper_id = cPshopperId
+        AND nb.site_id = iPsiteId
+        AND nb.type = iPtype
+        AND (lq.frontend_quantity is not null or cr.avlb_qnty is not null)      
+      ORDER BY nb.sku
+    );    
+    /*
     SELECT
       lq.sku,
       lq.frontend_quantity
     FROM
-      ya_limited_quantity lq,
       ya_new_basket b
+      ya_limited_quantity lq,
     WHERE lq.sku = b.sku
     AND b.shopper_id = cPshopperId
     AND b.site_id = iPsiteId
@@ -1125,6 +1142,7 @@ END GetBasketWithWarranty;
     AND lq.site_id in (99, iLOriginId)
     AND lq.frontend_quantity > 0
     ORDER BY lq.sku;
+    */
 
     /* Get shipment Unit */
     iLShipmentUnitConst := 200; /* in Grams */
