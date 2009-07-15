@@ -864,7 +864,10 @@ END GetShadowBasketWithWarranty;
 
   /* Limited Quantity */
   OPEN curPgetBasket2 FOR
-  SELECT sku, case when lmqnty < crqnty and lmqnty > 0 then lmqnty else crqnty end 
+  SELECT sku, 
+  case when lmqnty < crqnty and lmqnty > 0 then lmqnty 
+  when lmqnty > crqnty and crqnty = 0 then lmqnty 
+  else crqnty end 
   FROM (
     SELECT
       nb.sku,  
@@ -1131,7 +1134,10 @@ END GetBasketWithWarranty;
 
     /* Limited Quantity */
     OPEN curPgetBasket2 FOR
-    SELECT sku, case when lmqnty < crqnty and lmqnty > 0 then lmqnty else crqnty end 
+    SELECT sku, 
+      case when lmqnty < crqnty and lmqnty > 0 then lmqnty 
+      when lmqnty > crqnty and crqnty = 0 then lmqnty 
+      else crqnty end 
     FROM (
       SELECT
         nb.sku,  
