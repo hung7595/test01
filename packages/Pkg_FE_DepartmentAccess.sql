@@ -356,7 +356,7 @@ IS
       dr.dept_id = d.dept_id
       AND d.dept_id = ds.dept_id
       AND dr.parent_dept_id = iPdeptId
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y';
     RETURN;
   END IsLeaf;
@@ -433,7 +433,7 @@ IS
       AND dr.parent_dept_id = iLgrantDeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND EXISTS (
                 SELECT 1
@@ -466,7 +466,7 @@ IS
       AND dr.parent_dept_id = iLparentDeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND EXISTS (
                 SELECT 1
@@ -496,7 +496,7 @@ IS
       AND dr.parent_dept_id = iPdeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND EXISTS (
                 SELECT 1
@@ -564,7 +564,7 @@ IS
       AND dr.parent_dept_id = iLgrantDeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
     ORDER BY dl.dept_name;
 
@@ -589,7 +589,7 @@ IS
       AND dr.parent_dept_id = iLparentDeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
     ORDER BY dl.dept_name;
 
@@ -611,7 +611,7 @@ IS
       AND dr.parent_dept_id = iPdeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
     ORDER BY dl.dept_name;
 
@@ -671,7 +671,7 @@ IS
       AND dr.parent_dept_id = iLgrantDeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND d.dept_id NOT IN
         (
@@ -702,7 +702,7 @@ IS
       AND dr.parent_dept_id = iLparentDeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND d.dept_id NOT IN
         (
@@ -730,7 +730,7 @@ IS
       AND dr.parent_dept_id = iPdeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND d.dept_id NOT IN
         (
@@ -807,7 +807,7 @@ IS
         )
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
     ORDER BY dl.dept_name;
 
@@ -843,7 +843,7 @@ IS
         )
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
     ORDER BY dl.dept_name;
 
@@ -876,7 +876,7 @@ IS
         )
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
     ORDER BY dl.dept_name;
 
@@ -949,7 +949,7 @@ IS
         )
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND d.dept_id NOT IN
         (
@@ -991,7 +991,7 @@ IS
       )
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND d.dept_id NOT IN
         (
@@ -1029,7 +1029,7 @@ IS
         )
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND d.dept_id NOT IN
         (
@@ -1097,7 +1097,7 @@ IS
       AND dr.parent_dept_id = iLgrantDeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND d.dept_id NOT IN
         (
@@ -1141,7 +1141,7 @@ IS
       AND dr.parent_dept_id = iLparentDeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND d.dept_id NOT IN
         (
@@ -1182,7 +1182,7 @@ IS
       AND dr.parent_dept_id = iPdeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND d.dept_id NOT IN
         (
@@ -1261,7 +1261,7 @@ IS
       AND dr.parent_dept_id = iLgrantDeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND d.dept_id IN
         (
@@ -1296,7 +1296,7 @@ IS
       AND dr.parent_dept_id = iLparentDeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND d.dept_id IN
         (
@@ -1328,7 +1328,7 @@ IS
       AND dr.parent_dept_id = iPdeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND d.dept_id IN
         (
@@ -1398,8 +1398,8 @@ IS
       AND d.dept_id = dl.dept_id
       AND dr.parent_dept_id = iLgrantDeptId
       AND dl.lang_id = iPlangId
-      AND d.dept_id = iPsiteId
-      AND ds.site_id = iPsiteId
+      AND d.dept_id = 20 -- iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND d.dept_id NOT IN (SELECT dept_id FROM ya_dept_attr WHERE attribute_id = 84) /* adult attribute */
       AND d.dept_id IN
@@ -1434,8 +1434,8 @@ IS
       AND d.dept_id = dl.dept_id
       AND dr.parent_dept_id = iLparentDeptId
       AND dl.lang_id = iPlangId
-      AND d.dept_id = iPsiteId
-      AND ds.site_id = iPsiteId
+      AND d.dept_id = 20 -- iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND d.dept_id NOT IN (SELECT dept_id FROM ya_dept_attr WHERE attribute_id = 84) /* adult attribute */
       AND d.dept_id IN
@@ -1467,8 +1467,8 @@ IS
       AND d.dept_id = dl.dept_id
       AND dr.parent_dept_id = iPdeptId
       AND dl.lang_id = iPlangId
-      AND d.dept_id = iPsiteId
-      AND ds.site_id = iPsiteId
+      AND d.dept_id = 20 -- iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND d.dept_id NOT IN (SELECT dept_id FROM ya_dept_attr WHERE attribute_id = 84) /* adult attribute */
       AND d.dept_id IN
@@ -1514,7 +1514,7 @@ IS
         AND dl2.lang_id = 1
       INNER JOIN ya_dept_site ds ON
         pd.dept_id = ds.dept_id
-        AND ds.site_id = iPsite_id
+        AND ds.site_id = 20 -- iPsite_id
         AND ds.is_enabled = 'Y'
     WHERE
       sku IN
@@ -1583,7 +1583,7 @@ IS
       AND dr.parent_dept_id = iLgrantDeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND d.dept_id IN
         (
@@ -1620,7 +1620,7 @@ IS
       AND dr.parent_dept_id = iLparentDeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND d.dept_id IN
         (
@@ -1654,7 +1654,7 @@ IS
       AND dr.parent_dept_id = iPdeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND d.dept_id IN
         (
@@ -1701,7 +1701,7 @@ IS
       AND d.dept_id IN (iPchineseDept, iPjapaneseDept, iPkoreanDept, iPwesternDept)
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
     UNION
     SELECT
@@ -1720,7 +1720,7 @@ IS
       AND d.dept_id = iPdeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND db.site_id = ds.site_id
       AND db.enabled = 'Y';
@@ -1770,7 +1770,7 @@ IS
       AND dr.parent_dept_id = iLgrantDeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
     ORDER BY dl.dept_name;
 
@@ -1794,7 +1794,7 @@ IS
       AND dr.parent_dept_id = (SELECT dp.parent_dept_id FROM ya_dept_rel dp WHERE dp.dept_id = iPdeptId)
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
     ORDER BY dl.dept_name;
 
@@ -1818,7 +1818,7 @@ IS
       AND dr.parent_dept_id = iPdeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
     ORDER BY dl.dept_name;
     RETURN;
@@ -1853,7 +1853,7 @@ IS
       AND d.dept_id IN (iPchineseDept, iPjapaneseDept, iPkoreanDept, iPwesternDept)
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
     ORDER BY dl.dept_name;
     RETURN;
@@ -1905,14 +1905,14 @@ IS
       AND dr.parent_dept_id = iLgrantDeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND d.dept_id IN
         (
           SELECT dept_id
           FROM ya_product_ranking
           WHERE
-            site_id = iPsiteId
+            site_id = 20 -- iPsiteId
             AND type_id = iLtypeId
         )
     ORDER BY dl.dept_name;
@@ -1940,14 +1940,14 @@ IS
         )
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND d.dept_id IN
         (
           SELECT dept_id
           FROM ya_product_ranking
           WHERE
-            site_id = iPsiteId
+            site_id = 20 -- iPsiteId
             AND type_id = iLtypeId
         )
     ORDER BY dl.dept_name;
@@ -1970,14 +1970,14 @@ IS
       AND dr.parent_dept_id = iPdeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND d.dept_id IN
         (
           SELECT dept_id
           FROM ya_product_ranking
           WHERE
-            site_id = iPsiteId
+            site_id = 20 -- iPsiteId
             AND type_id = iLtypeId
         )
     ORDER BY dl.dept_name;
@@ -2033,12 +2033,12 @@ IS
         d.dept_id = db.dept_id
       INNER JOIN ya_dept_site ds ON
         d.dept_id = ds.dept_id
-        AND ds.site_id = iPsite_Id
+        AND ds.site_id = 20 -- iPsite_Id
     WHERE
       dr.parent_dept_id = iLgrantDeptId
       AND dl.lang_id = iPlang_Id
       AND ds.is_enabled = 'Y'
-      AND db.site_id = iPsite_Id
+      AND db.site_id = 20 -- iPsite_Id
       AND db.enabled = 'Y'
     ORDER BY dl.dept_name;
 
@@ -2059,7 +2059,7 @@ IS
         d.dept_id = db.dept_id
       INNER JOIN ya_dept_site ds ON
         d.dept_id = ds.dept_id
-        AND ds.site_id = iPsite_Id
+        AND ds.site_id = 20 -- iPsite_Id
     WHERE
       dr.parent_dept_id =
         (
@@ -2069,7 +2069,7 @@ IS
         )
       AND dl.lang_id = iPlang_Id
       AND ds.is_enabled = 'Y'
-      AND db.site_id = iPsite_Id
+      AND db.site_id = 20 -- iPsite_Id
       AND db.enabled = 'Y'
     ORDER BY dl.dept_name;
 
@@ -2090,12 +2090,12 @@ IS
         d.dept_id = db.dept_id
       INNER JOIN ya_dept_site ds ON
         d.dept_id = ds.dept_id
-        AND ds.site_id = iPsite_Id
+        AND ds.site_id = 20 -- iPsite_Id
     WHERE
       dr.parent_dept_id = iPdept_Id
       AND dl.lang_id = iPlang_Id
       AND ds.is_enabled = 'Y'
-      AND db.site_id = iPsite_Id
+      AND db.site_id = 20 -- iPsite_Id
       AND db.enabled = 'Y'
     ORDER BY dl.dept_name;
     RETURN;
@@ -2131,9 +2131,9 @@ IS
       AND d.dept_id IN (iPchineseDept, iPjapaneseDept, iPkoreanDept, iPwesternDept)
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
-      AND db.site_id = iPsiteId
+      AND db.site_id = 20 -- iPsiteId
       AND db.enabled = 'Y'
     ORDER BY dl.dept_name;
     RETURN;
@@ -2195,7 +2195,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND d.dept_id = iLparentId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId          
+      AND ds.site_id = 20 -- iPsiteId          
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY
@@ -2232,7 +2232,7 @@ IS
         )
       AND dr.parent_dept_id = iLparentId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId          
+      AND ds.site_id = 20 -- iPsiteId          
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY
@@ -2257,7 +2257,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND d.dept_id = iPdeptId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId          
+      AND ds.site_id = 20 -- iPsiteId          
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY
@@ -2294,7 +2294,7 @@ IS
         )
       AND dr.parent_dept_id = iPdeptId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId          
+      AND ds.site_id = 20 -- iPsiteId          
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY
@@ -2344,7 +2344,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND d.dept_id = iLparentId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
@@ -2381,7 +2381,7 @@ IS
             AND ROWNUM = 1
         )
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
@@ -2404,7 +2404,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND d.dept_id = iPdeptId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
@@ -2441,7 +2441,7 @@ IS
             AND ROWNUM = 1
         )
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
@@ -2489,7 +2489,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND d.dept_id = iLparentId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
@@ -2524,7 +2524,7 @@ IS
           AND d1.dept_id = d.dept_id
         )
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
@@ -2547,7 +2547,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND d.dept_id = iPdeptId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
@@ -2582,7 +2582,7 @@ IS
           and d1.dept_id = d.dept_id
         )
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
@@ -2629,7 +2629,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND d.dept_id = iLparentId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
@@ -2655,7 +2655,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND dr.parent_dept_id = iLparentId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
       AND d.dept_id = pd.dept_id
@@ -2689,7 +2689,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND d.dept_id = iPdeptId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
@@ -2715,7 +2715,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND dr.parent_dept_id = iPdeptId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
       AND d.dept_id = pd.dept_id
@@ -2766,7 +2766,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND d.dept_id = (SELECT parent_dept_id FROM ya_dept_rel WHERE dept_id = iPdeptId)
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
@@ -2795,7 +2795,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND dr.parent_dept_id = (SELECT parent_dept_id FROM ya_dept_rel WHERE dept_id = iPdeptId)
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
@@ -2825,7 +2825,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND d.dept_id = iPdeptId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
@@ -2855,7 +2855,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND dr.parent_dept_id = iPdeptId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
@@ -2903,7 +2903,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND d.dept_id = iLparentId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
@@ -2926,7 +2926,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND dr.parent_dept_id = iLparentId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
       AND EXISTS
@@ -2960,7 +2960,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND d.dept_id = iPdeptId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
@@ -2983,7 +2983,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND dr.parent_dept_id = iPdeptId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
       AND EXISTS
@@ -3042,7 +3042,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND d.dept_id = iLparentId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
@@ -3065,7 +3065,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND dr.parent_dept_id = iLparentId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
       AND exists
@@ -3078,7 +3078,6 @@ IS
           WHERE
             pd.sku = p.sku
             AND p.sku = pr.prod_id
-            AND pr.region_id = ds.site_id
             AND pd.dept_id IN
               (
                 select dept_id
@@ -3108,7 +3107,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND d.dept_id = iPdeptId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
@@ -3131,7 +3130,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND dr.parent_dept_id = iPdeptId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
       AND exists
@@ -3144,7 +3143,6 @@ IS
           WHERE
             pd.sku = p.sku
             AND p.sku = pr.prod_id
-            AND pr.region_id = ds.site_id
             AND pd.dept_id = d.dept_id
             AND pr.supplier_id = iPsupplierId
         )
@@ -3193,7 +3191,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND d.dept_id = iLparentId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
@@ -3216,7 +3214,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND dr.parent_dept_id = iLparentId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
       AND exists
@@ -3252,7 +3250,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND d.dept_id = iPdeptId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
     ORDER BY dl.dept_name, d.dept_id, dl.lang_id;
@@ -3275,7 +3273,7 @@ IS
       AND d.dept_id = dl.dept_id
       AND dr.parent_dept_id = iPdeptId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dl.lang_id <= 5
       AND exists
@@ -3313,7 +3311,7 @@ IS
     WHERE
       dr.parent_dept_id = iPdeptId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dr.dept_id = d.dept_id
       AND EXISTS
@@ -3349,7 +3347,7 @@ IS
       dr.dept_id = d.dept_id
       AND dr.parent_dept_id = iPdeptId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dr.dept_id = d.dept_id
       AND EXISTS
@@ -3388,7 +3386,7 @@ IS
     WHERE
       dr.parent_dept_id = iPdeptId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dr.dept_id = d.dept_id
       AND EXISTS
@@ -3427,14 +3425,14 @@ IS
     WHERE
       dr.parent_dept_id = iPdeptId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dr.dept_id = d.dept_id
       AND EXISTS
         (
           SELECT 1
-          FROM ya_product p
-            INNER JOIN prod_region pr ON p.sku = pr.prod_id AND pr.region_id = iPsiteId
+          FROM 
+            prod_region pr
           WHERE
             pr.supplier_id = iPsupplierId
         )
@@ -3463,7 +3461,7 @@ IS
     WHERE
       dr.parent_dept_id = iPdeptId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND dr.dept_id = d.dept_id
       AND EXISTS
@@ -3513,7 +3511,7 @@ IS
                 FROM ya_bargain_product bp
                 WHERE
                   bp.sku = pa.sku
-                  AND bp.site_id = iPsite_id
+                  AND bp.site_id = 20 -- iPsite_id
                   AND bp.sale_start <= SYSDATE()
                   AND bp.sale_end >= SYSDATE()
               )
@@ -3557,7 +3555,7 @@ IS
                 FROM ya_bargain_product bp
                 WHERE 1=1
                   --bp.sku = pd.sku
-                  AND bp.site_id = iPsite_id
+                  AND bp.site_id = 20 -- iPsite_id
                   AND bp.sale_start <= SYSDATE()
                   AND bp.sale_end >= SYSDATE()
               )
@@ -3588,7 +3586,7 @@ IS
         dr.dept_id = dl.dept_id
       INNER JOIN ya_dept_site ds ON
         d.dept_id = ds.dept_id
-        AND ds.site_id = iPsite_id
+        AND ds.site_id = 20 -- iPsite_id
     WHERE
       dr.parent_dept_id = iPdept_id
       AND ds.is_enabled = 'Y'
@@ -3605,7 +3603,7 @@ IS
                 FROM ya_bargain_product bp
                 WHERE
                   bp.sku = pd.sku
-                  AND bp.site_id = iPsite_id
+                  AND bp.site_id = 20 -- iPsite_id
                   AND bp.sale_start <= SYSDATE()
                   AND bp.sale_end >= SYSDATE()
               )
@@ -3665,7 +3663,7 @@ IS
       AND dr.parent_dept_id = iLgrantDeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND exists (
         SELECT 1
@@ -3696,7 +3694,7 @@ IS
       AND dr.parent_dept_id = iLparentDeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND exists (
         SELECT 1
@@ -3724,7 +3722,7 @@ IS
       AND dr.parent_dept_id = iPdeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND exists (
         SELECT 1
@@ -3789,7 +3787,7 @@ IS
       AND dr.parent_dept_id = iLgrantDeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND exists (
         SELECT 1
@@ -3822,7 +3820,7 @@ IS
       AND dr.parent_dept_id = iLparentDeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND exists (
         SELECT 1
@@ -3852,7 +3850,7 @@ IS
       AND dr.parent_dept_id = iPdeptId
       AND dl.lang_id = iPlangId
       AND d.dept_id = ds.dept_id
-      AND ds.site_id = iPsiteId
+      AND ds.site_id = 20 -- iPsiteId
       AND ds.is_enabled = 'Y'
       AND exists (
         SELECT 1
