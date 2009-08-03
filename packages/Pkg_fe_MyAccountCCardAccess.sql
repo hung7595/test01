@@ -54,10 +54,12 @@ IS
       UPDATE ya_credit_card_profile SET preferred = 'N' WHERE shopper_id = cPshopper_id;
     END IF;
 
+    -- only YSv1 use this package
+    -- hence, hard code site_id = 10 (YS China does not have credit card service)
     INSERT INTO ya_credit_card_profile (profile_id, shopper_id, card_profile_name, firstname_on_card,
-      lastname_on_card, card_type_id, expiration_month, expiration_year, preferred, card_number, last_five_digits)
+      lastname_on_card, card_type_id, expiration_month, expiration_year, preferred, card_number, last_five_digits, site_id)
     VALUES
-      (iLprofile_current, cPshopper_id, cPprofile_name, cPfirstname, cPlastname, iPcard_type, iPExpMonth, iPExpYear, cPpreferred, cPcard_num, SUBSTR(cPcard_num, LENGTH(cPcard_num)-4, 5));
+      (iLprofile_current, cPshopper_id, cPprofile_name, cPfirstname, cPlastname, iPcard_type, iPExpMonth, iPExpYear, cPpreferred, cPcard_num, SUBSTR(cPcard_num, LENGTH(cPcard_num)-4, 5), 10);
 
     COMMIT;
   END AddCreditCard;
