@@ -676,11 +676,13 @@ END;
     INNER JOIN prod_region pr ON 
       pa.origin_id = pr.origin_id
       AND pa.category = pr.category_id
-      AND pa.prod_id = pr.prod_id          
+      AND pa.prod_id = pr.prod_id
+    INNER JOIN ya_product yp ON pt.sku = yp.sku
 	  LEFT OUTER JOIN ya_availability_override o ON
       pr.supplier_id = o.supplier_id
       AND SYSDATE BETWEEN o.start_date AND o.end_date
       AND pa.avlb < o.availability_id
+      AND yp.account_id = o.account_id
     INNER JOIN
       (
         select pa2.prod_id, nvl(rm.region_id, pa2.origin_id) as region_id         
@@ -963,10 +965,12 @@ END GetShadowBasketWithWarranty;
       ) t ON
         pa.prod_id = t.prod_id
         AND pa.region_id = t.region_id
+    INNER JOIN ya_product yp ON pt.sku = yp.sku
     LEFT OUTER JOIN ya_availability_override o ON
       pr.supplier_id = o.supplier_id
       AND SYSDATE() BETWEEN o.start_date AND o.end_date
-      AND pa.avlb < o.availability_id      
+      AND pa.avlb < o.availability_id
+      AND yp.account_id = o.account_id   
     WHERE
       pt.shopper_id = cPshopperId
       AND pt.site_id = iPsiteId
@@ -1232,10 +1236,12 @@ END GetBasketWithWarranty;
         AND pa.origin_id = pr.origin_id
         AND pa.category = pr.category_id
         AND pa.region_id = pr.region_id
+      INNER JOIN ya_product yp ON pt.sku = yp.sku
 		  LEFT OUTER JOIN ya_availability_override o ON
         pr.supplier_id = o.supplier_id
         AND SYSDATE() BETWEEN o.start_date AND o.end_date
         AND pa.avlb < o.availability_id
+        AND yp.account_id = o.account_id
     WHERE
       pt.shopper_id = cPshopperId
       AND pa.region_id = iLRegionId
@@ -1526,6 +1532,7 @@ END GetBasketWithWarranty;
         AND dtLcurrent_date BETWEEN o.start_date
         AND o.end_date
         AND bpa.avlb < o.availability_id
+        AND p.account_id = o.account_id
     WHERE
       bpr.is_can_sell = 'Y'
       AND dtLcurrent_date -- ya_promotion_bundle
@@ -1631,6 +1638,7 @@ END GetBasketWithWarranty;
             bpr.supplier_id = o.supplier_id
             AND dtLcurrent_date BETWEEN o.start_date AND o.end_date
             AND bpa.avlb < o.availability_id
+            AND p.account_id = o.account_id
         WHERE
           bpr.is_can_sell = 'Y'
           AND NVL(o.availability_id, bpa.avlb) < 60
