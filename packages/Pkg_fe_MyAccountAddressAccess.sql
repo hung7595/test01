@@ -68,41 +68,13 @@ IS
   AS
     iLaddress_current INT;
   BEGIN
-    IF iPaddress_id < 0 THEN
-      SELECT seq_address.nextval INTO iLaddress_current FROM dual;
-    ELSE
-      iLaddress_current := iPaddress_id;
-    END IF;
+    SELECT seq_address.nextval INTO iLaddress_current FROM dual;
 
     INSERT INTO ya_address (address_id, lang_id, shopper_id, address_profile_name, firstname,
       lastname, address1, address2, city, city_id, state, state_id, zip, country_id, day_phone, eve_phone, fax_number, email, site_id, rowguid)
     VALUES
-      (iLaddress_current, 1, cPshopper_id, cPprofile_name, cPfirstname, cPlastname, cPaddress1,
+      (iLaddress_current, iPlang_id, cPshopper_id, cPprofile_name, cPfirstname, cPlastname, cPaddress1,
       cPaddress2, cPcity, iPcity_id, cPstate, iPstate_id, cPzip, iPcountry_id, cPphone, cPevePhone, cPfax, cPemail, iPsite_id, sys_guid());
-
-    INSERT INTO ya_address (address_id, lang_id, shopper_id, address_profile_name, firstname,
-      lastname, address1, address2, city, city_id, state, state_id, zip, country_id, day_phone, eve_phone, fax_number, email, site_id, rowguid)
-    VALUES
-      (iLaddress_current, 2, cPshopper_id, cPprofile_name, cPfirstname, cPlastname, cPaddress1,
-      cPaddress2, cPcity, iPcity_id,  cPstate, iPstate_id, cPzip, iPcountry_id, cPphone, cPevePhone, cPfax, cPemail, iPsite_id, sys_guid());
-
-    INSERT INTO ya_address (address_id, lang_id, shopper_id, address_profile_name, firstname,
-      lastname, address1, address2, city, city_id, state, state_id, zip, country_id, day_phone, eve_phone, fax_number, email, site_id, rowguid)
-    VALUES
-      (iLaddress_current, 3, cPshopper_id, cPprofile_name, cPfirstname, cPlastname, cPaddress1,
-      cPaddress2, cPcity, iPcity_id,  cPstate, iPstate_id, cPzip, iPcountry_id, cPphone, cPevePhone, cPfax, cPemail, iPsite_id, sys_guid());
-
-    INSERT INTO ya_address (address_id, lang_id, shopper_id, address_profile_name, firstname,
-      lastname, address1, address2, city, city_id, state, state_id, zip, country_id, day_phone, eve_phone, fax_number, email, site_id, rowguid)
-    VALUES
-      (iLaddress_current, 4, cPshopper_id, cPprofile_name, cPfirstname, cPlastname, cPaddress1,
-      cPaddress2, cPcity, iPcity_id,  cPstate, iPstate_id, cPzip, iPcountry_id, cPphone, cPevePhone, cPfax, cPemail, iPsite_id, sys_guid());
-
-    INSERT INTO ya_address (address_id, lang_id, shopper_id, address_profile_name, firstname,
-      lastname, address1, address2, city, city_id, state, state_id, zip, country_id, day_phone, eve_phone, fax_number, email, site_id, rowguid)
-    VALUES
-      (iLaddress_current, 5, cPshopper_id, cPprofile_name, cPfirstname, cPlastname, cPaddress1,
-      cPaddress2, cPcity, iPcity_id,  cPstate, iPstate_id, cPzip, iPcountry_id, cPphone, cPevePhone, cPfax, cPemail, iPsite_id, sys_guid());
     COMMIT;
   END AddAddress;
 

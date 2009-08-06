@@ -87,20 +87,7 @@ PROCEDURE GetAddressById (
     curPresult OUT refCur
   )
   AS
-    iLrecordExists INT := 0;
   BEGIN
-    BEGIN
-      SELECT 1 INTO iLrecordExists
-      FROM ya_address
-      WHERE shopper_id = cPshopper_id
-      AND address_id = iPaddress_id
-      AND lang_id = iPlangId
-      AND ROWNUM = 1;
-
-      EXCEPTION WHEN no_data_found THEN
-        iLrecordExists := 0;
-    END;
-    
     OPEN curPresult FOR
     SELECT
       address_id,
@@ -125,16 +112,9 @@ PROCEDURE GetAddressById (
       preferred_ship,
       preferred_bill
     FROM ya_address a
-    LEFT JOIN ya_country_lang cl ON a.country_id = cl.country_id AND a.lang_id = cl.lang_id
+      INNER JOIN ya_country_lang cl ON a.country_id = cl.country_id AND a.lang_id = cl.lang_id
     WHERE shopper_id = cPshopper_id
-    AND address_id = iPaddress_id
-    AND a.lang_id = (
-      CASE
-        WHEN iLrecordExists = 1 THEN iPlangId
-        ELSE 1
-      END
-    );
-    
+      AND address_id = iPaddress_id;    
     RETURN;
   END GetAddressById;
   
@@ -144,21 +124,9 @@ PROCEDURE GetAddressById (
     curPresult OUT refCur
   )
   AS
-    iLrecordExists INT := 0;
   BEGIN
-    BEGIN
-      SELECT 1 INTO iLrecordExists
-      FROM ya_address
-      WHERE shopper_id = cPshopper_id
-      AND lang_id = iPlangId
-      AND ROWNUM = 1;
-
-      EXCEPTION WHEN no_data_found THEN
-        iLrecordExists := 0;
-    END;
-
-      OPEN curPresult FOR
-      SELECT
+    OPEN curPresult FOR
+    SELECT
       address_id,
       site_id,
       shopper_id,
@@ -180,18 +148,10 @@ PROCEDURE GetAddressById (
       email,
       preferred_ship,
       preferred_bill
-      FROM ya_address a
-      LEFT JOIN ya_country_lang cl ON a.country_id = cl.country_id AND a.lang_id = cl.lang_id
-      WHERE
-      shopper_id = cPshopper_id
-      AND a.lang_id = (
-        CASE
-        WHEN iLrecordExists = 1 THEN iPlangId
-        ELSE 1
-        END
-      )
-      ORDER BY address_id;
-
+    FROM ya_address a
+      INNER JOIN ya_country_lang cl ON a.country_id = cl.country_id AND cl.lang_id = iPlangId
+    WHERE shopper_id = cPshopper_id
+    ORDER BY address_id;
     RETURN;
   END GetAddressByShopperId;
 
@@ -219,26 +179,10 @@ PROCEDURE GetAddressById (
     iProw_affacted OUT INT  
   )
   AS
-    iLseq_currval INT;
-    iLseq_diff INT;
   BEGIN
-  
     iProw_affacted := 0;
-  
-    -- Get 
-    IF iPaddress_id < 0 THEN
-      SELECT SEQ_address.nextval INTO iPaddress_id FROM DUAL;
-    ELSE
-      SELECT SEQ_address.nextval INTO iLseq_currval FROM dual;
-      iLseq_diff := iPaddress_id - iLseq_currval;
-      IF iLseq_diff <> 0 THEN
-        EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_ADDRESS INCREMENT BY ' || iLseq_diff;
-        SELECT SEQ_address.nextval INTO iLseq_currval FROM dual;
-        EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_ADDRESS INCREMENT BY 1';
-      END IF;
-    END IF;
+    SELECT SEQ_address.nextval INTO iPaddress_id FROM DUAL;
 
-    -- Insert
     BEGIN
       INSERT
       INTO ya_address
@@ -250,75 +194,9 @@ PROCEDURE GetAddressById (
         (
           iPaddress_id, cPshopper_id, cPprofile_name, cPfirst_name, cPlast_name, cPaddress1, cPaddress2, cPcity,
           cPstate, iPstate_id, cPzip, iPcountry_id, cPday_phone, cPeve_phone, cPfax_number,
-          cPmobile_phone, cPemail, cPpreferred_ship, cPpreferred_bill, iPsite_id, 1
+          cPmobile_phone, cPemail, cPpreferred_ship, cPpreferred_bill, iPsite_id, -1
         );
 
-      INSERT
-      INTO ya_address
-        (
-          address_id, shopper_id, address_profile_name, firstname, lastname, address1, address2, city, state, state_id,
-          zip, country_id, day_phone, eve_phone, fax_number, mobile_phone, email, preferred_ship, preferred_bill, site_id, lang_id
-        )
-      VALUES
-        (
-          iPaddress_id, cPshopper_id, cPprofile_name, cPfirst_name, cPlast_name, cPaddress1, cPaddress2, cPcity,
-          cPstate, iPstate_id, cPzip, iPcountry_id, cPday_phone, cPeve_phone, cPfax_number,
-          cPmobile_phone, cPemail, cPpreferred_ship, cPpreferred_bill, iPsite_id, 2
-        );
-
-      INSERT
-      INTO ya_address
-        (
-          address_id, shopper_id, address_profile_name, firstname, lastname, address1, address2, city, state, state_id,
-          zip, country_id, day_phone, eve_phone, fax_number, mobile_phone, email, preferred_ship, preferred_bill, site_id, lang_id
-        )
-      VALUES
-        (
-          iPaddress_id, cPshopper_id, cPprofile_name, cPfirst_name, cPlast_name, cPaddress1, cPaddress2, cPcity,
-          cPstate, iPstate_id, cPzip, iPcountry_id, cPday_phone, cPeve_phone, cPfax_number,
-          cPmobile_phone, cPemail, cPpreferred_ship, cPpreferred_bill, iPsite_id, 3
-        );
-
-      INSERT
-      INTO ya_address
-        (
-          address_id, shopper_id, address_profile_name, firstname, lastname, address1, address2, city, state, state_id,
-          zip, country_id, day_phone, eve_phone, fax_number, mobile_phone, email, preferred_ship, preferred_bill, site_id, lang_id
-        )
-      VALUES
-        (
-          iPaddress_id, cPshopper_id, cPprofile_name, cPfirst_name, cPlast_name, cPaddress1, cPaddress2, cPcity,
-          cPstate, iPstate_id, cPzip, iPcountry_id, cPday_phone, cPeve_phone, cPfax_number,
-          cPmobile_phone, cPemail, cPpreferred_ship, cPpreferred_bill, iPsite_id, 4
-        );
-
-      INSERT
-      INTO ya_address
-        (
-          address_id, shopper_id, address_profile_name, firstname, lastname, address1, address2, city, state, state_id,
-          zip, country_id, day_phone, eve_phone, fax_number, mobile_phone, email, preferred_ship, preferred_bill, site_id, lang_id
-        )
-      VALUES
-        (
-          iPaddress_id, cPshopper_id, cPprofile_name, cPfirst_name, cPlast_name, cPaddress1, cPaddress2, cPcity,
-          cPstate, iPstate_id, cPzip, iPcountry_id, cPday_phone, cPeve_phone, cPfax_number,
-          cPmobile_phone, cPemail, cPpreferred_ship, cPpreferred_bill, iPsite_id, 5
-        );
-
-      INSERT
-      INTO ya_address
-        (
-          address_id, shopper_id, address_profile_name, firstname, lastname, address1, address2, city, state, state_id,
-          zip, country_id, day_phone, eve_phone, fax_number, mobile_phone, email, preferred_ship, preferred_bill, site_id, lang_id
-        )
-      VALUES
-        (
-          iPaddress_id, cPshopper_id, cPprofile_name, cPfirst_name, cPlast_name, cPaddress1, cPaddress2, cPcity,
-          cPstate, iPstate_id, cPzip, iPcountry_id, cPday_phone, cPeve_phone, cPfax_number,
-          cPmobile_phone, cPemail, cPpreferred_ship, cPpreferred_bill, iPsite_id, 6
-        );
-
-      -- Commit
       IF sqlcode = 0 THEN        
         iProw_affacted := SQL%ROWCOUNT;
         COMMIT;
