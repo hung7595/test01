@@ -53,8 +53,8 @@ IS
     INSERT INTO ya_frontend_credit_system (credit_id, site_Id, shopper_id, credit_code, credit_type_id, initial_balance, current_balance, transaction_datetime, bogus, remark, currency, rowguid)
     VALUES (iLcredit_id, iPsite_id, cLshopper_id, cPcredit_code, iPcredit_type, nPbalance, nPbalance, SYSDATE, 'N', cPremark, cPcurrency, SYS_GUID());
 
-    INSERT INTO ya_frontend_credit_system_txn (credit_id, credit_amount, snapshot_balance, rowguid)
-    VALUES (iLcredit_id, nPbalance, nPbalance, SYS_GUID());
+    INSERT INTO ya_frontend_credit_system_txn (credit_id, credit_amount, snapshot_balance, rowguid, action_id)
+    VALUES (iLcredit_id, nPbalance, nPbalance, SYS_GUID(), 1);
 
     iPerror_code := 0;
     COMMIT;

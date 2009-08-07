@@ -71,8 +71,8 @@ IS
     VALUES (iLseq_actual, iPsite_id, cPshopper_id, cPcredit_code, 2, nPamount, nPamount, cPcurrency, SYSDATE, 'N', SYS_GUID());
 
     INSERT INTO ya_frontend_credit_system_txn
-    ( credit_id, credit_ordernum, credit_amount, snapshot_balance )
-    VALUES (iLseq_actual, iPorder_num, nPamount, nPamount);
+    ( credit_id, credit_ordernum, credit_amount, snapshot_balance, action_id )
+    VALUES (iLseq_actual, iPorder_num, nPamount, nPamount, 1);
 
     --COMMIT;
   END RefundStoredCredit;
