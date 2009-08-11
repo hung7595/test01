@@ -24,14 +24,16 @@ AS
   /* proc_fe_GetShopperByEmail */
   PROCEDURE GetShopperDataByEmail (
     cPemail IN VARCHAR2,
-    curPresult OUT refCur
+    curPresult OUT refCur,
+    iPtype_id IN INT DEFAULT 1
   );
 
   /* proc_fe_GetShopperByEmailAndPassword */
   PROCEDURE GetShopperDataByEnP (
     cPemail IN VARCHAR2,
     cPpassword IN VARCHAR2,
-    curPresult OUT refCur
+    curPresult OUT refCur,
+    iPtype_id IN INT DEFAULT 1
   );
 
   /* proc_fe_CreateAnonymousShopper */
@@ -46,8 +48,10 @@ AS
     cPlast_name IN VARCHAR2,
     cPemail IN VARCHAR2,
     cPpassword IN VARCHAR2,
-    cPresult OUT CHAR
+    cPresult OUT CHAR,
+    iPtype_id IN INT DEFAULT 1
   );
+   
    PROCEDURE AddShopperRegisterSiteId (
     cPshopper_id IN CHAR,
     cPsiteId IN INT
@@ -79,7 +83,7 @@ AS
         FROM ya_session
         WHERE session_id = cPsession_id
       )
-    AND member_type <> 3;
+      AND member_type <> 3;
     RETURN;
   END GetShopperDataBySessionId;
 
@@ -92,50 +96,84 @@ AS
   AS
    iLHasRecord INT := 0;
   BEGIN
-    select count(*) into iLHasRecord 
-    from loyalty_customer c
-	    inner join loyalty_membership m on c.loyalty_membership_id = m.id and m.membership_year = to_char(sysdate,'YYYY')
-    where c.ya_shopper_id = cPshopper_id;
-
-    If iLHasRecord>0 and iPsite_id=10 Then
+    IF iPsite_id = 12 THEN
+      select count(*) into iLHasRecord 
+      from loyalty_customer c
+      where c.ya_shopper_id = cPshopper_id
+        and c.site_id = iPsite_id
+        and c.create_dt <= sysdate
+        and c.membership_expiry_dt >= sysdate
+        and c.site_id = 12;
+        
+      IF iLHasRecord > 0 THEN
+        OPEN curPresult FOR
+		    SELECT
+	          shopper_id,
+	          password,
+	          email,
+	          firstname,
+	          lastname,
+	          username,
+	          nickname,
+	          member_type,
+	          NVL(anonymous, 'Y'),
+	          membership_name,
+	          discount_percentage/100
+	        FROM ya_shopper s
+	          INNER JOIN loyalty_customer c ON c.ya_shopper_id = shopper_id AND c.site_id = iPsite_id
+	          INNER JOIN loyalty_membership m ON c.loyalty_membership_id = m.id
+	        WHERE s.shopper_id = cPshopper_id
+	          AND s.member_type <> 3
+            AND c.create_dt <= sysdate
+            AND c.membership_expiry_dt >= sysdate;
+      END IF;
+    ELSIF iPsite_id = 10 THEN
+      select count(*) into iLHasRecord 
+      from loyalty_customer c
+	      inner join loyalty_membership m on c.loyalty_membership_id = m.id and m.membership_year = to_char(sysdate,'YYYY')	      
+      where c.ya_shopper_id = cPshopper_id
+        and c.site_id = iPsite_id;  
+      
+      IF iLHasRecord > 0 THEN
+        OPEN curPresult FOR
+        SELECT
+	        shopper_id,
+	        password,
+	        email,
+	        firstname,
+	        lastname,
+	        username,
+	        nickname,
+	        member_type,
+	        NVL(anonymous, 'Y'),
+	        membership_name,
+	        discount_percentage/100
+	      FROM ya_shopper
+	        inner join loyalty_customer c on c.ya_shopper_id = shopper_id and c.site_id = iPsite_id
+	        inner join loyalty_membership m on c.loyalty_membership_id = m.id and m.membership_year = to_char(sysdate,'YYYY')
+	      WHERE shopper_id = cPshopper_id
+	      AND member_type <> 3;
+	    END IF;
+    END IF;
+    
+    IF iLHasRecord = 0 THEN
       OPEN curPresult FOR
-		SELECT
-	      shopper_id,
-	      password,
-	      email,
-	      firstname,
-	      lastname,
-	      username,
-	      nickname,
-	      member_type,
-	      NVL(anonymous, 'Y'),
-	      membership_name,
-	      discount_percentage/100
-
-	    FROM ya_shopper
-	    inner join loyalty_customer c on c.ya_shopper_id = shopper_id and c.site_id = iPsite_id
-	    inner join loyalty_membership m on c.loyalty_membership_id = m.id and m.membership_year = to_char(sysdate,'YYYY')
-	    WHERE shopper_id = cPshopper_id
-	    AND member_type <> 3;
-
-	Else
-      OPEN curPresult FOR
-		SELECT
-	      shopper_id,
-	      password,
-	      email,
-	      firstname,
-	      lastname,
-	      username,
-	      nickname,
-	      member_type,
-	      NVL(anonymous, 'Y'),
-		  null,
-		  0
-	    FROM ya_shopper
-	    WHERE shopper_id = cPshopper_id
-	    AND member_type <> 3;
-	End If;
+		  SELECT
+	        shopper_id,
+	        password,
+	        email,
+	        firstname,
+	        lastname,
+	        username,
+	        nickname,
+	        member_type,
+	        NVL(anonymous, 'Y'),
+		      null,
+		      0
+	      FROM ya_shopper
+	      WHERE shopper_id = cPshopper_id
+	        AND member_type <> 3;
+    END IF;
     RETURN;
   END GetShopperDataByShopperIdYS;
   
@@ -158,15 +196,14 @@ AS
       NVL(anonymous, 'Y')
     FROM ya_shopper
     WHERE shopper_id = cPshopper_id
-    AND member_type <> 3;
+      AND member_type <> 3;
     RETURN;
   END GetShopperDataByShopperId;
 
-
-
   PROCEDURE GetShopperDataByEmail (
     cPemail IN VARCHAR2,
-    curPresult OUT refCur
+    curPresult OUT refCur,
+    iPtype_id IN INT DEFAULT 1
   )
   AS
   BEGIN
@@ -181,9 +218,9 @@ AS
       nickname,
       NVL(member_type, 1)
     FROM ya_shopper
---    WHERE email = cPemail;
     WHERE lower(email) = lower(cPemail)
-    AND member_type <> 3;
+      AND member_type <> 3
+      AND type_id = iPtype_id;
     RETURN;
   END GetShopperDataByEmail;
 
@@ -191,7 +228,8 @@ AS
   PROCEDURE GetShopperDataByEnP (
     cPemail IN VARCHAR2,
     cPpassword IN VARCHAR2,
-    curPresult OUT refCur
+    curPresult OUT refCur,
+    iPtype_id IN INT DEFAULT 1
   )
   AS
   BEGIN
@@ -210,7 +248,8 @@ AS
     WHERE
       member_type <> 3
       AND lower(email) = lower(cPemail)
-      AND password = cPpassword;
+      AND password = cPpassword
+      AND type_id = iPtype_id;
     RETURN;
   END GetShopperDataByEnP;
 
@@ -255,13 +294,14 @@ AS
     cPlast_name IN VARCHAR2,
     cPemail IN VARCHAR2,
     cPpassword IN VARCHAR2,
-    cPresult OUT CHAR
+    cPresult OUT CHAR,
+    iPtype_id IN INT DEFAULT 1
   )
   AS
     iLtemp INT := 0;
   BEGIN
     BEGIN
-      SELECT 1 INTO iLtemp FROM ya_shopper WHERE lower(email) = lower(cPemail);
+      SELECT 1 INTO iLtemp FROM ya_shopper WHERE lower(email) = lower(cPemail) AND type_id = iPtype_id;
     EXCEPTION
       WHEN NO_DATA_FOUND THEN
         iLtemp := 0;
@@ -278,7 +318,8 @@ AS
             firstname,
             lastname,
             username,
-            anonymous
+            anonymous,
+            type_id
           )
         VALUES
           (
@@ -289,9 +330,10 @@ AS
             cPfirst_name,
             cPlast_name,
             cPemail,
-            'N'
+            'N',
+            iPtype_id
           );
-
+        
         cPresult := cPguid;
         IF sqlcode = 0 THEN
           COMMIT;
@@ -301,6 +343,7 @@ AS
       END;
     END IF;
   END RegisterNewShopper;
+  
   PROCEDURE AddShopperRegisterSiteId (
     cPshopper_id IN CHAR,
     cPsiteId IN INT
@@ -315,12 +358,14 @@ AS
         iLtemp := 0;
     END;
 
+/*
     IF cPsiteId = 10 THEN
       BEGIN
         INSERT INTO ya_survey_customer_list (shopper_id, survey_code, email, completed, created_datetime, updated_datetime)
         SELECT shopper_id, 100, email, 'N', sysdate, sysdate FROM ya_shopper WHERE shopper_id = cPshopper_id;
       END;
     END IF;
+*/    
     IF iLtemp = 0 THEN -- Email Not Exist
       BEGIN
         INSERT INTO ya_customer_profile
@@ -335,7 +380,6 @@ AS
             cPsiteId,
             SYSDATE
           );
-
 
         IF sqlcode = 0 THEN
           COMMIT;
