@@ -3538,8 +3538,7 @@ PROCEDURE GetShadowOrderWithWarrantyYS (
       WHERE
         sa.preferred_ship = 'Y'
         AND sa.shopper_id = cPshopper_id
-        AND sa.country_id IN (SELECT c1.country_id FROM YA_SITE_CANSHIP_COUNTRY c1 WHERE site_id = iPsite_id)
-        AND ROWNUM = 1;
+        AND sa.country_id IN (SELECT c1.country_id FROM YA_SITE_CANSHIP_COUNTRY c1 WHERE site_id = iPsite_id);
       EXCEPTION WHEN NO_DATA_FOUND THEN
         iLship_profile := NULL;
     END;
@@ -3550,8 +3549,7 @@ PROCEDURE GetShadowOrderWithWarrantyYS (
       FROM YA_ADDRESS ba
       WHERE
         ba.preferred_bill = 'Y'
-        AND ba.shopper_id = cPshopper_id
-        AND ROWNUM = 1;
+        AND ba.shopper_id = cPshopper_id;
     EXCEPTION WHEN NO_DATA_FOUND THEN
       iLbill_profile := NULL;
     END;
@@ -4671,11 +4669,7 @@ PROCEDURE GetShadowOrderWithWarrantyYS (
 		  INTO iLexistAddress
 		  FROM YA_ADDRESS
 		  WHERE
-			address_id = iPaddress_id
-			AND
-			lang_id = iPlang_id
-			AND
-			ROWNUM = 1;
+			address_id = iPaddress_id;
 		EXCEPTION WHEN NO_DATA_FOUND THEN
 		  iLexistAddress := -1;
 		END;
@@ -4715,10 +4709,6 @@ PROCEDURE GetShadowOrderWithWarrantyYS (
 					shopper_id = cPshopper_id
 					AND
 					address_id = iPaddress_id
-					AND
-					lang_id = iPlang_id
-					AND
-					ROWNUM = 1
 				)
 			WHERE
 				shopper_id = cPshopper_id
@@ -4766,7 +4756,6 @@ PROCEDURE GetShadowOrderWithWarrantyYS (
       WHERE
         s.shopper_id = cPshopper_id
         AND s.shopper_id = a.shopper_id
-        AND a.lang_id = iPlang_id
         AND a.address_id = iPaddress_id;
     END IF;
 	COMMIT;
@@ -4806,11 +4795,7 @@ PROCEDURE GetShadowOrderWithWarrantyYS (
 		  INTO iLexistAddress
 		  FROM YA_ADDRESS
 		  WHERE
-			address_id = iPaddress_id
-			AND
-			lang_id = iPlang_id
-			AND
-			ROWNUM = 1;
+			address_id = iPaddress_id;
 		EXCEPTION WHEN NO_DATA_FOUND THEN
 		  iLexistAddress := -1;
 		END;
@@ -4850,10 +4835,6 @@ PROCEDURE GetShadowOrderWithWarrantyYS (
 					shopper_id = cPshopper_id
 					AND
 					address_id = iPaddress_id
-					AND
-					lang_id = iPlang_id
-					AND
-					ROWNUM = 1
 				)
 			WHERE
 				shopper_id = cPshopper_id
@@ -4901,7 +4882,6 @@ PROCEDURE GetShadowOrderWithWarrantyYS (
       WHERE
         s.shopper_id = cPshopper_id
         AND s.shopper_id = a.shopper_id
-        AND a.lang_id = iPlang_id
         AND a.address_id = iPaddress_id;
     END IF;
 	COMMIT;
