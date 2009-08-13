@@ -3539,7 +3539,6 @@ PROCEDURE GetShadowOrderWithWarrantyYS (
         sa.preferred_ship = 'Y'
         AND sa.shopper_id = cPshopper_id
         AND sa.country_id IN (SELECT c1.country_id FROM YA_SITE_CANSHIP_COUNTRY c1 WHERE site_id = iPsite_id)
-        AND sa.lang_id = iPlang_id
         AND ROWNUM = 1;
       EXCEPTION WHEN NO_DATA_FOUND THEN
         iLship_profile := NULL;
@@ -3552,7 +3551,6 @@ PROCEDURE GetShadowOrderWithWarrantyYS (
       WHERE
         ba.preferred_bill = 'Y'
         AND ba.shopper_id = cPshopper_id
-        AND ba.lang_id = iPlang_id
         AND ROWNUM = 1;
     EXCEPTION WHEN NO_DATA_FOUND THEN
       iLbill_profile := NULL;
@@ -3600,7 +3598,6 @@ PROCEDURE GetShadowOrderWithWarrantyYS (
         FROM YA_ADDRESS
         WHERE
           shopper_id = cPshopper_id
-          AND lang_id = iPlang_id
           AND address_id = iLship_profile;
 
         OPEN curPresult3 FOR
@@ -3620,7 +3617,6 @@ PROCEDURE GetShadowOrderWithWarrantyYS (
         FROM YA_ADDRESS
         WHERE
           shopper_id = cPshopper_id
-          AND lang_id = iPlang_id
           AND address_id = iLbill_profile;
 
         OPEN curPresult4 FOR
