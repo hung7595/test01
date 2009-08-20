@@ -3,7 +3,8 @@ DROP TABLE Ya_Hallmark_Shopper
 
 CREATE TABLE Ya_Hallmark_Shopper (
 	hallmark_member_id           varchar(32)             NOT NULL ,
-	ya_shopper_id                char(32)                NOT NULL
+	ya_shopper_id                char(32)                NOT NULL ,
+	create_date                  date                    NOT NULL
 )
 /
 
