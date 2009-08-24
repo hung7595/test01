@@ -876,6 +876,41 @@ END GetShadowBasketWithWarranty;
       nvl(lq.frontend_quantity, 0) as lmqnty,
       nvl(cr.avlb_qnty, 0) as crqnty
     FROM
+      ya_new_basket nb     
+      INNER JOIN prod_region pr ON
+        pr.prod_id = nb.sku
+        AND pr.origin_id = iLOriginId
+        AND pr.category_id = 1    
+      INNER JOIN
+      (
+        select pa2.prod_id, nvl(rm.region_id, pa2.origin_id) as region_id         
+        from prod_region pa2
+          left outer join
+          (
+            select rm.region_id, rm.origin_id, rm.category
+            from ya_region_mapping rm
+            where country_id = iPcountryId
+          ) rm on pa2.origin_id = rm.origin_id and exists( select 1 from prod_region pr2 where rm.region_id = pr2.region_id and pr2.prod_id = pa2.prod_id )
+          and pa2.category_id = rm.category
+        where pa2.origin_id = iLOriginId
+          and pa2.category_id = 1
+          and pa2.region_id = pa2.origin_id
+      ) t ON
+        nb.sku = t.prod_id
+        AND pr.region_id = t.region_id
+      LEFT OUTER JOIN ya_limited_quantity lq on nb.sku = lq.sku and lq.frontend_quantity > 0 and lq.site_id in (99, iLOriginId)
+      LEFT OUTER JOIN clearance cr on concat(nvl(pr.prefix,''), pr.prod_id) = cr.sku and cr.avlb_qnty > 0 and cr.sts = 1
+    WHERE nb.shopper_id = cPshopperId
+      AND nb.site_id = iPsiteId
+      AND nb.type = iPtype
+      AND (lq.frontend_quantity is not null or cr.avlb_qnty is not null)      
+    ORDER BY nb.sku
+/*  
+    SELECT
+      nb.sku,  
+      nvl(lq.frontend_quantity, 0) as lmqnty,
+      nvl(cr.avlb_qnty, 0) as crqnty
+    FROM
       ya_new_basket nb
       LEFT OUTER JOIN ya_limited_quantity lq on nb.sku = lq.sku and lq.frontend_quantity > 0 and lq.site_id in (99, iLOriginId)
       LEFT OUTER JOIN clearance cr on nb.sku = cr.prod_id and cr.avlb_qnty > 0 and cr.sts = 1
@@ -884,6 +919,7 @@ END GetShadowBasketWithWarranty;
       AND nb.type = iPtype
       AND (lq.frontend_quantity is not null or cr.avlb_qnty is not null)      
     ORDER BY nb.sku
+*/    
   );
 /*  
   OPEN curPgetBasket2 FOR
@@ -1148,6 +1184,41 @@ END GetBasketWithWarranty;
         nvl(lq.frontend_quantity, 0) as lmqnty,
         nvl(cr.avlb_qnty, 0) as crqnty
       FROM
+        ya_new_basket nb     
+        INNER JOIN prod_region pr ON
+          pr.prod_id = nb.sku
+          AND pr.origin_id = iLOriginId
+          AND pr.category_id = 1    
+        INNER JOIN
+        (
+          select pa2.prod_id, nvl(rm.region_id, pa2.origin_id) as region_id         
+          from prod_region pa2
+            left outer join
+            (
+              select rm.region_id, rm.origin_id, rm.category
+              from ya_region_mapping rm
+              where country_id = iPcountryId
+            ) rm on pa2.origin_id = rm.origin_id and exists( select 1 from prod_region pr2 where rm.region_id = pr2.region_id and pr2.prod_id = pa2.prod_id )
+            and pa2.category_id = rm.category
+          where pa2.origin_id = iLOriginId
+            and pa2.category_id = 1
+            and pa2.region_id = pa2.origin_id
+        ) t ON
+          nb.sku = t.prod_id
+          AND pr.region_id = t.region_id
+        LEFT OUTER JOIN ya_limited_quantity lq on nb.sku = lq.sku and lq.frontend_quantity > 0 and lq.site_id in (99, iLOriginId)
+        LEFT OUTER JOIN clearance cr on concat(nvl(pr.prefix,''), pr.prod_id) = cr.sku and cr.avlb_qnty > 0 and cr.sts = 1
+      WHERE nb.shopper_id = cPshopperId
+        AND nb.site_id = iPsiteId
+        AND nb.type = iPtype
+        AND (lq.frontend_quantity is not null or cr.avlb_qnty is not null)      
+      ORDER BY nb.sku
+    /*
+      SELECT
+        nb.sku,  
+        nvl(lq.frontend_quantity, 0) as lmqnty,
+        nvl(cr.avlb_qnty, 0) as crqnty
+      FROM
         ya_new_basket nb
         LEFT OUTER JOIN ya_limited_quantity lq on nb.sku = lq.sku and lq.frontend_quantity > 0 and lq.site_id in (99, iLOriginId)
         LEFT OUTER JOIN clearance cr on nb.sku = cr.prod_id and cr.avlb_qnty > 0 and cr.sts = 1
@@ -1156,6 +1227,7 @@ END GetBasketWithWarranty;
         AND nb.type = iPtype
         AND (lq.frontend_quantity is not null or cr.avlb_qnty is not null)      
       ORDER BY nb.sku
+    */
     );    
     /*
     SELECT
