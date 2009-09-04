@@ -3562,7 +3562,7 @@ PROCEDURE GetShadowOrderWithWarrantyYS (
       WHERE
         cc.preferred = 'Y'
         AND cc.shopper_id = cPshopper_id
-        AND cc.card_type_id IN (1,2,3,6)
+        AND cc.card_type_id IN (1,2,6)
         AND ROWNUM = 1;
     EXCEPTION WHEN NO_DATA_FOUND THEN
       iLcc_profile := NULL;
