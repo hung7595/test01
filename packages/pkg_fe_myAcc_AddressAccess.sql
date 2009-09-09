@@ -112,8 +112,9 @@ PROCEDURE GetAddressById (
       preferred_ship,
       preferred_bill
     FROM ya_address a
-      INNER JOIN ya_country_lang cl ON a.country_id = cl.country_id AND a.lang_id = cl.lang_id
+      INNER JOIN ya_country_lang cl ON a.country_id = cl.country_id
     WHERE shopper_id = cPshopper_id
+      AND cl.lang_id = iPlangId
       AND address_id = iPaddress_id;    
     RETURN;
   END GetAddressById;
@@ -149,8 +150,9 @@ PROCEDURE GetAddressById (
       preferred_ship,
       preferred_bill
     FROM ya_address a
-      INNER JOIN ya_country_lang cl ON a.country_id = cl.country_id AND cl.lang_id = iPlangId
+      INNER JOIN ya_country_lang cl ON a.country_id = cl.country_id
     WHERE shopper_id = cPshopper_id
+      AND cl.lang_id = iPlangId
     ORDER BY address_id;
     RETURN;
   END GetAddressByShopperId;
