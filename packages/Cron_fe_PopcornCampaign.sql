@@ -48,6 +48,22 @@ CREATE OR REPLACE PACKAGE BODY "CRON_FE_POPCORNCAMPAIGN" AS
 	where a.sell_price > 9.99
 	and b.sell_price > 9.99
 	and a.sku = b.sku;
+	
+	-- sku must be includeed in the campaign
+	insert into temp_popcorn_campaign values (1021222460);
+	insert into temp_popcorn_campaign values (1021222369);
+	insert into temp_popcorn_campaign values (1021162198);
+	insert into temp_popcorn_campaign values (1020582671);
+	insert into temp_popcorn_campaign values (1014032771);
+	insert into temp_popcorn_campaign values (1005118924);
+	insert into temp_popcorn_campaign values (1012950057);
+	insert into temp_popcorn_campaign values (1010746556);
+	insert into temp_popcorn_campaign values (1003947238);
+	insert into temp_popcorn_campaign values (1013867193);
+	insert into temp_popcorn_campaign values (1014045401);
+	insert into temp_popcorn_campaign values (1019892169);
+	insert into temp_popcorn_campaign values (1020253253);
+	insert into temp_popcorn_campaign values (1014027276);
 
 	delete from ya_campaign where campaign_code = 216 and sku not in (select sku from temp_popcorn_campaign);
 	
