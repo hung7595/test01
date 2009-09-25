@@ -67,7 +67,13 @@ AS
     iPsite_id  		IN 	INT,
     curPgetProduct1 	OUT 	refCur
   );
-  
+
+  PROCEDURE GetProductBaseBrand (
+    cPshopper_id  		IN 	VARCHAR2,
+    iPsite_id  		IN 	INT,
+    curPgetProduct1 	OUT 	refCur
+  );
+    
   PROCEDURE GetProductBase (
     cPsku_csv  		IN 	VARCHAR2,
     iPsite_id  		IN 	INT,
@@ -401,6 +407,22 @@ END;
       AND nb.type = 0;
   END GetProductBasePublisher;
 
+  PROCEDURE GetProductBaseBrand (
+    cPshopper_id  IN 	VARCHAR2,
+    iPsite_id     IN  INT,
+    curPgetProduct1 	OUT 	refCur
+  )
+  AS
+  BEGIN
+    OPEN curPgetProduct1 FOR
+    SELECT nb.sku, nvl(p.brand_id, -1)
+    FROM ya_product p
+      INNER JOIN ya_new_basket nb ON p.sku = nb.sku
+    WHERE nb.shopper_id = cPshopper_id
+      AND nb.site_id = iPsite_id
+      AND nb.type = 0;
+  END GetProductBaseBrand;
+  
   PROCEDURE GetProductBase (
       cPsku_csv		IN	VARCHAR2,
       iPsite_id		IN	INT,
