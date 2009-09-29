@@ -2,6 +2,11 @@ CREATE OR REPLACE PACKAGE Pkg_FE_AddressBookAccess
 AS
   TYPE refCur IS REF CURSOR;
 
+  PROCEDURE UpdateAddressProfileName (
+    iPaddress_id IN INT,
+    cPprofile_name IN VARCHAR2
+  );
+  
   /* proc_fe_GetAddressBook */
   PROCEDURE GetAddressByShopperId (
     cPshopper_id IN CHAR,
@@ -114,6 +119,22 @@ END Pkg_FE_AddressBookAccess;
 /
 CREATE OR REPLACE PACKAGE BODY Pkg_FE_AddressBookAccess
 AS
+  PROCEDURE UpdateAddressProfileName (
+    iPaddress_id IN INT,
+    cPprofile_name IN VARCHAR2
+  )
+  AS
+  BEGIN
+    UPDATE ya_address
+    SET
+      ADDRESS_PROFILE_NAME = cPprofile_name
+    WHERE
+      address_id = iPaddress_id;
+
+    COMMIT;
+    RETURN;  
+  END UpdateAddressProfileName;
+  
   PROCEDURE GetAddressByShopperId (
     cPshopper_id IN CHAR,
     iPlangId IN INT,
