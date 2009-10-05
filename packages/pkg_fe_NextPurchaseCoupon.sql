@@ -16,7 +16,8 @@ AS
   END Pkg_FE_NextPurchaseCoupon;
 /
 
-CREATE OR REPLACE PACKAGE BODY Pkg_FE_NextPurchaseCoupon
+create or replace
+PACKAGE BODY Pkg_FE_NextPurchaseCoupon
 IS
 
 PROCEDURE CreateNextPurchaseCoupon (
@@ -28,13 +29,13 @@ PROCEDURE CreateNextPurchaseCoupon (
   AS
     iLcount INT;
     iLcountOrder INT;
-	cLcoupon_code_YA VARCHAR2(8);
-	cLcoupon_code_YS VARCHAR2(8);
-	cLyaCampaignName VARCHAR2(50);
-	cLysCampaignName VARCHAR2(50);
-	cLyaCouponDescription VARCHAR2(80);
-	cLysCouponDescription VARCHAR2(80);
-	cLfrontendOrderNum INT;
+	  cLcoupon_code_YA VARCHAR2(8);
+	  cLcoupon_code_YS VARCHAR2(8);
+	  cLyaCampaignName VARCHAR2(50);
+	  cLysCampaignName VARCHAR2(50);
+	  cLyaCouponDescription VARCHAR2(80);
+	  cLysCouponDescription VARCHAR2(80);
+	  cLfrontendOrderNum INT;
   BEGIN
 	-- To check coupons created before
 	SELECT COUNT(*) INTO iLcountOrder FROM ya_next_purchase_coupon WHERE order_id = iPorder_id;
@@ -42,18 +43,18 @@ PROCEDURE CreateNextPurchaseCoupon (
 		IF iPsiteId <=7 THEN
 			CASE iPsiteId
 			WHEN 1 THEN -- US
-				cLyaCampaignName := 'YA + YS US$5 Coupon Campaign 2007 (US Site)';
+				cLyaCampaignName := 'YA + YS US$5 Coupon Campaign 2009 (US Site)';
 			WHEN 7 THEN -- GB
-				cLyaCampaignName := 'YA + YS US$5 Coupon Campaign 2007 (GB Site)';
+				cLyaCampaignName := 'YA + YS US$5 Coupon Campaign 2009 (Global Site)';
 			ELSE
-				cLyaCampaignName := 'YA + YS US$5 Coupon Campaign 2007';
+				cLyaCampaignName := 'YA + YS US$5 Coupon Campaign 2009';
 			END CASE;
-			
+
 			SELECT ORIGIN_ORDER_ID INTO cLfrontendOrderNum FROM order_info WHERE id= iPorder_id;
-			cLysCampaignName := 'YA + YS US$5 Coupon Campaign 2007 (YS Site)';
-			cLyaCouponDescription := '(YA) YesAsia.com US$5 Next Purchase Coupon (OrderNum:' || cLfrontendOrderNum  || ')';
-			cLysCouponDescription := '(YS) YesStyle.com US$5 Next Purchase Coupon (OrderNum:' || cLfrontendOrderNum || ')';
-				
+			cLysCampaignName := 'YA + YS US$5 Coupon Campaign 2009 (YS Site)';
+			cLyaCouponDescription := 'YesAsia.com US$5 Next Purchase Coupon (OrderNum:' || cLfrontendOrderNum  || ')';
+			cLysCouponDescription := 'YesStyle.com US$5 Next Purchase Coupon (OrderNum:' || cLfrontendOrderNum || ')';
+
 			--============================ Generate Coupon_YA=========================================
 			SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO cLcoupon_code_YA FROM dual;
 
@@ -87,11 +88,11 @@ PROCEDURE CreateNextPurchaseCoupon (
 				SELECT cPshopper_id, cLcoupon_code_YS, cLysCampaignName, cLysCouponDescription, 5, add_months(SYSDATE, 2), 'N', 'N', 1, 10, NULL, 'next_purchase', SYSDATE
 			FROM dual;
 			--============================ Keep record for sending email===============================
-			INSERT INTO ya_next_purchase_coupon (coupon_code, order_id) 
+			INSERT INTO ya_next_purchase_coupon (coupon_code, order_id)
 				VALUES (cLcoupon_code_YS, iPorder_id);
-			INSERT INTO ya_next_purchase_coupon (coupon_code, order_id) 
+			INSERT INTO ya_next_purchase_coupon (coupon_code, order_id)
 				VALUES (cLcoupon_code_YA, iPorder_id);
-				
+
 			SELECT count(*) INTO iPreturn FROM ya_coupon WHERE coupon_code = cLcoupon_code_YS OR coupon_code = cLcoupon_code_YA;
 		ELSE
 			SELECT 0 INTO iPreturn FROM dual;
