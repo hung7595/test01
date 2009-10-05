@@ -356,7 +356,7 @@ AS
 		INSERT INTO ya_coupon
 			(shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value,expiration_date, all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, create_date)
 		VALUES
-			(cPshopper_id, cPcoupon_code, 'YS New Customer Coupon 060711', 'YesStyle New Customer US$5 Coupon', 5, add_months(SYSDATE, 1), 'O', 'N', 1, 10, 5, 'frontend', SYSDATE);
+			(cPshopper_id, cPcoupon_code, 'RMB50', 'RMB50', 7.352, add_months(SYSDATE, 1), 'O', 'N', 1, 12, 73.52, 'frontend', SYSDATE);
 
 		COMMIT;
 		RETURN;
