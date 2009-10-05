@@ -358,7 +358,6 @@ AS
 		VALUES
 			(cPshopper_id, cPcoupon_code, 'RMB50', 'RMB50', 7.352, add_months(SYSDATE, 1), 'O', 'N', 1, 12, 73.52, 'frontend', SYSDATE);
 
-		COMMIT;
 		RETURN;
   END CreateHallmarkWelcomeCoupon;
 
