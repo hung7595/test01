@@ -12,24 +12,27 @@ AS
   );
   
   PROCEDURE AddDeptStep1 (
-  iPdispSeq IN INT,
-  cPuser IN VARCHAR2,
-  cPdeptDescription IN VARCHAR2,
-  iPparentDeptId IN INT,
-  cPdeptNameEn IN VARCHAR2,
-  cPdeptNameB5 IN VARCHAR2,
-  cPdeptNameJp IN VARCHAR2,
-  cPdeptNameKr IN VARCHAR2,
-  cPdeptNameGb IN VARCHAR2,
-  cPdeptNameEnU IN NVARCHAR2,
-  cPdeptNameB5U IN NVARCHAR2,
-  cPdeptNameJpU IN NVARCHAR2,
-  cPdeptNameKrU IN NVARCHAR2,
-  cPdeptNameGbU IN NVARCHAR2,
-  cPusEnabled IN CHAR,
-  cPtwEnabled IN CHAR,
-  cPysEnabled IN CHAR,
-  iPdeptId out int
+    iPdispSeq IN INT,
+    cPuser IN VARCHAR2,
+    cPdeptDescription IN VARCHAR2,
+    iPparentDeptId IN INT,
+    cPdeptNameEn IN VARCHAR2,
+    cPdeptNameB5 IN VARCHAR2,
+    cPdeptNameJp IN VARCHAR2,
+    cPdeptNameKr IN VARCHAR2,
+    cPdeptNameGb IN VARCHAR2,
+    cPdeptNameEnU IN NVARCHAR2,
+    cPdeptNameB5U IN NVARCHAR2,
+    cPdeptNameJpU IN NVARCHAR2,
+    cPdeptNameKrU IN NVARCHAR2,
+    cPdeptNameGbU IN NVARCHAR2,
+    cPusEnabled IN CHAR,
+    cPtwEnabled IN CHAR,
+    cPysEnabled IN CHAR,
+    cPyscnEnabled IN CHAR,
+    cPysauEnabled IN CHAR,
+    cPhmEnabled IN CHAR,
+    iPdeptId out int
   );
   
   PROCEDURE AddDeptStep2 (  
@@ -156,42 +159,43 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
   END AddAttribute;
 
   PROCEDURE AddDeptStep1 (
-  iPdispSeq IN INT,
-  cPuser IN VARCHAR2,
-  cPdeptDescription IN VARCHAR2,
-  iPparentDeptId IN INT,
-  cPdeptNameEn IN VARCHAR2,
-  cPdeptNameB5 IN VARCHAR2,
-  cPdeptNameJp IN VARCHAR2,
-  cPdeptNameKr IN VARCHAR2,
-  cPdeptNameGb IN VARCHAR2,
-  cPdeptNameEnU IN NVARCHAR2,
-  cPdeptNameB5U IN NVARCHAR2,
-  cPdeptNameJpU IN NVARCHAR2,
-  cPdeptNameKrU IN NVARCHAR2,
-  cPdeptNameGbU IN NVARCHAR2,
-  cPusEnabled IN CHAR,
-  cPtwEnabled IN CHAR,
-  cPysEnabled IN CHAR,
-  iPdeptId out int
+    iPdispSeq IN INT,
+    cPuser IN VARCHAR2,
+    cPdeptDescription IN VARCHAR2,
+    iPparentDeptId IN INT,
+    cPdeptNameEn IN VARCHAR2,
+    cPdeptNameB5 IN VARCHAR2,
+    cPdeptNameJp IN VARCHAR2,
+    cPdeptNameKr IN VARCHAR2,
+    cPdeptNameGb IN VARCHAR2,
+    cPdeptNameEnU IN NVARCHAR2,
+    cPdeptNameB5U IN NVARCHAR2,
+    cPdeptNameJpU IN NVARCHAR2,
+    cPdeptNameKrU IN NVARCHAR2,
+    cPdeptNameGbU IN NVARCHAR2,
+    cPusEnabled IN CHAR,
+    cPtwEnabled IN CHAR,
+    cPysEnabled IN CHAR,
+    cPyscnEnabled IN CHAR,
+    cPysauEnabled IN CHAR,
+    cPhmEnabled IN CHAR,
+    iPdeptId out int
   ) 
   AS
     iLDeptId int;
     iLexistValue int;
   BEGIN
-
-
     --select seq_dept_id from DB
-        iLexistValue := 1;
+    iLexistValue := 1;
         
-	WHILE (iLexistValue > 0)
-	LOOP
-            iLexistValue := 0;
-		SELECT seq_dept_id.nextval INTO iLDeptId FROM dual;	
-                select count(*) into iLexistValue from ya_dept where dept_id = iLDeptId;
-	END LOOP;
+	  WHILE (iLexistValue > 0)
+	  LOOP
+              iLexistValue := 0;
+		  SELECT seq_dept_id.nextval INTO iLDeptId FROM dual;	
+                  select count(*) into iLexistValue from ya_dept where dept_id = iLDeptId;
+	  END LOOP;
 		
---/****STEP 2 : CREATE DEPARTMENT*****/  
+    --/****STEP 2 : CREATE DEPARTMENT*****/  
     INSERT INTO ya_dept(dept_id, created_date, updated_date, created_user, updated_user)
 	  VALUES(iLDeptId, sysdate, sysdate, cPuser, cPuser);
 	  
@@ -203,12 +207,16 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled)
 	  VALUES (iLDeptId, 10, cPysEnabled);
 	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled)
-	  VALUES (iLDeptId, 11, cPysEnabled);	  
+	  VALUES (iLDeptId, 11, cPyscnEnabled);	  
+	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled)
+	  VALUES (iLDeptId, 12, cPhmEnabled);	  
+	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled)
+	  VALUES (iLDeptId, 13, cPysauEnabled);	  
 	  	  		
     iPdeptId :=iLDeptId;
---/****STEP 3 : DEPARTMENT LANGUAGE, NEED TO MODIFY THIS PART*****/
-	--1.1.1 prepare language translation of 5 languages, it also need in the part 1.6
-	--1.1.2 insert department language in ya_dept_lang
+    --/****STEP 3 : DEPARTMENT LANGUAGE, NEED TO MODIFY THIS PART*****/
+    --1.1.1 prepare language translation of 5 languages, it also need in the part 1.6
+    --1.1.2 insert department language in ya_dept_lang
 	  INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description)
 	  VALUES(iLDeptId, 1, cPdeptNameEn, cPdeptNameEnU, cPdeptDescription);
 	  INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description)
@@ -220,21 +228,21 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	  INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description)
 	  VALUES(iLDeptId, 5, cPdeptNameGb, cPdeptNameGbU, cPdeptDescription);
 
---/****STEP 4 : CREATE DEPARTMENT RELATIONSHIP*****/
-	IF iPparentDeptId>0 THEN
-		INSERT INTO ya_dept_rel(dept_id, parent_dept_id)
-		VALUES(iLDeptId, iPparentDeptId);
---/****STEP 5 : ADD PARENT DEPARTMENT ATTRIBUTE*****/
-		INSERT INTO ya_dept_attr(dept_id, attribute_id)
-		SELECT iLDeptId, attribute_id 
-			FROM ya_dept_attr WHERE dept_id = iPparentDeptId;
-	END IF;
+    --/****STEP 4 : CREATE DEPARTMENT RELATIONSHIP*****/
+	  IF iPparentDeptId>0 THEN
+		  INSERT INTO ya_dept_rel(dept_id, parent_dept_id)
+		  VALUES(iLDeptId, iPparentDeptId);
+    --/****STEP 5 : ADD PARENT DEPARTMENT ATTRIBUTE*****/
+		  INSERT INTO ya_dept_attr(dept_id, attribute_id)
+		  SELECT iLDeptId, attribute_id 
+			  FROM ya_dept_attr WHERE dept_id = iPparentDeptId;
+	  END IF;
 
     IF sqlcode = 0 THEN
-		COMMIT;
-	ELSE
-		ROLLBACK;
-	END IF;
+		  COMMIT;
+	  ELSE
+		  ROLLBACK;
+	  END IF;
 
   END AddDeptStep1;
 
