@@ -340,6 +340,7 @@ AS
   AS
 		iLcount INT;
   BEGIN
+  /*
 		-- Generate Coupon
 		SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO cPcoupon_code FROM dual;
 
@@ -357,6 +358,8 @@ AS
 			(shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value,expiration_date, all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, create_date)
 		VALUES
 			(cPshopper_id, cPcoupon_code, 'RMB50', 'RMB50', 7.352, add_months(SYSDATE, 1), 'O', 'N', 1, 12, 73.52, 'frontend', SYSDATE);
+	*/
+	  INSERT INTO ya_hallmark_member_gift (id, shopper_id, created_date) VALUES (SEQ_YA_HALLMARK_MEMBER_GIFT.nextval, cPshopper_id, sysdate);
 
 		RETURN;
   END CreateHallmarkWelcomeCoupon;
