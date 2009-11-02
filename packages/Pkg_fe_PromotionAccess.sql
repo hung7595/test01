@@ -38,6 +38,11 @@ AS
     iPlang_id IN INT,
     rcPresult OUT refCur
   );
+  
+  PROCEDURE GetHallmarkGiftOrders (
+    cPshopperId IN CHAR,
+    iPcount OUT INT
+  );  
 END Pkg_fe_PromotionAccess;
 /
 
@@ -257,7 +262,7 @@ IS
     END IF;
   END GetPrdGrpPromotionDetailInfo;
   
-    PROCEDURE GetPromotionMessage (
+  PROCEDURE GetPromotionMessage (
     cPpromotion_name IN VARCHAR2,
     iPlang_id IN INT,
     rcPresult OUT refCur
@@ -271,6 +276,32 @@ IS
 		  AND t.lang_id = iPlang_id;
 	RETURN;
   END GetPromotionMessage;
+  
+  PROCEDURE GetHallmarkGiftOrders (
+    cPshopperId IN CHAR,
+    iPcount OUT INT
+  )
+  AS
+  BEGIN
+    SELECT count(*) INTO iPcount
+    FROM ya_hallmark_member_gift
+    WHERE shopper_id = cPshopperId;
+
+    IF iPcount = 0 THEN
+    BEGIN
+      iPcount := -1;
+      RETURN;
+    END;
+    END IF;
+    
+    SELECT count(*) INTO iPcount 
+    FROM ya_order 
+    WHERE shopper_id = cPshopperId
+      AND created_datetime > (
+        SELECT max(created_date) FROM ya_hallmark_member_gift WHERE shopper_id = cPshopperId
+      );
+    RETURN;
+  END GetHallmarkGiftOrders;  
 END Pkg_fe_PromotionAccess;
 /
 
