@@ -42,7 +42,11 @@ AS
   PROCEDURE GetHallmarkGiftOrders (
     cPshopperId IN CHAR,
     iPcount OUT INT
-  );  
+  );
+  
+  PROCEDURE AddHallmarkGift (
+    cPshopper_id IN CHAR
+  );
 END Pkg_fe_PromotionAccess;
 /
 
@@ -301,7 +305,15 @@ IS
         SELECT max(created_date) FROM ya_hallmark_member_gift WHERE shopper_id = cPshopperId
       );
     RETURN;
-  END GetHallmarkGiftOrders;  
+  END GetHallmarkGiftOrders;
+  
+  PROCEDURE AddHallmarkGift (
+    cPshopper_id IN CHAR
+  )
+  AS
+  BEGIN
+	  INSERT INTO ya_hallmark_member_gift (id, shopper_id, created_date) VALUES (SEQ_YA_HALLMARK_MEMBER_GIFT.nextval, cPshopper_id, sysdate);	  
+  END AddHallmarkGift;  
 END Pkg_fe_PromotionAccess;
 /
 
