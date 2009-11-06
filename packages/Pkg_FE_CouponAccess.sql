@@ -78,6 +78,10 @@ AS
     cPshopper_id IN CHAR,
     curPresult OUT refCur
   );
+  
+  PROCEDURE CreateHallmarkBirthdayCoupon (
+    cPshopper_id IN CHAR
+  );
 END Pkg_FE_CouponAccess;
 /
 
@@ -491,6 +495,35 @@ AS
 		COMMIT;
 		RETURN;
   END CreateCouponForEmailRefer;
+
+  PROCEDURE CreateHallmarkBirthdayCoupon (
+    cPshopper_id IN CHAR
+  )
+  AS
+		iLcount INT;
+		iLcoupon_code VARCHAR2(8);
+  BEGIN
+    -- Generate Coupon
+		SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO iLcoupon_code FROM dual;
+
+		-- Make sure unique coupon code
+		SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
+		WHILE (iLcount = 1)
+			LOOP
+					SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO iLcoupon_code FROM dual;
+					SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
+			END LOOP;
+
+		INSERT INTO ya_coupon
+      (shopper_id, coupon_code, campaign_name, coupon_description
+      , percentage_coupon_value,expiration_date, all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, CREATE_DATE)
+	  SELECT cPshopper_id, iLcoupon_code, 'Birthday Coupon', '&#20061;&#20116;&#25240;&#29983;&#26085;&#20248;&#24800;&#21048;(&#21487;&#29992;&#20110;&#36141;&#20080;&#27491;&#20215;&#21450;&#29305;&#20215;&#20135;&#21697;&#65289;'
+	    , 0.05, add_months(SYSDATE, 2), 'N', 'N', 2, 12, 0, 'hallmark_cron', SYSDATE
+		FROM dual;		
+	  COMMIT;
+
+		RETURN;  
+  END CreateHallmarkBirthdayCoupon;
 
 END Pkg_FE_CouponAccess;
 /
