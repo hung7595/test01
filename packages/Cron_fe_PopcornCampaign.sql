@@ -70,6 +70,13 @@ CREATE OR REPLACE PACKAGE BODY "CRON_FE_POPCORNCAMPAIGN" AS
 	insert into temp_popcorn_campaign values (1004624361);
 	insert into temp_popcorn_campaign values (1004027612);
 	insert into temp_popcorn_campaign values (1004412015);
+	insert into temp_popcorn_campaign values (1021566152);
+	insert into temp_popcorn_campaign values (1003535332);
+	insert into temp_popcorn_campaign values (1001821648);
+	insert into temp_popcorn_campaign values (1011134003);
+	insert into temp_popcorn_campaign values (1003845394);
+	insert into temp_popcorn_campaign values (1014025985);
+	insert into temp_popcorn_campaign values (1002951605);
 
 	delete from ya_campaign where campaign_code = 216 and sku not in (select sku from temp_popcorn_campaign);
 	
