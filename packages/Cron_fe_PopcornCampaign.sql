@@ -49,34 +49,15 @@ CREATE OR REPLACE PACKAGE BODY "CRON_FE_POPCORNCAMPAIGN" AS
 	and b.sell_price > 9.99
 	and a.sku = b.sku;
 	
-	-- sku must be includeed in the campaign
-	insert into temp_popcorn_campaign values (1021222460);
-	insert into temp_popcorn_campaign values (1021222369);
-	insert into temp_popcorn_campaign values (1021162198);
-	insert into temp_popcorn_campaign values (1020582671);
-	insert into temp_popcorn_campaign values (1014032771);
-	insert into temp_popcorn_campaign values (1005118924);
-	insert into temp_popcorn_campaign values (1012950057);
-	insert into temp_popcorn_campaign values (1010746556);
-	insert into temp_popcorn_campaign values (1003947238);
-	insert into temp_popcorn_campaign values (1013867193);
-	insert into temp_popcorn_campaign values (1014045401);
-	insert into temp_popcorn_campaign values (1019892169);
-	insert into temp_popcorn_campaign values (1020253253);
-	insert into temp_popcorn_campaign values (1014027276);
-	insert into temp_popcorn_campaign values (1004777750);
-	insert into temp_popcorn_campaign values (1014446135);
-	insert into temp_popcorn_campaign values (1020518903);
-	insert into temp_popcorn_campaign values (1004624361);
-	insert into temp_popcorn_campaign values (1004027612);
-	insert into temp_popcorn_campaign values (1004412015);
-	insert into temp_popcorn_campaign values (1021566152);
-	insert into temp_popcorn_campaign values (1003535332);
-	insert into temp_popcorn_campaign values (1001821648);
-	insert into temp_popcorn_campaign values (1011134003);
-	insert into temp_popcorn_campaign values (1003845394);
-	insert into temp_popcorn_campaign values (1014025985);
-	insert into temp_popcorn_campaign values (1002951605);
+	-- sku must be includeed in the campaigninsert into temp_popcorn_campaign 
+	INSERT INTO temp_popcorn_campaign
+		SELECT a.sku FROM (select sku from ya_product where sku in (1021222460,1021222369,1021162198,1020582671,1014032771,
+			1005118924,1012950057,1010746556,1003947238,1013867193,
+			1014045401,1019892169,1020253253,1014027276,1004777750,
+			1014446135,1020518903,1004624361,1004027612,1004412015,
+			1021566152,1003535332,1001821648,1011134003,1003845394,
+			1014025985,1002951605) ) a 
+			left join temp_popcorn_campaign c on c.sku = a.sku where c.sku is null;
 
 	delete from ya_campaign where campaign_code = 216 and sku not in (select sku from temp_popcorn_campaign);
 	
