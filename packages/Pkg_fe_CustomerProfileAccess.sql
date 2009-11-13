@@ -398,7 +398,7 @@ IS
       WHILE  iLendAnswerPos  >  0
       LOOP
         BEGIN
-        SELECT 1 INTO iLNewsletterExist FROM ya_newsletter_subscriber WHERE shopper_id = cPshopper_id AND newsletter_id = CAST(SUBSTR(cLselectedCsv, iLstartanswerPos, iLendanswerPos - iLstartanswerPos) as INT);
+        SELECT 1 INTO iLNewsletterExist FROM ya_newsletter_subscriber WHERE shopper_id = cPshopper_id AND newsletter_id = CAST(SUBSTR(cLselectedCsv, iLstartanswerPos, iLendanswerPos - iLstartanswerPos) as INT) AND site_id = iPsite_id;
         EXCEPTION WHEN NO_DATA_FOUND THEN
         iLNewsletterExist := -1;
         END;
@@ -406,7 +406,7 @@ IS
           UPDATE ya_newsletter_subscriber SET
           status = 'A',
           last_modified_datetime = SYSDATE
-          WHERE shopper_id = cPshopper_id AND newsletter_id = CAST(SUBSTR(cLselectedCsv, iLstartanswerPos, iLendanswerPos - iLstartanswerPos) as INT);
+          WHERE shopper_id = cPshopper_id AND newsletter_id = CAST(SUBSTR(cLselectedCsv, iLstartanswerPos, iLendanswerPos - iLstartanswerPos) as INT) AND site_id = iPsite_id;
         ELSE
           INSERT INTO ya_newsletter_subscriber
             (email,shopper_id,guid,date_time,site_id,newsletter_id,status,rowguid)
@@ -425,7 +425,7 @@ IS
           UPDATE ya_newsletter_subscriber SET
           status = 'R',
           last_modified_datetime = SYSDATE
-          WHERE shopper_id = cPshopper_id AND newsletter_id = CAST(SUBSTR(cLunselectedCsv, iLstartanswerPos, iLendanswerPos - iLstartanswerPos) as INT);
+          WHERE shopper_id = cPshopper_id AND newsletter_id = CAST(SUBSTR(cLunselectedCsv, iLstartanswerPos, iLendanswerPos - iLstartanswerPos) as INT) AND site_id = iPsite_id;
         cLunselectedCsv := SUBSTR(cLunselectedCsv, iLendanswerPos + 1, LENGTH(RTRIM(cLunselectedCsv)) - iLendanswerPos);
         iLendanswerPos := INSTR(cLunselectedCsv, ',');
       END LOOP;

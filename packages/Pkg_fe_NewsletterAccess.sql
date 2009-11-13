@@ -360,12 +360,12 @@ END;
 		    SELECT DISTINCT regularEmailList.email AS email FROM
 				(
 					(
-						--email of monthly newsletter subscriber who don't have any YS membership
+						--email of monthly newsletter subscriber who don't have any membership
 						SELECT DISTINCT yns.email
 						FROM ya_newsletter_subscriber yns
-						LEFT JOIN loyalty_customer lc ON lc.ya_shopper_id = yns.shopper_id AND lc.site_id = 10
+						LEFT JOIN loyalty_customer lc ON lc.ya_shopper_id = yns.shopper_id AND lc.site_id = iPsite_id
 						LEFT JOIN loyalty_membership lm ON lc.loyalty_membership_id = lm.id
-						WHERE yns.newsletter_id = 45 AND yns.status = 'A' 
+						WHERE yns.newsletter_id = 45 AND yns.status = 'A' AND yns.site_id = iPsite_id
 						AND 
 						(
 							NOT EXISTS
@@ -386,9 +386,9 @@ END;
 						--email of monthly newsletter subscriber who has this year's "Regular" membership
 						SELECT DISTINCT yns.email
 						FROM ya_newsletter_subscriber yns
-						LEFT JOIN loyalty_customer lc ON lc.ya_shopper_id = yns.shopper_id AND lc.site_id = 10
+						LEFT JOIN loyalty_customer lc ON lc.ya_shopper_id = yns.shopper_id AND lc.site_id = iPsite_id
 						LEFT JOIN loyalty_membership lm ON lc.loyalty_membership_id = lm.id AND lm.membership_year = to_char(sysdate, 'YYYY')
-						WHERE yns.newsletter_id = 45 AND yns.status = 'A' AND 
+						WHERE yns.newsletter_id = 45 AND yns.status = 'A' AND yns.site_id = iPsite_id AND 
 						(
 							NOT EXISTS
 							(
@@ -409,9 +409,9 @@ END;
 					--email of monthly newsletter subscriber who has this year's membership apart from "Regular"
 					SELECT DISTINCT yns.email
 					FROM ya_newsletter_subscriber yns
-					LEFT JOIN loyalty_customer lc ON lc.ya_shopper_id = yns.shopper_id AND lc.site_id = 10
+					LEFT JOIN loyalty_customer lc ON lc.ya_shopper_id = yns.shopper_id AND lc.site_id = iPsite_id
 					LEFT JOIN loyalty_membership lm ON lc.loyalty_membership_id = lm.id AND lm.membership_year = to_char(sysdate, 'YYYY')
-					WHERE yns.newsletter_id = 45 AND yns.status = 'A' 
+					WHERE yns.newsletter_id = 45 AND yns.status = 'A' AND yns.site_id = iPsite_id
 					AND 
 					(
 						NOT EXISTS
@@ -430,10 +430,9 @@ END;
 			END IF;
 		ELSE
 			OPEN curPresult FOR 
-			--retrieve email list apart from monthly membership newsletter
 	    SELECT DISTINCT email
 	    FROM ya_newsletter_subscriber yns
-	    WHERE yns.newsletter_id = iPnewsletter_id AND yns.status = 'A' 
+	    WHERE yns.newsletter_id = iPnewsletter_id AND yns.status = 'A' AND yns.site_id = iPsite_id
 			AND 
 			(
 				NOT EXISTS 
