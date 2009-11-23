@@ -12,6 +12,16 @@ AS
     cPpurchaser_shopper_id IN CHAR,
     iPreturn OUT INT
   );
+
+  PROCEDURE ActiveGiftCert (
+    iPsite_id IN INT,
+    cPrecipient_shopper_id IN VARCHAR2,
+    cPredemption_id IN VARCHAR2,
+    iPcredit_type IN INT,
+    cPcurrency_code IN VARCHAR2,
+    iPerror_code OUT INT
+  );
+  
 END Pkg_FE_GiftCertAccess;
 /
 
@@ -73,6 +83,85 @@ AS
 
     RETURN;
   END CreateGiftCert;
+
+  PROCEDURE ActiveGiftCert (
+    iPsite_id IN INT,
+    cPrecipient_shopper_id IN VARCHAR2,
+    cPredemption_id IN VARCHAR2,
+    iPcredit_type IN INT,
+    cPcurrency_code IN VARCHAR2,
+    iPerror_code OUT INT
+  )
+  AS
+    iLrecord_found INT;
+    cLcredit_code VARCHAR2(50);
+    cLcert_code VARCHAR2(50);
+    nLcert_amount NUMBER;
+  BEGIN
+
+    --Step 1 Check record exists
+    BEGIN
+      SELECT count(1)
+      INTO iLrecord_found
+      FROM ya_gift_cert
+      WHERE redemption_id = cPredemption_id
+      AND redemption_datetime is NULL
+      AND cert_used = 'N'
+      AND bogus = 'N'
+      AND expiration_date >= SYSDATE;
+    END;
+
+    IF iLrecord_found = 0 THEN
+      iPerror_code := -10;
+      RETURN;
+    END IF;
+
+    BEGIN
+      SELECT count(1)
+      INTO iLrecord_found
+      FROM ya_shopper
+      WHERE member_type <> 3
+      AND shopper_id = cPrecipient_shopper_id;
+    END;
+
+    IF iLrecord_found = 0 THEN
+      iPerror_code := -20;
+      RETURN;
+    END IF;
+    
+    --Step 2 - Load Basic Information
+    BEGIN
+      SELECT cert_code, cert_amount
+      INTO cLcert_code, nLcert_amount
+      FROM ya_gift_cert
+      WHERE redemption_id = cPredemption_id;
+    END;
+
+    --Step 3 - Update ya_gift_cert's status(redemption_datetime, cert_used, recipient_shopper_id)
+    BEGIN
+      UPDATE ya_gift_cert
+      SET redemption_datetime = SYSDATE,
+      cert_used = 'Y',
+      recipient_shopper_id = cPrecipient_shopper_id
+      WHERE redemption_id = cPredemption_id;
+    END;
+
+    --Step 5
+    BEGIN
+      Pkg_fe_ManagementCreditAccess.CreateCreditByShopperId(
+      iPsite_id, cPrecipient_shopper_id, iPcredit_type, cPcurrency_code, nLcert_amount, cLcert_code, cLcredit_code, iPerror_code);
+    END;
+
+    --Only need to handle rollbak as step 5 already handle case of commit
+    IF iPerror_code <> 0 THEN
+      BEGIN
+        ROLLBACK;
+      END;
+    END IF;
+ 
+--    DBMS_OUTPUT.put_line(iPerror_code); 
+  END ActiveGiftCert;  
+
 END Pkg_FE_GiftCertAccess;
 /
 
