@@ -13,7 +13,7 @@ AS
     iPreturn OUT INT
   );
 
-  PROCEDURE ActiveGiftCert (
+  PROCEDURE ActivateGiftCert (
     iPsite_id IN INT,
     cPrecipient_shopper_id IN VARCHAR2,
     cPredemption_id IN VARCHAR2,
@@ -84,7 +84,7 @@ AS
     RETURN;
   END CreateGiftCert;
 
-  PROCEDURE ActiveGiftCert (
+  PROCEDURE ActivateGiftCert (
     iPsite_id IN INT,
     cPrecipient_shopper_id IN VARCHAR2,
     cPredemption_id IN VARCHAR2,
@@ -160,7 +160,7 @@ AS
     END IF;
  
 --    DBMS_OUTPUT.put_line(iPerror_code); 
-  END ActiveGiftCert;  
+  END ActivateGiftCert;  
 
 END Pkg_FE_GiftCertAccess;
 /
