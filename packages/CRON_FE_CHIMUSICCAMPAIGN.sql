@@ -23,7 +23,7 @@ CREATE OR REPLACE PACKAGE BODY "CRON_FE_CHIMUSICGROUPCAMPAIGN" AS
 			and region.is_can_sell = 'Y'
 			and region.is_enabled = 'Y'
 			and region.region_id = 1
-			and prod.account_id in (1,9,30,33,132,394,407,4,27,31,61,133,395,408,7,28,32,131,393,396,116)
+			and prod.account_id in (1,9,30,33,394,407,4,27,31,61,395,408,7,28,32,393,396,116)
 	) a,
 	(
 		select prod.sku as sku, case when sysdate between region.sale_price_start and region.sale_price_end and nvl(region.sale_price, 0) > 0 then region.sale_price else region.list_price end as sell_price 
@@ -35,7 +35,7 @@ CREATE OR REPLACE PACKAGE BODY "CRON_FE_CHIMUSICGROUPCAMPAIGN" AS
 			and region.is_can_sell = 'Y'
 			and region.is_enabled = 'Y'
 			and region.region_id = 7
-			and prod.account_id in (1,9,30,33,132,394,407,4,27,31,61,133,395,408,7,28,32,131,393,396,116)
+			and prod.account_id in (1,9,30,33,394,407,4,27,31,61,395,408,7,28,32,393,396,116)
 	) b
 	where a.sell_price > 9.99
 	and b.sell_price > 9.99
