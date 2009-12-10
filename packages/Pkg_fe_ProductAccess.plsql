@@ -640,7 +640,7 @@ END;
     AND p.sku=pr.prod_id
     AND pr.region_id=iLRegionId
     AND p.sku = pl.sku (+)
-    AND pl.lang_id = iPlang_id
+    AND pl.lang_id (+) = iPlang_id
     AND p.sku = pl2.sku (+)
     AND pl2.lang_id IN (
                         SELECT lang_id
