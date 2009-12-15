@@ -2,6 +2,7 @@ DROP TABLE Ya_Lookup
 /
 
 CREATE TABLE Ya_Lookup (
+	id                         int                        NOT NULL ,
 	type_id                    int                        NOT NULL ,
 	type                       varchar2(50)               NOT NULL ,
 	code_id                    int                        NOT NULL ,
@@ -15,10 +16,14 @@ CREATE TABLE Ya_Lookup (
 /
 
 ALTER TABLE Ya_Lookup
-ADD CONSTRAINT PK_Lookup PRIMARY KEY (type_id, code_id)
+ADD CONSTRAINT PK_Lookup PRIMARY KEY (id)
 USING INDEX TABLESPACE SSCommerceserver_Index
 /
 
+ALTER TABLE ya_lookup
+ADD CONSTRAINT Un_Lookup_01 UNIQUE (type_id, code_id)
+USING INDEX TABLESPACE SSCommerceserver_Index
+/
 
 CREATE INDEX IX_Lookup_01 ON Ya_Lookup(type, code) TABLESPACE SSCommerceserver_Index
 /
@@ -35,3 +40,4 @@ FOR EACH ROW
 BEGIN
 	:NEW.enabled := UPPER(:NEW.enabled);
 END;
+/
