@@ -4,7 +4,7 @@ DROP TABLE Ya_Se_Reindex
 CREATE TABLE Ya_Se_Reindex (
 	sku                 number           NOT NULL ,
 	action              int              NOT NULL ,
-	created_dt          date             NOT NULL
+	mod_dt          date             NOT NULL
 )
 /
 
