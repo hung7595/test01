@@ -47,6 +47,21 @@ AS
   PROCEDURE AddHallmarkGift (
     cPshopper_id IN CHAR
   );
+  
+  PROCEDURE IsEliteClubFirstOrder (
+    cPshopper_id IN CHAR,
+    iPyear IN INT,
+    cPmembership IN VARCHAR2,
+    iPgift_sku IN INT,
+    iPis_eligible OUT INT
+  );
+  
+  PROCEDURE InsertFreeGiftOrderTracking (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    iPorder_num IN INT,
+    iPgift_sku IN INT
+  );
 END Pkg_fe_PromotionAccess;
 /
 
@@ -313,7 +328,54 @@ IS
   AS
   BEGIN
 	  INSERT INTO ya_hallmark_member_gift (id, shopper_id, created_date) VALUES (SEQ_YA_HALLMARK_MEMBER_GIFT.nextval, cPshopper_id, sysdate);	  
-  END AddHallmarkGift;  
+  END AddHallmarkGift;
+  
+  PROCEDURE IsEliteClubFirstOrder (
+    cPshopper_id IN CHAR,
+    iPyear IN INT,
+    cPmembership IN VARCHAR2,
+    iPgift_sku IN INT,
+    iPis_eligible OUT INT
+  )
+  AS
+  BEGIN
+    select case when tmp.order_exists = 1 then 0
+            else 1
+           end into iPis_eligible 
+    from loyalty_customer lc
+    left outer join (
+      select 1 order_exists, fg.shopper_id from ya_free_gift_order_tracking fg
+      where fg.shopper_id = cPshopper_id
+        and fg.free_gift_prod_id = iPgift_sku
+        and fg.sts = 0
+        and to_char(fg.create_dt, 'yyyy') = iPyear
+        and rownum = 1
+    ) tmp on lc.ya_shopper_id = tmp.shopper_id
+    where lc.ya_shopper_id = cPshopper_id
+    and lc.loyalty_membership_id 
+      = (select lm.id from loyalty_membership lm where lm.membership_year = iPyear and lm.membership_name = cPmembership);
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        BEGIN
+          iPis_eligible := 0;
+        END;      
+  END IsEliteClubFirstOrder;
+  
+  PROCEDURE InsertFreeGiftOrderTracking (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    iPorder_num IN INT,
+    iPgift_sku IN INT
+  )
+  AS
+  BEGIN
+    INSERT INTO ya_free_gift_order_tracking (id, shopper_id, site_id, fe_order_num,
+      free_gift_prod_id, sts, create_user, create_dt)
+    VALUES (SEQ_YA_FREE_GIFT_ORDER_TRACK.nextval, cPshopper_id, iPsite_id, iPorder_num,
+      iPgift_sku, 0, 'frontend', sysdate);
+    
+    COMMIT;    
+  END InsertFreeGiftOrderTracking;
 END Pkg_fe_PromotionAccess;
 /
 
