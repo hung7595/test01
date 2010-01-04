@@ -3689,11 +3689,7 @@ PROCEDURE GetShadowOrderWithWarrantyYS (
     deciLcredit_amount DECIMAL(18,2);
   BEGIN    
     IF iPsite_id = 1 THEN -- US site
-      IF iPship_to_country_id = 226 THEN -- United States
-        iLship_method := 16; -- Standard
-      ELSIF iPship_to_country_id = 38 THEN -- Canada
-        iLship_method := 11; -- Canadian
-      END IF;
+      iLship_method := 16; -- Standard
     ELSIF iPsite_id = 7 THEN -- Global Site      
       IF iPship_to_country_id = 98 THEN -- Hong Kong
         iLship_method := 15; -- Express
