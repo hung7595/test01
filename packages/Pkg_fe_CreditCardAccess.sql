@@ -147,6 +147,16 @@ IS
           AND card_type_id IN (1,2,3)
         ORDER BY preferred DESC nulls last;
       END;
+    ELSIF iPsiteId = 13 THEN
+      BEGIN
+        OPEN curPresult FOR
+        SELECT profile_id, card_type_id, card_number,
+          expiration_month, expiration_year, firstname_on_card, lastname_on_card, card_numberencrypted, encryptionkey
+        FROM YA_CREDIT_CARD_PROFILE
+        WHERE shopper_id = cPshopperId
+          AND card_type_id IN (1,2)
+        ORDER BY preferred DESC nulls last;
+      END;
     ELSE
       BEGIN
         OPEN curPresult FOR
