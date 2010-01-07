@@ -122,6 +122,14 @@ AS
     iPsiteId IN INT,
     curPresult OUT refCur
   );
+  
+  PROCEDURE CopyMirrorPage (
+    iPfromPageId IN INT,
+    iPtoPageId IN INT,
+    iPfromSiteId IN INT,
+    iPtoSiteId IN INT,
+    cPlastUpdateUser IN VARCHAR2
+  );  
 END PKG_FE_PROMOTIONTOOLDALC;
 /
 CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_PROMOTIONTOOLDALC"
