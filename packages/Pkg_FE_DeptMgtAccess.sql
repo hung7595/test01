@@ -55,6 +55,11 @@ AS
   iPdeptId IN INT,
   curPresult1 out refCur
   );
+
+  PROCEDURE GetOverrideDeptNameByDeptID (  
+  iPdeptId IN INT,
+  curPresult1 out refCur
+  );
   
   PROCEDURE GetPagedDeptList (  
   iPdeptId IN INT,
@@ -94,7 +99,29 @@ AS
   cPdeptNameGbU IN NVARCHAR2,
   iProw_affacted OUT INT
   );
-    	
+  
+  PROCEDURE InsertOverrideDeptName (
+    iPdeptId IN INT,
+    iPsiteId IN INT,
+    iPlangId IN INT,
+    cPdeptName IN VARCHAR2,
+    iProw_affacted OUT INT
+  );  
+
+  PROCEDURE UpdateOverrideDeptName (
+    iPid IN INT,
+    iPdeptId IN INT,
+    iPsiteId IN INT,
+    iPlangId IN INT,
+    cPdeptName IN VARCHAR2,
+    iProw_affacted OUT INT
+  );  
+
+  PROCEDURE DeleteOverrideDeptName (
+    iPid IN INT,
+    iProw_affacted OUT INT
+  );
+      	
   PROCEDURE GetBrowsePath (  
   iPdeptId IN INT,
   iPlangId IN INT,
@@ -217,16 +244,16 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
     --/****STEP 3 : DEPARTMENT LANGUAGE, NEED TO MODIFY THIS PART*****/
     --1.1.1 prepare language translation of 5 languages, it also need in the part 1.6
     --1.1.2 insert department language in ya_dept_lang
-	  INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description)
-	  VALUES(iLDeptId, 1, cPdeptNameEn, cPdeptNameEnU, cPdeptDescription);
-	  INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description)
-	  VALUES(iLDeptId, 2, cPdeptNameB5, cPdeptNameB5U, cPdeptDescription);
-	  INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description)
-	  VALUES(iLDeptId, 3, cPdeptNameJp, cPdeptNameJpU, cPdeptDescription);
-	  INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description)
-	  VALUES(iLDeptId, 4, cPdeptNameKr, cPdeptNameKrU, cPdeptDescription);
-	  INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description)
-	  VALUES(iLDeptId, 5, cPdeptNameGb, cPdeptNameGbU, cPdeptDescription);
+	  INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description,id,site_id)
+	  VALUES(iLDeptId, 1, cPdeptNameEn, cPdeptNameEnU, cPdeptDescription,seq_ya_dept_lang.nextval,null);
+	  INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description,id,site_id)
+	  VALUES(iLDeptId, 2, cPdeptNameB5, cPdeptNameB5U, cPdeptDescription,seq_ya_dept_lang.nextval,null);
+	  INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description,id,site_id)
+	  VALUES(iLDeptId, 3, cPdeptNameJp, cPdeptNameJpU, cPdeptDescription,seq_ya_dept_lang.nextval,null);
+	  INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description,id,site_id)
+	  VALUES(iLDeptId, 4, cPdeptNameKr, cPdeptNameKrU, cPdeptDescription,seq_ya_dept_lang.nextval,null);
+	  INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description,id,site_id)
+	  VALUES(iLDeptId, 5, cPdeptNameGb, cPdeptNameGbU, cPdeptDescription,seq_ya_dept_lang.nextval,null);
 
     --/****STEP 4 : CREATE DEPARTMENT RELATIONSHIP*****/
 	  IF iPparentDeptId>0 THEN
@@ -280,6 +307,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	    SELECT iLterminalDeptId, iLnodeSequenceId, dl.dept_id, sysdate
 	    FROM ya_dept_lang dl
 	    WHERE dept_id = iLtempNodeId 
+	    AND dl.site_id is null
 	    AND dl.lang_id = 1;
 
 	    SELECT parent_dept_id into iLtempNodeId 
@@ -296,6 +324,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	SELECT iLterminalDeptId, iLnodeSequenceId, dl.dept_id, sysdate
 	FROM ya_dept_lang dl
 	WHERE dept_id = iLtempNodeId 
+	AND dl.site_id is null
 	AND dl.lang_id = 1 AND dept_id not in (0);
 
 
@@ -343,10 +372,37 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
     OPEN curPresult1 FOR	  
 		select lang_id,dept_name_u
 		from ya_dept_lang al 
-		where dept_id=iPdeptId;
+		where dept_id=iPdeptId
+		and site_id is null;
 	RETURN;
 
   END GetDeptNameByDeptID;
+
+  PROCEDURE GetOverrideDeptNameByDeptID (  
+  iPdeptId IN INT,
+  curPresult1 out refCur
+  )  AS
+  BEGIN
+    OPEN curPresult1 FOR	  
+		select id,lang_id,dept_name_u,site_id, 
+		case when site_id = 1 then 'YA US'
+		     when site_id = 7 then 'YA Global'
+		     when site_id = 10 then 'YS Global'
+		     when site_id = 11 then 'YS China'
+		     when site_id = 12 then 'Hallmark'
+		     when site_id = 13 then 'YS Australia'
+		     else cast(site_id as varchar2(2)) end site_name,
+		case when lang_id = 1 then 'English'
+		     when lang_id = 2 then 'Traditional Chinese'
+		     when lang_id = 3 then 'Japanese'
+		     when lang_id = 5 then 'Simplified Chinese'
+		     else cast(lang_id as varchar2(2)) end lang_name
+		from ya_dept_lang al 
+		where dept_id=iPdeptId
+		and site_id is not null;
+	RETURN;
+
+  END GetOverrideDeptNameByDeptID;
 
   PROCEDURE GetPagedDeptList (  
   iPdeptId IN INT,
@@ -372,7 +428,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 		SELECT dept_id, lang_id,dept_name,dept_name_u 
 		FROM ya_dept_lang
 	     WHERE
-		     dept_id = iPdeptId and lang_id=1
+		     dept_id = iPdeptId and lang_id=1 and site_id is null
 			ORDER BY dept_id;
 	ELSE
 		--search by keyword
@@ -388,7 +444,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 		FROM 
                 (select dept_id, lang_id,dept_name,dept_name_u,rownum as rnum 
                   from ya_dept_lang 
-                  WHERE dept_name_u like cLword and rownum < iLStartRow+iPpageSize)
+                  WHERE dept_name_u like cLword and rownum < iLStartRow+iPpageSize and site_id is null)
                   WHERE rnum >= iLStartRow
 		ORDER BY dept_id,lang_id;
 
@@ -415,7 +471,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 		SELECT count(*) INTO  iPrecordCount
 		FROM ya_dept_lang
 	     WHERE
-		     dept_id = iPdeptId and lang_id=1
+		     dept_id = iPdeptId and lang_id=1 and site_id is null
 			ORDER BY dept_id;
 	ELSE
 
@@ -423,6 +479,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
                 SELECT count(*) INTO  iPrecordCount
 		FROM ya_dept_lang 
 		WHERE dept_name_u like cLword
+		AND site_id is null
 		ORDER BY dept_id,lang_id;
 
 	END IF;
@@ -488,29 +545,34 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	UPDATE ya_dept_lang
 	SET dept_name = cPdeptNameEn,
 	dept_name_u=cPdeptNameEnU
-	WHERE dept_id=iPdeptId and lang_id=1;
+	WHERE dept_id=iPdeptId and lang_id=1
+	and site_id is null;
 
 	UPDATE ya_dept_lang
 	SET dept_name = cPdeptNameB5,
 	dept_name_u=cPdeptNameB5U
-	WHERE dept_id=iPdeptId and lang_id=2;
+	WHERE dept_id=iPdeptId and lang_id=2
+	and site_id is null;
 
 	UPDATE ya_dept_lang
 	SET dept_name = cPdeptNameJp,
 	dept_name_u=cPdeptNameJpU
-	WHERE dept_id=iPdeptId and lang_id=3;
+	WHERE dept_id=iPdeptId and lang_id=3
+	and site_id is null;
 
 	UPDATE ya_dept_lang
 	SET dept_name = cPdeptNameKr,
 	dept_name_u=cPdeptNameKrU
-	WHERE dept_id=iPdeptId and lang_id=4;
+	WHERE dept_id=iPdeptId and lang_id=4
+	and site_id is null;
 
 	UPDATE ya_dept_lang
 	SET dept_name = cPdeptNameGb,
 	dept_name_u=cPdeptNameGbU
-	WHERE dept_id=iPdeptId and lang_id=5;
+	WHERE dept_id=iPdeptId and lang_id=5
+	and site_id is null;
 	
-    IF sqlcode = 0 THEN
+  IF sqlcode = 0 THEN
 		iProw_affacted := SQL%ROWCOUNT;
 		COMMIT;
 	ELSE
@@ -520,6 +582,73 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 
   END UpdateDeptName;
 
+  PROCEDURE InsertOverrideDeptName (
+    iPdeptId IN INT,
+    iPsiteId IN INT,
+    iPlangId IN INT,
+    cPdeptName IN VARCHAR2,
+    iProw_affacted OUT INT
+  )
+  AS
+  BEGIN
+	  INSERT INTO ya_dept_lang(dept_id,lang_id,dept_name,dept_name_u,dept_description,id,site_id)
+	  VALUES(iPdeptId, iPlangId, cPdeptName, cPdeptName, null, seq_ya_dept_lang.nextval, iPsiteId);
+  	
+    IF sqlcode = 0 THEN
+		  iProw_affacted := SQL%ROWCOUNT;
+		  COMMIT;
+	  ELSE
+		  ROLLBACK;
+	  END IF;
+	  RETURN;  
+  END InsertOverrideDeptName;
+
+  PROCEDURE UpdateOverrideDeptName (
+    iPid IN INT,
+    iPdeptId IN INT,
+    iPsiteId IN INT,
+    iPlangId IN INT,
+    cPdeptName IN VARCHAR2,
+    iProw_affacted OUT INT
+  )
+  AS
+  BEGIN
+	  UPDATE ya_dept_lang
+	  SET dept_name = cPdeptName,
+	  dept_name_u=cPdeptName,
+    dept_id=iPdeptId,
+	  lang_id=iPlangId,
+	  site_id=iPsiteId	  
+	  WHERE
+	    id=iPid;
+  	
+    IF sqlcode = 0 THEN
+		  iProw_affacted := SQL%ROWCOUNT;
+		  COMMIT;
+	  ELSE
+		  ROLLBACK;
+	  END IF;
+	  RETURN;  
+  END UpdateOverrideDeptName;
+
+  PROCEDURE DeleteOverrideDeptName (
+    iPid IN INT,
+    iProw_affacted OUT INT
+  )
+  AS
+  BEGIN
+	  DELETE FROM ya_dept_lang	  
+	  WHERE id=iPid;
+  	
+    IF sqlcode = 0 THEN
+		  iProw_affacted := SQL%ROWCOUNT;
+		  COMMIT;
+	  ELSE
+		  ROLLBACK;
+	  END IF;
+	  RETURN;  
+  END DeleteOverrideDeptName;
+  
   PROCEDURE GetBrowsePath (  
   iPdeptId IN INT,
   iPlangId IN INT,
@@ -538,7 +667,9 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
            ya_dept_lang dl
      WHERE dp.terminal_dept_id = iPdeptId
        AND dl.lang_id = iPlangId
+       AND dl.site_id is null
        AND dle.lang_id = 1 
+       AND dle.site_id is null
        AND dp.dept_id = dle.dept_id
        AND dp.dept_id = dl.dept_id
        AND dp.dept_id = dpt.dept_id
