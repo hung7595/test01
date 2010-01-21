@@ -127,12 +127,12 @@ AS
             AND c.create_dt <= sysdate
             AND c.membership_expiry_dt >= sysdate;
       END IF;
-    ELSIF iPsite_id = 10 THEN
+    ELSIF iPsite_id = 10 OR iPsite_id = 13 THEN
       select count(*) into iLHasRecord 
       from loyalty_customer c
 	      inner join loyalty_membership m on c.loyalty_membership_id = m.id and m.membership_year = to_char(sysdate,'YYYY')	      
       where c.ya_shopper_id = cPshopper_id
-        and c.site_id = iPsite_id;  
+        and c.site_id = 10;  
       
       IF iLHasRecord > 0 THEN
         OPEN curPresult FOR
@@ -149,7 +149,7 @@ AS
 	        membership_name,
 	        discount_percentage/100
 	      FROM ya_shopper
-	        inner join loyalty_customer c on c.ya_shopper_id = shopper_id and c.site_id = iPsite_id
+	        inner join loyalty_customer c on c.ya_shopper_id = shopper_id and c.site_id = 10
 	        inner join loyalty_membership m on c.loyalty_membership_id = m.id and m.membership_year = to_char(sysdate,'YYYY')
 	      WHERE shopper_id = cPshopper_id
 	      AND member_type <> 3;
