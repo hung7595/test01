@@ -63,6 +63,7 @@ BEGIN
   OPEN curPout FOR
 	  SELECT c.*
 	  FROM ya_coupon c
+	  INNER JOIN ya_coupon_site cs ON c.coupon_code = cs.coupon_code
 	  LEFT JOIN ya_coupon_user u ON c.coupon_code = u.coupon_code AND u.shopper_id = iPShopperId
 	  WHERE coupon_used <> 'Y'
 	  AND c.expiration_date >= SYSDATE
@@ -75,7 +76,7 @@ BEGIN
 			  )
 		  )
 	  )
-	  AND (((site_id = iPSiteId or site_id=99) and iPSiteId not in (10)) or site_id = iPSiteId);
+	  AND cs.site_id = iPSiteId;
 END GetCouponsWithShopperId;
 
 PROCEDURE GetCouponsWithCode
@@ -131,6 +132,7 @@ BEGIN
   open curPout1 for
 	  SELECT c.*
 	  FROM ya_coupon c
+	  INNER JOIN ya_coupon_site cs ON c.coupon_code = cs.coupon_code
 	  LEFT JOIN ya_coupon_user u ON c.coupon_code = u.coupon_code AND u.shopper_id = to_char(cLshopperId)
 	  WHERE coupon_used <> 'Y'
 	  AND c.expiration_date >= SYSDATE
@@ -143,7 +145,7 @@ BEGIN
 			  )
 		  )
 	  )
-	  AND (((site_id = iLsiteId or site_id=99) and iLsiteId not in (10)) or site_id = iLsiteId);
+	  AND cs.site_id = iLsiteId;
 END GetValidCouponByOrder;
 
 PROCEDURE UpdateCouponUsed
