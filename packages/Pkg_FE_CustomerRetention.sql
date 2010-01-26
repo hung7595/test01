@@ -52,6 +52,12 @@ IS
           (coupon_code, campaign_name, coupon_description, shopper_id, dollar_coupon_value, expiration_date, all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, create_date)
         VALUES
           (cLcoupon_code, 'YesAsia.com Customer Coupon', 'YesAsia.com Customer Coupon', cPshopperId, 5, sysdate+30, 'N', 'N', 1, 99, 30, 'ya_customer_retention_customer', sysdate);
+        
+        INSERT INTO ya_coupon_site (coupon_code, site_id)
+        VALUES (cLcoupon_code, 1);
+
+        INSERT INTO ya_coupon_site (coupon_code, site_id)
+        VALUES (cLcoupon_code, 7);
       END;
     END IF;
   
@@ -96,6 +102,12 @@ IS
           (coupon_code, campaign_name, coupon_description, shopper_id, dollar_coupon_value, expiration_date, all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, create_date)
         VALUES
           (cLcoupon_code, 'YesAsia.com Register Coupon', 'YesAsia.com Register Coupon', cPshopperId, 5, sysdate+30, 'N', 'N', 1, 99, 30, 'ya_customer_retention_register', sysdate);
+
+        INSERT INTO ya_coupon_site (coupon_code, site_id)
+        VALUES (cLcoupon_code, 1);
+
+        INSERT INTO ya_coupon_site (coupon_code, site_id)
+        VALUES (cLcoupon_code, 7);
       END;
     END IF;
   
