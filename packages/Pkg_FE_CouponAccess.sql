@@ -94,7 +94,7 @@ AS
     curPresult2 OUT refCur,
     curPresult3 OUT refCur,
     curPresult4 OUT refCur,
-	curPresult5 OUT refCur
+	  curPresult5 OUT refCur
   )
   AS
 	iLcoupon_code VARCHAR2(32);
@@ -150,10 +150,15 @@ AS
       all_shoppers,
       coupon_used,
       coupon_type_id,
-      site_id,
-      corporate_domain
+      case when cs2.site = 8 then 99
+           when cs2.site = 23 then 98
+           else cs2.site end,
+      corporate_domain,
+      currency
     FROM
       ya_coupon c
+      INNER JOIN (select sum(cs.site_id) site, cs.coupon_code from ya_coupon_site cs where cs.coupon_code = iLcoupon_code group by cs.coupon_code) cs2 ON
+        cs2.coupon_code = c.coupon_code
       LEFT OUTER JOIN ya_coupon_corporate cc ON
         c.coupon_code = cc.coupon_code
     WHERE
@@ -291,6 +296,13 @@ AS
       (shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value,expiration_date, all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger)
     VALUES
       (cPshopper_id, cLcoupon_code, 'YS New Customer Coupon 060711', 'YesStyle New Customer US$5 Coupon', 5, add_months(SYSDATE, 1), 'O', 'N', 1, 10, 5);
+      
+    INSERT INTO ya_coupon_site (coupon_code, site_id)
+    VALUES (cLcoupon_code, 10);
+
+    INSERT INTO ya_coupon_site (coupon_code, site_id)
+    VALUES (cLcoupon_code, 13);
+
     COMMIT;
   END CreateNewShopperCoupon;
 
@@ -321,7 +333,11 @@ AS
       (shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value,expiration_date, all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger)
     VALUES
       (cPshopper_id, cLcoupon_code, 'YSC New Customer Coupon 080820', 'YesStyle New Customer RMB 10 Coupon', 1.3, add_months(SYSDATE, 1), 'O', 'N', 1, 11, 5);
-    COMMIT;
+
+    INSERT INTO ya_coupon_site (coupon_code, site_id)
+    VALUES (cLcoupon_code, 11);
+
+    COMMIT;    
   END CreateYSCNewShopperCoupon;
 
   PROCEDURE AddShopperToCouponUserGroup (
@@ -394,6 +410,12 @@ AS
 		VALUES
 			(cPshopper_id, iLcoupon_code, 'YS New Customer Coupon 060711', 'YesStyle New Customer US$5 Coupon', 5, add_months(SYSDATE, 1), 'O', 'N', 1, 10, 5, 'frontend', SYSDATE);
 
+    INSERT INTO ya_coupon_site (coupon_code, site_id)
+    VALUES (iLcoupon_code, 10);
+    
+    INSERT INTO ya_coupon_site (coupon_code, site_id)
+    VALUES (iLcoupon_code, 13);
+    
 		-- Retur Result
 		OPEN curPresult FOR
 	    SELECT iLcoupon_code as coupon_code FROM dual;
@@ -410,25 +432,24 @@ AS
   AS
   BEGIN
 		OPEN curPresult FOR
-		SELECT c.coupon_code, c.coupon_description, c.expiration_date
+		SELECT c.coupon_code, c.coupon_description, c.expiration_date, c.currency
 		FROM ya_coupon c
 		LEFT JOIN ya_coupon_user u ON c.coupon_code = u.coupon_code AND u.shopper_id = cPshopper_id
+		INNER JOIN ya_coupon_site cs ON c.coupon_code = cs.coupon_code
 		WHERE coupon_used <> 'Y'
 		AND c.expiration_date >= SYSDATE
 		AND (
 			c.shopper_id = cPshopper_id
 			OR
 			(
-				(c.coupon_code = 'FEB14' OR (c.all_shoppers = 'G' AND u.shopper_id is not null)) AND NOT EXISTS (
+				c.all_shoppers = 'G' 
+				AND u.shopper_id is not null 
+				AND NOT EXISTS (
 					SELECT 1 FROM order_info o INNER JOIN billing_info b ON o.id = b.order_info_id WHERE b.coupon = u.coupon_code AND o.cust_id = cPshopper_id
 				)
 			)
-			OR
-			(
-				c.coupon_code = 'YS08XMAS' and sysdate >to_date('20081210', 'YYYYMMDD')
-			)
 		)
-		AND (((site_id = iPsite_id or site_id=99) and iPsite_id not in (10)) or site_id = iPsite_id);
+		AND cs.site_id = iPsite_id;
 	END GetShopperCoupon;
 
 	PROCEDURE CreateYSSurveyCoupon (
@@ -456,6 +477,12 @@ AS
 			(shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value,expiration_date, all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, create_date)
 		VALUES
 			(cPshopper_id, iLcoupon_code, 'YesStyle.com Survey Coupon 2009', 'YesStyle.com Survey US$5 Coupon', 5, sysdate +30, 'N', 'N', 1, 10, 5, 'frontend', SYSDATE);
+
+    INSERT INTO ya_coupon_site (coupon_code, site_id)
+    VALUES (iLcoupon_code, 10);
+    
+    INSERT INTO ya_coupon_site (coupon_code, site_id)
+    VALUES (iLcoupon_code, 13);
 
 		-- Retur Result
 		OPEN curPresult FOR
@@ -487,9 +514,16 @@ AS
 		 INSERT INTO ya_coupon
       (shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value,expiration_date, all_shoppers,
       coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, CREATE_DATE)
-	  SELECT cPshopper_id, iLcoupon_code, 'YesStyle.com Referral', '2007 Referral $5 Coupon', 5, add_months(SYSDATE, 3), 'N', 'N', 1, 10, 5, 'ys_email_referral', SYSDATE
+	  SELECT cPshopper_id, iLcoupon_code, 'YesStyle.com Referral', '2007 Referral $5 Coupon', 5, add_months(SYSDATE, 3), 'N', 'N', 1, 10, 5, 'ys_email_referral', SYSDATE	  	  
 		FROM
 		 dual;
+		 
+    INSERT INTO ya_coupon_site (coupon_code, site_id)
+    VALUES (iLcoupon_code, 10);
+    
+    INSERT INTO ya_coupon_site (coupon_code, site_id)
+    VALUES (iLcoupon_code, 13);
+		 
 		OPEN curPresult FOR
 			SELECT iLcoupon_code as coupon_code FROM dual;
 		COMMIT;
@@ -519,7 +553,10 @@ AS
       , percentage_coupon_value,expiration_date, all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, CREATE_DATE)
 	  SELECT cPshopper_id, iLcoupon_code, 'Birthday Coupon', '&#20061;&#20116;&#25240;&#29983;&#26085;&#20248;&#24800;&#21048;(&#21487;&#29992;&#20110;&#36141;&#20080;&#27491;&#20215;&#21450;&#29305;&#20215;&#20135;&#21697;&#65289;'
 	    , 0.05, add_months(SYSDATE, 2), 'N', 'N', 2, 12, 0, 'hallmark_cron', SYSDATE
-		FROM dual;		
+		FROM dual;
+		
+		INSERT INTO ya_coupon_site (coupon_code, site_id)
+		VALUES (iLcoupon_code, 12);
 	  COMMIT;
 
 		RETURN;  
