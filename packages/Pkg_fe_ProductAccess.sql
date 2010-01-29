@@ -570,8 +570,7 @@ END;
     from TEMP_PRODUCT_INT_TABLE pt
     inner join prod_avlb pa on pt.column1 = pa.prod_id
     inner join ya_product yp on pa.prod_id = yp.sku
-    inner join prod_region pr on pa.region_id = pr.region_id 
-      and pa.prod_id = pr.prod_id
+    inner join prod_region pr on pa.prod_id = pr.prod_id
     left outer join ya_availability_override ao on pr.supplier_id = ao.supplier_id
       and ao.account_id = yp.account_id
       and sysdate between ao.start_date and ao.end_date
