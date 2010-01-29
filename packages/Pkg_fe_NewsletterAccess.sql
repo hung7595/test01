@@ -354,99 +354,96 @@ END;
   )
   AS
   BEGIN 
-		IF (vcPmembershipType = 'All' or vcPmembershipType = '') THEN
-			OPEN curPresult FOR 
+		IF (vcPmembershipType IS NULL) THEN
+			OPEN curPresult FOR
 			SELECT DISTINCT email
 			FROM ya_newsletter_subscriber yns
-			WHERE yns.site_id = iPsite_id AND yns.newsletter_id = iPnewsletter_id AND yns.status = 'A' 
-			AND yns.date_time >= '2009-10-01' --**DELETED!
+			WHERE yns.site_id = iPsite_id AND yns.newsletter_id = iPnewsletter_id AND yns.status = 'A'
 			AND NOT EXISTS
 			(
-				SELECT 1 FROM ya_shopper ya WHERE ya.member_type = 3 
+				SELECT 1 FROM ya_shopper ys WHERE ys.member_type = 3
 				AND yns.shopper_id IS NOT NULL
-				AND ya.shopper_id = yns.shopper_id 
+				AND ys.shopper_id = yns.shopper_id
 			)
-			AND 
+			AND
 			(
-				NOT EXISTS 
+				NOT EXISTS
 				(
 					SELECT 1 FROM ya_reminder_exclude_list yrel WHERE yrel.site_id = iPsite_id AND yrel.shopper_id = yns.shopper_id
-				) 
+				)
 				OR yns.shopper_id IS NULL
 			);
 		ELSE
 			IF (vcPmembershipType = 'Regular') THEN
-				OPEN curPresult FOR 
+				OPEN curPresult FOR
 				--email of monthly newsletter subscriber who don't have any membership or has this year's "Regular" membership
-				SELECT DISTINCT email FROM 
+				SELECT DISTINCT email FROM
 				(
 					SELECT *
-					FROM ya_newsletter_subscriber 
-					WHERE newsletter_id = iPnewsletter_id AND status = 'A' AND site_id = iPsite_id 
-					AND date_time >= '2009-10-01' --**DELETED!
+					FROM ya_newsletter_subscriber
+					WHERE newsletter_id = iPnewsletter_id AND status = 'A' AND site_id = iPsite_id
 				) yns
-				LEFT JOIN loyalty_customer lc ON lc.ya_shopper_id = yns.shopper_id AND lc.site_id = iPsite_id 
-				WHERE 
+				LEFT JOIN loyalty_customer lc ON lc.ya_shopper_id = yns.shopper_id AND lc.site_id = iPsite_id
+				WHERE
 				(
 					(
 						loyalty_membership_id IS NULL
-					) 
+					)
 					OR (
-						loyalty_membership_id 
+						loyalty_membership_id
 						IN (
 							SELECT id FROM loyalty_membership lm WHERE lm.program_id = 1
-							AND lm.membership_year = to_char(sysdate, 'YYYY') 
+							AND lm.membership_year = to_char(sysdate, 'YYYY')
 							AND lm.membership_name = vcPmembershipType
 						)
 					)
 				)
-				AND 
+				AND
 				(
 					NOT EXISTS
 					(
-						SELECT 1 FROM ya_reminder_exclude_list yrel WHERE yrel.site_id = iPsite_id 
+						SELECT 1 FROM ya_reminder_exclude_list yrel WHERE yrel.site_id = iPsite_id
 						AND yrel.shopper_id = yns.shopper_id
-					) 
+					)
 					OR yns.shopper_id IS NULL
-				) 
-				AND NOT EXISTS 
+				)
+				AND NOT EXISTS
 				(
-					SELECT 1 FROM ya_shopper ya WHERE yns.shopper_id IS NOT NULL
-					AND ya.shopper_id = yns.shopper_id AND ya.member_type = 3
+					SELECT 1 FROM ya_shopper ys WHERE yns.shopper_id IS NOT NULL
+					AND ys.shopper_id = yns.shopper_id AND ys.member_type = 3
 				);
 			ELSE
-				OPEN curPresult FOR 
+				OPEN curPresult FOR
 				--email of monthly newsletter subscriber who has this year's membership apart from "Regular"
-				SELECT DISTINCT email FROM 
+				SELECT DISTINCT email FROM
 				(
 					SELECT *
 					FROM ya_newsletter_subscriber yns
-					WHERE newsletter_id = iPnewsletter_id AND status = 'A' AND site_id = iPsite_id 
-					AND yns.date_time >= '2009-10-01' --**DELETED!
+					WHERE newsletter_id = iPnewsletter_id AND status = 'A' AND site_id = iPsite_id
 				) yns
-				INNER JOIN loyalty_customer lc ON lc.ya_shopper_id = yns.shopper_id AND lc.site_id = iPsite_id 
-				WHERE loyalty_membership_id 
-				IN 
+				INNER JOIN loyalty_customer lc ON lc.ya_shopper_id = yns.shopper_id AND lc.site_id = iPsite_id
+				WHERE loyalty_membership_id
+				IN
 				(
-					SELECT id FROM loyalty_membership lm WHERE 
+					SELECT id FROM loyalty_membership lm WHERE
 					lm.program_id = 1
-					AND lm.membership_year = to_char(sysdate, 'YYYY') 
+					AND lm.membership_year = to_char(sysdate, 'YYYY')
 					AND lm.membership_name = vcPmembershipType
 				)
-				AND 
+				AND
 				(
 					NOT EXISTS
 					(
-						SELECT 1 FROM ya_reminder_exclude_list yrel WHERE yrel.site_id = iPsite_id 
+						SELECT 1 FROM ya_reminder_exclude_list yrel WHERE yrel.site_id = iPsite_id
 						AND yrel.shopper_id = yns.shopper_id
-					) 
+					)
 					OR yns.shopper_id IS NULL
-				) 
-				AND NOT EXISTS 
+				)
+				AND NOT EXISTS
 				(
-					SELECT 1 FROM ya_shopper ya WHERE yns.shopper_id IS NOT NULL
-					AND ya.shopper_id = yns.shopper_id 
-					AND ya.member_type = 3
+					SELECT 1 FROM ya_shopper ys WHERE yns.shopper_id IS NOT NULL
+					AND ys.shopper_id = yns.shopper_id
+					AND ys.member_type = 3
 				);
 			END IF;
 		END IF;
