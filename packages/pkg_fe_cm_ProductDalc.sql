@@ -139,7 +139,8 @@ IS
         SELECT 1 INTO iLexist
         FROM ya_prod_dept WHERE sku = iPsku
         AND dept_id IN 
-        (1, 2, 3, 4, 5, 7, 9, 10, 1344, 3588, 3923, 7153, 9280, 10714);
+        (1, 2, 3, 4, 5, 7, 9, 10, 1344, 3588, 3923, 7153, 9280, 10714)
+        AND rownum = 1;
         
         EXCEPTION WHEN no_data_found THEN
           iLexist := -1;
@@ -148,7 +149,8 @@ IS
         SELECT dept_id INTO iPdeptId
         FROM ya_prod_dept WHERE sku = iPsku
         AND dept_id IN 
-        (1, 2, 3, 4, 5, 7, 9, 10, 1344, 3588, 3923, 7153, 9280, 10714);
+        (1, 2, 3, 4, 5, 7, 9, 10, 1344, 3588, 3923, 7153, 9280, 10714)
+        AND rownum = 1;
       END IF;
     END IF;
   END GetDepartmentIdBySku;
