@@ -27,6 +27,7 @@ IS
     FOR shopper in hallmark_shopper
     LOOP
       Pkg_FE_CouponAccess.CreateHallmarkBirthdayCoupon(shopper.shopper_id);
+      Pkg_FE_CouponAccess.CreateHallmarkBirthdayCoupon(shopper.shopper_id);
       update ya_hallmark_shopper set last_bday_coupon_date = sysdate where ya_shopper_id = shopper.shopper_id;
       commit;
     END LOOP;
