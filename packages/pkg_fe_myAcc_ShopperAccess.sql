@@ -125,13 +125,15 @@ AS
     SELECT COUNT(*) INTO iLshopper_count
     FROM ya_shopper
     WHERE lower(email) = lower(cPemail)
-    AND member_type <> 3; 
+    AND member_type <> 3
+    AND type_id = 1; 
         
     IF (iLshopper_count > 0) THEN    
       SELECT shopper_id INTO cLshopper_id
       FROM ya_shopper
       WHERE lower(email) = lower(cPemail)
       AND member_type <> 3
+      AND type_id = 1
       AND ROWNUM=1;
       
       GetShopperByShopperId(cLshopper_id, curPresult, curPresult_interest);
@@ -155,7 +157,8 @@ AS
     FROM ya_shopper
     WHERE lower(email) = lower(cPemail)
     AND password = cPpassword
-    AND member_type <> 3; 
+    AND member_type <> 3
+    AND type_id = 1; 
         
     IF (iLshopper_count > 0) THEN    
       SELECT shopper_id INTO cLshopper_id
@@ -163,6 +166,7 @@ AS
       WHERE lower(email) = lower(cPemail)
       AND password = cPpassword
       AND member_type <> 3
+      AND type_id = 1
       AND ROWNUM=1;
       
       GetShopperByShopperId(cLshopper_id, curPresult, curPresult_interest);
@@ -249,7 +253,8 @@ AS
             nickname,
             correspondence_email,
             dob,            
-            anonymous
+            anonymous,
+            type_id
           )
         VALUES
           (
@@ -263,7 +268,8 @@ AS
             cPnick_name,
             cPcorrespondence_email,
             dtPdob,            
-            cPAnonymous
+            cPAnonymous,
+            1
           );
           
         iProw_affacted := SQL%ROWCOUNT;                    
