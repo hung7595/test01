@@ -691,7 +691,8 @@ END;
       WHEN pa.avlb = 0 THEN 99
       ELSE 0
     END,
-    NVL(o.availability_id, pa.avlb)
+    NVL(o.availability_id, pa.avlb),
+    pa.is_in_stock
   FROM 
     ya_new_basket_shadow pt
     INNER JOIN prod_avlb pa ON pt.sku = pa.prod_id
@@ -951,7 +952,8 @@ END GetShadowBasketWithWarranty;
       WHEN pa.avlb = 0 THEN 99
       ELSE 0
     END,
-    NVL(o.availability_id, pa.avlb)
+    NVL(o.availability_id, pa.avlb),
+    pa.is_in_stock
   FROM
     ya_new_basket pt
     INNER JOIN prod_avlb pa ON
@@ -1211,7 +1213,8 @@ END GetBasketWithWarranty;
         WHEN pa.avlb = 0 THEN 99
         ELSE 0
       END,
-      NVL(o.availability_id, pa.avlb)
+      NVL(o.availability_id, pa.avlb),
+      pa.is_in_stock
     FROM
       ya_new_basket pt
       INNER JOIN prod_avlb pa ON 

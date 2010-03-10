@@ -567,6 +567,7 @@ END;
           and pa.avlb <> 0 then ao.availability_id
         else pa.avlb
         end case
+      , pa.is_in_stock
     from TEMP_PRODUCT_INT_TABLE pt
     inner join prod_avlb pa on pt.column1 = pa.prod_id
     inner join ya_product yp on pa.prod_id = yp.sku
@@ -643,7 +644,7 @@ END;
       NVL(pl.prod_subtitle_aka, ple.prod_subtitle_aka),
       0 AS preorder_buffer_day,
       1 AS region_count,
-      yr.currency
+      yr.currency      
     FROM
       TEMP_PRODUCT_INT_TABLE tp
       inner join YA_PRODUCT p on tp.column1 = p.sku
