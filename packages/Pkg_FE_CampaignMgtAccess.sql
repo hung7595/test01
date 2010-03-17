@@ -126,11 +126,11 @@ IS
   BEGIN
     OPEN curPresult1 FOR
 		SELECT p.sku as sku, pl.prod_name as ename, pc.prod_name as cname
-FROM (SELECT * FROM (select c.*, rownum as rnum from ya_campaign c where c.campaign_code = iCampaignCode and rownum <= iEndRow) where rnum > iStartRow) c
-INNER JOIN ya_product p ON p.sku = c.sku 
-INNER JOIN ya_prod_lang pl ON p.sku = pl.sku AND pl.lang_id = 1
-INNER JOIN ya_prod_lang pc ON p.sku = pc.sku AND pc.lang_id = 2
-ORDER BY p.sku;
+    FROM (SELECT * FROM (select c.*, rownum as rnum from ya_campaign c where c.campaign_code = iCampaignCode and rownum <= iEndRow) where rnum > iStartRow) c
+      INNER JOIN ya_product p ON p.sku = c.sku 
+      INNER JOIN ya_prod_lang pl ON p.sku = pl.sku AND pl.lang_id = 1
+      LEFT OUTER JOIN ya_prod_lang pc ON p.sku = pc.sku AND pc.lang_id = 2
+    ORDER BY p.sku;
 	RETURN;
   END GetCampaignProdInfo;
 
@@ -141,13 +141,12 @@ ORDER BY p.sku;
   AS
   BEGIN
 	SELECT count(*) into iPcountRow
-	      FROM (SELECT * FROM ya_campaign c WHERE c.campaign_code =  iCampaignCode) c
-              INNER JOIN ya_product p ON p.sku = c.sku
-	      INNER JOIN ya_prod_lang pl ON p.sku = pl.sku AND pl.lang_id = 1
-	      INNER JOIN ya_prod_lang pc ON p.sku = pc.sku AND pc.lang_id = 2
-	      ORDER BY p.sku;
+	FROM (SELECT * FROM ya_campaign c WHERE c.campaign_code =  iCampaignCode) c
+    INNER JOIN ya_product p ON p.sku = c.sku
+	ORDER BY p.sku;
 	RETURN;
   END GetCampaignProdInfoPage;
+  
   PROCEDURE CreateCampaign (
     cSKUList IN VARCHAR2,
 	iCampaignCode IN INT,
