@@ -66,8 +66,27 @@ AS
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   );
   
+  -- Required to remove once the PayPal ExcpressCheckout deploy both in YA and YS
   PROCEDURE InsertPaypalOrderXml (
 	  cPguid IN CHAR,
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    vcPcoupon_code IN VARCHAR2,
+    clobPorder_xml IN CLOB,
+    iPbill_profile_id IN INT,
+    iPship_profile_id IN INT,
+    iPcc_profile_id IN INT,
+    nPcredit_amount IN NUMBER,
+    vcPlimited_sku_csv IN VARCHAR2,
+    vcPlimited_qty_csv IN VARCHAR2,
+    iPlang_type IN INT,
+    iPencryptionKey_id IN INT,
+    iPorder_num IN OUT INT,
+    cPtransaction_id IN VARCHAR2 DEFAULT NULL
+  );
+  
+  PROCEDURE InsertPaypalECOrderXml (
+    cPguid IN CHAR,
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
     vcPcoupon_code IN VARCHAR2,
@@ -102,7 +121,25 @@ AS
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   );
   
+  -- Required to remove once the PayPal ExcpressCheckout deploy both in YA and YS
   PROCEDURE InsertPaypalOrderXmlEncrypted (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    vcPcoupon_code IN VARCHAR2,
+    clobPorder_xml IN CLOB,
+    iPbill_profile_id IN INT,
+    iPship_profile_id IN INT,
+    iPcc_profile_id IN INT,
+    nPcredit_amount IN NUMBER,
+    vcPlimited_sku_csv IN VARCHAR2,
+    vcPlimited_qty_csv IN VARCHAR2,
+    iPlang_type IN INT,
+    iPencryptionKey_id IN INT,
+    iPorder_num IN OUT INT,
+    cPtransaction_id IN VARCHAR2 DEFAULT NULL
+  );
+  
+  PROCEDURE InsertPPECOrderXmlEncrypted (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
     vcPcoupon_code IN VARCHAR2,
@@ -444,42 +481,7 @@ AS
     cPshopper_id OUT CHAR,
     cPcc_uid IN CHAR
   );
-  /*
-  PROCEDURE InsertPaypalECOrderXml (
-	  cPguid IN CHAR,
-    cPshopper_id IN CHAR,
-    iPsite_id IN INT,
-    vcPcoupon_code IN VARCHAR2,
-    clobPorder_xml IN CLOB,
-    iPbill_profile_id IN INT,
-    iPship_profile_id IN INT,
-    iPcc_profile_id IN INT,
-    nPcredit_amount IN NUMBER,
-    vcPlimited_sku_csv IN VARCHAR2,
-    vcPlimited_qty_csv IN VARCHAR2,
-    iPlang_type IN INT,
-    iPencryptionKey_id IN INT,
-    iPorder_num IN OUT INT,
-    cPtransaction_id IN VARCHAR2 DEFAULT NULL
-  );
-
-  PROCEDURE InsertPPECOrderXmlEncrypted (
-    cPshopper_id IN CHAR,
-    iPsite_id IN INT,
-    vcPcoupon_code IN VARCHAR2,
-    clobPorder_xml IN CLOB,
-    iPbill_profile_id IN INT,
-    iPship_profile_id IN INT,
-    iPcc_profile_id IN INT,
-    nPcredit_amount IN NUMBER,
-    vcPlimited_sku_csv IN VARCHAR2,
-    vcPlimited_qty_csv IN VARCHAR2,
-    iPlang_type IN INT,
-    iPencryptionKey_id IN INT,
-    iPorder_num IN OUT INT,
-    cPtransaction_id IN VARCHAR2 DEFAULT NULL
-  );  
-  */
+  
 END Pkg_Fe_Orderaccess2;
 /
 CREATE OR REPLACE PACKAGE BODY PKG_FE_ORDERACCESS2
@@ -1252,6 +1254,321 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
         ROLLBACK;
       END;
   END InsertOrderXmlEncrypted;
+  
+  PROCEDURE InsertPaypalECOrderXml (
+	  cPguid IN CHAR,
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    vcPcoupon_code IN VARCHAR2,
+    clobPorder_xml IN CLOB,
+    iPbill_profile_id IN INT,
+    iPship_profile_id IN INT,
+    iPcc_profile_id IN INT,
+    nPcredit_amount IN NUMBER,
+    vcPlimited_sku_csv IN VARCHAR2,
+    vcPlimited_qty_csv IN VARCHAR2,
+    iPlang_type IN INT,
+    iPencryptionKey_id IN INT,
+    iPorder_num IN OUT INT,
+    cPtransaction_id IN VARCHAR2 DEFAULT NULL
+  )
+  AS
+    iLstatus INT;
+    iLpaypal_status INT;
+    iLexist INT;
+    iLdebit_credit_return INT;
+    iLseq_currval INT;
+    iLseq_diff INT;
+    iLbuffer_code INT;    
+  BEGIN
+    BEGIN
+      SELECT order_status, ec_payment_status
+      INTO iLstatus, iLpaypal_status
+      FROM ya_paypal_ec_order_mapping
+      WHERE payment_txn_id = cPguid;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        BEGIN
+          iPorder_num := -1;
+          RETURN;
+        END;
+    END;
+	
+    IF iLstatus IN (3,4) AND iLpaypal_status IN (2,8) THEN
+      BEGIN
+        IF iPorder_num IS NULL OR iPorder_num < 0 THEN
+          SELECT SEQ_order.NEXTVAL INTO iPorder_num FROM DUAL;
+        ELSE
+          SELECT SEQ_order.NEXTVAL INTO iLseq_currval FROM dual;
+          iLseq_diff := iPorder_num - iLseq_currval;
+          IF iLseq_diff <> 0 THEN
+            EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_order INCREMENT BY ' || iLseq_diff;
+            SELECT SEQ_order.NEXTVAL INTO iLseq_currval FROM dual;
+            EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_order INCREMENT BY 1';
+          END IF;
+        END IF;
+
+        INSERT INTO ya_order
+          (
+            ORDER_NUM,
+            shopper_id,
+            site_id,
+            coupon_code,
+            order_xml,
+            encryptionKey
+          )
+        VALUES
+          (
+            iPorder_num,
+            cPshopper_id,
+            iPsite_id,
+            vcPcoupon_code,
+            clobPorder_xml,
+            iPencryptionKey_id
+          );
+
+        SELECT COUNT(1)
+        INTO iLexist
+        FROM
+          YA_NEW_BASKET_SHADOW b
+          INNER JOIN YA_BARGAIN_PRODUCT p ON
+            b.sku = p.sku
+            AND b.site_id = p.site_id
+        WHERE
+          b.shopper_id = cPshopper_id
+          AND b.site_id = iPsite_id
+		      AND b.paypal_uid=cPguid
+          AND b.TYPE = 0;
+
+        IF iLexist > 0 THEN
+          BEGIN
+            INSERT INTO ya_order_sales_detail
+              (
+                order_num,
+                sku,
+                remark
+              )
+            SELECT
+              iPorder_num,
+              b.sku,
+              pa.avlb
+            FROM
+              YA_NEW_BASKET_SHADOW b
+              INNER JOIN YA_BARGAIN_PRODUCT p ON
+                b.sku = p.sku
+                AND p.site_id = iPsite_id
+              INNER JOIN backend_adm.prod_avlb pa ON
+                b.sku = pa.prod_id
+                AND pa.region_id = iPsite_id
+                AND pa.category = 1
+            WHERE
+              b.shopper_id = cPshopper_id
+              AND b.site_id = iPsite_id
+			        AND b.paypal_uid=cPguid
+              AND b.TYPE = 0;
+          END;
+        END IF;
+
+        -- update buffer campaign
+        -- 60001: US, 60002: Global, 60003: YesStyle
+        IF iPsite_id = 1 THEN
+          iLbuffer_code := 60001;
+        ELSIF iPsite_id = 7 THEN
+          iLbuffer_code := 60002;
+        ELSIF iPsite_id = 10 THEN
+          iLbuffer_code := 60003;
+        END IF;
+
+        INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
+        SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, iLbuffer_code
+        FROM YA_NEW_BASKET_SHADOW nb
+          INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code in (SELECT cl.campaign_code FROM ya_campaign_lookup cl WHERE cl.campaign_type = 2)
+        WHERE nb.shopper_id = cPshopper_id
+          AND nb.type = 0
+          AND nb.site_id = iPsite_id
+          AND EXISTS (
+            SELECT 1
+            FROM ya_limited_quantity lq
+            WHERE lq.sku = nb.sku AND ((lq.site_id <> 10 AND lq.site_id IN (99, iPsite_id)) OR (lq.site_id = iPsite_id AND iPsite_id = 10))
+            AND lq.frontend_quantity > 0
+          );
+
+        -- for automatic clearance tool buffering
+        -- 50001: US, 50002: Global, 50003: YesStyle
+        IF iPsite_id = 1 THEN
+          INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
+          SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
+          FROM YA_NEW_BASKET_SHADOW nb
+            INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50001
+          WHERE nb.shopper_id = cPshopper_id
+			AND nb.paypal_uid = cPguid
+            AND nb.type = 0
+            AND nb.site_id = iPsite_id;
+        ELSIF iPsite_id = 7 THEN
+          INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
+          SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
+          FROM YA_NEW_BASKET_SHADOW nb
+            INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50002
+          WHERE nb.shopper_id = cPshopper_id
+			AND nb.paypal_uid = cPguid
+            AND nb.type = 0
+            AND nb.site_id = iPsite_id;
+        ELSIF iPsite_id = 10 THEN
+          INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
+          SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
+          FROM YA_NEW_BASKET_SHADOW nb
+            INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50003
+          WHERE nb.shopper_id = cPshopper_id
+			AND nb.paypal_uid = cPguid
+            AND nb.type = 0
+            AND nb.site_id = iPsite_id;
+        END IF;
+
+--        PKG_FE_ORDERACCESS.DeductShadowOrderLtdQty(cPshopper_id, cPguid, iPsite_id);
+		DELETE FROM YA_NEW_BASKET_SHADOW
+        WHERE
+          shopper_id = cPshopper_id
+          AND site_id = iPsite_id
+		  AND paypal_uid=cPguid
+          AND TYPE = 0;
+
+        DELETE FROM YA_WARRANTY_BASKET_shadow
+        WHERE
+          shopper_id = cPshopper_id
+          AND site_id = iPsite_id
+		  AND paypal_uid=cPguid;
+
+        DELETE FROM ya_checkout_data_shadow
+        WHERE
+          shopper_id = cPshopper_id
+          AND site_id = iPsite_id
+		  AND paypal_uid=cPguid;
+
+        DELETE FROM YA_NEW_BASKET
+        WHERE
+          shopper_id = cPshopper_id
+          AND site_id = iPsite_id
+          AND TYPE = 0;
+
+        DELETE FROM YA_WARRANTY_BASKET
+        WHERE
+          shopper_id = cPshopper_id
+          AND site_id = iPsite_id;
+
+        DELETE FROM ya_checkout_data
+        WHERE
+          shopper_id = cPshopper_id
+          AND site_id = iPsite_id;
+
+        DELETE FROM ya_giftcard_data
+        WHERE
+          shopper_id = cPshopper_id
+          AND site_id = iPsite_id;
+
+        IF iPbill_profile_id <> -1 THEN
+          BEGIN
+            UPDATE YA_ADDRESS
+            SET preferred_bill = 'N'
+            WHERE
+              shopper_id = cPshopper_id
+              AND preferred_bill = 'Y';
+
+            UPDATE YA_ADDRESS
+            SET preferred_bill = 'Y'
+            WHERE
+              shopper_id = cPshopper_id
+              AND address_id = iPbill_profile_id;
+          END;
+        END IF;
+
+        IF iPship_profile_id <> -1 THEN
+          BEGIN
+            UPDATE YA_ADDRESS
+            SET preferred_ship = 'N'
+            WHERE
+              shopper_id = cPshopper_id
+              AND preferred_ship = 'Y'
+              AND site_id = iPsite_id;
+
+            UPDATE YA_ADDRESS
+            SET preferred_ship = 'Y'
+            WHERE
+              address_id = iPship_profile_id
+              AND shopper_id = cPshopper_id;
+          END;
+        END IF;
+
+        IF iPcc_profile_id <> -1 THEN
+          BEGIN
+            UPDATE YA_CREDIT_CARD_PROFILE
+            SET preferred = 'N'
+            WHERE shopper_id = cPshopper_id;
+
+            UPDATE YA_CREDIT_CARD_PROFILE
+            SET preferred = 'Y'
+            WHERE
+              profile_id = iPcc_profile_id
+              AND shopper_id = cPshopper_id;
+          END;
+        END IF;
+
+        IF LENGTH(vcPcoupon_code) > 0 THEN
+          BEGIN
+            UPDATE YA_COUPON
+            SET coupon_used = 'Y'
+            WHERE
+              coupon_code = vcPcoupon_code
+              AND
+                (
+                  (
+                    shopper_id = cPshopper_id
+                    AND all_shoppers NOT IN ('Y','U')
+                  ) -- Y: all shoppers, U: unique
+                  OR all_shoppers = 'O'
+                );
+          END;
+        END IF;
+
+        INSERT INTO ya_customer_info
+          (
+            order_num,
+            lang_id
+          )
+        VALUES
+          (
+            iPorder_num,
+            iPlang_type
+          );
+
+        IF nPcredit_amount > 0 THEN
+          BEGIN
+            Pkg_Fe_Orderaccess2.DebitCreditBySite(cPshopper_id, nPcredit_amount, iPorder_num, 'USD', iPsite_id, iLdebit_credit_return, cPtransaction_id, iPsite_id);
+          END;
+        END IF;
+
+        IF LENGTH(vcPlimited_sku_csv) > 0 THEN
+          BEGIN
+            UpdateLimitedQuantity(vcPlimited_sku_csv, vcPlimited_qty_csv, iPsite_id);
+          END;
+        END IF;
+
+        UPDATE ya_paypal_ec_order_mapping
+        SET
+          order_num = iPorder_num,
+          updated_datetime = SYSDATE
+        WHERE payment_txn_id = cPguid;
+
+      EXCEPTION WHEN OTHERS THEN
+        BEGIN
+          iPorder_num := -1;
+          ROLLBACK;
+          RETURN;
+        END;
+      END;
+    END IF;
+    COMMIT;
+    RETURN;
+  END InsertPaypalECOrderXml;
 
   PROCEDURE InsertPaypalOrderXml (
 	  cPguid IN CHAR,
@@ -2186,6 +2503,314 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
     COMMIT;
     RETURN;
   END InsertPaypalOrderXmlEncrypted;
+  
+  PROCEDURE InsertPPECOrderXmlEncrypted (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    vcPcoupon_code IN VARCHAR2,
+    clobPorder_xml IN CLOB,
+    iPbill_profile_id IN INT,
+    iPship_profile_id IN INT,
+    iPcc_profile_id IN INT,
+    nPcredit_amount IN NUMBER,
+    vcPlimited_sku_csv IN VARCHAR2,
+    vcPlimited_qty_csv IN VARCHAR2,
+    iPlang_type IN INT,
+    iPencryptionKey_id IN INT,
+    iPorder_num IN OUT INT,
+    cPtransaction_id IN VARCHAR2 DEFAULT NULL
+  )
+  AS
+    cLguid CHAR(32);
+    iLstatus INT;
+    iLpaypal_status INT;
+    iLexist INT;
+    iLdebit_credit_return INT;
+    iLseq_currval INT;
+    iLseq_diff INT;
+    iLbuffer_code INT;
+  BEGIN
+    BEGIN
+      SELECT paypal_uid
+      INTO cLguid
+      FROM ya_checkout_data
+      WHERE
+        shopper_id = cPshopper_id
+        AND site_id = iPsite_id;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        BEGIN
+          iPorder_num := -1;
+          RETURN;
+        END;
+    END;
+
+    BEGIN
+      SELECT order_status, ec_payment_status
+      INTO iLstatus, iLpaypal_status
+      FROM ya_paypal_ec_order_mapping
+      WHERE payment_txn_id = cPtransaction_id;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        BEGIN
+          iPorder_num := -1;
+          RETURN;
+        END;
+    END;
+	
+    IF iLstatus IN (3,4) AND iLpaypal_status IN (2,8) THEN
+      BEGIN
+        IF iPorder_num IS NULL OR iPorder_num < 0 THEN
+          SELECT SEQ_order.NEXTVAL INTO iPorder_num FROM DUAL;
+        ELSE
+          SELECT SEQ_order.NEXTVAL INTO iLseq_currval FROM dual;
+          iLseq_diff := iPorder_num - iLseq_currval;
+          IF iLseq_diff <> 0 THEN
+            EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_order INCREMENT BY ' || iLseq_diff;
+            SELECT SEQ_order.NEXTVAL INTO iLseq_currval FROM dual;
+            EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_order INCREMENT BY 1';
+          END IF;
+        END IF;
+
+        INSERT INTO ya_order
+          (
+            ORDER_NUM,
+            shopper_id,
+            site_id,
+            coupon_code,
+            order_xml,
+            encryptionKey
+          )
+        VALUES
+          (
+            iPorder_num,
+            cPshopper_id,
+            iPsite_id,
+            vcPcoupon_code,
+            clobPorder_xml,
+            iPencryptionKey_id
+          );
+
+        SELECT COUNT(1)
+        INTO iLexist
+        FROM
+          YA_NEW_BASKET b
+          INNER JOIN YA_BARGAIN_PRODUCT p ON
+            b.sku = p.sku
+            AND b.site_id = p.site_id
+        WHERE
+          b.shopper_id = cPshopper_id
+          AND b.site_id = iPsite_id
+          AND b.TYPE = 0;
+
+        IF iLexist > 0 THEN
+          BEGIN
+            INSERT INTO ya_order_sales_detail
+              (
+                order_num,
+                sku,
+                remark
+              )
+            SELECT
+              iPorder_num,
+              b.sku,
+              pa.avlb
+            FROM
+              YA_NEW_BASKET b
+              INNER JOIN YA_BARGAIN_PRODUCT p ON
+                b.sku = p.sku
+                AND p.site_id = iPsite_id
+              INNER JOIN backend_adm.prod_avlb pa ON
+                b.sku = pa.prod_id
+                AND pa.region_id = iPsite_id
+                AND pa.category = 1
+            WHERE
+              b.shopper_id = cPshopper_id
+              AND b.site_id = iPsite_id
+              AND b.TYPE = 0;
+          END;
+        END IF;
+
+
+        -- update buffer campaign
+        -- 60001: US, 60002: Global, 60003: YesStyle
+        IF iPsite_id = 1 THEN
+          iLbuffer_code := 60001;
+        ELSIF iPsite_id = 7 THEN
+          iLbuffer_code := 60002;
+        ELSIF iPsite_id = 10 THEN
+          iLbuffer_code := 60003;
+        END IF;
+
+        INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
+        SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, iLbuffer_code
+        FROM ya_new_basket nb
+          INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code in (SELECT cl.campaign_code FROM ya_campaign_lookup cl WHERE cl.campaign_type = 2)
+        WHERE nb.shopper_id = cPshopper_id
+          AND nb.type = 0
+          AND nb.site_id = iPsite_id
+          AND EXISTS (
+            SELECT 1
+            FROM ya_limited_quantity lq
+            WHERE lq.sku = nb.sku AND ((lq.site_id <> 10 AND lq.site_id IN (99, iPsite_id)) OR (lq.site_id = iPsite_id AND iPsite_id = 10))
+            AND lq.frontend_quantity > 0
+          );
+
+        -- for automatic clearance tool buffering
+        -- 50001: US, 50002: Global, 50003: YesStyle
+        IF iPsite_id = 1 THEN
+          INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
+          SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
+          FROM ya_new_basket nb
+            INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50001
+          WHERE nb.shopper_id = cPshopper_id
+            AND nb.type = 0
+            AND nb.site_id = iPsite_id;
+        ELSIF iPsite_id = 7 THEN
+          INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
+          SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
+          FROM ya_new_basket nb
+            INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50002
+          WHERE nb.shopper_id = cPshopper_id
+            AND nb.type = 0
+            AND nb.site_id = iPsite_id;
+        ELSIF iPsite_id = 10 THEN
+          INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
+          SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
+          FROM ya_new_basket nb
+            INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50003
+          WHERE nb.shopper_id = cPshopper_id
+            AND nb.type = 0
+            AND nb.site_id = iPsite_id;
+        END IF;
+		
+--		PKG_FE_ORDERACCESS.DeductOrderLtdQty(cPshopper_id, iPsite_id);
+
+        DELETE FROM YA_NEW_BASKET
+        WHERE
+          shopper_id = cPshopper_id
+          AND site_id = iPsite_id
+          AND TYPE = 0;
+
+        DELETE FROM YA_WARRANTY_BASKET
+        WHERE
+          shopper_id = cPshopper_id
+          AND site_id = iPsite_id;
+
+        DELETE FROM ya_checkout_data
+        WHERE
+          shopper_id = cPshopper_id
+          AND site_id = iPsite_id;
+
+        DELETE FROM ya_giftcard_data
+        WHERE
+          shopper_id = cPshopper_id
+          AND site_id = iPsite_id;
+
+        IF iPbill_profile_id <> -1 THEN
+          BEGIN
+            UPDATE YA_ADDRESS
+            SET preferred_bill = 'N'
+            WHERE
+              shopper_id = cPshopper_id
+              AND preferred_bill = 'Y';
+
+            UPDATE YA_ADDRESS
+            SET preferred_bill = 'Y'
+            WHERE
+              shopper_id = cPshopper_id
+              AND address_id = iPbill_profile_id;
+          END;
+        END IF;
+
+        IF iPship_profile_id <> -1 THEN
+          BEGIN
+            UPDATE YA_ADDRESS
+            SET preferred_ship = 'N'
+            WHERE
+              shopper_id = cPshopper_id
+              AND preferred_ship = 'Y'
+              AND site_id = iPsite_id;
+
+            UPDATE YA_ADDRESS
+            SET preferred_ship = 'Y'
+            WHERE
+              address_id = iPship_profile_id
+              AND shopper_id = cPshopper_id;
+          END;
+        END IF;
+
+        IF iPcc_profile_id <> -1 THEN
+          BEGIN
+            UPDATE YA_CREDIT_CARD_PROFILE
+            SET preferred = 'N'
+            WHERE shopper_id = cPshopper_id;
+
+            UPDATE YA_CREDIT_CARD_PROFILE
+            SET preferred = 'Y'
+            WHERE
+              profile_id = iPcc_profile_id
+              AND shopper_id = cPshopper_id;
+          END;
+        END IF;
+
+        IF LENGTH(vcPcoupon_code) > 0 THEN
+          BEGIN
+            UPDATE YA_COUPON
+            SET coupon_used = 'Y'
+            WHERE
+              coupon_code = vcPcoupon_code
+              AND
+                (
+                  (
+                    shopper_id = cPshopper_id
+                    AND all_shoppers NOT IN ('Y','U')
+                  ) -- Y: all shoppers, U: unique
+                  OR all_shoppers = 'O'
+                );
+          END;
+        END IF;
+
+        INSERT INTO ya_customer_info
+          (
+            order_num,
+            lang_id
+          )
+        VALUES
+          (
+            iPorder_num,
+            iPlang_type
+          );
+
+        IF nPcredit_amount > 0 THEN
+          BEGIN
+            Pkg_Fe_Orderaccess2.DebitCreditBySite(cPshopper_id, nPcredit_amount, iPorder_num, 'USD', iPsite_id, iLdebit_credit_return, cPtransaction_id, iPsite_id);
+          END;
+        END IF;
+
+        IF LENGTH(vcPlimited_sku_csv) > 0 THEN
+          BEGIN
+            UpdateLimitedQuantity(vcPlimited_sku_csv, vcPlimited_qty_csv, iPsite_id);
+          END;
+        END IF;
+
+        UPDATE ya_paypal_order_mapping
+        SET
+          order_num = iPorder_num,
+          updated_datetime = SYSDATE
+        WHERE payment_uid = cLguid;
+
+      EXCEPTION WHEN OTHERS THEN
+        BEGIN
+          iPorder_num := -1;
+          ROLLBACK;
+          RETURN;
+        END;
+      END;
+    END IF;
+    COMMIT;
+    RETURN;
+  END InsertPPECOrderXmlEncrypted;
 
   PROCEDURE InsertPDOrderXmlEncrypted (
     cPshopper_id IN CHAR,
@@ -5043,630 +5668,7 @@ PROCEDURE GetShadowOrderWithWarrantyYS (
           cPshopper_id := null;
     END;
   END GetShopperIdByCcUId;    
-/*
-  PROCEDURE InsertPaypalECOrderXml (
-	  cPguid IN CHAR,
-    cPshopper_id IN CHAR,
-    iPsite_id IN INT,
-    vcPcoupon_code IN VARCHAR2,
-    clobPorder_xml IN CLOB,
-    iPbill_profile_id IN INT,
-    iPship_profile_id IN INT,
-    iPcc_profile_id IN INT,
-    nPcredit_amount IN NUMBER,
-    vcPlimited_sku_csv IN VARCHAR2,
-    vcPlimited_qty_csv IN VARCHAR2,
-    iPlang_type IN INT,
-    iPencryptionKey_id IN INT,
-    iPorder_num IN OUT INT,
-    cPtransaction_id IN VARCHAR2 DEFAULT NULL
-  )
-  AS
-    iLstatus INT;
-    iLpaypal_status INT;
-    iLexist INT;
-    iLdebit_credit_return INT;
-    iLseq_currval INT;
-    iLseq_diff INT;
-    iLbuffer_code INT;    
-  BEGIN
-    BEGIN
-      SELECT order_status, ec_payment_status
-      INTO iLstatus, iLpaypal_status
-      FROM ya_paypal_ec_order_mapping
-      WHERE payment_txn_id = cPguid;
-    EXCEPTION
-      WHEN NO_DATA_FOUND THEN
-        BEGIN
-          iPorder_num := -1;
-          RETURN;
-        END;
-    END;
-	
-    IF iLstatus IN (3,4) AND iLpaypal_status IN (2,8) THEN
-      BEGIN
-        IF iPorder_num IS NULL OR iPorder_num < 0 THEN
-          SELECT SEQ_order.NEXTVAL INTO iPorder_num FROM DUAL;
-        ELSE
-          SELECT SEQ_order.NEXTVAL INTO iLseq_currval FROM dual;
-          iLseq_diff := iPorder_num - iLseq_currval;
-          IF iLseq_diff <> 0 THEN
-            EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_order INCREMENT BY ' || iLseq_diff;
-            SELECT SEQ_order.NEXTVAL INTO iLseq_currval FROM dual;
-            EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_order INCREMENT BY 1';
-          END IF;
-        END IF;
 
-        INSERT INTO ya_order
-          (
-            ORDER_NUM,
-            shopper_id,
-            site_id,
-            coupon_code,
-            order_xml,
-            encryptionKey
-          )
-        VALUES
-          (
-            iPorder_num,
-            cPshopper_id,
-            iPsite_id,
-            vcPcoupon_code,
-            clobPorder_xml,
-            iPencryptionKey_id
-          );
-
-        SELECT COUNT(1)
-        INTO iLexist
-        FROM
-          YA_NEW_BASKET_SHADOW b
-          INNER JOIN YA_BARGAIN_PRODUCT p ON
-            b.sku = p.sku
-            AND b.site_id = p.site_id
-        WHERE
-          b.shopper_id = cPshopper_id
-          AND b.site_id = iPsite_id
-		      AND b.paypal_uid=cPguid
-          AND b.TYPE = 0;
-
-        IF iLexist > 0 THEN
-          BEGIN
-            INSERT INTO ya_order_sales_detail
-              (
-                order_num,
-                sku,
-                remark
-              )
-            SELECT
-              iPorder_num,
-              b.sku,
-              pa.avlb
-            FROM
-              YA_NEW_BASKET_SHADOW b
-              INNER JOIN YA_BARGAIN_PRODUCT p ON
-                b.sku = p.sku
-                AND p.site_id = iPsite_id
-              INNER JOIN backend_adm.prod_avlb pa ON
-                b.sku = pa.prod_id
-                AND pa.region_id = iPsite_id
-                AND pa.category = 1
-            WHERE
-              b.shopper_id = cPshopper_id
-              AND b.site_id = iPsite_id
-			        AND b.paypal_uid=cPguid
-              AND b.TYPE = 0;
-          END;
-        END IF;
-
-        -- update buffer campaign
-        -- 60001: US, 60002: Global, 60003: YesStyle
-        IF iPsite_id = 1 THEN
-          iLbuffer_code := 60001;
-        ELSIF iPsite_id = 7 THEN
-          iLbuffer_code := 60002;
-        ELSIF iPsite_id = 10 THEN
-          iLbuffer_code := 60003;
-        END IF;
-
-        INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
-        SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, iLbuffer_code
-        FROM YA_NEW_BASKET_SHADOW nb
-          INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code in (SELECT cl.campaign_code FROM ya_campaign_lookup cl WHERE cl.campaign_type = 2)
-        WHERE nb.shopper_id = cPshopper_id
-          AND nb.type = 0
-          AND nb.site_id = iPsite_id
-          AND EXISTS (
-            SELECT 1
-            FROM ya_limited_quantity lq
-            WHERE lq.sku = nb.sku AND lq.site_id IN (99, iPsite_id)
-            AND lq.frontend_quantity > 0
-          );
-
-        -- for automatic clearance tool buffering
-        -- 50001: US, 50002: Global, 50003: YesStyle
-        IF iPsite_id = 1 THEN
-          INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
-          SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
-          FROM YA_NEW_BASKET_SHADOW nb
-            INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50001
-          WHERE nb.shopper_id = cPshopper_id
-			AND nb.paypal_uid = cPguid
-            AND nb.type = 0
-            AND nb.site_id = iPsite_id;
-        ELSIF iPsite_id = 7 THEN
-          INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
-          SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
-          FROM YA_NEW_BASKET_SHADOW nb
-            INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50002
-          WHERE nb.shopper_id = cPshopper_id
-			AND nb.paypal_uid = cPguid
-            AND nb.type = 0
-            AND nb.site_id = iPsite_id;
-        ELSIF iPsite_id = 10 THEN
-          INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
-          SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
-          FROM YA_NEW_BASKET_SHADOW nb
-            INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50003
-          WHERE nb.shopper_id = cPshopper_id
-			AND nb.paypal_uid = cPguid
-            AND nb.type = 0
-            AND nb.site_id = iPsite_id;
-        END IF;
-
---        PKG_FE_ORDERACCESS.DeductShadowOrderLtdQty(cPshopper_id, cPguid, iPsite_id);
-		DELETE FROM YA_NEW_BASKET_SHADOW
-        WHERE
-          shopper_id = cPshopper_id
-          AND site_id = iPsite_id
-		  AND paypal_uid=cPguid
-          AND TYPE = 0;
-
-        DELETE FROM YA_WARRANTY_BASKET_shadow
-        WHERE
-          shopper_id = cPshopper_id
-          AND site_id = iPsite_id
-		  AND paypal_uid=cPguid;
-
-        DELETE FROM ya_checkout_data_shadow
-        WHERE
-          shopper_id = cPshopper_id
-          AND site_id = iPsite_id
-		  AND paypal_uid=cPguid;
-
-        DELETE FROM YA_NEW_BASKET
-        WHERE
-          shopper_id = cPshopper_id
-          AND site_id = iPsite_id
-          AND TYPE = 0;
-
-        DELETE FROM YA_WARRANTY_BASKET
-        WHERE
-          shopper_id = cPshopper_id
-          AND site_id = iPsite_id;
-
-        DELETE FROM ya_checkout_data
-        WHERE
-          shopper_id = cPshopper_id
-          AND site_id = iPsite_id;
-
-        DELETE FROM ya_giftcard_data
-        WHERE
-          shopper_id = cPshopper_id
-          AND site_id = iPsite_id;
-
-        IF iPbill_profile_id <> -1 THEN
-          BEGIN
-            UPDATE YA_ADDRESS
-            SET preferred_bill = 'N'
-            WHERE
-              shopper_id = cPshopper_id
-              AND preferred_bill = 'Y';
-
-            UPDATE YA_ADDRESS
-            SET preferred_bill = 'Y'
-            WHERE
-              shopper_id = cPshopper_id
-              AND address_id = iPbill_profile_id;
-          END;
-        END IF;
-
-        IF iPship_profile_id <> -1 THEN
-          BEGIN
-            UPDATE YA_ADDRESS
-            SET preferred_ship = 'N'
-            WHERE
-              shopper_id = cPshopper_id
-              AND preferred_ship = 'Y'
-              AND site_id = iPsite_id;
-
-            UPDATE YA_ADDRESS
-            SET preferred_ship = 'Y'
-            WHERE
-              address_id = iPship_profile_id
-              AND shopper_id = cPshopper_id;
-          END;
-        END IF;
-
-        IF iPcc_profile_id <> -1 THEN
-          BEGIN
-            UPDATE YA_CREDIT_CARD_PROFILE
-            SET preferred = 'N'
-            WHERE shopper_id = cPshopper_id;
-
-            UPDATE YA_CREDIT_CARD_PROFILE
-            SET preferred = 'Y'
-            WHERE
-              profile_id = iPcc_profile_id
-              AND shopper_id = cPshopper_id;
-          END;
-        END IF;
-
-        IF LENGTH(vcPcoupon_code) > 0 THEN
-          BEGIN
-            UPDATE YA_COUPON
-            SET coupon_used = 'Y'
-            WHERE
-              coupon_code = vcPcoupon_code
-              AND
-                (
-                  (
-                    shopper_id = cPshopper_id
-                    AND all_shoppers NOT IN ('Y','U')
-                  ) -- Y: all shoppers, U: unique
-                  OR all_shoppers = 'O'
-                );
-          END;
-        END IF;
-
-        INSERT INTO ya_customer_info
-          (
-            order_num,
-            lang_id
-          )
-        VALUES
-          (
-            iPorder_num,
-            iPlang_type
-          );
-
-        IF nPcredit_amount > 0 THEN
-          BEGIN
-            Pkg_Fe_Orderaccess2.DebitCreditBySite(cPshopper_id, nPcredit_amount, iPorder_num, 'USD', iPsite_id, iLdebit_credit_return, cPtransaction_id, iPsite_id);
-          END;
-        END IF;
-
-        IF LENGTH(vcPlimited_sku_csv) > 0 THEN
-          BEGIN
-            UpdateLimitedQuantity(vcPlimited_sku_csv, vcPlimited_qty_csv, iPsite_id);
-          END;
-        END IF;
-
-        UPDATE ya_paypal_ec_order_mapping
-        SET
-          order_num = iPorder_num,
-          updated_datetime = SYSDATE
-        WHERE payment_txn_id = cPguid;
-
-      EXCEPTION WHEN OTHERS THEN
-        BEGIN
-          iPorder_num := -1;
-          ROLLBACK;
-          RETURN;
-        END;
-      END;
-    END IF;
-    COMMIT;
-    RETURN;
-  END InsertPaypalECOrderXml;
-  
-  PROCEDURE InsertPPECOrderXmlEncrypted (
-    cPshopper_id IN CHAR,
-    iPsite_id IN INT,
-    vcPcoupon_code IN VARCHAR2,
-    clobPorder_xml IN CLOB,
-    iPbill_profile_id IN INT,
-    iPship_profile_id IN INT,
-    iPcc_profile_id IN INT,
-    nPcredit_amount IN NUMBER,
-    vcPlimited_sku_csv IN VARCHAR2,
-    vcPlimited_qty_csv IN VARCHAR2,
-    iPlang_type IN INT,
-    iPencryptionKey_id IN INT,
-    iPorder_num IN OUT INT,
-    cPtransaction_id IN VARCHAR2 DEFAULT NULL
-  )
-  AS
-    cLguid CHAR(32);
-    iLstatus INT;
-    iLpaypal_status INT;
-    iLexist INT;
-    iLdebit_credit_return INT;
-    iLseq_currval INT;
-    iLseq_diff INT;
-    iLbuffer_code INT;
-  BEGIN
-    BEGIN
-      SELECT paypal_uid
-      INTO cLguid
-      FROM ya_checkout_data
-      WHERE
-        shopper_id = cPshopper_id
-        AND site_id = iPsite_id;
-    EXCEPTION
-      WHEN NO_DATA_FOUND THEN
-        BEGIN
-          iPorder_num := -1;
-          RETURN;
-        END;
-    END;
-
-    BEGIN
-      SELECT order_status, ec_payment_status
-      INTO iLstatus, iLpaypal_status
-      FROM ya_paypal_ec_order_mapping
-      WHERE payment_txn_id = cPtransaction_id;
-    EXCEPTION
-      WHEN NO_DATA_FOUND THEN
-        BEGIN
-          iPorder_num := -1;
-          RETURN;
-        END;
-    END;
-	
-    IF iLstatus IN (3,4) AND iLpaypal_status IN (2,8) THEN
-      BEGIN
-        IF iPorder_num IS NULL OR iPorder_num < 0 THEN
-          SELECT SEQ_order.NEXTVAL INTO iPorder_num FROM DUAL;
-        ELSE
-          SELECT SEQ_order.NEXTVAL INTO iLseq_currval FROM dual;
-          iLseq_diff := iPorder_num - iLseq_currval;
-          IF iLseq_diff <> 0 THEN
-            EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_order INCREMENT BY ' || iLseq_diff;
-            SELECT SEQ_order.NEXTVAL INTO iLseq_currval FROM dual;
-            EXECUTE IMMEDIATE 'ALTER SEQUENCE SEQ_order INCREMENT BY 1';
-          END IF;
-        END IF;
-
-        INSERT INTO ya_order
-          (
-            ORDER_NUM,
-            shopper_id,
-            site_id,
-            coupon_code,
-            order_xml,
-            encryptionKey
-          )
-        VALUES
-          (
-            iPorder_num,
-            cPshopper_id,
-            iPsite_id,
-            vcPcoupon_code,
-            clobPorder_xml,
-            iPencryptionKey_id
-          );
-
-        SELECT COUNT(1)
-        INTO iLexist
-        FROM
-          YA_NEW_BASKET b
-          INNER JOIN YA_BARGAIN_PRODUCT p ON
-            b.sku = p.sku
-            AND b.site_id = p.site_id
-        WHERE
-          b.shopper_id = cPshopper_id
-          AND b.site_id = iPsite_id
-          AND b.TYPE = 0;
-
-        IF iLexist > 0 THEN
-          BEGIN
-            INSERT INTO ya_order_sales_detail
-              (
-                order_num,
-                sku,
-                remark
-              )
-            SELECT
-              iPorder_num,
-              b.sku,
-              pa.avlb
-            FROM
-              YA_NEW_BASKET b
-              INNER JOIN YA_BARGAIN_PRODUCT p ON
-                b.sku = p.sku
-                AND p.site_id = iPsite_id
-              INNER JOIN backend_adm.prod_avlb pa ON
-                b.sku = pa.prod_id
-                AND pa.region_id = iPsite_id
-                AND pa.category = 1
-            WHERE
-              b.shopper_id = cPshopper_id
-              AND b.site_id = iPsite_id
-              AND b.TYPE = 0;
-          END;
-        END IF;
-
-
-        -- update buffer campaign
-        -- 60001: US, 60002: Global, 60003: YesStyle
-        IF iPsite_id = 1 THEN
-          iLbuffer_code := 60001;
-        ELSIF iPsite_id = 7 THEN
-          iLbuffer_code := 60002;
-        ELSIF iPsite_id = 10 THEN
-          iLbuffer_code := 60003;
-        END IF;
-
-        INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
-        SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, iLbuffer_code
-        FROM ya_new_basket nb
-          INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code in (SELECT cl.campaign_code FROM ya_campaign_lookup cl WHERE cl.campaign_type = 2)
-        WHERE nb.shopper_id = cPshopper_id
-          AND nb.type = 0
-          AND nb.site_id = iPsite_id
-          AND EXISTS (
-            SELECT 1
-            FROM ya_limited_quantity lq
-            WHERE lq.sku = nb.sku AND lq.site_id IN (99, iPsite_id)
-            AND lq.frontend_quantity > 0
-          );
-
-        -- for automatic clearance tool buffering
-        -- 50001: US, 50002: Global, 50003: YesStyle
-        IF iPsite_id = 1 THEN
-          INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
-          SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
-          FROM ya_new_basket nb
-            INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50001
-          WHERE nb.shopper_id = cPshopper_id
-            AND nb.type = 0
-            AND nb.site_id = iPsite_id;
-        ELSIF iPsite_id = 7 THEN
-          INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
-          SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
-          FROM ya_new_basket nb
-            INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50002
-          WHERE nb.shopper_id = cPshopper_id
-            AND nb.type = 0
-            AND nb.site_id = iPsite_id;
-        ELSIF iPsite_id = 10 THEN
-          INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
-          SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
-          FROM ya_new_basket nb
-            INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50003
-          WHERE nb.shopper_id = cPshopper_id
-            AND nb.type = 0
-            AND nb.site_id = iPsite_id;
-        END IF;
-		
---		PKG_FE_ORDERACCESS.DeductOrderLtdQty(cPshopper_id, iPsite_id);
-
-        DELETE FROM YA_NEW_BASKET
-        WHERE
-          shopper_id = cPshopper_id
-          AND site_id = iPsite_id
-          AND TYPE = 0;
-
-        DELETE FROM YA_WARRANTY_BASKET
-        WHERE
-          shopper_id = cPshopper_id
-          AND site_id = iPsite_id;
-
-        DELETE FROM ya_checkout_data
-        WHERE
-          shopper_id = cPshopper_id
-          AND site_id = iPsite_id;
-
-        DELETE FROM ya_giftcard_data
-        WHERE
-          shopper_id = cPshopper_id
-          AND site_id = iPsite_id;
-
-        IF iPbill_profile_id <> -1 THEN
-          BEGIN
-            UPDATE YA_ADDRESS
-            SET preferred_bill = 'N'
-            WHERE
-              shopper_id = cPshopper_id
-              AND preferred_bill = 'Y';
-
-            UPDATE YA_ADDRESS
-            SET preferred_bill = 'Y'
-            WHERE
-              shopper_id = cPshopper_id
-              AND address_id = iPbill_profile_id;
-          END;
-        END IF;
-
-        IF iPship_profile_id <> -1 THEN
-          BEGIN
-            UPDATE YA_ADDRESS
-            SET preferred_ship = 'N'
-            WHERE
-              shopper_id = cPshopper_id
-              AND preferred_ship = 'Y'
-              AND site_id = iPsite_id;
-
-            UPDATE YA_ADDRESS
-            SET preferred_ship = 'Y'
-            WHERE
-              address_id = iPship_profile_id
-              AND shopper_id = cPshopper_id;
-          END;
-        END IF;
-
-        IF iPcc_profile_id <> -1 THEN
-          BEGIN
-            UPDATE YA_CREDIT_CARD_PROFILE
-            SET preferred = 'N'
-            WHERE shopper_id = cPshopper_id;
-
-            UPDATE YA_CREDIT_CARD_PROFILE
-            SET preferred = 'Y'
-            WHERE
-              profile_id = iPcc_profile_id
-              AND shopper_id = cPshopper_id;
-          END;
-        END IF;
-
-        IF LENGTH(vcPcoupon_code) > 0 THEN
-          BEGIN
-            UPDATE YA_COUPON
-            SET coupon_used = 'Y'
-            WHERE
-              coupon_code = vcPcoupon_code
-              AND
-                (
-                  (
-                    shopper_id = cPshopper_id
-                    AND all_shoppers NOT IN ('Y','U')
-                  ) -- Y: all shoppers, U: unique
-                  OR all_shoppers = 'O'
-                );
-          END;
-        END IF;
-
-        INSERT INTO ya_customer_info
-          (
-            order_num,
-            lang_id
-          )
-        VALUES
-          (
-            iPorder_num,
-            iPlang_type
-          );
-
-        IF nPcredit_amount > 0 THEN
-          BEGIN
-            Pkg_Fe_Orderaccess2.DebitCreditBySite(cPshopper_id, nPcredit_amount, iPorder_num, 'USD', iPsite_id, iLdebit_credit_return, cPtransaction_id, iPsite_id);
-          END;
-        END IF;
-
-        IF LENGTH(vcPlimited_sku_csv) > 0 THEN
-          BEGIN
-            UpdateLimitedQuantity(vcPlimited_sku_csv, vcPlimited_qty_csv, iPsite_id);
-          END;
-        END IF;
-
-        UPDATE ya_paypal_order_mapping
-        SET
-          order_num = iPorder_num,
-          updated_datetime = SYSDATE
-        WHERE payment_uid = cLguid;
-
-      EXCEPTION WHEN OTHERS THEN
-        BEGIN
-          iPorder_num := -1;
-          ROLLBACK;
-          RETURN;
-        END;
-      END;
-    END IF;
-    COMMIT;
-    RETURN;
-  END InsertPPECOrderXmlEncrypted;  
-*/
   END Pkg_Fe_Orderaccess2;
 /
  
