@@ -1279,7 +1279,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
     iLdebit_credit_return INT;
     iLseq_currval INT;
     iLseq_diff INT;
-    iLbuffer_code INT;    
+    iLbuffer_code INT;
   BEGIN
     BEGIN
       SELECT order_status, ec_payment_status
@@ -2529,10 +2529,11 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
     iLseq_currval INT;
     iLseq_diff INT;
     iLbuffer_code INT;
+    cLcurrency CHAR(3);
   BEGIN
     BEGIN
-      SELECT paypal_uid
-      INTO cLguid
+      SELECT paypal_uid, currency
+      INTO cLguid, cLcurrency
       FROM ya_checkout_data
       WHERE
         shopper_id = cPshopper_id
@@ -2784,7 +2785,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
 
         IF nPcredit_amount > 0 THEN
           BEGIN
-            Pkg_Fe_Orderaccess2.DebitCreditBySite(cPshopper_id, nPcredit_amount, iPorder_num, 'USD', iPsite_id, iLdebit_credit_return, cPtransaction_id, iPsite_id);
+            Pkg_Fe_Orderaccess2.DebitCreditBySite(cPshopper_id, nPcredit_amount, iPorder_num, cLcurrency, iPsite_id, iLdebit_credit_return, cPtransaction_id, iPsite_id);
           END;
         END IF;
 
