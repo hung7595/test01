@@ -128,7 +128,7 @@ BEGIN
 
   OPEN curPout4 FOR
   SELECT 
-    ol.id as order_line_id, ol.prod_id as sku, p.account_id as account_id, pl.prod_name as product_name, old.qnty as quantity, ol.unit_price as unit_price, old.sts as status, 
+    ol.id as order_line_id, ol.prod_id as sku, p.account_id as account_id, nvl(pl.prod_name, pe.prod_name) as product_name, old.qnty as quantity, ol.unit_price as unit_price, old.sts as status, 
     ol.shipment_unit, ol.promotion_id as promotion_id, ol.original_unit_price as original_unit_price, pa.avlb as avlb, ol.parent_id, ol.misc_info,
     p.release_date, pr.is_preorder, pr.preorder_start, pr.preorder_end, pe.prod_name as eng_prod_name, ol.parent_line_id, ol.shipment_grp
   FROM (select * from order_info where cust_id = cPshopperId and id = iLorderInfoId) oi
@@ -137,7 +137,7 @@ BEGIN
   inner join prod_avlb pa on ol.prod_id = pa.prod_id and pa.region_id = oi.origin_id
   inner join prod_region pr on ol.prod_id = pr.prod_id and pr.region_id = oi.origin_id
   inner join ya_product p on pa.prod_id = p.sku
-  inner join (select * from ya_prod_lang where lang_id = iPlangId) pl on p.sku = pl.sku
+  left outer join (select * from ya_prod_lang where lang_id = iPlangId) pl on p.sku = pl.sku
   inner join ya_prod_lang pe on p.sku = pe.sku and pe.lang_id = 1
   left outer join ya_shipping_unit su on su.site_id = oi.origin_id and p.sku = su.sku;
   
