@@ -586,9 +586,9 @@ AS
 
 		INSERT INTO ya_coupon
       (shopper_id, coupon_code, campaign_name, coupon_description, percentage_coupon_value, expiration_date
-      , all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, CREATE_DATE)
+      , all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, CREATE_DATE, currency)
 	  SELECT cPshopper_id, iLcoupon_code, 'ASIA5', 'ASIA5', 0.05, to_date('30/04/2011', 'dd/mm/yyyy')
-	    , 'P', 'N', 2, 13, 0, 'marketing', SYSDATE
+	    , 'P', 'N', 2, 13, 0, 'marketing', SYSDATE, 'AUD'
 		FROM dual;
 		
 		INSERT INTO ya_coupon_site (coupon_code, site_id)
