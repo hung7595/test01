@@ -56,6 +56,10 @@ AS
     cPshopper_id IN CHAR,
     cPsiteId IN INT
   );
+  
+  PROCEDURE RegisterMarketingNewShopper (
+    cPemail IN VARCHAR2
+  );
 END Pkg_FE_ShopperAccess;
 /
 CREATE OR REPLACE PACKAGE BODY "PKG_FE_SHOPPERACCESS" 
@@ -389,6 +393,36 @@ AS
       END;
     END IF;
   END AddShopperRegisterSiteId;
+  
+  PROCEDURE RegisterMarketingNewShopper (
+    cPemail IN VARCHAR2
+  )
+  AS
+    iLresult INT := 1;
+    cLpassword VARCHAR2(8);
+    cLresult VARCHAR2(32);
+    cLshopper_id VARCHAR2(32);
+  BEGIN
+    BEGIN      
+      SELECT shopper_id INTO cLshopper_id FROM ya_shopper WHERE email = cPemail and type_id = 1;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        iLresult := 0;
+    END;
+    
+    IF iLresult = 0 THEN
+    BEGIN
+      SELECT sys_guid() INTO cLshopper_id FROM dual;
+      SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO cLpassword FROM dual;
+      
+      Pkg_FE_ShopperAccess.RegisterNewShopper(cLshopper_id, '', cPemail, cPemail
+        , cLpassword, cLresult, 1);
+      Pkg_FE_ShopperAccess.AddShopperRegisterSiteId(cLshopper_id, 13);
+    END;
+    END IF;
+    
+    Pkg_FE_CouponAccess.CreateMarketingCoupon(cLshopper_id);
+    
+  END RegisterMarketingNewShopper;
 END Pkg_FE_ShopperAccess;
 /
- 
