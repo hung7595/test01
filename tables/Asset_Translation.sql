@@ -3,7 +3,6 @@ DROP TABLE Asset_Translation
 
 CREATE TABLE Asset_Translation (
 	id                      int                 NOT NULL ,
-	version                 int                 NOT NULL ,
 	asset_id                int                 NOT NULL ,
 	locale                  varchar2(5)         NOT NULL ,
 	content                 nvarchar2(2000)     ,

@@ -3,7 +3,6 @@ DROP TABLE Asset
 
 CREATE TABLE Asset (
 	id                      int                 NOT NULL ,
-	version                 int                 NOT NULL ,
 	key                     varchar2(100)       NOT NULL ,
 	remark                  varchar2(2000)      ,
 	app_enable              int                 NOT NULL ,
