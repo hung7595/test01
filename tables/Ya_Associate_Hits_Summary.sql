@@ -2,6 +2,7 @@ DROP TABLE Ya_Associate_Hits_Summary
 /
 
 CREATE TABLE Ya_Associate_Hits_Summary (
+	id                    int                    NOT NULL ,
 	hit_day               date                   NOT NULL ,
 	link_id               int                    NOT NULL ,
 	hits                  int                    NOT NULL ,
@@ -10,12 +11,12 @@ CREATE TABLE Ya_Associate_Hits_Summary (
 /
 
 ALTER TABLE Ya_Associate_Hits_Summary
-ADD CONSTRAINT PK_Associate_Hits_Summary PRIMARY KEY (link_id, hit_day)
+ADD CONSTRAINT PK_Associate_Hits_Summary PRIMARY KEY (id)
 USING INDEX TABLESPACE SSCommerceserver_Index
 /
 
 
-CREATE UNIQUE INDEX UN_Associate_Hits_Summary ON Ya_Associate_Hits_Summary(rowguid) TABLESPACE SSCommerceserver_Index
+CREATE UNIQUE INDEX UN_Associate_Hits_Summary_01 ON Ya_Associate_Hits_Summary(rowguid) TABLESPACE SSCommerceserver_Index
 /
 
 

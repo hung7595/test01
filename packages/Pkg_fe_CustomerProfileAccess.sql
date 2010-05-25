@@ -314,7 +314,7 @@ IS
   BEGIN
      begin
       SELECT survey_code INTO iLCompletedSurvey FROM ya_survey_customer_list
-      WHERE shopper_id=cPshopper_id AND survey_code=iPsurvey_code;
+      WHERE shopper_id = cPshopper_id AND survey_code = iPsurvey_code;
 	  
     EXCEPTION WHEN NO_DATA_FOUND THEN
       BEGIN
@@ -324,18 +324,33 @@ IS
 
     IF iLCompletedSurvey > 0 THEN
       BEGIN
-	UPDATE ya_survey_customer_list
-        SET completed = 'Y', updated_datetime = SYSDATE
-	WHERE shopper_id = cPshopper_id AND survey_code = iPsurvey_code;
+	      UPDATE ya_survey_customer_list
+          SET completed = 'Y', updated_datetime = SYSDATE
+	      WHERE shopper_id = cPshopper_id AND survey_code = iPsurvey_code;
       END;
     ELSE
       BEGIN
         INSERT INTO ya_survey_customer_list
           (shopper_id, survey_code, completed, created_datetime, updated_datetime)
-	VALUES
-	  (cPshopper_id, iPsurvey_code,'Y',sysdate,sysdate);
-	END;
+	      VALUES
+	        (cPshopper_id, iPsurvey_code,'Y',sysdate,sysdate);
+	    END;
+    END IF;    
+
+    IF iPsurvey_code = 107 THEN
+      BEGIN
+        UPDATE ya_survey_customer_list SET completed = 'Y', updated_datetime = SYSDATE
+	      WHERE shopper_id = cPshopper_id AND survey_code = 105;
+      END;
     END IF;
+    
+    IF iPsurvey_code = 108 THEN
+      BEGIN
+        UPDATE ya_survey_customer_list SET completed = 'Y', updated_datetime = SYSDATE
+	      WHERE shopper_id = cPshopper_id AND survey_code = 106;
+      END;
+    END IF;    
+      
     Pkg_FE_CouponAccess.CreateYSSurveyCoupon(cPshopper_id,curPresult);
   
   END UpdateSurveyStatus;
