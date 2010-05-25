@@ -465,22 +465,25 @@ AS
 		iLcoupon_code VARCHAR2(13);
   BEGIN
 		-- Generate Coupon
-		SELECT 'YSPOLL_' || cast(dbms_random.string('U', 6) AS VARCHAR2(6)) INTO iLcoupon_code FROM dual;
+		SELECT 'YSPO10_' || cast(dbms_random.string('U', 5) AS VARCHAR2(5)) INTO iLcoupon_code FROM dual;
 
 		-- Make sure unique coupon code
 		SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
 		WHILE (iLcount = 1)
 			LOOP
-					SELECT 'YSPOLL_' || cast(dbms_random.string('U', 6) AS VARCHAR2(6)) INTO iLcoupon_code FROM dual;
+					SELECT 'YSPO10_' || cast(dbms_random.string('U', 5) AS VARCHAR2(5)) INTO iLcoupon_code FROM dual;
 					SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
 			END LOOP;
 
 		-- Insert data into table
-
 		INSERT INTO ya_coupon
-			(shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value,expiration_date, all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, create_date)
+			(shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value
+			  ,expiration_date, all_shoppers, coupon_used, coupon_type_id, site_id
+			  , order_amount_trigger, create_id, create_date, currency)
 		VALUES
-			(cPshopper_id, iLcoupon_code, 'YesStyle.com Survey Coupon 2009', 'YesStyle.com Survey US$5 Coupon', 5, sysdate +30, 'N', 'N', 1, 10, 5, 'frontend', SYSDATE);
+			(cPshopper_id, iLcoupon_code, 'YesStyle.com Survey Coupon 2010', 'YesStyle.com Survey US$10 Coupon', 10
+			  , sysdate+30, 'N', 'N', 1, 10
+			  , 10, 'ys_survey', SYSDATE, 'USD');
 
     INSERT INTO ya_coupon_site (coupon_code, site_id)
     VALUES (iLcoupon_code, 10);
@@ -488,11 +491,12 @@ AS
     INSERT INTO ya_coupon_site (coupon_code, site_id)
     VALUES (iLcoupon_code, 13);
 
+		COMMIT;
+
 		-- Retur Result
 		OPEN curPresult FOR
 	    SELECT iLcoupon_code as coupon_code FROM dual;
 
-		COMMIT;
 		RETURN;
   END CreateYSSurveyCoupon;
 

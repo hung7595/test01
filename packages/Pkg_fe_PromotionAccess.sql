@@ -56,11 +56,30 @@ AS
     iPis_eligible OUT INT
   );
   
+  PROCEDURE IsFirstFreeGiftOrder (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    iPgift_sku IN INT,
+    iPis_eligible OUT INT
+  );  
+  
   PROCEDURE InsertFreeGiftOrderTracking (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
     iPorder_num IN INT,
     iPgift_sku IN INT
+  );
+  
+  PROCEDURE GetPromotionToolItem (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    rcPresult OUT refCur
+  );
+
+  PROCEDURE GetPromotionToolPromotion (
+    iPpromotion_id IN INT,
+    rcPresult1 OUT refCur,
+    rcPresult2 OUT refCur
   );
 END Pkg_fe_PromotionAccess;
 /
@@ -359,8 +378,29 @@ IS
         BEGIN
           iPis_eligible := 0;
         END;      
-  END IsEliteClubFirstOrder;
-  
+  END IsEliteClubFirstOrder;  
+
+  PROCEDURE IsFirstFreeGiftOrder (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    iPgift_sku IN INT,
+    iPis_eligible OUT INT
+  )
+  AS
+  BEGIN
+    SELECT 1 INTO iPis_eligible
+    FROM ya_free_gift_order_tracking fg
+    WHERE fg.shopper_id = cPshopper_id
+      AND fg.free_gift_prod_id = iPgift_sku
+      AND fg.sts = 0
+      AND rownum = 1;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        BEGIN
+          iPis_eligible := 0;
+        END;      
+  END IsFirstFreeGiftOrder;
+
   PROCEDURE InsertFreeGiftOrderTracking (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
@@ -376,6 +416,102 @@ IS
     
     COMMIT;    
   END InsertFreeGiftOrderTracking;
+  
+  PROCEDURE GetPromotionToolItem (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    rcPresult OUT refCur
+  )
+  AS
+  BEGIN
+    OPEN rcPresult FOR
+      select gp1.sku, gp1.promotion_id from (
+        select sku, promotion_id, count(*) match from (
+        select distinct nb.sku, pd.promotion_id
+        from ya_new_basket nb
+          inner join ya_product yp on nb.sku = yp.sku
+          inner join ya_group yg on yp.account_id = yg.account_id and yg.division_id = 12 and yg.enabled = 'Y'
+          inner join ya_promotion_def pd on 
+          (pd.type = 115 and nb.sku = pd.value) 
+          or (pd.type = 116 and yp.brand_id = pd.value) 
+          or (pd.type = 120 and yp.account_id = pd.value)
+          or (pd.type = 121 and yg.group_id = pd.value)
+        where nb.shopper_id = cPshopper_id
+          and nb.site_id = iPsite_id
+          and nb.type = 0
+        union
+        select distinct nb.sku, pd.promotion_id
+        from ya_new_basket nb
+          inner join ya_campaign yc on nb.sku = yc.sku
+          inner join ya_promotion_def pd on pd.type = 118 and yc.campaign_code = pd.value
+        where nb.shopper_id = cPshopper_id
+          and nb.site_id = iPsite_id
+          and nb.type = 0
+        union
+        select distinct nb.sku, pd.promotion_id
+        from ya_new_basket nb
+          inner join ya_prod_attr pa on nb.sku = pa.sku
+          inner join ya_promotion_def pd on pd.type = 118 and pa.attribute_id = pd.value 
+        where nb.shopper_id = cPshopper_id
+          and nb.site_id = iPsite_id
+          and nb.type = 0
+        union
+        select distinct nb.sku, pd.promotion_id
+        from ya_new_basket nb
+          inner join ya_prod_attr pa on nb.sku = pa.sku
+          inner join ya_promotion_def pd on pd.type = 118 and pa.attribute_id = pd.value 
+        where nb.shopper_id = cPshopper_id
+          and nb.site_id = iPsite_id
+          and nb.type = 0
+        union
+        select distinct nb.sku, pd.promotion_id
+        from ya_new_basket nb
+          inner join ya_prod_dept pdt on nb.sku = pdt.sku
+          inner join ya_promotion_def pd on pd.type = 122 and pdt.dept_id = pd.value 
+        where nb.shopper_id = cPshopper_id
+          and nb.site_id = iPsite_id
+          and nb.type = 0
+        union
+        select distinct nb.sku, pd.promotion_id
+        from ya_new_basket nb
+          inner join ya_prod_attr pa on nb.sku = pa.sku
+          inner join ya_promotion_def pd on pd.type = 123 and pa.attribute_id = pd.value
+        where nb.shopper_id = cPshopper_id
+          and nb.site_id = iPsite_id
+          and nb.type = 0
+        ) group by sku, promotion_id
+      ) gp1 inner join 
+      (
+        select pd.promotion_id, count(distinct type) criteria_cnt
+        from ya_promotion_def pd
+        where type in (115,116,118,119,120,121,122) group by pd.promotion_id
+      ) gp2 on gp1.promotion_id = gp2.promotion_id and gp1.match = gp2.criteria_cnt
+      inner join ya_promotion_site ps on gp2.promotion_id = ps.promotion_id
+      inner join ya_promotion yp on gp2.promotion_id = yp.id
+      where ps.site_id = iPsite_id 
+        and ps.is_enabled = 'Y'
+        and ((yp.start_dt is not null and yp.start_dt <= sysdate) or yp.start_dt is null)
+        and ((yp.end_dt is not null and yp.end_dt >= sysdate) or yp.end_dt is null);
+      
+  END GetPromotionToolItem;
+  
+  PROCEDURE GetPromotionToolPromotion (
+    iPpromotion_id IN INT,
+    rcPresult1 OUT refCur,
+    rcPresult2 OUT refCur
+  )
+  AS
+  BEGIN
+    OPEN rcPresult1 FOR
+      SELECT yp.campaign_code, yp.type 
+      FROM ya_promotion yp
+      WHERE yp.id = iPpromotion_id;
+      
+    OPEN rcPresult2 FOR
+      SELECT type, value 
+      FROM ya_promotion_def
+      WHERE promotion_id = iPpromotion_id
+        AND type not in (115,116,118,119,120,121,122);
+  END GetPromotionToolPromotion;
 END Pkg_fe_PromotionAccess;
 /
-
