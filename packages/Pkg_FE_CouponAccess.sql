@@ -483,7 +483,7 @@ AS
 		VALUES
 			(cPshopper_id, iLcoupon_code, 'YesStyle.com Survey Coupon 2010', 'YesStyle.com Survey US$10 Coupon', 10
 			  , sysdate+30, 'N', 'N', 1, 10
-			  , 10, 'ys_survey', SYSDATE, 'USD');
+			  , 100, 'ys_survey', SYSDATE, 'USD');
 
     INSERT INTO ya_coupon_site (coupon_code, site_id)
     VALUES (iLcoupon_code, 10);
