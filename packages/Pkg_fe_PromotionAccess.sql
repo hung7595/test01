@@ -508,7 +508,7 @@ IS
       WHERE yp.id = iPpromotion_id;
       
     OPEN rcPresult2 FOR
-      SELECT type, value 
+      SELECT type, value, site_id 
       FROM ya_promotion_def
       WHERE promotion_id = iPpromotion_id
         AND type not in (115,116,118,119,120,121,122);
