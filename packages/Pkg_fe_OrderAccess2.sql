@@ -1280,13 +1280,12 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
     iLseq_currval INT;
     iLseq_diff INT;
     iLbuffer_code INT;
-    cLcurrency CHAR(3);
+    cLcurrency CHAR(3); -- indicate the currency of the credit
   BEGIN
     BEGIN
-      SELECT order_status, ec_payment_status, currency
-      INTO iLstatus, iLpaypal_status, cLcurrency
+      SELECT order_status, ec_payment_status
+      INTO iLstatus, iLpaypal_status
       FROM ya_paypal_ec_order_mapping ec
-      INNER JOIN ya_checkout_data cd ON ec.payment_txn_id = cd.paypal_uid     
       WHERE payment_txn_id = cPguid;
     EXCEPTION
       WHEN NO_DATA_FOUND THEN
@@ -1295,6 +1294,25 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
           RETURN;
         END;
     END;
+	
+	-- fetch the currency
+	IF nPcredit_amount > 0 THEN
+	  BEGIN
+		SELECT currency
+		INTO cLcurrency
+		FROM ya_checkout_data
+		WHERE paypal_uid = cPguid;
+	  EXCEPTION
+		WHEN NO_DATA_FOUND THEN
+          BEGIN
+			-- Safe guard unless the currency cannot be fetched in the ya_checkout_data by paypal_uid
+			SELECT currency_code
+			INTO cLcurrency
+			FROM ya_paypal_ec_get_details 
+			WHERE order_mapping_id IN (select id from ya_paypal_ec_order_mapping where payment_txn_id = cPguid);
+		  END;
+	  END;
+	END IF;
 	
     IF iLstatus IN (3,4) AND iLpaypal_status IN (2,8) THEN
       BEGIN
@@ -2534,8 +2552,8 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
     cLcurrency CHAR(3);
   BEGIN
     BEGIN
-      SELECT paypal_uid, currency
-      INTO cLguid, cLcurrency
+      SELECT paypal_uid
+      INTO cLguid
       FROM ya_checkout_data
       WHERE
         shopper_id = cPshopper_id
@@ -2560,6 +2578,25 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
           RETURN;
         END;
     END;
+	
+	-- fetch the currency
+	IF nPcredit_amount > 0 THEN
+	  BEGIN
+		SELECT currency
+		INTO cLcurrency
+		FROM ya_checkout_data
+		WHERE paypal_uid = cPtransaction_id;
+	  EXCEPTION
+		WHEN NO_DATA_FOUND THEN
+          BEGIN
+			-- Safe guard unless the currency cannot be fetched in the ya_checkout_data by paypal_uid
+			SELECT currency_code
+			INTO cLcurrency
+			FROM ya_paypal_ec_get_details 
+			WHERE order_mapping_id IN (select id from ya_paypal_ec_order_mapping where payment_txn_id = cLguid);
+		  END;
+	  END;
+	END IF;
 	
     IF iLstatus IN (3,4) AND iLpaypal_status IN (2,8) THEN
       BEGIN
@@ -2797,11 +2834,11 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
           END;
         END IF;
 
-        UPDATE ya_paypal_order_mapping
+        UPDATE ya_paypal_ec_order_mapping
         SET
           order_num = iPorder_num,
           updated_datetime = SYSDATE
-        WHERE payment_uid = cLguid;
+        WHERE payment_txn_id = cLguid;
 
       EXCEPTION WHEN OTHERS THEN
         BEGIN
