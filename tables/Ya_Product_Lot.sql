@@ -3,12 +3,12 @@ DROP TABLE Ya_Product_Lot
 
 CREATE TABLE Ya_Product_Lot (
 	prod_lot_id               int                  NOT NULL ,
-	file_id                   int                  ,
-	sku                       int                  ,
+	file_id                   int                  NOT NULL ,
+	sku                       int                  NOT NULL ,
 	dept_id                   int                  ,
-	lot_location              int                  ,
-	active                    char(1)              ,
-	priority                  int                  ,
+	lot_location              int                  NOT NULL ,
+	active                    char(1)              NOT NULL ,
+	priority                  int                  NOT NULL ,
 	updated_user              varchar2(20)         ,
 	updated_date              date
 )
