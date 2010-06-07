@@ -31,6 +31,7 @@ AS
     cPysEnabled IN CHAR,
     cPyscnEnabled IN CHAR,
     cPysauEnabled IN CHAR,
+    cPyshkEnabled IN CHAR,
     cPhmEnabled IN CHAR,
     iPdeptId out int
   );
@@ -205,6 +206,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
     cPysEnabled IN CHAR,
     cPyscnEnabled IN CHAR,
     cPysauEnabled IN CHAR,
+    cPyshkEnabled IN CHAR,
     cPhmEnabled IN CHAR,
     iPdeptId out int
   ) 
@@ -239,7 +241,9 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	  VALUES (iLDeptId, 12, cPhmEnabled);	  
 	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled)
 	  VALUES (iLDeptId, 13, cPysauEnabled);	  
-	  	  		
+	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled)
+	  VALUES (iLDeptId, 14, cPyshkEnabled);	  
+
     iPdeptId :=iLDeptId;
     --/****STEP 3 : DEPARTMENT LANGUAGE, NEED TO MODIFY THIS PART*****/
     --1.1.1 prepare language translation of 5 languages, it also need in the part 1.6
