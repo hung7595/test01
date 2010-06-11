@@ -229,20 +229,20 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	  VALUES(iLDeptId, sysdate, sysdate, cPuser, cPuser);
 	  
 	  /* update department-site setting */
-	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled)
-	  VALUES (iLDeptId, 1, cPusEnabled);
-	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled)
-	  VALUES (iLDeptId, 7, cPtwEnabled);
-	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled)
-	  VALUES (iLDeptId, 10, cPysEnabled);
-	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled)
-	  VALUES (iLDeptId, 11, cPyscnEnabled);	  
-	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled)
-	  VALUES (iLDeptId, 12, cPhmEnabled);	  
-	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled)
-	  VALUES (iLDeptId, 13, cPysauEnabled);	  
-	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled)
-	  VALUES (iLDeptId, 14, cPyshkEnabled);	  
+	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
+	  VALUES (iLDeptId, 1, cPusEnabled, iPdispSeq);
+	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
+	  VALUES (iLDeptId, 7, cPtwEnabled, iPdispSeq);
+	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
+	  VALUES (iLDeptId, 10, cPysEnabled, iPdispSeq);
+	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
+	  VALUES (iLDeptId, 11, cPyscnEnabled, iPdispSeq);	  
+	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
+	  VALUES (iLDeptId, 12, cPhmEnabled, iPdispSeq);	  
+	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
+	  VALUES (iLDeptId, 13, cPysauEnabled, iPdispSeq);	  
+	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
+	  VALUES (iLDeptId, 14, cPyshkEnabled, iPdispSeq);	  
 
     iPdeptId :=iLDeptId;
     --/****STEP 3 : DEPARTMENT LANGUAGE, NEED TO MODIFY THIS PART*****/
