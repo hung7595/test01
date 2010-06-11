@@ -7,7 +7,7 @@ CREATE TABLE Ya_Ban_Ship_Country_Prod (
 	country_id                 int                     NOT NULL ,
 	site_id                    int                     NOT NULL ,
 	mod_user                   varchar2(150)           ,
-	mod_date                   date
+	mod_dt                     date
 )
 /
 
