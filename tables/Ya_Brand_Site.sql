@@ -6,7 +6,8 @@ CREATE TABLE Ya_Brand_Site (
 	site_id                 int                 NOT NULL ,
 	is_on_sale              char(1)             NOT NULL ,
 	is_focus_brand          char(1)             NOT NULL ,
-	is_enabled              char(1)             NOT NULL
+	is_enabled              char(1)             NOT NULL ,
+	approval_sts            int
 )
 /
 
