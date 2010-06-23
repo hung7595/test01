@@ -14,6 +14,9 @@ AS
   PROCEDURE GetCountryBlockByAttr (
     curPAttribute OUT refCur
   );
+  PROCEDURE GetCountryBlockByBrand (
+    curPAttribute OUT refCur
+  );
   END Pkg_FE_CountryBlockAccess;
 /
 create or replace PACKAGE BODY Pkg_FE_CountryBlockAccess
@@ -54,5 +57,14 @@ IS
           select site_id,ATTRIBUTE_ID,COUNTRY_ID from ya_ban_ship_country_attr order by site_id,attribute_id,country_id;
   END GetCountryBlockByAttr;
 
-    END Pkg_FE_CountryBlockAccess;
+  PROCEDURE GetCountryBlockByBrand (
+    curPAttribute OUT refCur
+  )
+  AS
+  BEGIN
+   OPEN curPAttribute FOR
+          select site_id,brand_id,country_id from ya_ban_ship_country_brand order by site_id,brand_id,country_id;
+  END GetCountryBlockByBrand;
+  
+  END Pkg_FE_CountryBlockAccess;
 /

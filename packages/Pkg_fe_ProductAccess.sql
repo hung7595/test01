@@ -644,7 +644,8 @@ END;
       NVL(pl.prod_subtitle_aka, ple.prod_subtitle_aka),
       0 AS preorder_buffer_day,
       1 AS region_count,
-      yr.currency      
+      yr.currency,
+      p.brand_id
     FROM
       TEMP_PRODUCT_INT_TABLE tp
       inner join YA_PRODUCT p on tp.column1 = p.sku

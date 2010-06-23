@@ -783,7 +783,8 @@ END;
     NVL(pl.prod_subtitle_aka, ple.prod_subtitle_aka),
     0 AS preorder_buffer_day,
     1 AS region_count,
-    yr.currency
+    yr.currency,
+    p.brand_id
   FROM
     ya_new_basket_shadow b
     INNER JOIN ya_product p ON
@@ -1043,7 +1044,8 @@ END GetShadowBasketWithWarranty;
     NVL(pl.prod_subtitle_aka, ple.prod_subtitle_aka),
     0 AS preorder_buffer_day,
     0 AS region_count,
-    yr.currency
+    yr.currency,
+    p.brand_id
   FROM
     ya_new_basket b
     INNER JOIN ya_product p ON
@@ -1305,7 +1307,8 @@ END GetBasketWithWarranty;
       NVL(pl.prod_subtitle_aka, ple.prod_subtitle_aka),
       0 AS preorder_buffer_day,
       1 AS region_count,
-      yr.currency
+      yr.currency,
+      p.brand_id
     FROM
       ya_new_basket b
       INNER JOIN ya_product p ON
@@ -1480,7 +1483,7 @@ END GetBasketWithWarranty;
       NVL(o.availability_id, bpa.avlb),
       NVL(p.country_release_id, -1),
       NVL(bpr.preorder_deadline, dtLnull_date) AS preorder_date, --20
-      rm.currency
+      rm.currency, p.brand_id
     FROM
       (
         SELECT *
@@ -1578,7 +1581,7 @@ END GetBasketWithWarranty;
           NVL(o.availability_id, bpa.avlb),
           NVL(p.country_release_id, -1),
           NVL(bpr.preorder_deadline, dtLnull_date) AS preorder_date, --20
-          rm.currency
+          rm.currency, p.brand_id
         FROM
           (
             SELECT *
