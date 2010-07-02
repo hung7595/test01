@@ -32,6 +32,12 @@ AS
     iPattribute_id 		IN	INT,
     iPasset_id			IN	INT
   );
+  
+  PROCEDURE GetShopperProductPackageSku (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    curPresult OUT refcur
+  );
 
 	
 END Pkg_fe_ProductPackageAccess;
@@ -117,6 +123,23 @@ IS
     INSERT INTO ya_prod_package_note (attribute_id, asset_id) VALUES (iPattribute_id, iPasset_id);
   COMMIT; 
   END InsertPackageNote;
+  
+  PROCEDURE GetShopperProductPackageSku (
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    curPresult OUT refcur
+  )
+  AS
+  BEGIN
+    OPEN curPresult FOR
+    select distinct nb.sku
+    from ya_new_basket nb 
+      inner join ya_prod_attr pa on nb.sku = pa.sku
+      inner join ya_prod_package pp on pa.attribute_id = pp.attribute_id
+    where nb.shopper_id = cPshopper_id
+      and nb.site_id = iPsite_id
+      and nb.type = 0;
+  END GetShopperProductPackageSku;
 
 END Pkg_fe_ProductPackageAccess;
 /
