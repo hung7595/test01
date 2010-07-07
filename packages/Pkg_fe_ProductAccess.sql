@@ -262,8 +262,8 @@ IS
           -1,
           pll.remark
         FROM
-          YA_PRODUCT_LOT pl
-          LEFT OUTER JOIN YA_PROD_LOT_LANG pll ON
+          YA_MIRROR_PRODUCT_LOT pl
+          LEFT OUTER JOIN YA_MIRROR_PROD_LOT_LANG pll ON
             pl.prod_lot_id = pll.prod_lot_id
             AND pll.lang_id = iPlangId
           INNER JOIN prod_region pr ON
@@ -335,11 +335,11 @@ BEGIN
         -1, --NVL(ps.dept_id, -1),
         pll.remark
       FROM
-        YA_PRODUCT_LOT pl
-        LEFT OUTER JOIN YA_PROD_LOT_LANG pll ON
+        YA_MIRROR_PRODUCT_LOT pl
+        LEFT OUTER JOIN YA_MIRROR_PROD_LOT_LANG pll ON
           pl.prod_lot_id = pll.prod_lot_id
           AND pll.lang_id = iPlangId
-        LEFT OUTER JOIN YA_PROD_LOT_LANG PLI ON
+        LEFT OUTER JOIN YA_MIRROR_PROD_LOT_LANG PLI ON
           PLI.prod_lot_id = pl.prod_lot_id
       WHERE
         pl.file_id = iPfileId
@@ -1009,17 +1009,17 @@ END;
           -1,
           pll.remark
         FROM
-          YA_PRODUCT_LOT pl
+          YA_MIRROR_PRODUCT_LOT pl
           INNER JOIN ya_publisher_file_rel pfr ON
 		    pfr.publisher_id = iPpublisherId
 		    AND
 		    pl.file_id = pfr.file_id
 		    AND
 		    pfr.dept_id = iPDeptId
-          LEFT OUTER JOIN YA_PROD_LOT_LANG pll ON
+          LEFT OUTER JOIN YA_MIRROR_PROD_LOT_LANG pll ON
             pl.prod_lot_id = pll.prod_lot_id
             AND pll.lang_id = iPlangId
-          LEFT OUTER JOIN YA_PROD_LOT_LANG PLI ON
+          LEFT OUTER JOIN YA_MIRROR_PROD_LOT_LANG PLI ON
             PLI.prod_lot_id = pl.prod_lot_id
           INNER JOIN prod_region pr ON
             pl.sku = pr.prod_id
