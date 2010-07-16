@@ -632,7 +632,14 @@ END;
       ya_new_basket_shadow nb     
       INNER JOIN prod_region pr ON
         pr.prod_id = nb.sku
-      LEFT OUTER JOIN ya_limited_quantity lq on nb.sku = lq.sku and lq.frontend_quantity > 0 and lq.site_id in (99, pr.origin_id)
+      --LEFT OUTER JOIN ya_limited_quantity lq on nb.sku = lq.sku and lq.frontend_quantity > 0 and lq.site_id in (99, pr.origin_id)
+      LEFT OUTER JOIN ya_limited_quantity lq on (lq.site_id, lq.sku) in (
+          select max(lq2.site_id), lq2.sku
+          from ya_limited_quantity lq2
+          where lq2.frontend_quantity > 0
+            and lq2.site_id in (iPsiteId, 99)
+          group by lq2.sku
+        ) and nb.sku = lq.sku
       LEFT OUTER JOIN clearance cr on concat(nvl(pr.prefix,''), pr.prod_id) = cr.sku and cr.avlb_qnty > 0 and cr.sts = 1
     WHERE nb.shopper_id = cPshopperId
       AND nb.site_id = iPsiteId
@@ -896,7 +903,14 @@ END GetShadowBasketWithWarranty;
       ya_new_basket nb     
       INNER JOIN prod_region pr ON
         pr.prod_id = nb.sku
-      LEFT OUTER JOIN ya_limited_quantity lq on nb.sku = lq.sku and lq.frontend_quantity > 0 and lq.site_id in (99, pr.origin_id)
+--      LEFT OUTER JOIN ya_limited_quantity lq on nb.sku = lq.sku and lq.frontend_quantity > 0 and lq.site_id in (99, pr.origin_id)
+      LEFT OUTER JOIN ya_limited_quantity lq on (lq.site_id, lq.sku) in (
+          select max(lq2.site_id), lq2.sku
+          from ya_limited_quantity lq2
+          where lq2.frontend_quantity > 0
+            and lq2.site_id in (iPsiteId, 99)
+          group by lq2.sku
+        ) and nb.sku = lq.sku
       LEFT OUTER JOIN clearance cr on concat(nvl(pr.prefix,''), pr.prod_id) = cr.sku and cr.avlb_qnty > 0 and cr.sts = 1
     WHERE nb.shopper_id = cPshopperId
       AND nb.site_id = iPsiteId
@@ -1158,7 +1172,14 @@ END GetBasketWithWarranty;
       FROM
         ya_new_basket nb     
         INNER JOIN prod_region pr ON pr.prod_id = nb.sku
-        LEFT OUTER JOIN ya_limited_quantity lq on nb.sku = lq.sku and lq.frontend_quantity > 0 and lq.site_id in (99, pr.origin_id)
+--        LEFT OUTER JOIN ya_limited_quantity lq on nb.sku = lq.sku and lq.frontend_quantity > 0 and lq.site_id in (99, pr.origin_id)
+        LEFT OUTER JOIN ya_limited_quantity lq on (lq.site_id, lq.sku) in (
+            select max(lq2.site_id), lq2.sku
+            from ya_limited_quantity lq2
+            where lq2.frontend_quantity > 0
+              and lq2.site_id in (iPsiteId, 99)
+            group by lq2.sku
+          ) and nb.sku = lq.sku
         LEFT OUTER JOIN clearance cr on concat(nvl(pr.prefix,''), pr.prod_id) = cr.sku and cr.avlb_qnty > 0 and cr.sts = 1
       WHERE nb.shopper_id = cPshopperId
         AND nb.site_id = iPsiteId

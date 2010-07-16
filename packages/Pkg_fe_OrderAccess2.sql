@@ -791,9 +791,16 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
         SELECT sku, site_id, action_id, SYSDATE 
         FROM ya_limited_quantity 
         WHERE 
-        site_id IN (99, iPsite_id)
+          site_id = (
+            select max(lq2.site_id)
+            from ya_limited_quantity lq2
+            where lq2.frontend_quantity > 0
+              and lq2.site_id in (iPsite_id, 99)
+              and lq2.sku = iLcurrent_sku
+          )        
+        --site_id IN (99, iPsite_id)
+        --AND frontend_quantity > 0
         AND frontend_quantity - iLcurrent_qty <= 0
-        AND frontend_quantity > 0
         AND sku = iLcurrent_sku;
         
         UPDATE YA_LIMITED_QUANTITY
@@ -802,8 +809,14 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
           FE_last_change_datetime = SYSDATE
         WHERE
           sku = iLcurrent_sku
-          AND site_id IN (99, iPsite_id)
-          AND frontend_quantity > 0;
+          --AND site_id IN (99, iPsite_id)
+          AND site_id = (
+            select max(lq2.site_id)
+            from ya_limited_quantity lq2
+            where lq2.frontend_quantity > 0
+              and lq2.site_id in (iPsite_id, 99)
+              and lq2.sku = iLcurrent_sku
+          );
 
         IF (iLsku_pointer > 0) THEN
           BEGIN
@@ -4050,6 +4063,8 @@ PROCEDURE GetShadowOrderWithWarrantyYS (
       cc_expiration_year = NULL,
       cc_type_id = NULL,
       cc_profile_id = NULL,
+      cc_numberencrypted = NULL,
+      encryptionkey = NULL,
       last_updated_datetime = SYSDATE()
     WHERE
       shopper_id = cPshopper_id

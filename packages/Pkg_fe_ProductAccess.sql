@@ -496,29 +496,30 @@ END;
       YA_ATTRIBUTE_LANG ale,
       YA_ATTRIBUTE_LANG al,
       TEMP_PRODUCT_INT_TABLE p
-    WHERE 1=1
-    AND p.column1 = pa.sku
-    AND pa.attribute_id = a.attribute_id
-    AND pa.attribute_id = ale.attribute_id
-    AND pa.attribute_id = al.attribute_id
-    AND a.attribute_id = ale.attribute_id
-    AND a.attribute_id = al.attribute_id
-    AND al.lang_id = iPlang_id
-    AND ale.lang_id = 1 /* English */
+    WHERE p.column1 = pa.sku
+      AND pa.attribute_id = a.attribute_id
+      AND pa.attribute_id = ale.attribute_id
+      AND pa.attribute_id = al.attribute_id
+      AND a.attribute_id = ale.attribute_id
+      AND a.attribute_id = al.attribute_id
+      AND al.lang_id = iPlang_id
+      AND ale.lang_id = 1 /* English */
     ORDER BY pa.sku, a.attribute_type_id;
 
     /* Limited Quantity */
     OPEN curPgetProduct2 FOR
-    SELECT
-      lq.sku,
-      lq.frontend_quantity
-    FROM
-      YA_LIMITED_QUANTITY lq,
-      TEMP_PRODUCT_INT_TABLE p
-    WHERE lq.sku = p.column1
-    AND lq.site_id IN (99, 10, iPsite_id)
-    AND lq.frontend_quantity > 0
-    ORDER BY lq.sku;
+    select 
+      lqt.sku,
+      lqt.frontend_quantity
+    from ya_limited_quantity lqt
+    where (site_id, sku) in (
+      select max(lq.site_id), lq.sku
+      from TEMP_PRODUCT_INT_TABLE tp
+      inner join ya_limited_quantity lq on lq.sku = tp.column1
+      where lq.frontend_quantity > 0
+        and lq.site_id in (iPsite_id,99)
+      group by sku
+    );
 
     /* Get shipment Unit */
     iLShipmentUnitConst := 200; /* in Grams */
