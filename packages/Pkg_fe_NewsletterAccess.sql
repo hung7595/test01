@@ -40,6 +40,14 @@ AS
 		vcPmembershipType IN VARCHAR2,
 		curPresult 			OUT 	curGgetNews
   );
+  
+  PROCEDURE GetExistingEmailList1 (
+    iPnewsletter_id		IN	INT,
+		iPsite_id IN INT,
+		iPlang_id IN INT,
+		vcPmembershipType IN VARCHAR2,
+		curPresult 			OUT 	curGgetNews
+  );  
 
 END Pkg_fe_NewsletterAccess;
 /
@@ -345,8 +353,8 @@ END;
     END IF;
     RETURN;
   END SubscribeNewsletterByEmail;
-
-	PROCEDURE GetExistingEmailList (
+  
+  PROCEDURE GetExistingEmailList (
     iPnewsletter_id		IN INT,
 		iPsite_id IN INT,
 		vcPmembershipType IN VARCHAR2,
@@ -449,6 +457,153 @@ END;
 		END IF;
     
   END GetExistingEmailList;
+
+  PROCEDURE GetExistingEmailList1 (
+		iPnewsletter_id		IN INT,
+		iPsite_id IN INT,
+		iPlang_id IN INT,
+		vcPmembershipType IN VARCHAR2,
+		curPresult 			OUT curGgetNews
+  )
+  AS
+  BEGIN 
+		IF (vcPmembershipType IS NULL) THEN
+			OPEN curPresult FOR
+			SELECT DISTINCT yns.email
+			FROM ya_newsletter_subscriber yns
+			LEFT JOIN ya_shopper_site_preference yssp on yns.shopper_id = yssp.shopper_id and yssp.site_id = iPsite_id
+			LEFT JOIN ya_newsletter_subscriber yns_ysgb on yns.shopper_id = yns_ysgb.shopper_id and yns_ysgb.site_id = 10
+			LEFT JOIN ya_newsletter_subscriber yns_yscn on yns.shopper_id = yns_yscn.shopper_id and yns_yscn.site_id = 11
+			WHERE yns.site_id = iPsite_id AND yns.newsletter_id = iPnewsletter_id AND yns.status = 'A'
+			AND NOT EXISTS
+			(
+				SELECT 1 FROM ya_shopper ys WHERE ys.member_type = 3
+				AND yns.shopper_id IS NOT NULL
+				AND ys.shopper_id = yns.shopper_id
+			)
+			AND
+			(
+				NOT EXISTS
+				(
+					SELECT 1 FROM ya_reminder_exclude_list yrel WHERE yrel.site_id = iPsite_id AND yrel.shopper_id = yns.shopper_id
+				)
+				OR yns.shopper_id IS NULL
+			)
+			AND
+			(
+				-- handle "ALL" lang
+				iPlang_id = -1
+				-- handle "Shopper site preference's prefer lang"
+				or yssp.prefer_lang_id = iPlang_id 
+				-- handle YS HK shopper transfered from the YS GB with default language EN
+				or (iPsite_id = 14 and iPlang_id = 1 and yns_ysgb.shopper_id is not null)
+				-- handle YS HK shopper transfered from the YS CN with default language SC
+				or (iPsite_id = 14 and iPlang_id = 5 and yns_yscn.shopper_id is not null)
+			);
+		ELSE
+			IF (vcPmembershipType = 'Regular') THEN
+				OPEN curPresult FOR
+				--email of monthly newsletter subscriber who don't have any membership or has this year's "Regular" membership
+				SELECT DISTINCT yns.email FROM
+				(
+					SELECT *
+					FROM ya_newsletter_subscriber
+					WHERE newsletter_id = iPnewsletter_id AND status = 'A' AND site_id = iPsite_id
+				) yns
+				LEFT JOIN loyalty_customer lc ON lc.ya_shopper_id = yns.shopper_id AND lc.site_id = iPsite_id
+				LEFT JOIN ya_shopper_site_preference yssp on yns.shopper_id = yssp.shopper_id and yssp.site_id = iPsite_id
+				LEFT JOIN ya_newsletter_subscriber yns_ysgb on yns.shopper_id = yns_ysgb.shopper_id and yns_ysgb.site_id = 10
+				LEFT JOIN ya_newsletter_subscriber yns_yscn on yns.shopper_id = yns_yscn.shopper_id and yns_yscn.site_id = 11
+				WHERE
+				(
+					(
+						loyalty_membership_id IS NULL
+					)
+					OR (
+						loyalty_membership_id
+						IN (
+							SELECT id FROM loyalty_membership lm WHERE lm.program_id = 1
+							AND lm.membership_year = to_char(sysdate, 'YYYY')
+							AND lm.membership_name = vcPmembershipType
+						)
+					)
+				)
+				AND
+				(
+					NOT EXISTS
+					(
+						SELECT 1 FROM ya_reminder_exclude_list yrel WHERE yrel.site_id = iPsite_id
+						AND yrel.shopper_id = yns.shopper_id
+					)
+					OR yns.shopper_id IS NULL
+				)
+				AND NOT EXISTS
+				(
+					SELECT 1 FROM ya_shopper ys WHERE yns.shopper_id IS NOT NULL
+					AND ys.shopper_id = yns.shopper_id AND ys.member_type = 3
+				)
+				AND
+				(
+					-- handle "ALL" lang
+					iPlang_id = -1
+					-- handle "Shopper site preference's prefer lang"
+					or yssp.prefer_lang_id = iPlang_id 
+					-- handle YS HK shopper transfered from the YS GB with default language EN
+					or (iPsite_id = 14 and iPlang_id = 1 and yns_ysgb.shopper_id is not null)
+					-- handle YS HK shopper transfered from the YS CN with default language SC
+					or (iPsite_id = 14 and iPlang_id = 5 and yns_yscn.shopper_id is not null)
+				);
+			ELSE
+				OPEN curPresult FOR
+				--email of monthly newsletter subscriber who has this year's membership apart from "Regular"
+				SELECT DISTINCT yns.email FROM
+				(
+					SELECT *
+					FROM ya_newsletter_subscriber yns
+					WHERE newsletter_id = iPnewsletter_id AND status = 'A' AND site_id = iPsite_id
+				) yns
+				INNER JOIN loyalty_customer lc ON lc.ya_shopper_id = yns.shopper_id AND lc.site_id = iPsite_id
+				LEFT JOIN ya_shopper_site_preference yssp on yns.shopper_id = yssp.shopper_id and yssp.site_id = iPsite_id
+				LEFT JOIN ya_newsletter_subscriber yns_ysgb on yns.shopper_id = yns_ysgb.shopper_id and yns_ysgb.site_id = 10
+				LEFT JOIN ya_newsletter_subscriber yns_yscn on yns.shopper_id = yns_yscn.shopper_id and yns_yscn.site_id = 11
+				WHERE loyalty_membership_id
+				IN
+				(
+					SELECT id FROM loyalty_membership lm WHERE
+					lm.program_id = 1
+					AND lm.membership_year = to_char(sysdate, 'YYYY')
+					AND lm.membership_name = vcPmembershipType
+				)
+				AND
+				(
+					NOT EXISTS
+					(
+						SELECT 1 FROM ya_reminder_exclude_list yrel WHERE yrel.site_id = iPsite_id
+						AND yrel.shopper_id = yns.shopper_id
+					)
+					OR yns.shopper_id IS NULL
+				)
+				AND NOT EXISTS
+				(
+					SELECT 1 FROM ya_shopper ys WHERE yns.shopper_id IS NOT NULL
+					AND ys.shopper_id = yns.shopper_id
+					AND ys.member_type = 3
+				)
+				AND
+				(
+					-- handle "ALL" lang
+					iPlang_id = -1
+					-- handle "Shopper site preference's prefer lang"
+					or yssp.prefer_lang_id = iPlang_id 
+					-- handle YS HK shopper transfered from the YS GB with default language EN
+					or (iPsite_id = 14 and iPlang_id = 1 and yns_ysgb.shopper_id is not null)
+					-- handle YS HK shopper transfered from the YS CN with default language SC
+					or (iPsite_id = 14 and iPlang_id = 5 and yns_yscn.shopper_id is not null)
+				);
+			END IF;
+		END IF;
+    
+  END GetExistingEmailList1;
 	
 END Pkg_fe_NewsletterAccess;
 /
