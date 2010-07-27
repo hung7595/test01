@@ -1,6 +1,6 @@
 CREATE TABLE Ya_Globalcollect_Order_Log (
     id                      int             NOT NULL, 
-    global_collect_order_id int             NOT NULL,
+    globalcollect_order_id  int             NOT NULL,
     type                    int             NOT NULL,
     api_command             varchar2(50)    NOT NULL,
     content                 clob            ,
