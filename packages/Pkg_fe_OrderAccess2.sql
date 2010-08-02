@@ -2374,8 +2374,9 @@ PROCEDURE GetShadowOrderWithWarrantyYS (
       vcLcoupon_code := '';
     END;
 	--GetCoupon INTO curPresult7 to curPresult11
-	Pkg_Fe_Couponaccess.GetCoupon(
+	Pkg_Fe_Couponaccess.GetCouponBySite(
 	  vcLcoupon_code,
+	  iPsite_id,
 	  curPresult8,
 	  curPresult9,
 	  curPresult10,
@@ -2520,8 +2521,9 @@ PROCEDURE GetShadowOrderWithWarrantyYS (
       vcLcoupon_code := '';
     END;
 	--GetCoupon INTO curPresult8 to curPresult12
-	Pkg_Fe_Couponaccess.GetCoupon(
+	Pkg_Fe_Couponaccess.GetCouponBySite(
 	  vcLcoupon_code,
+	  iPsite_id,
 	  curPresult8,
 	  curPresult9,
 	  curPresult10,
@@ -2662,8 +2664,9 @@ PROCEDURE GetShadowOrderWithWarrantyYS (
     END;
 
 	--GetCoupon INTO curPresult8 to curPresult12
-	Pkg_Fe_Couponaccess.GetCoupon(
+	Pkg_Fe_Couponaccess.GetCouponBySite(
 	  vcLcoupon_code,
+	  iPsite_id,
 	  curPresult8,
 	  curPresult9,
 	  curPresult10,

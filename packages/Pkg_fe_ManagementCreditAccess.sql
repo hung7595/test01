@@ -150,6 +150,7 @@ IS
     nLgroup_amount NUMBER;
     nLreduce_amount NUMBER;
     nLcredit_amount NUMBER;
+    iLmax_decimal_place INT;
     sLSQL1 VARCHAR2(1000);
     sLSQL2 VARCHAR2(1000);
     sLSQL3 VARCHAR2(1000);
@@ -233,9 +234,15 @@ IS
         END IF;
       END IF;
 
+      -- Fix for the rounding in the decimal place for currency HKD
+      iLmax_decimal_place := 2;
+      IF iLtarget_currency_code = 1 THEN
+        iLmax_decimal_place := 1;
+      END IF;
+
       SELECT seq_frontend_credit_system.NEXTVAL into iLnew_credit_id FROM DUAL;
       INSERT INTO ya_frontend_credit_system (credit_id, site_id, shopper_id, credit_code, credit_type_id, initial_balance, current_balance, transaction_datetime, bogus, currency, remark, rowguid)
-      VALUES (iLnew_credit_id, iPtarget_site_id, cPshopper_id, cLcredit_code, 4, nPtransfer_amount * nLexchange_rate, nPtransfer_amount * nLexchange_rate, dtLtransaction_date, 'N', cPtarget_currency, null, SYS_GUID());
+      VALUES (iLnew_credit_id, iPtarget_site_id, cPshopper_id, cLcredit_code, 4, ROUND(nPtransfer_amount * nLexchange_rate, iLmax_decimal_place), ROUND(nPtransfer_amount * nLexchange_rate, iLmax_decimal_place), dtLtransaction_date, 'N', cPtarget_currency, null, SYS_GUID());
 
       -- grouping credit records to transfer
       IF iLis_group = 1 THEN
@@ -299,7 +306,7 @@ IS
 
       INSERT INTO ya_frontend_credit_system_txn
       (credit_id, credit_amount, credit_ordernum, debit_amount, debit_ordernum, snapshot_balance, transaction_id, transaction_datetime, transaction_remark, action_id, credit_credit_id, debit_credit_id, rowguid)
-      VALUES (iLnew_credit_id, ROUND(nPtransfer_amount * nLexchange_rate,2), NULL, NULL, NULL, ROUND(nPtransfer_amount * nLexchange_rate,2), SYS_GUID(), dtLtransaction_date, NULL, 3, iLcredit_group_id, NULL,  SYS_GUID());
+      VALUES (iLnew_credit_id, ROUND(nPtransfer_amount * nLexchange_rate, iLmax_decimal_place), NULL, NULL, NULL, ROUND(nPtransfer_amount * nLexchange_rate, iLmax_decimal_place), SYS_GUID(), dtLtransaction_date, NULL, 3, iLcredit_group_id, NULL,  SYS_GUID());
       iPreturn_value := 0;
       COMMIT;
     END IF;
