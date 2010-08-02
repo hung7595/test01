@@ -10,6 +10,16 @@ AS
     curPresult3 OUT refCur,
     curPresult4 OUT refCur,
 	curPresult5 OUT refCur
+  );  
+  
+  PROCEDURE GetCouponBySite (
+    cPcode IN VARCHAR2,
+    iPsite_id IN INT,
+    curPresult1 OUT refCur,
+    curPresult2 OUT refCur,
+    curPresult3 OUT refCur,
+    curPresult4 OUT refCur,
+	  curPresult5 OUT refCur
   );
 
   /* proc_fe_GetCorporateCoupon */
@@ -170,6 +180,84 @@ AS
 
     RETURN;
   END GetCoupon;
+
+  PROCEDURE GetCouponBySite (
+    cPcode IN VARCHAR2,
+    iPsite_id IN INT,    
+    curPresult1 OUT refCur,
+    curPresult2 OUT refCur,
+    curPresult3 OUT refCur,
+    curPresult4 OUT refCur,
+	  curPresult5 OUT refCur
+  )
+  AS
+	iLcoupon_code VARCHAR2(32);
+  BEGIN
+	Begin
+		SELECT COUPON_CODE into iLcoupon_code
+		FROM YA_COUPON 
+		WHERE COUPON_CODE = UPPER( cPcode );
+      EXCEPTION WHEN NO_DATA_FOUND THEN
+      BEGIN
+        iLcoupon_code := NULL;
+      END;
+    END;
+	
+    OPEN curPresult1 FOR
+    SELECT constraint_value
+    FROM ya_coupon_constraint
+    WHERE
+      coupon_code = iLcoupon_code
+      AND constraint_type = 1;
+
+    OPEN curPresult2 FOR
+    SELECT constraint_value
+    FROM ya_coupon_constraint
+    WHERE
+      coupon_code = iLcoupon_code
+      AND constraint_type = 2;
+
+    OPEN curPresult3 FOR
+    SELECT constraint_value
+	FROM ya_coupon_constraint
+    WHERE 
+	  coupon_code = iLcoupon_code 
+	  AND constraint_type = 3;
+	
+	OPEN curPresult4 FOR
+	SELECT constraint_value
+	FROM ya_coupon_constraint
+    WHERE 
+	  coupon_code = iLcoupon_code 
+	  AND constraint_type = 4;
+	
+    OPEN curPresult5 FOR
+    SELECT
+      c.coupon_code,
+      coupon_description,
+      dollar_coupon_value,
+      percentage_coupon_value,
+      order_amount_trigger,
+      item_sku_trigger,
+      expiration_date,
+      shopper_id,
+      all_shoppers,
+      coupon_used,
+      coupon_type_id,
+      cs.site_id,
+      corporate_domain,
+      currency
+    FROM
+      ya_coupon c
+      INNER JOIN ya_coupon_site cs ON
+        cs.coupon_code = c.coupon_code AND cs.site_id = iPsite_id
+      LEFT OUTER JOIN ya_coupon_corporate cc ON
+        c.coupon_code = cc.coupon_code
+    WHERE
+      c.coupon_code = iLcoupon_code;
+
+    RETURN;
+  END GetCouponBySite;
 
   PROCEDURE GetCorporateCoupon (
     cPdomain IN VARCHAR2,

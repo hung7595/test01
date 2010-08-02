@@ -655,8 +655,10 @@ END;
           and yrm.country_id = iPcountryId
         left outer join prod_region pr2 on yrm.region_id = pr2.region_id 
           and prr.prod_id = pr2.prod_id
+        left outer join prod_region pr3 on pr3.region_id = iPsiteId
+          and prr.prod_id = pr3.prod_id
         where nb.sku = prr.prod_id
-          and pr.region_id = nvl(pr2.region_id, prr.region_id)
+          and pr.region_id = nvl(nvl(pr2.region_id, pr3.region_id), prr.region_id)
           and nb.site_id = def.site_id
       )
       AND (lq.frontend_quantity is not null or cr.avlb_qnty is not null)      
@@ -726,8 +728,10 @@ END;
           and yrm.country_id = iPcountryId
         left outer join prod_avlb pa2 on yrm.region_id = pa2.region_id 
           and paa.prod_id = pa2.prod_id
+        left outer join prod_avlb pa3 on pa3.region_id = iPsiteId
+          and paa.prod_id = pa3.prod_id
         where pa.prod_id = paa.prod_id
-          and pa.region_id = nvl(pa2.region_id, paa.region_id)
+          and pa.region_id = nvl(nvl(pa2.region_id, pa3.region_id), paa.region_id)
           and pt.site_id = def.site_id
       )
       AND exists (
@@ -740,8 +744,10 @@ END;
           and yrm.country_id = iPcountryId
         left outer join prod_region pr2 on yrm.region_id = pr2.region_id 
           and prr.prod_id = pr2.prod_id
+        left outer join prod_region pr3 on pr3.region_id = iPsiteId
+          and prr.prod_id = pr3.prod_id
         where pr.prod_id = prr.prod_id
-          and pr.region_id = nvl(pr2.region_id, prr.region_id)
+          and pr.region_id = nvl(nvl(pr2.region_id, pr3.region_id), prr.region_id)
           and pt.site_id = def.site_id
       )
     ORDER BY pt.sku;
@@ -821,8 +827,10 @@ END;
         and yrm.country_id = iPcountryId
       left outer join prod_region pr2 on yrm.region_id = pr2.region_id 
         and prr.prod_id = pr2.prod_id
+      left outer join prod_region pr3 on pr3.region_id = iPsiteId
+        and prr.prod_id = pr3.prod_id
       where pr.prod_id = prr.prod_id
-        and pr.region_id = nvl(pr2.region_id, prr.region_id)
+        and pr.region_id = nvl(nvl(pr2.region_id, pr3.region_id), prr.region_id)
         and b.site_id = def.site_id
     )    
   ORDER BY b.created_datetime DESC, b.sku DESC;
@@ -925,8 +933,10 @@ END GetShadowBasketWithWarranty;
           and yrm.country_id = iPcountryId
         left outer join prod_region pr2 on yrm.region_id = pr2.region_id 
           and prr.prod_id = pr2.prod_id
+        left outer join prod_region pr3 on pr3.region_id = iPsiteId
+          and prr.prod_id = pr3.prod_id
         where nb.sku = prr.prod_id
-          and pr.region_id = nvl(pr2.region_id, prr.region_id)
+          and pr.region_id = nvl(nvl(pr2.region_id, pr3.region_id), prr.region_id)
           and nb.site_id = def.site_id
       )
       AND (lq.frontend_quantity is not null or cr.avlb_qnty is not null)      
@@ -995,8 +1005,10 @@ END GetShadowBasketWithWarranty;
           and yrm.country_id = iPcountryId
         left outer join prod_avlb pa2 on yrm.region_id = pa2.region_id 
           and paa.prod_id = pa2.prod_id
+        left outer join prod_avlb pa3 on pa3.region_id = iPsiteId
+          and paa.prod_id = pa3.prod_id
         where pa.prod_id = paa.prod_id
-          and pa.region_id = nvl(pa2.region_id, paa.region_id)
+          and pa.region_id = nvl(nvl(pa2.region_id, pa3.region_id), paa.region_id)
           and pt.site_id = def.site_id
       )
       AND exists (
@@ -1009,8 +1021,10 @@ END GetShadowBasketWithWarranty;
           and yrm.country_id = iPcountryId
         left outer join prod_region pr2 on yrm.region_id = pr2.region_id 
           and prr.prod_id = pr2.prod_id
+        left outer join prod_region pr3 on pr3.region_id = iPsiteId
+          and prr.prod_id = pr3.prod_id
         where pr.prod_id = prr.prod_id
-          and pr.region_id = nvl(pr2.region_id, prr.region_id)
+          and pr.region_id = nvl(nvl(pr2.region_id, pr3.region_id), prr.region_id)
           and pt.site_id = def.site_id
       )
       ORDER BY pt.sku;
@@ -1088,8 +1102,10 @@ END GetShadowBasketWithWarranty;
         and yrm.country_id = iPcountryId
       left outer join prod_region pr2 on yrm.region_id = pr2.region_id 
         and prr.prod_id = pr2.prod_id
+      left outer join prod_region pr3 on pr3.region_id = iPsiteId
+        and prr.prod_id = pr3.prod_id
       where pr.prod_id = prr.prod_id
-        and pr.region_id = nvl(pr2.region_id, prr.region_id)
+        and pr.region_id = nvl(nvl(pr2.region_id, pr3.region_id), prr.region_id)
         and b.site_id = def.site_id
     )
   ORDER BY b.created_datetime DESC, b.sku DESC;
@@ -1195,8 +1211,10 @@ END GetBasketWithWarranty;
             and yrm.country_id = iPcountryId
           left outer join prod_region pr2 on yrm.region_id = pr2.region_id 
             and prr.prod_id = pr2.prod_id
+          left outer join prod_region pr3 on pr3.region_id = iPsiteId
+            and prr.prod_id = pr3.prod_id
           where nb.sku = prr.prod_id
-            and pr.region_id = nvl(pr2.region_id, prr.region_id)
+            and pr.region_id = nvl(nvl(pr2.region_id, pr3.region_id), prr.region_id)
             and nb.site_id = def.site_id
         )
       ORDER BY nb.sku
@@ -1264,8 +1282,10 @@ END GetBasketWithWarranty;
           and yrm.country_id = iPcountryId
         left outer join prod_avlb pa2 on yrm.region_id = pa2.region_id 
           and paa.prod_id = pa2.prod_id
+        left outer join prod_avlb pa3 on pa3.region_id = iPsiteId
+          and paa.prod_id = pa3.prod_id
         where pa.prod_id = paa.prod_id
-          and pa.region_id = nvl(pa2.region_id, paa.region_id)
+          and pa.region_id = nvl(nvl(pa2.region_id, pa3.region_id), paa.region_id)
           and pt.site_id = def.site_id
       )
       AND exists (
@@ -1278,8 +1298,10 @@ END GetBasketWithWarranty;
           and yrm.country_id = iPcountryId
         left outer join prod_region pr2 on yrm.region_id = pr2.region_id 
           and prr.prod_id = pr2.prod_id
+        left outer join prod_region pr3 on pr3.region_id = iPsiteId
+          and prr.prod_id = pr3.prod_id
         where pr.prod_id = prr.prod_id
-          and pr.region_id = nvl(pr2.region_id, prr.region_id)
+          and pr.region_id = nvl(nvl(pr2.region_id, pr3.region_id), prr.region_id)
           and pt.site_id = def.site_id
       )
     ORDER BY pt.sku;
@@ -1359,8 +1381,10 @@ END GetBasketWithWarranty;
           and yrm.country_id = iPcountryId
         left outer join prod_region pr2 on yrm.region_id = pr2.region_id 
           and prr.prod_id = pr2.prod_id
+        left outer join prod_region pr3 on pr3.region_id = iPsiteId
+          and prr.prod_id = pr3.prod_id
         where pr.prod_id = prr.prod_id
-          and pr.region_id = nvl(pr2.region_id, prr.region_id)
+          and pr.region_id = nvl(nvl(pr2.region_id, pr3.region_id), prr.region_id)
           and b.site_id = def.site_id
       )
     ORDER BY b.created_datetime DESC, b.sku DESC;
