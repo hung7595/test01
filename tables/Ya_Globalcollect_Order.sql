@@ -4,7 +4,7 @@ CREATE TABLE Ya_Globalcollect_Order (
 	encrypted_cc_number    varchar2(128)      NOT NULL ,  
 	expiry_year            int                NOT NULL ,
 	expiry_month           int                NOT NULL , 
-	encrypted_key_version  int                NOT NULL , 
+	encrypted_key          int                NOT NULL , 
 	create_user            varchar2(50)       NOT NULL ,
 	create_dt              date               NOT NULL
 )
