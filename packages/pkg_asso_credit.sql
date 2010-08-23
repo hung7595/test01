@@ -382,7 +382,7 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
         LEFT OUTER JOIN ya_associate_prod_commission apc
           ON (apc.sku = p.sku)
       WHERE
-        o.origin_id IN (1,7,10,11,12,13)
+        o.origin_id IN (1,7,10,11,12,13,14)
         AND o.sales_id > -1
         AND o.parent_id = -1
         AND apc.sku IS NULL
@@ -494,7 +494,7 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
         LEFT OUTER JOIN ya_associate_prod_commission apc
           ON (apc.sku = p.sku)
       WHERE
-        o.origin_id IN (1,7,10,11,12,13)
+        o.origin_id IN (1,7,10,11,12,13,14)
         AND sales_id > -1
         AND o.parent_id = -1
         AND apc.sku IS NULL
