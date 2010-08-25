@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE          "PKG_FE_COUPONACCESS"
+CREATE OR REPLACE PACKAGE          "PKG_FE_COUPONACCESS2"
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -16,10 +16,7 @@ AS
     cPcode IN VARCHAR2,
     iPsite_id IN INT,
     curPresult1 OUT refCur,
-    curPresult2 OUT refCur,
-    curPresult3 OUT refCur,
-    curPresult4 OUT refCur,
-	  curPresult5 OUT refCur
+    curPresult2 OUT refCur
   );
 
   /* proc_fe_GetCorporateCoupon */
@@ -101,11 +98,11 @@ AS
     cPshopper_id IN CHAR,
     cPorder_num IN CHAR
   );
-END Pkg_FE_CouponAccess;
+END Pkg_FE_CouponAccess2;
 /
 
 
-create or replace PACKAGE BODY          "PKG_FE_COUPONACCESS"
+create or replace PACKAGE BODY          "PKG_FE_COUPONACCESS2"
 AS
   PROCEDURE GetCoupon (
     cPcode IN VARCHAR2,
@@ -190,10 +187,7 @@ AS
     cPcode IN VARCHAR2,
     iPsite_id IN INT,    
     curPresult1 OUT refCur,
-    curPresult2 OUT refCur,
-    curPresult3 OUT refCur,
-    curPresult4 OUT refCur,
-	  curPresult5 OUT refCur
+    curPresult2 OUT refCur
   )
   AS
 	iLcoupon_code VARCHAR2(32);
@@ -209,34 +203,12 @@ AS
     END;
 	
     OPEN curPresult1 FOR
-    SELECT constraint_value
+    SELECT constraint_value, constraint_type
     FROM ya_coupon_constraint
     WHERE
-      coupon_code = iLcoupon_code
-      AND constraint_type = 1;
-
+      coupon_code = iLcoupon_code;
+	
     OPEN curPresult2 FOR
-    SELECT constraint_value
-    FROM ya_coupon_constraint
-    WHERE
-      coupon_code = iLcoupon_code
-      AND constraint_type = 2;
-
-    OPEN curPresult3 FOR
-    SELECT constraint_value
-	FROM ya_coupon_constraint
-    WHERE 
-	  coupon_code = iLcoupon_code 
-	  AND constraint_type = 3;
-	
-	OPEN curPresult4 FOR
-	SELECT constraint_value
-	FROM ya_coupon_constraint
-    WHERE 
-	  coupon_code = iLcoupon_code 
-	  AND constraint_type = 4;
-	
-    OPEN curPresult5 FOR
     SELECT
       c.coupon_code,
       coupon_description,
@@ -728,5 +700,5 @@ AS
 
 		RETURN;  
   END CreateHallmarkPromotionCoupon;  
-END Pkg_FE_CouponAccess;
+END Pkg_FE_CouponAccess2;
 /
