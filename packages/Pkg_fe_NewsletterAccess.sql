@@ -4,13 +4,6 @@ REM START SS_ADM PKG_FE_NEWSLETTERACCESS
   CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_NEWSLETTERACCESS" 
 AS
   TYPE curGgetNews IS REF CURSOR;
-  PROCEDURE GetNewsletterTopic (
-    cPnewsletterIdCsv IN VARCHAR2,
-    iPlangId  IN INT,
-    iPsiteId  IN INT,
-    curPgetNews  OUT curGgetNews
-  );
-
   PROCEDURE SubscribeNewsletter (
     cPshopperId  IN CHAR,
     iPsiteId  IN INT,
@@ -53,92 +46,6 @@ END Pkg_fe_NewsletterAccess;
 /
 CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_NEWSLETTERACCESS" 
 IS
-/* GetNewsletterTopic */
-  PROCEDURE GetNewsletterTopic (
-    cPnewsletterIdCsv IN VARCHAR2,
-    iPlangId IN INT,
-    iPsiteId IN INT,
-    curPgetNews OUT curGgetNews
-  )
-  AS
-    iLtypeId INT := 84;  /* Newsletter type Id */
-    iLstartpos INT := 1;
-    iLendpos INT;
-    iLtemp INT;
-    cLnewsletterIdCsv VARCHAR2(100);
-    iLsequenceid INT;
-    icounter INT;
-  BEGIN
-    cLnewsletterIdCsv := cPnewsletterIdCsv;
-    iLstartpos := 1;
-    iCounter := 1;
-
-    EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_news_int_table';
-
-    iLtemp := NVL(LENGTH(RTRIM(cLnewsletterIdCsv)),0);
-
-    IF(iLtemp) > 0 THEN
-      BEGIN
-        iLendpos := INSTR(cLnewsletterIdCsv, ',');
-
-        WHILE  iLendpos  >  0
-        LOOP
-          BEGIN
-            INSERT INTO temp_news_int_table
-              (
-                column1, -- Order Id
-                column2  -- newsletter Id
-              )
-            VALUES
-              (
-                iCounter,
-                CAST(SUBSTR(cLnewsletterIdCsv,1,iLendpos-1) AS INT)
-              );
-
-            cLnewsletterIdCsv := SUBSTR(cLnewsletterIdCsv, iLendpos+1);
-            iLendpos := INSTR(cLnewsletterIdCsv, ',');
-            iCounter := iCounter + 1;
-          END;
-        END LOOP;
-        INSERT INTO temp_news_int_table
-          (
-            column1, -- Order Id
-            column2  -- newsletter Id
-          )
-        VALUES
-          (
-            iCounter,
-            CAST(cLnewsletterIdCsv AS INT)
-          );
-      END;
-    END IF;
-
-    OPEN curPgetNews FOR
-    SELECT
-      nl.newsletter_id,
-      nl.topic,
-      l.code
-    FROM
-      temp_news_int_table n,
-      ya_newsletter_type nt,
-      ya_newsletter_site ns,
-      ya_newsletter_lang nl,
-      ya_lookup l
-    WHERE
-      n.column2 = nt.newsletter_type_id
-      AND nt.newsletter_id = ns.newsletter_id
-      AND nt.newsletter_id = nl.newsletter_id
-      AND nl.newsletter_id = l.code_id
-      AND l.type_id = iLtypeId
-      AND nl.lang_id = iPlangId
-      AND ns.site_id = iPsiteId
-      AND ns.site_enabled = 'Y'
-    ORDER BY n.column1; -- Order Id
-    EXCEPTION
-      WHEN OTHERS THEN NULL;
-    RETURN;
-  END GetNewsletterTopic;
-
 /* SubscribeNewsletter */
   PROCEDURE SubscribeNewsletter (
     cPshopperId IN CHAR,
