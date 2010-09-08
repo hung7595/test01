@@ -388,7 +388,7 @@ IS
   )
   AS
   BEGIN
-    SELECT 1 INTO iPis_eligible
+    SELECT 0 INTO iPis_eligible
     FROM ya_free_gift_order_tracking fg
     WHERE fg.shopper_id = cPshopper_id
       AND fg.free_gift_prod_id = iPgift_sku
@@ -397,7 +397,7 @@ IS
     EXCEPTION
       WHEN NO_DATA_FOUND THEN
         BEGIN
-          iPis_eligible := 0;
+          iPis_eligible := 1;
         END;      
   END IsFirstFreeGiftOrder;
 
