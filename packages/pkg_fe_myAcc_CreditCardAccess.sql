@@ -89,7 +89,7 @@ AS
     IF iPsite_id = 1 THEN
       BEGIN
         OPEN curPresult FOR
-        SELECT profile_id, shopper_id, card_profile_name, card_number, firstname_on_card, lastname_on_card,
+        SELECT profile_id, shopper_id, card_profile_name, null, firstname_on_card, lastname_on_card,
           card_type_id, card_numberencrypted, encryptionkey, expiration_month, expiration_year, preferred
         FROM YA_CREDIT_CARD_PROFILE
         WHERE profile_id = iPprofile_id AND shopper_id = cPshopper_id
@@ -99,7 +99,7 @@ AS
     ELSE
       BEGIN
         OPEN curPresult FOR
-        SELECT profile_id, shopper_id, card_profile_name, card_number, firstname_on_card, lastname_on_card,
+        SELECT profile_id, shopper_id, card_profile_name, null, firstname_on_card, lastname_on_card,
           card_type_id, card_numberencrypted, encryptionkey, expiration_month, expiration_year, preferred
         FROM YA_CREDIT_CARD_PROFILE
         WHERE profile_id = iPprofile_id AND shopper_id = cPshopper_id
@@ -121,7 +121,7 @@ AS
     IF iPsite_id = 1 THEN
       BEGIN
         OPEN curPresult FOR
-          SELECT profile_id, shopper_id, card_profile_name, card_number, firstname_on_card, lastname_on_card,
+          SELECT profile_id, shopper_id, card_profile_name, null, firstname_on_card, lastname_on_card,
             card_type_id, card_numberencrypted, encryptionkey, expiration_month, expiration_year, preferred
           FROM YA_CREDIT_CARD_PROFILE
           WHERE shopper_id = cPshopper_id
@@ -131,7 +131,7 @@ AS
     ELSE
       BEGIN
         OPEN curPresult FOR
-          SELECT profile_id, shopper_id, card_profile_name, card_number, firstname_on_card, lastname_on_card,
+          SELECT profile_id, shopper_id, card_profile_name, null, firstname_on_card, lastname_on_card,
             card_type_id, card_numberencrypted, encryptionkey, expiration_month, expiration_year, preferred
           FROM YA_CREDIT_CARD_PROFILE
           WHERE shopper_id = cPshopper_id
@@ -184,7 +184,6 @@ AS
       site_id,
       card_profile_name,
       card_type_id,
-      card_number,
       expiration_month,
       expiration_year,
       firstname_on_card,
@@ -200,7 +199,6 @@ AS
       iPsite_id,
       cPprofile_name,
       iPtype_id,
-      cPcard_number,
       iPexp_month,
       iPexp_year,
       cPfirst_name,
@@ -253,7 +251,6 @@ AS
       site_id = iPsite_id,
       card_profile_name = cPprofile_name,
       card_type_id = iPtype_id,
-      card_number = cPcard_number,
       expiration_month = iPexp_month,
       expiration_year = iPexp_year,
       firstname_on_card = cPfirst_name,
@@ -349,4 +346,5 @@ AS
   END DeleteCreditCard;
 
 END PKG_FE_MYACC_CREDITCARDACCESS;
+/
 
