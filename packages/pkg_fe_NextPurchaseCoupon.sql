@@ -43,15 +43,15 @@ PROCEDURE CreateNextPurchaseCoupon (
 		IF iPsiteId <=7 THEN
 			CASE iPsiteId
 			WHEN 1 THEN -- US
-				cLyaCampaignName := 'YA + YS US$5 Coupon Campaign 2009 (US Site)';
+				cLyaCampaignName := 'next purchase coupon';
 			WHEN 7 THEN -- GB
-				cLyaCampaignName := 'YA + YS US$5 Coupon Campaign 2009 (Global Site)';
+				cLyaCampaignName := 'next purchase coupon';
 			ELSE
-				cLyaCampaignName := 'YA + YS US$5 Coupon Campaign 2009';
+				cLyaCampaignName := 'next purchase coupon';
 			END CASE;
 
 			SELECT ORIGIN_ORDER_ID INTO cLfrontendOrderNum FROM order_info WHERE id= iPorder_id;
-			cLysCampaignName := 'YA + YS US$5 Coupon Campaign 2009 (YS Site)';
+			cLysCampaignName := 'next purchase coupon';
 			cLyaCouponDescription := 'YesAsia.com US$5 Next Purchase Coupon (OrderNum:' || cLfrontendOrderNum  || ')';
 			cLysCouponDescription := 'YesStyle.com US$5 Next Purchase Coupon (OrderNum:' || cLfrontendOrderNum || ')';
 
