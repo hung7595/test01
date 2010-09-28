@@ -21,6 +21,8 @@ CREATE TABLE Ya_Coupon (
 	create_id                            varchar2(50)                ,
 	create_date                          date                        ,
 	currency                             char(3)                     DEFAULT 'USD' NOT NULL
+	update_id                            varchar2(50)                ,
+	update_date                          date
 )
 /
 
