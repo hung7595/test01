@@ -2,9 +2,11 @@ DROP TABLE Ya_Next_Purchase_Coupon
 /
 
 CREATE TABLE Ya_Next_Purchase_Coupon (
-	coupon_code                varchar2(32)                  NOT NULL ,
-	created_date               date                          DEFAULT SYSDATE NOT NULL
-	order_id                   number                        NOT NULL
+	coupon_code               varchar2(32)              NOT NULL ,
+	created_date              date                      DEFAULT SYSDATE NOT NULL ,
+	order_id                  number                    NOT NULL ,
+	is_sent                   char(1)                   DEFAULT 'N' NOT NULL ,
+	is_reminded               char(1)                   DEFAULT 'N' NOT NULL
 )
 /
 
