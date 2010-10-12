@@ -267,9 +267,17 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
 --Grep Credit Lines from Order
   PROCEDURE grepOrder
   AS
+    iLjob_id NUMBER;
+    iLPackage VARCHAR2(100);
+    iLProcedure VARCHAR2(100);
 
   BEGIN
 
+    /*START package*/
+    SELECT seq_dm_procedure_log.nextval INTO iLjob_id FROM dual;
+    iLPackage := 'pkg_asso_credit';
+    iLProcedure := 'grepOrder';
+    cron_dm_procedure_log ('Insert', iLjob_id, iLPackage, iLProcedure, 'N');
 
 --################################################################
 --# 1st part
@@ -546,9 +554,12 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
 
       COMMIT;
 
+    /*END package*/
+    cron_dm_procedure_log ('Update', iLjob_id, iLPackage, iLProcedure, 'Y');
+
       EXCEPTION WHEN OTHERS THEN
       BEGIN
-         cron_dm_procedure_log ('pkg_asso_credit','grepOrder', 'N');
+         cron_dm_procedure_log ('Update', iLjob_id, iLPackage, iLProcedure, 'N');
          RAISE;
       END;
 
@@ -558,8 +569,17 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
 --Get Credit Lines from Order related to Coupon(sku-1004059979)
   PROCEDURE update_associate_coupon
   AS
+    iLjob_id NUMBER;
+    iLPackage VARCHAR2(100);
+    iLProcedure VARCHAR2(100);
 
   BEGIN
+
+    /*START package*/
+    SELECT seq_dm_procedure_log.nextval INTO iLjob_id FROM dual;
+    iLPackage := 'pkg_asso_credit';
+    iLProcedure := 'update_associate_coupon';
+    cron_dm_procedure_log ('Insert', iLjob_id, iLPackage, iLProcedure, 'N');
 
 -- Set Exchange Rate
 
@@ -729,9 +749,12 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
 
       COMMIT;
 
+    /*END package*/
+    cron_dm_procedure_log ('Update', iLjob_id, iLPackage, iLProcedure, 'Y');
+
       EXCEPTION WHEN OTHERS THEN
       BEGIN
-         cron_dm_procedure_log ('pkg_asso_credit','update_associate_coupon', 'N');
+         cron_dm_procedure_log ('Update', iLjob_id, iLPackage, iLProcedure, 'N');
          RAISE;
       END;
 
@@ -740,7 +763,16 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
 
   PROCEDURE approve_credit_01
   AS
+    iLjob_id NUMBER;
+    iLPackage VARCHAR2(100);
+    iLProcedure VARCHAR2(100);
   BEGIN
+  
+    /*START package*/
+    SELECT seq_dm_procedure_log.nextval INTO iLjob_id FROM dual;
+    iLPackage := 'pkg_asso_credit';
+    iLProcedure := 'approve_credit_01';
+    cron_dm_procedure_log ('Insert', iLjob_id, iLPackage, iLProcedure, 'N');
 
       update ya_associate_link_orders alo
          set alo.credit_status=2, alo.last_change_date=sysdate
@@ -760,10 +792,13 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
        );
 
       COMMIT;
+      
+    /*END package*/
+    cron_dm_procedure_log ('Update', iLjob_id, iLPackage, iLProcedure, 'Y');
 
       EXCEPTION WHEN OTHERS THEN
       BEGIN
-         cron_dm_procedure_log ('pkg_asso_credit','approve_credit_01', 'N');
+         cron_dm_procedure_log ('Update', iLjob_id, iLPackage, iLProcedure, 'N');
          RAISE;
       END;
 
@@ -772,7 +807,16 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
 
   PROCEDURE approve_credit_02
   AS
+    iLjob_id NUMBER;
+    iLPackage VARCHAR2(100);
+    iLProcedure VARCHAR2(100);
   BEGIN
+  
+    /*START package*/
+    SELECT seq_dm_procedure_log.nextval INTO iLjob_id FROM dual;
+    iLPackage := 'pkg_asso_credit';
+    iLProcedure := 'approve_credit_02';
+    cron_dm_procedure_log ('Insert', iLjob_id, iLPackage, iLProcedure, 'N');
 
 /*
       insert into Temp_Approve_Credit02 
@@ -929,10 +973,13 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
       );
 
       COMMIT;
+      
+    /*END package*/
+    cron_dm_procedure_log ('Update', iLjob_id, iLPackage, iLProcedure, 'Y');
 
       EXCEPTION WHEN OTHERS THEN
       BEGIN
-         cron_dm_procedure_log ('pkg_asso_credit','approve_credit_02', 'N');
+         cron_dm_procedure_log ('Update', iLjob_id, iLPackage, iLProcedure, 'N');
          RAISE;
       END;
 
@@ -941,7 +988,16 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
 
   PROCEDURE void_credit
   AS
+    iLjob_id NUMBER;
+    iLPackage VARCHAR2(100);
+    iLProcedure VARCHAR2(100);
   BEGIN
+  
+    /*START package*/
+    SELECT seq_dm_procedure_log.nextval INTO iLjob_id FROM dual;
+    iLPackage := 'pkg_asso_credit';
+    iLProcedure := 'void_credit';
+    cron_dm_procedure_log ('Insert', iLjob_id, iLPackage, iLProcedure, 'N');
 
       update ya_associate_link_orders
          set credit_status=4, last_change_date = sysdate
@@ -958,13 +1014,31 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
       );
 
       COMMIT;
+      
+    /*END package*/
+    cron_dm_procedure_log ('Update', iLjob_id, iLPackage, iLProcedure, 'Y');
+
+      EXCEPTION WHEN OTHERS THEN
+      BEGIN
+         cron_dm_procedure_log ('Update', iLjob_id, iLPackage, iLProcedure, 'N');
+         RAISE;
+      END;
 
   END void_credit;
 
 
   PROCEDURE bogus_credit
   AS
+    iLjob_id NUMBER;
+    iLPackage VARCHAR2(100);
+    iLProcedure VARCHAR2(100);
   BEGIN
+  
+    /*START package*/
+    SELECT seq_dm_procedure_log.nextval INTO iLjob_id FROM dual;
+    iLPackage := 'pkg_asso_credit';
+    iLProcedure := 'bogus_credit';
+    cron_dm_procedure_log ('Insert', iLjob_id, iLPackage, iLProcedure, 'N');
 
       update ya_associate_link_orders alo
            set credit_status = 3, last_change_date = sysdate
@@ -979,10 +1053,13 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
       );
 
       COMMIT;
+      
+    /*END package*/
+    cron_dm_procedure_log ('Update', iLjob_id, iLPackage, iLProcedure, 'Y');
 
       EXCEPTION WHEN OTHERS THEN
       BEGIN
-         cron_dm_procedure_log ('pkg_asso_credit','bogus_credit', 'N');
+         cron_dm_procedure_log ('Update', iLjob_id, iLPackage, iLProcedure, 'N');
          RAISE;
       END;
 
@@ -992,7 +1069,16 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
 
   PROCEDURE grep_order_rmb
   AS
+    iLjob_id NUMBER;
+    iLPackage VARCHAR2(100);
+    iLProcedure VARCHAR2(100);
   BEGIN
+  
+    /*START package*/
+    SELECT seq_dm_procedure_log.nextval INTO iLjob_id FROM dual;
+    iLPackage := 'pkg_asso_credit';
+    iLProcedure := 'grep_order_rmb';
+    cron_dm_procedure_log ('Insert', iLjob_id, iLPackage, iLProcedure, 'N');
 
       SELECT exchange_rate INTO deciLexchange_rate
       FROM
@@ -1275,10 +1361,13 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
         );
 
     COMMIT;
+    
+    /*END package*/
+    cron_dm_procedure_log ('Update', iLjob_id, iLPackage, iLProcedure, 'Y');
 
       EXCEPTION WHEN OTHERS THEN
       BEGIN
-         cron_dm_procedure_log ('pkg_asso_credit','grep_order_rmb', 'N');
+         cron_dm_procedure_log ('Update', iLjob_id, iLPackage, iLProcedure, 'N');
          RAISE;
       END;
 
@@ -1287,7 +1376,16 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
 
   PROCEDURE approve_credit_rmb_payment
   AS
+    iLjob_id NUMBER;
+    iLPackage VARCHAR2(100);
+    iLProcedure VARCHAR2(100);
   BEGIN
+  
+    /*START package*/
+    SELECT seq_dm_procedure_log.nextval INTO iLjob_id FROM dual;
+    iLPackage := 'pkg_asso_credit';
+    iLProcedure := 'approve_credit_rmb_payment';
+    cron_dm_procedure_log ('Insert', iLjob_id, iLPackage, iLProcedure, 'N');
 
 -- Set Exchange Rate
 
@@ -1387,10 +1485,13 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
        );
 
     COMMIT;
+    
+    /*END package*/
+    cron_dm_procedure_log ('Update', iLjob_id, iLPackage, iLProcedure, 'Y');
 
       EXCEPTION WHEN OTHERS THEN
       BEGIN
-         cron_dm_procedure_log ('pkg_asso_credit','approve_credit_rmb_payment', 'N');
+         cron_dm_procedure_log ('Update', iLjob_id, iLPackage, iLProcedure, 'N');
          RAISE;
       END;
 
@@ -1401,7 +1502,16 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
 
   PROCEDURE pending_credit_cleanUp
   AS
+    iLjob_id NUMBER;
+    iLPackage VARCHAR2(100);
+    iLProcedure VARCHAR2(100);
   BEGIN
+  
+    /*START package*/
+    SELECT seq_dm_procedure_log.nextval INTO iLjob_id FROM dual;
+    iLPackage := 'pkg_asso_credit';
+    iLProcedure := 'pending_credit_cleanUp';
+    cron_dm_procedure_log ('Insert', iLjob_id, iLPackage, iLProcedure, 'N');
 
     EXECUTE IMMEDIATE 'TRUNCATE TABLE Temp_PendingItems';
     EXECUTE IMMEDIATE 'TRUNCATE TABLE Temp_BundleChild';
@@ -1491,10 +1601,14 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
    -- commit
    /****************************************************************/
     COMMIT;
+    
+    /*END package*/
+    cron_dm_procedure_log ('Update', iLjob_id, iLPackage, iLProcedure, 'Y');
 
   EXCEPTION WHEN OTHERS THEN
   BEGIN
     ROLLBACK;
+    cron_dm_procedure_log ('Update', iLjob_id, iLPackage, iLProcedure, 'N');
     RAISE;
   END;
 
