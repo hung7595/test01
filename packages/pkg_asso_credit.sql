@@ -50,7 +50,17 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
 
 --Prepare Short-Listed Order Number
   PROCEDURE link_order_proccess AS
+    iLjob_id NUMBER;
+    iLPackage VARCHAR2(100);
+    iLProcedure VARCHAR2(100);
   BEGIN
+  
+    /*START package*/
+    SELECT seq_dm_procedure_log.nextval INTO iLjob_id FROM dual;
+    iLPackage := 'pkg_asso_credit';
+    iLProcedure := 'link_order_proccess';
+    cron_dm_procedure_log ('Insert', iLjob_id, iLPackage, iLProcedure, 'N');
+    
       /*truncate table(s)*/
       EXECUTE IMMEDIATE 'TRUNCATE TABLE ya_asso_link_orders_process';
 
@@ -77,13 +87,30 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
       ) a ;
 
       COMMIT;
-
+    /*END package*/
+    cron_dm_procedure_log ('Update', iLjob_id, iLPackage, iLProcedure, 'Y');
+    
+      EXCEPTION WHEN OTHERS THEN
+      BEGIN
+         cron_dm_procedure_log ('Update', iLjob_id, iLPackage, iLProcedure, 'N');
+         RAISE;
+      END;
+          
   END link_order_proccess;
 
 
 --Gather Product Commission By Revenue Account
   PROCEDURE insertProductCommissionByRev AS
+    iLjob_id NUMBER;
+    iLPackage VARCHAR2(100);
+    iLProcedure VARCHAR2(100);
   BEGIN
+  
+    /*START package*/
+    SELECT seq_dm_procedure_log.nextval INTO iLjob_id FROM dual;
+    iLPackage := 'pkg_asso_credit';
+    iLProcedure := 'insertProductCommissionByRev';
+    cron_dm_procedure_log ('Insert', iLjob_id, iLPackage, iLProcedure, 'N');
 
       DELETE  ya_associate_prod_commission WHERE type=3;
 
@@ -146,6 +173,15 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
         );
 
       COMMIT;
+    /*END package*/
+    cron_dm_procedure_log ('Update', iLjob_id, iLPackage, iLProcedure, 'Y');
+    
+      EXCEPTION WHEN OTHERS THEN
+      BEGIN
+         cron_dm_procedure_log ('Update', iLjob_id, iLPackage, iLProcedure, 'N');
+         RAISE;
+      END;
+    
   END insertProductCommissionByRev;
 
 
