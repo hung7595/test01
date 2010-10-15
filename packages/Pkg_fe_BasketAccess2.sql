@@ -642,6 +642,7 @@ END;
         ) and nb.sku = lq.sku
       LEFT OUTER JOIN clearance cr on concat(nvl(pr.prefix,''), pr.prod_id) = cr.sku and cr.avlb_qnty > 0 and cr.sts = 1
     WHERE nb.shopper_id = cPshopperId
+      AND nb.shopper_id <> '8a81844a2b805a4b012ba8cf4e0202ea'
       AND nb.site_id = iPsiteId
       AND nb.type = iPtype
       AND nb.paypal_uid = cPguid
@@ -921,6 +922,7 @@ END GetShadowBasketWithWarranty;
         ) and nb.sku = lq.sku
       LEFT OUTER JOIN clearance cr on concat(nvl(pr.prefix,''), pr.prod_id) = cr.sku and cr.avlb_qnty > 0 and cr.sts = 1
     WHERE nb.shopper_id = cPshopperId
+      AND nb.shopper_id <> '8a81844a2b805a4b012ba8cf4e0202ea'
       AND nb.site_id = iPsiteId
       AND nb.type = iPtype
       AND exists (
@@ -1198,6 +1200,7 @@ END GetBasketWithWarranty;
           ) and nb.sku = lq.sku
         LEFT OUTER JOIN clearance cr on concat(nvl(pr.prefix,''), pr.prod_id) = cr.sku and cr.avlb_qnty > 0 and cr.sts = 1
       WHERE nb.shopper_id = cPshopperId
+        AND nb.shopper_id <> '8a81844a2b805a4b012ba8cf4e0202ea'
         AND nb.site_id = iPsiteId
         AND nb.type = iPtype
         AND (lq.frontend_quantity is not null or cr.avlb_qnty is not null)  

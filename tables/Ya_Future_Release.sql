@@ -13,7 +13,7 @@ CREATE TABLE Ya_Future_Release (
 /
 
 ALTER TABLE Ya_Future_Release
-ADD CONSTRAINT PK_Future_Release PRIMARY KEY (site_id, sku, customer_email)
+ADD CONSTRAINT PK_Future_Release PRIMARY KEY (site_id, sku, request_datetime, customer_email)
 USING INDEX TABLESPACE SSCommerceserver_Index
 /
 
