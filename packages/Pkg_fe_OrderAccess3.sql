@@ -91,6 +91,24 @@ AS
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   );
+
+  PROCEDURE GetShadowOrderWithWarrantyYS (
+	  cPguid IN CHAR,
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+    curPresult13 OUT refCur, -- GetShopper refCur1
+    curPresult1 OUT refCur, -- GetBasket refCur1
+    curPresult2 OUT refCur, -- GetBasket refCur2
+    curPresult3 OUT refCur, -- GetBasket refCur3
+    curPresult4 OUT refCur, -- GetBasket refCur4
+    curPresult5 OUT refCur, -- GetBasket refCur5
+    curPresult6 OUT refCur, -- GetBasket refCur6
+    curPresult7 OUT refCur, -- GetBasket refCur7
+    curPresult8 OUT refCur, -- GetCoupon refCur1
+    curPresult9 OUT refCur, -- GetCoupon refCur2
+    curPresult10 OUT refCur
+  );  
   
   PROCEDURE InsertPPECOrderXmlEncrypted (
     cPshopper_id IN CHAR,
