@@ -2,6 +2,11 @@ CREATE OR REPLACE PACKAGE "PKG_FE_ORDERACCESS3"
 AS
   TYPE refCur IS REF CURSOR;
 
+  PROCEDURE UpdateOrderXml (
+    iPorder_num IN INT,
+    clobPorder_xml IN CLOB
+  );
+
   /* proc_fe_InsertSalesCode */
   PROCEDURE InsertSaleCode (
     iPorder_num IN INT,
@@ -91,24 +96,6 @@ AS
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   );
-
-  PROCEDURE GetShadowOrderWithWarrantyYS (
-	  cPguid IN CHAR,
-    cPshopper_id IN CHAR,
-    iPsite_id IN INT,
-    iPlang_id IN INT,
-    curPresult13 OUT refCur, -- GetShopper refCur1
-    curPresult1 OUT refCur, -- GetBasket refCur1
-    curPresult2 OUT refCur, -- GetBasket refCur2
-    curPresult3 OUT refCur, -- GetBasket refCur3
-    curPresult4 OUT refCur, -- GetBasket refCur4
-    curPresult5 OUT refCur, -- GetBasket refCur5
-    curPresult6 OUT refCur, -- GetBasket refCur6
-    curPresult7 OUT refCur, -- GetBasket refCur7
-    curPresult8 OUT refCur, -- GetCoupon refCur1
-    curPresult9 OUT refCur, -- GetCoupon refCur2
-    curPresult10 OUT refCur
-  );  
   
   PROCEDURE InsertPPECOrderXmlEncrypted (
     cPshopper_id IN CHAR,
@@ -143,6 +130,24 @@ AS
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   );
+  
+  PROCEDURE GetShadowOrderWithWarrantyYS (
+	  cPguid IN CHAR,
+    cPshopper_id IN CHAR,
+    iPsite_id IN INT,
+    iPlang_id IN INT,
+    curPresult13 OUT refCur, -- GetShopper refCur1
+    curPresult1 OUT refCur, -- GetBasket refCur1
+    curPresult2 OUT refCur, -- GetBasket refCur2
+    curPresult3 OUT refCur, -- GetBasket refCur3
+    curPresult4 OUT refCur, -- GetBasket refCur4
+    curPresult5 OUT refCur, -- GetBasket refCur5
+    curPresult6 OUT refCur, -- GetBasket refCur6
+    curPresult7 OUT refCur, -- GetBasket refCur7
+    curPresult8 OUT refCur, -- GetCoupon refCur1
+    curPresult9 OUT refCur, -- GetCoupon refCur2
+    curPresult10 OUT refCur
+  );  
 
   /* proc_fe_GetOrder_encrypted */
   PROCEDURE GetOrderWithWarrantyEncrypted (
@@ -402,7 +407,8 @@ AS
   PROCEDURE UpdateApplicationCredit (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
-    deciPcredit_amount IN DECIMAL
+    deciPcredit_amount IN DECIMAL,
+    cPcurrency IN CHAR
   );
   /*proc_fe_UpdateCheckOutCurrency*/
   PROCEDURE UpdateCheckOutCurrency (
@@ -430,6 +436,28 @@ END Pkg_Fe_Orderaccess3;
 /
 CREATE OR REPLACE PACKAGE BODY PKG_FE_ORDERACCESS3
 AS
+  PROCEDURE UpdateOrderXml (
+    iPorder_num IN INT,
+    clobPorder_xml IN CLOB
+  )
+  AS
+  BEGIN
+    UPDATE ya_order SET order_xml = clobPorder_xml
+    WHERE order_num = iPorder_num;
+    
+    IF SQLCODE <> 0 THEN
+      BEGIN
+        ROLLBACK;
+      END;
+    ELSE
+      BEGIN
+        COMMIT;
+      END;
+    END IF;
+
+    RETURN;    
+  END UpdateOrderXml;
+  
   PROCEDURE InsertSaleCode (
     iPorder_num IN INT,
     vcPsales_code IN VARCHAR2
@@ -860,8 +888,13 @@ AS
     iLseq_currval INT;
     iLseq_diff INT;
     iLbuffer_code INT;
+    nLcredit_amount NUMBER;
+    cLcredit_currency CHAR(3);
   BEGIN
     SELECT SEQ_order.NEXTVAL INTO iPorder_num FROM DUAL;
+    
+    SELECT credit_amount, credit_currency INTO nLcredit_amount, cLcredit_currency
+    FROM ya_checkout_data WHERE shopper_id = cPshopper_id AND site_id = iPsite_id;
 
     INSERT INTO ya_order
       (
@@ -1015,9 +1048,9 @@ AS
       END;
     END IF;
 
-    IF (nPcredit_amount > 0) THEN
+    IF (nLcredit_amount > 0) THEN
       BEGIN
-        Pkg_Fe_Orderaccess3.DebitCreditBySite(cPshopper_id, nPcredit_amount, iPorder_num, cPcurrency, iPsite_id, iLdebit_credit_return, cPtransaction_id);
+        Pkg_Fe_Orderaccess3.DebitCreditBySite(cPshopper_id, nLcredit_amount, iPorder_num, cLcredit_currency, iPsite_id, iLdebit_credit_return, cPtransaction_id);
       END;
     END IF;
     
@@ -1029,12 +1062,14 @@ AS
 
   COMMIT;
 
+/*
   EXCEPTION
     WHEN OTHERS THEN
       BEGIN
         iPorder_num := -1;
         ROLLBACK;
       END;
+*/      
   END InsertOrderXmlEncrypted;
   
   PROCEDURE InsertPaypalECOrderXml (
@@ -2059,7 +2094,8 @@ AS
       colour,
       lang,
   	  cc_numberencrypted,
-  	  encryptionkey
+  	  encryptionkey,
+  	  currency
     FROM
       ya_checkout_data_shadow c
       LEFT OUTER JOIN ya_giftcard_data g ON
@@ -2200,7 +2236,8 @@ AS
       colour,
       lang,
   	  cc_numberencrypted,
-  	  encryptionkey
+  	  encryptionkey,
+  	  nvl(credit_currency, currency)
     FROM
       ya_checkout_data c
       LEFT OUTER JOIN ya_giftcard_data g ON
@@ -2336,7 +2373,8 @@ AS
       colour,
       lang,
   	  cc_numberencrypted,
-  	  encryptionkey
+  	  encryptionkey,
+  	  nvl(credit_currency, currency)
     FROM
       ya_checkout_data c
       LEFT OUTER JOIN ya_giftcard_data g ON
@@ -3958,12 +3996,14 @@ AS
   PROCEDURE UpdateApplicationCredit (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
-    deciPcredit_amount IN DECIMAL
+    deciPcredit_amount IN DECIMAL,
+    cPcurrency IN CHAR
   )
   AS
   BEGIN
     UPDATE ya_checkout_data
-    SET credit_amount = deciPcredit_amount
+    SET credit_amount = deciPcredit_amount,
+    credit_currency = cPcurrency
     WHERE
       shopper_id = cPshopper_id
       AND site_id = iPsite_id;
