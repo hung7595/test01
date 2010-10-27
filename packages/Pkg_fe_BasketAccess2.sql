@@ -798,7 +798,8 @@ END;
     0 AS preorder_buffer_day,
     1 AS region_count,
     yr.currency,
-    p.brand_id
+    p.brand_id,
+    cd.currency
   FROM
     ya_new_basket_shadow b
     INNER JOIN ya_product p ON
@@ -811,8 +812,11 @@ END;
       AND ple.lang_id = 1 -- English
     INNER JOIN prod_region pr ON
       b.sku = pr.prod_id
-    INNER JOIN ya_region yr ON
+    INNER JOIN ya_region yr ON    
       pr.region_id = yr.region_id
+    LEFT OUTER JOIN ya_checkout_data cd ON
+      cd.site_id = b.site_id
+      AND cd.shopper_id = b.shopper_id
   WHERE b.shopper_id = cPshopperId
     AND b.site_id = iPsiteId
     AND b.type = iPtype
@@ -1075,7 +1079,8 @@ END GetShadowBasketWithWarranty;
     0 AS preorder_buffer_day,
     0 AS region_count,
     yr.currency,
-    p.brand_id
+    p.brand_id,
+    cd.currency
   FROM
     ya_new_basket b
     INNER JOIN ya_product p ON
@@ -1090,6 +1095,9 @@ END GetShadowBasketWithWarranty;
       b.sku = pr.prod_id
     INNER JOIN ya_region yr ON
       yr.region_id = pr.region_id
+    LEFT OUTER JOIN ya_checkout_data cd ON
+      cd.shopper_id = b.shopper_id
+      AND cd.site_id = b.site_id
   WHERE b.shopper_id = cPshopperId
     AND b.site_id = iPsiteId
     AND b.type = iPtype
@@ -1354,7 +1362,8 @@ END GetBasketWithWarranty;
       0 AS preorder_buffer_day,
       1 AS region_count,
       yr.currency,
-      p.brand_id
+      p.brand_id,
+      cd.currency
     FROM
       ya_new_basket b
       INNER JOIN ya_product p ON
@@ -1369,6 +1378,9 @@ END GetBasketWithWarranty;
         b.sku = pr.prod_id
       INNER JOIN ya_region yr ON
         pr.region_id = yr.region_id
+      LEFT OUTER JOIN ya_checkout_data cd ON
+        cd.shopper_id = b.shopper_id
+        AND cd.site_id = b.site_id
     WHERE 
       b.shopper_id = cPshopperId
       AND b.site_id = iPsiteId
