@@ -44,23 +44,26 @@ IS
       WHERE associate_id = iAssoID AND valid_date = to_date(cValidDate,'YYYY-MM-DD');
 
       IF iCountValidDate = 0 THEN
-
+      
+	  BEGIN
 		SELECT comm_rate, payment_option
 		  INTO nRate, iPayment_Option
 		FROM (
 		SELECT comm_rate, payment_option
 		from ya_associate_commission_hist where associate_id = iAssoID
 		order by valid_date desc) WHERE ROWNUM <= 1;
-
-		IF iPayment_Option IS NULL THEN
-		  nRate := NULL;
-		  select payment_option INTO iPayment_Option from ya_associate where associate_id = iAssoID;
-		END IF;
-
+		
+		EXCEPTION
+		  WHEN no_data_found THEN		
+      	    BEGIN
+		      nRate := NULL;
+		      select payment_option INTO iPayment_Option from ya_associate where associate_id = iAssoID;		
+		    END;
+		END;
+		
 		INSERT INTO ya_associate_commission_hist (associate_id, valid_date, comm_rate, payment_option, rowguid)
 		values(iAssoID, to_date(cValidDate,'YYYY-MM-DD'), nRate, iPayment_Option,SYS_GUID());
-
---DBMS_OUTPUT.PUT_LINE(iAssoID || cValidDate || nRate || iPayment_Option);
+		
 
       END IF;
 
