@@ -44,6 +44,11 @@ BEGIN
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,14,4,null,isold_out_status,vsuggestedSystem);
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,14,7,null,isold_out_status,vsuggestedSystem);
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,14,8,null,isold_out_status,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,14,10,null,isold_out_status,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,14,11,null,isold_out_status,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,14,12,null,isold_out_status,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,14,13,null,isold_out_status,vsuggestedSystem);
+ 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,14,14,null,isold_out_status,vsuggestedSystem);
 	ELSE
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,14,:new.site_id,null,isold_out_status,vsuggestedSystem);
 	END IF;
@@ -62,6 +67,21 @@ BEGIN
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,2,8,null,null,vsuggestedSystem);
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,3,8,null,null,vsuggestedSystem);
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,4,8,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,2,10,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,3,10,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,4,10,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,2,11,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,3,11,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,4,11,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,2,12,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,3,12,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,4,12,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,2,13,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,3,13,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,4,13,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,2,14,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,3,14,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,4,14,null,null,vsuggestedSystem);
 	ELSE
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,2,:new.site_id,null,null,vsuggestedSystem);
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,3,:new.site_id,null,null,vsuggestedSystem);
@@ -74,6 +94,11 @@ BEGIN
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,4,null,'N',vsuggestedSystem);
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,7,null,'N',vsuggestedSystem);
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,8,null,'N',vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,10,null,'N',vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,11,null,'N',vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,12,null,'N',vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,13,null,'N',vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,14,null,'N',vsuggestedSystem);	  
 	ELSE
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,:new.site_id,null,'N',vsuggestedSystem);
 	END IF;
