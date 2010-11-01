@@ -11,7 +11,7 @@ CREATE TABLE Ya_Newsletter (
 	schedule_cron_expression        varchar2(255)       ,
 	is_biweekly_schedule            char(1)             NOT NULL ,
 	next_scheduled_time             date                ,
-	last_scheduled_time             date                ,
+	schedule_cron_exp_mod_dt        date                ,
 	create_user                     varchar2(50)        NOT NULL ,
 	create_dt                       date                NOT NULL ,
 	mod_user                        varchar2(50)        NOT NULL ,
