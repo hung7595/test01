@@ -2894,8 +2894,8 @@ AS
         created_datetime,
         last_updated_datetime,
     	  cc_numberencrypted,
-    	  encryptionkey
-
+    	  encryptionkey,
+    	  credit_currency
       )
     VALUES
       (
@@ -2939,7 +2939,8 @@ AS
         SYSDATE,
         SYSDATE,
         vcPcard_numberEncrypted,
-        iPencryptionKey_id
+        iPencryptionKey_id,
+        cPcurrency
       );
     COMMIT;
   EXCEPTION WHEN OTHERS THEN
