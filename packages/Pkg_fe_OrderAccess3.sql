@@ -2678,7 +2678,7 @@ AS
       iLbill_profile := NULL;
     END;
 
-    IF iPsite_id = 1 OR iPsite_id = 7 OR iPsite_id = 10 OR iPsite_id = 14 THEN
+    IF iPsite_id = 1 OR iPsite_id = 7 OR iPsite_id = 10 OR iPsite_id = 13 OR iPsite_id = 14 THEN
     BEGIN
       SELECT cc.profile_id
       INTO iLcc_profile
@@ -2691,19 +2691,6 @@ AS
     EXCEPTION WHEN NO_DATA_FOUND THEN
       iLcc_profile := NULL;
     END;
-    ELSIF iPsite_id = 13 THEN
-    BEGIN
-      SELECT cc.profile_id
-      INTO iLcc_profile
-      FROM YA_CREDIT_CARD_PROFILE cc
-      WHERE
-        cc.preferred = 'Y'
-        AND cc.shopper_id = cPshopper_id
-        AND cc.card_type_id IN (1,2)
-        AND ROWNUM = 1;
-    EXCEPTION WHEN NO_DATA_FOUND THEN
-      iLcc_profile := NULL;
-    END;    
     ELSE
       iLcc_profile := NULL;
     END IF;
