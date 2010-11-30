@@ -14,5 +14,10 @@ CONSTRAINT PK_Ya_Globalcollect_Order_Log PRIMARY KEY (id)
 USING INDEX TABLESPACE SSCommerceserver_Index
 /
 
+
+CREATE INDEX IX_Globalcollect_Order_Log_01 ON Ya_Globalcollect_Order_Log(globalcollect_order_id) TABLESPACE SSCommerceserver_Index
+/
+
+
 CREATE PUBLIC SYNONYM Ya_Globalcollect_Order_Log FOR Ya_Globalcollect_Order_Log
 /
