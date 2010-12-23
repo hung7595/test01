@@ -14,7 +14,7 @@ CREATE TABLE Staging_Asset (
 /
 
 ALTER TABLE Staging_Asset
-ADD CONSTRAINT PK_Staging_Asset_01 PRIMARY KEY (id)
+ADD CONSTRAINT PK_Staging_Asset PRIMARY KEY (id)
 USING INDEX TABLESPACE SSCommerceserver_Index
 /
 

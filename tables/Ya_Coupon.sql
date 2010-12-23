@@ -58,6 +58,7 @@ FOR EACH ROW
 BEGIN
 	:NEW.all_shoppers := UPPER(:NEW.all_shoppers);
 END;
+/
 
 create or replace TRIGGER TRI_coupon_2
 BEFORE INSERT OR UPDATE OF coupon_used
@@ -66,3 +67,57 @@ FOR EACH ROW
 BEGIN
 	:NEW.coupon_used := UPPER(:NEW.coupon_used);
 END;
+/
+
+CREATE OR REPLACE TRIGGER TRI_COUPON_3
+BEFORE INSERT OR UPDATE
+ON ya_coupon
+FOR EACH ROW
+begin
+	Insert into ya_coupon_mirror (
+		id,
+		coupon_code,
+		campaign_name,
+		coupon_description,
+		dollar_coupon_value,
+		percentage_coupon_value,
+		order_amount_trigger,
+		order_qty_trigger,
+		item_sku_trigger,
+		item_qty_trigger,
+		expiration_date,
+		shopper_id,
+		all_shoppers,
+		coupon_used,
+		coupon_type_id,
+		site_id,
+		create_id,
+		create_date,
+		currency,
+		update_id,
+		update_date
+)
+	values (
+		SEQ_COUPON_MIRROR.nextval,
+		:new.coupon_code,
+		:new.campaign_name,
+		:new.coupon_description,
+		:new.dollar_coupon_value,
+		:new.percentage_coupon_value,
+		:new.order_amount_trigger,
+		:new.order_qty_trigger,
+		:new.item_sku_trigger,
+		:new.item_qty_trigger,
+		:new.expiration_date,
+		:new.shopper_id,
+		:new.all_shoppers,
+		:new.coupon_used,
+		:new.coupon_type_id,
+		:new.site_id,
+		:new.create_id,
+		:new.create_date,
+		:new.currency,
+		:new.update_id,
+		sysdate );
+end;
+/
