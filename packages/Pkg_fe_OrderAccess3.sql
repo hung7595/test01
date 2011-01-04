@@ -939,7 +939,7 @@ AS
       );
 */
     -- for automatic clearance tool buffering
-    -- 50001: US, 50002: Global
+    -- 50001: US, 50002: Global, 50003: YS
     IF iPsite_id = 1 THEN
       INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
       SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
@@ -953,6 +953,14 @@ AS
       SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
       FROM ya_new_basket nb
         INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50002
+      WHERE nb.shopper_id = cPshopper_id
+        AND nb.type = 0
+        AND nb.site_id = iPsite_id;
+    ELSE
+      INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
+      SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
+      FROM ya_new_basket nb
+        INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50003
       WHERE nb.shopper_id = cPshopper_id
         AND nb.type = 0
         AND nb.site_id = iPsite_id;
@@ -1178,7 +1186,7 @@ AS
           );
 */
         -- for automatic clearance tool buffering
-        -- 50001: US, 50002: Global
+        -- 50001: US, 50002: Global, 50003: YS
         IF iPsite_id = 1 THEN
           INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
           SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
@@ -1193,6 +1201,15 @@ AS
           SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
           FROM YA_NEW_BASKET_SHADOW nb
             INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50002
+          WHERE nb.shopper_id = cPshopper_id
+		        AND nb.paypal_uid = cPguid
+            AND nb.type = 0
+            AND nb.site_id = iPsite_id;
+        ELSE
+          INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
+          SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
+          FROM YA_NEW_BASKET_SHADOW nb
+            INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50003
           WHERE nb.shopper_id = cPshopper_id
 		        AND nb.paypal_uid = cPguid
             AND nb.type = 0
@@ -1391,7 +1408,7 @@ AS
         */
         
         -- for automatic clearance tool buffering
-        -- 50001: US, 50002: Global
+        -- 50001: US, 50002: Global, 50003: YS
         IF iPsite_id = 1 THEN
           INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
           SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
@@ -1406,6 +1423,15 @@ AS
           SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
           FROM YA_NEW_BASKET_SHADOW nb
             INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50002
+          WHERE nb.shopper_id = cPshopper_id
+			      AND nb.paypal_uid = cPguid
+            AND nb.type = 0
+            AND nb.site_id = iPsite_id;
+        ELSE
+          INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
+          SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
+          FROM YA_NEW_BASKET_SHADOW nb
+            INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50003
           WHERE nb.shopper_id = cPshopper_id
 			      AND nb.paypal_uid = cPguid
             AND nb.type = 0
@@ -1637,7 +1663,7 @@ AS
           );
 */
         -- for automatic clearance tool buffering
-        -- 50001: US, 50002: Global
+        -- 50001: US, 50002: Global, 50003: YS
         IF iPsite_id = 1 THEN
           INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
           SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
@@ -1651,6 +1677,14 @@ AS
           SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
           FROM ya_new_basket nb
             INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50002
+          WHERE nb.shopper_id = cPshopper_id
+            AND nb.type = 0
+            AND nb.site_id = iPsite_id;
+        ELSIF iPsite_id = 10 THEN
+          INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
+          SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
+          FROM ya_new_basket nb
+            INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50003
           WHERE nb.shopper_id = cPshopper_id
             AND nb.type = 0
             AND nb.site_id = iPsite_id;
@@ -1874,6 +1908,14 @@ AS
           SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
           FROM ya_new_basket nb
             INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50002
+          WHERE nb.shopper_id = cPshopper_id
+            AND nb.type = 0
+            AND nb.site_id = iPsite_id;
+        ELSE
+          INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
+          SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
+          FROM ya_new_basket nb
+            INNER JOIN ya_campaign c ON nb.sku = c.sku AND c.campaign_code = 50003
           WHERE nb.shopper_id = cPshopper_id
             AND nb.type = 0
             AND nb.site_id = iPsite_id;
