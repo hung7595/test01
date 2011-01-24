@@ -8,7 +8,8 @@ CREATE TABLE Ya_Future_Release (
 	notified_datetime                date                       ,
 	customer_name                    varchar2(100)              DEFAULT 'Unknown' ,
 	customer_email                   varchar2(100)              ,
-	rowguid                          varchar2(50)               DEFAULT SYS_GUID() NOT NULL
+	rowguid                          varchar2(50)               DEFAULT SYS_GUID() NOT NULL,
+	is_sent                          char(1)                    DEFAULT 'N' NOT NULL
 )
 /
 
