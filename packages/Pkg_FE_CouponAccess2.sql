@@ -96,8 +96,9 @@ AS
 
   PROCEDURE CreateHallmarkPromotionCoupon (
     cPshopper_id IN CHAR,
-    cPorder_num IN CHAR
-  );
+    cPorder_num IN CHAR,
+    iPcoupon_count IN INT
+  );  
 END Pkg_FE_CouponAccess2;
 /
 
@@ -670,35 +671,42 @@ AS
   
   PROCEDURE CreateHallmarkPromotionCoupon (
     cPshopper_id IN CHAR,
-    cPorder_num IN CHAR
+    cPorder_num IN CHAR,
+    iPcoupon_count IN INT    
   )
   AS
 		iLcount INT;
+		iLloop_count INT;
 		iLcoupon_code VARCHAR2(8);
   BEGIN
-    -- Generate Coupon
-		SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO iLcoupon_code FROM dual;
+    iLloop_count := 1;
+    WHILE (iLloop_count <= iPcoupon_count)
+      LOOP
+        -- Generate Coupon
+		    SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO iLcoupon_code FROM dual;
 
-		-- Make sure unique coupon code
-		SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
-		WHILE (iLcount = 1)
-			LOOP
-					SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO iLcoupon_code FROM dual;
-					SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
-			END LOOP;
+		    -- Make sure unique coupon code
+		    SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
+		    WHILE (iLcount = 1)
+			    LOOP
+					    SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO iLcoupon_code FROM dual;
+					    SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
+			    END LOOP;			
 
-		INSERT INTO ya_coupon
-      (shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value, expiration_date
-      , all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, create_date, currency)
-	  SELECT cPshopper_id, iLcoupon_code, 'promotion coupon (' || cPorder_num || ')', '&#36154;&#26364;&#23156;&#31461;&#35013;&#32593;&#19978;&#21830;&#24215;RMB50&#36141;&#29289;&#20248;&#24800;', 50, add_months(SYSDATE, 2)
-  	  , 'N', 'N', 1, 12, 250, 'hallmark_promotion', SYSDATE, 'RMB'
-		FROM dual;
-		
-		INSERT INTO ya_coupon_site (coupon_code, site_id)
-		VALUES (iLcoupon_code, 12);
-	  COMMIT;
-
+		    INSERT INTO ya_coupon
+          (shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value, expiration_date
+          , all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, create_date, currency)
+	      SELECT cPshopper_id, iLcoupon_code, 'promotion coupon (' || cPorder_num || ')', '&#36154;&#26364;&#23156;&#31461;&#35013;&#32593;&#19978;&#21830;&#24215;RMB50&#36141;&#29289;&#20248;&#24800;', 50, add_months(SYSDATE, 2)
+  	      , 'N', 'N', 1, 12, 250, 'hallmark_promotion', SYSDATE, 'RMB'
+		    FROM dual;
+    		
+		    INSERT INTO ya_coupon_site (coupon_code, site_id)
+		    VALUES (iLcoupon_code, 12);
+	      COMMIT;
+	      
+	      iLloop_count := iLloop_count + 1;      
+      END LOOP;
 		RETURN;  
-  END CreateHallmarkPromotionCoupon;  
+  END CreateHallmarkPromotionCoupon;
 END Pkg_FE_CouponAccess2;
 /

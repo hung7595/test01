@@ -58,8 +58,9 @@ PACKAGE BODY Pkg_FE_GenerateImageButton AS
         country_id, 
         priority
       )
-    SELECT artist_id, country_id, rand_num + 20000 FROM tmp_toys_character_pool
-    WHERE country_id = 115 and artist_id<>1206602 and artist_id<>1206599 and rownum<=3;
+    SELECT a.* FROM (SELECT artist_id, country_id, rand_num + 20000 FROM tmp_toys_character_pool
+    WHERE country_id = 115 and artist_id<>1206602 and artist_id<>1206599 order by rand_num) a
+    WHERE rownum<=3;
     
     -- Japan
     INSERT INTO ya_toys_character_pool
@@ -68,9 +69,9 @@ PACKAGE BODY Pkg_FE_GenerateImageButton AS
         country_id, 
         priority
       )
-    SELECT artist_id, country_id, rand_num + 30000 FROM tmp_toys_character_pool
-    WHERE country_id = 109 and rownum<=9
-    ORDER BY rand_num;
+    SELECT b.* FROM (SELECT artist_id, country_id, rand_num + 30000 FROM tmp_toys_character_pool
+    WHERE country_id = 109 ORDER BY rand_num) b
+    WHERE rownum<=9;
     
     -- Set All Image Button Lot for Index Page Inactive
     UPDATE ya_artist_image_button_log SET active=0, end_date = sysdate
