@@ -211,6 +211,12 @@ AS
     cPshopper_id IN CHAR,
     iPcount OUT INT
   );
+  
+  PROCEDURE GetOrderCountBySiteId (
+    cPshopper_id IN CHAR,
+	iPsite_id IN INT,
+    iPcount OUT INT
+  );
 
   /* proc_fe_GetPreCheckoutData_encrypted */
   PROCEDURE GetPreCheckoutDataEncrypted (
@@ -2639,6 +2645,39 @@ AS
     iPcount := iLFE_count + iLBE_count;
     RETURN;
   END GetOrderCount;
+  
+  PROCEDURE GetOrderCountBySiteId (
+    cPshopper_id IN CHAR,
+	iPsite_id IN INT,
+    iPcount OUT INT
+  )
+  AS
+    iLBE_count INT;
+    iLFE_count INT;
+  BEGIN
+    SELECT COUNT(origin_order_id)
+    INTO iLBE_count
+    FROM Backend_adm.order_info
+    WHERE cust_id = cPshopper_id
+	AND origin_id = iPsite_id;
+
+    SELECT COUNT(order_num)
+    INTO iLFE_count
+    FROM ya_order
+    WHERE
+      shopper_id = cPshopper_id
+	  AND site_id = iPsite_id
+      AND order_num NOT IN
+        (
+          SELECT origin_order_id
+          FROM Backend_adm.order_info
+          WHERE cust_id = cPshopper_id
+					AND length(trim(origin_order_id)) > 1
+        );
+
+    iPcount := iLFE_count + iLBE_count;
+    RETURN;
+  END GetOrderCountBySiteId;
 
   PROCEDURE GetPreCheckoutDataEncrypted (
     cPshopper_id IN CHAR,
