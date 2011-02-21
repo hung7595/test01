@@ -13,7 +13,7 @@ AS
 		iPreport_id IN INT,
 		iProwAffect OUT INT
   );
-  
+
 	PROCEDURE GetReviewReportByReportCount (
 		iPreport_count IN INT,
 		iPpage_number IN INT,
@@ -29,7 +29,7 @@ AS
 		iPnum_record OUT INT,
     curPresult OUT refCur
   );
-  
+
 	PROCEDURE GetReviewReportByDateRange (
 		iPlang_id IN INT,
 		dPstart_date IN DATE,
@@ -39,11 +39,11 @@ AS
 		iPnum_record OUT INT,
     curPresult OUT refCur
   );
-  
+
   PROCEDURE AddExcludeList (
 		iPreview_id IN INT
   );
-  
+
 	PROCEDURE UpdateCustomerReviewWinner (
 		iPreview_id IN INT,
 		iProwAffect OUT INT
@@ -55,7 +55,7 @@ AS
 		iPpage_size IN INT,
 		iPnum_record OUT INT,
     curPresult OUT refCur
-	);  
+	);
 
 	PROCEDURE GetPagedSpotlightReviewByDate (
 		iPtotal_vote INT,
@@ -83,11 +83,11 @@ AS
 		cPtitle IN VARCHAR2,
     cPcontent IN CLOB
   );
-  
+
 	PROCEDURE DeleteEditorReview (
 	  iPreview_id IN INT
 	);
-	  
+	
 	PROCEDURE UpdateCustomerReviewApprove (
 		iPreview_id IN INT,
 		cPapprove IN CHAR,
@@ -102,11 +102,11 @@ AS
     iPreview_id IN OUT INT,
     cPisCommit IN CHAR DEFAULT 'Y'
   );
-  
+
 	PROCEDURE GetEditorReviewSkuList (
     iPsite_id IN INT,
     curPresult OUT refCur
-  );  
+  );
 
   PROCEDURE GetProReviewBySku (
     iPsku IN INT,
@@ -117,10 +117,67 @@ AS
     iPget_share IN INT,
     curPresult OUT refCur
   );
-  
+
+  PROCEDURE GetShareGroupBySku (
+	  iPsku IN INT,
+	  iPgroup_id OUT INT
+	);
+	
+	PROCEDURE GetProReviewsByGroupId (
+	  iPgroup_id IN INT,
+	  curPresult OUT refCur
+	);
+	
+  PROCEDURE GetProdCustomerReview (
+	  iPgroup_id IN INT,
+	  curPresult OUT refCur
+	);
+
+	PROCEDURE GetProdRelByGroupId (
+	  iPgroup_id IN INT,
+	  curPresult OUT refCur	
+	);
+	
+	PROCEDURE GetProdByShareGroup (
+	  iPgroup_id IN INT,
+	  iPlang_id IN INT,
+	  curPresult OUT refCur
+	);
+	
+	PROCEDURE AddProdToShareGroup (
+	  iPsku IN INT,
+	  iPgroup_id OUT INT
+	);
+	
+	PROCEDURE DeleteProdFrmShareGroup (
+	  iPsku IN INT
+	);
+	
+	PROCEDURE AddShareGroupByMemberSku (
+	  iPsku IN INT,
+	  iPgroup_member_sku IN INT,
+	  iPgroup_id OUT INT
+	);
+	
+	PROCEDURE DeleteProReviewShareByGroupId (
+	  iPgroup_id IN INT
+	);
+	
+  PROCEDURE AddShareProReview (
+	  iPparent_sku IN INT,
+	  iPchild_sku IN INT
+	);
+	
+	PROCEDURE DeleteCustReviewShareByGroupId (
+	  iPgroup_id IN INT
+	);
+	
+	PROCEDURE AddShareCustomerReview (
+	  iPsku IN INT
+	);
 END Pkg_FE_ReviewAccess;
 /
-CREATE OR REPLACE PACKAGE BODY "PKG_FE_REVIEWACCESS" 
+CREATE OR REPLACE PACKAGE BODY "PKG_FE_REVIEWACCESS"
 IS
 
   PROCEDURE GetProReviewBySku (
@@ -156,16 +213,16 @@ IS
     WHERE pa.sku IN (
       SELECT iPsku FROM dual
       UNION
-      SELECT product_title_parent_sku 
-      from ya_product_title_rel 
+      SELECT product_title_parent_sku
+      from ya_product_title_rel
       where product_title_child_sku = iPsku
       and not exists (select 1 from ya_profess_review where sku = product_title_child_sku)
       );
-      
+
 --      OR EXISTS (SELECT 1 from ya_product_title_rel where product_title_child_sku = pa.sku)
 --      OR pa.sku IN (SELECT product_title_parent_sku from ya_product_title_rel where product_title_child_sku = iPsku)
 --      OR pa.sku IN (SELECT parent_sku AS sku FROM ya_review_share_proReview WHERE child_sku=iPsku AND not exists (SELECT 1 from ya_product_title_rel where product_title_child_sku = parent_sku))
-    
+
     RETURN;
   END GetProReviewBySku;
 
@@ -495,7 +552,7 @@ IS
   )
 	AS
 	BEGIN
-	  
+	
 		UPDATE ya_customer_review
 		  SET reviewer_type = 2
 		WHERE id = iPreview_id;
@@ -869,7 +926,7 @@ IS
 	BEGIN
     UPDATE ya_customer_review SET review_approved = cPapprove
     WHERE id = iPreview_id;
-    
+
 		COMMIT;
 		RETURN;
 	END UpdateCustomerReviewApprove;
@@ -942,6 +999,264 @@ IS
 			SELECT sku, lang_id
 			FROM ya_emag_editor_review_prod
 			WHERE site_id = iPsite_id;
-	END GetEditorReviewSkuList;  
+	END GetEditorReviewSkuList;
+	
+	PROCEDURE GetShareGroupBySku (
+	  iPsku IN INT,
+	  iPgroup_id OUT INT
+	)
+	AS
+	BEGIN
+    BEGIN
+      SELECT group_id INTO iPgroup_id
+      FROM ya_review_share_group
+      WHERE sku = iPsku;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        BEGIN
+          iPgroup_id := 0;
+          RETURN;
+        END;
+    END;	
+	END GetShareGroupBySku;
+	
+	PROCEDURE GetProReviewsByGroupId (
+	  iPgroup_id IN INT,
+	  curPresult OUT refCur
+	)
+	AS
+	BEGIN
+    OPEN curPresult FOR
+    SELECT rsg.sku, tp.lang_id, tp.review, tp.reviewer, tp.us_review_id, tp.tw_review_id, tp.reviewer_type
+    FROM ya_review_share_group rsg
+    LEFT OUTER JOIN (
+      select a.sku, b.lang_id, b.review, '' reviewer, a.id us_review_id, a.id tw_review_id, 'EDITORIAL' reviewer_type
+      from ya_review_share_group d
+        left outer join ya_profess_review a on a.sku = d.sku
+        left outer join ya_profess_review_lang b on a.id = b.profess_review_id
+      where b.review is not null and d.group_id = iPgroup_id	
+    ) tp on rsg.sku = tp.sku
+    WHERE rsg.group_id = iPgroup_id
+    ORDER BY rsg.sku, tp.lang_id;
+	END GetProReviewsByGroupId;	
+	
+	PROCEDURE GetProdCustomerReview (
+	  iPgroup_id IN INT,
+	  curPresult OUT refCur
+	)
+	AS
+	BEGIN
+	  OPEN curPresult FOR
+	  SELECT rsc.sku
+    FROM ya_review_share_customerReview rsc
+      INNER JOIN ya_review_share_group rsg ON rsc.sku = rsg.sku
+    WHERE rsc.sku = rsg.sku
+      AND rsg.group_id = iPgroup_id;
+	END GetProdCustomerReview;
+	
+	PROCEDURE GetProdRelByGroupId (
+	  iPgroup_id IN INT,
+	  curPresult OUT refCur	
+	)
+	AS
+	BEGIN
+	  OPEN curPresult FOR
+    SELECT parent_sku, child_sku
+    FROM ya_review_share_proReview ysp, ya_review_share_group rsg, ya_review_share_group rsg2
+    WHERE rsg.sku = ysp.parent_sku
+      AND rsg2.sku = ysp.child_sku
+      AND rsg.group_id = iPgroup_id
+      AND rsg2.group_id = iPgroup_id;
+	END GetProdRelByGroupId;
+	
+	PROCEDURE GetProdByShareGroup (
+	  iPgroup_id IN INT,
+	  iPlang_id IN INT,
+	  curPresult OUT refCur
+	)
+	AS
+	BEGIN
+	  OPEN curPresult FOR
+    SELECT pl.sku, pl.prod_name
+    FROM ya_prod_lang pl, ya_review_share_group rsg
+    WHERE pl.sku = rsg.sku
+      AND rsg.group_id = iPgroup_id
+      AND lang_id=iPlang_id
+    ORDER BY pl.sku;
+	END GetProdByShareGroup;
+	
+	PROCEDURE AddProdToShareGroup (
+	  iPsku IN INT,
+	  iPgroup_id OUT INT
+	)
+	AS
+	  iLexist INT;
+	BEGIN
+	  BEGIN
+      SELECT 1 INTO iLexist
+      FROM ya_product
+      WHERE sku = iPsku;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        BEGIN
+          iPgroup_id := 0;
+          RETURN;
+        END;
+    END;
+
+	  BEGIN
+      SELECT group_id INTO iPgroup_id
+      FROM ya_review_share_group
+      WHERE sku = iPsku;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        BEGIN
+	        SELECT SEQ_ya_review_share_group.nextval INTO iPgroup_id FROM dual;
+	        	
+          INSERT INTO ya_review_share_group (group_id, sku, updated_dt)
+          VALUES (iPgroup_id, iPsku, sysdate);
+
+          INSERT INTO ya_review_share_customerreview (sku) VALUES (iPsku);
+          COMMIT;
+          RETURN;
+        END;
+    END;
+	END AddProdToShareGroup;
+	
+	PROCEDURE DeleteProdFrmShareGroup (
+	  iPsku IN INT
+	)
+	AS
+	BEGIN
+    DELETE FROM ya_review_share_group where sku = iPsku;
+    IF SQLCODE <> 0 THEN
+      BEGIN
+        ROLLBACK;
+      END;
+    END IF;
+
+    DELETE FROM ya_review_share_customerReview where sku = iPsku;
+    IF SQLCODE <> 0 THEN
+      BEGIN
+        ROLLBACK;
+      END;
+    END IF;
+
+    DELETE FROM ya_review_share_proReview where parent_sku = iPsku or child_sku = iPsku;
+    IF SQLCODE <> 0 THEN
+      BEGIN
+        ROLLBACK;
+      END;
+    ELSE
+      BEGIN
+        COMMIT;
+      END;
+    END IF;
+	END DeleteProdFrmShareGroup;
+	
+	PROCEDURE AddShareGroupByMemberSku (
+	  iPsku IN INT,
+	  iPgroup_member_sku IN INT,
+	  iPgroup_id OUT INT
+	)
+	AS
+	  iLexist INT;
+	BEGIN
+	  BEGIN
+      SELECT 1 INTO iLexist
+      FROM ya_product
+      WHERE sku = iPsku;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        BEGIN
+          iPgroup_id := 0;
+          RETURN;
+        END;
+    END;
+
+	  BEGIN
+      SELECT group_id INTO iPgroup_id
+      FROM ya_review_share_group
+      WHERE sku = iPsku;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        BEGIN
+          INSERT INTO ya_review_share_group (group_id, sku, updated_dt)
+          SELECT group_id, iPsku, sysdate
+          FROM ya_review_share_group
+          WHERE sku = iPgroup_member_sku
+            AND rownum = 1;
+            
+          SELECT group_id INTO iPgroup_id
+          FROM ya_review_share_group
+          WHERE sku = iPsku;            
+        END;
+    END;
+
+	  BEGIN
+      SELECT 1 INTO iLexist
+      FROM ya_review_share_customerreview
+      WHERE sku = iPsku;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        BEGIN
+          INSERT INTO ya_review_share_customerreview (sku) VALUES (iPsku);
+          COMMIT;
+          RETURN;
+        END;
+    END;
+	END AddShareGroupByMemberSku;
+	
+	PROCEDURE DeleteProReviewShareByGroupId (
+	  iPgroup_id IN INT
+	)
+	AS
+	BEGIN
+    DELETE FROM ya_review_share_proReview 
+    WHERE parent_sku in (SELECT sku FROM ya_review_share_group where group_id = iPgroup_id) 
+      OR parent_sku in (SELECT sku FROM ya_review_share_group where group_id = iPgroup_id);      
+    COMMIT;
+	END DeleteProReviewShareByGroupId;
+	
+	PROCEDURE AddShareProReview (
+	  iPparent_sku IN INT,
+	  iPchild_sku IN INT
+	)
+	AS
+	BEGIN
+    INSERT INTO ya_review_share_proReview (parent_sku, child_sku) 
+    VALUES (iPparent_sku, iPchild_sku);
+    COMMIT;
+	END AddShareProReview;
+	
+	PROCEDURE DeleteCustReviewShareByGroupId (
+	  iPgroup_id IN INT
+	)
+	AS
+	BEGIN
+    DELETE FROM ya_review_share_customerReview 
+    WHERE sku in (SELECT sku FROM ya_review_share_group where group_id = iPgroup_id);
+    COMMIT;
+	END DeleteCustReviewShareByGroupId;
+
+	PROCEDURE AddShareCustomerReview (
+	  iPsku IN INT
+	)
+	AS
+	  iLexist INT;
+	BEGIN
+	  BEGIN
+      SELECT 1 INTO iLexist
+      FROM ya_review_share_customerreview
+      WHERE sku = iPsku;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        BEGIN
+          INSERT INTO ya_review_share_customerreview (sku) VALUES (iPsku);
+          COMMIT;
+          RETURN;
+        END;
+    END;	
+	END AddShareCustomerReview;	
 END Pkg_FE_ReviewAccess;
 /
