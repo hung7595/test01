@@ -451,15 +451,7 @@ AS
     UPDATE ya_order SET order_xml = clobPorder_xml
     WHERE order_num = iPorder_num;
     
-    IF SQLCODE <> 0 THEN
-      BEGIN
-        ROLLBACK;
-      END;
-    ELSE
-      BEGIN
-        COMMIT;
-      END;
-    END IF;
+    COMMIT;
 
     RETURN;    
   END UpdateOrderXml;
