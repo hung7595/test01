@@ -1678,7 +1678,7 @@ AS
           WHERE nb.shopper_id = cPshopper_id
             AND nb.type = 0
             AND nb.site_id = iPsite_id;
-        ELSIF iPsite_id = 10 THEN
+        ELSE
           INSERT INTO ya_campaign_order (order_num, order_id, sku, quantity, campaign_code)
           SELECT iPorder_num, iPorder_num, nb.sku, nb.quantity, c.campaign_code
           FROM ya_new_basket nb
@@ -2751,7 +2751,7 @@ AS
       iLbill_profile := NULL;
     END;
 
-    IF iPsite_id = 1 OR iPsite_id = 7 OR iPsite_id = 10 OR iPsite_id = 13 OR iPsite_id = 14 THEN
+    IF iPsite_id = 1 OR iPsite_id = 7 OR iPsite_id = 10 OR iPsite_id = 13 OR iPsite_id = 14 OR iPsite_id = 15 THEN
     BEGIN
       SELECT cc.profile_id
       INTO iLcc_profile
@@ -2900,6 +2900,8 @@ AS
     ELSIF iPsite_id = 13 THEN -- YesStyle Australia
       iLship_method := 49; -- Standard
     ELSIF iPsite_id = 14 THEN -- YesStyle Hong Kong
+      iLship_method := 49; -- Standard
+    ELSIF iPsite_id = 15 THEN -- YesStyle United Kingdom
       iLship_method := 49; -- Standard
     ELSE
       iLship_method := -1;
@@ -3187,6 +3189,12 @@ AS
           WHERE
             shopper_id = cPshopper_id
             AND site_id = iPsite_id;
+        ELSIF (iPsite_id = 15) THEN
+          UPDATE ya_checkout_data
+          SET shipping_method_id = 49
+          WHERE
+            shopper_id = cPshopper_id
+            AND site_id = iPsite_id;
         END IF;
 
         UPDATE ya_checkout_data
@@ -3210,7 +3218,7 @@ AS
       END;
     ELSE
       BEGIN
-        IF (iPsite_id = 10 or iPsite_id = 13 or iPsite_id = 14) THEN
+        IF (iPsite_id = 10 or iPsite_id = 13 or iPsite_id = 14 or iPsite_id = 15) THEN
           iLshipping_method_id := 49; -- Standard
         ELSIF (iPsite_id = 11 or iPsite_id = 12) THEN
           iLshipping_method_id := 53; -- Standard
@@ -3439,6 +3447,12 @@ AS
           WHERE
             shopper_id = cPshopper_id
             AND site_id = iPsite_id;
+        ELSIF (iPsite_id = 15) THEN
+          UPDATE ya_checkout_data
+          SET shipping_method_id = 49 -- SET shipping method to Express
+          WHERE
+            shopper_id = cPshopper_id
+            AND site_id = iPsite_id;
         END IF;
 
         UPDATE ya_checkout_data
@@ -3463,7 +3477,7 @@ AS
       END;
     ELSE
       BEGIN
-        IF (iPsite_id = 10 or iPsite_id = 13 or iPsite_id = 14) THEN
+        IF (iPsite_id = 10 or iPsite_id = 13 or iPsite_id = 14 or iPsite_id = 15) THEN
           iLshipping_method_id := 49; -- Standard		
         ELSIF (iPsite_id = 11 or iPsite_id = 12) THEN
           iLshipping_method_id := 53; -- Standard
