@@ -131,7 +131,7 @@ AS
             AND c.create_dt <= sysdate
             AND c.membership_expiry_dt >= sysdate;
       END IF;
-    ELSIF iPsite_id = 10 OR iPsite_id = 13 OR iPsite_id = 14 THEN
+    ELSIF iPsite_id = 10 OR iPsite_id = 13 OR iPsite_id = 14 OR iPsite_id = 15 THEN
       select count(*) into iLHasRecord 
       from loyalty_customer c
 	      inner join loyalty_membership m on c.loyalty_membership_id = m.id and m.membership_year = to_char(sysdate,'YYYY')	      
