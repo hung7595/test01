@@ -307,7 +307,7 @@ IS
 					LTrim(
 						(
 						SELECT
-							CASE display_mode
+							CASE rn.display_mode
 								WHEN 0 THEN s.nickname
 								WHEN 1 THEN s.firstname
 								WHEN 2 THEN s.firstname || ' ' || s.lastname
@@ -395,7 +395,7 @@ IS
 					LTrim(
 						(
 						SELECT
-							CASE display_mode
+							CASE rn.display_mode
 								WHEN 0 THEN s.nickname
 								WHEN 1 THEN s.firstname
 								WHEN 2 THEN s.firstname || ' ' || s.lastname
@@ -485,7 +485,7 @@ IS
 					LTrim(
 						(
 						SELECT
-							CASE display_mode
+							CASE rn.display_mode
 								WHEN 0 THEN s.nickname
 								WHEN 1 THEN s.firstname
 								WHEN 2 THEN s.firstname || ' ' || s.lastname
@@ -610,7 +610,7 @@ IS
 					LTrim(
 						(
 						SELECT
-							CASE display_mode
+							CASE rn.display_mode
 								WHEN 0 THEN s.nickname
 								WHEN 1 THEN s.firstname
 								WHEN 2 THEN s.firstname || ' ' || s.lastname
@@ -719,7 +719,7 @@ IS
 					LTrim(
 						(
 						SELECT
-							CASE display_mode
+							CASE rn.display_mode
 								WHEN 0 THEN s.nickname
 								WHEN 1 THEN s.firstname
 								WHEN 2 THEN s.firstname || ' ' || s.lastname
