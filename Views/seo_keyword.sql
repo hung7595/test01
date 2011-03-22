@@ -1,0 +1,6 @@
+CREATE OR REPLACE VIEW SEO_KEYWORD ("ID") AS select distinct id from ya_fe_seo_keyword
+/
+
+
+CREATE PUBLIC SYNONYM SEO_KEYWORD FOR SEO_KEYWORD
+/

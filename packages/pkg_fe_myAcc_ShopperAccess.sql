@@ -271,7 +271,7 @@ AS
             dtPdob,            
             cPAnonymous,
             1,
-			to_char(iPname_display_mode, '9')
+			to_char(iPname_display_mode)
           );
           
         iProw_affacted := SQL%ROWCOUNT;                    
@@ -379,7 +379,7 @@ AS
           nickname = cPnick_name,
           correspondence_email = cPcorrespondence_email,
           dob = dtPdob,
-		  display_mode = to_char(iPname_display_mode, '9')
+		  display_mode = to_char(iPname_display_mode)
         WHERE shopper_id = cPshopper_id;
         
         iProw_affacted := SQL%ROWCOUNT;
