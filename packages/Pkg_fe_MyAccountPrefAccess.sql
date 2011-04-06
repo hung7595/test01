@@ -49,6 +49,13 @@ As
     iPlang_id IN INT,
     curPresult OUT curGgetNews
   );
+  
+  -- 2011 Ys survey coupon 
+  PROCEDURE CreateYSSurveyCoupon2011 (
+    cPshopper_id IN VARCHAR2,
+    cPsite_id IN INT,
+    curPresult OUT curGgetNews
+  );
 
 END Pkg_fe_MyAccountPrefAccess;
 /
@@ -306,6 +313,92 @@ IS
     END IF;
 
   END GetLangPreferenceEmailList;
+  
+  PROCEDURE CreateYSSurveyCoupon2011 (
+    cPshopper_id IN VARCHAR2,
+    cPsite_id IN INT,
+    curPresult OUT curGgetNews 
+  )
+  AS
+    iLcount INT;
+    iLcoupon_code VARCHAR2(13);
+    iLcurrency VARCHAR2(3);
+    iLamount INT;
+    iLthreshold INT;
+    iLcoupon_name VARCHAR2(50);
+    iLcoupon_description VARCHAR2(50);
+  BEGIN
+    -- Define currency, amount and threshold by site id 
+    -- site, amount, threshold
+    -- YS-10, USD10, USD100 
+    -- YS_AU-13: AUD10, AUD100 
+    -- YS_HK-14: HKD100, HKD800 
+    -- YS_UK-15: GBP7, GBP70
+    IF cPsite_id=10 THEN 
+      iLcurrency:='USD';
+      iLamount:=10;
+      iLthreshold:=100;
+      iLcoupon_name:='YesStyle.com Survey Coupon 2011';
+      iLcoupon_description:='YesStyle.com Survey USD10 Coupon';
+    ELSIF cPsite_id=13 THEN 
+      iLcurrency:='AUD';
+      iLamount:=10;
+      iLthreshold:=100;
+      iLcoupon_name:='YesStyle.com.au Survey Coupon 2011';
+      iLcoupon_description:='YesStyle.com.au Survey AUD10 Coupon';
+    ELSIF cPsite_id=14 THEN 
+      iLcurrency:='HKD';
+      iLamount:=100;
+      iLthreshold:=800;
+      iLcoupon_name:='YesStyle.com.hk Survey Coupon 2011';
+      iLcoupon_description:='YesStyle.com.hk Survey HKD100 Coupon';
+    ELSIF cPsite_id=15 THEN 
+      iLcurrency:='GBP';
+      iLamount:=7;
+      iLthreshold:=70;
+      iLcoupon_name:='YesStyle.com.uk Survey Coupon 2011';
+      iLcoupon_description:='YesStyle.com.uk Survey GBP7 Coupon';
+    ELSE 
+      return;
+    END IF;
+  
+        -- Generate Coupon and Make sure unique coupon code
+    iLcount:=1;
+      WHILE (iLcount = 1)
+      LOOP
+          SELECT 'YSPO11_' || cast(dbms_random.string('U', 5) AS VARCHAR2(5)) INTO iLcoupon_code FROM dual;
+          SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
+      END LOOP;
+  
+        -- Insert data into table
+    INSERT INTO ya_coupon
+        (shopper_id, coupon_code, campaign_name, coupon_description, 
+          dollar_coupon_value, expiration_date, all_shoppers, coupon_used, coupon_type_id, 
+          site_id, order_amount_trigger, create_id, create_date, currency)
+    VALUES
+        (cPshopper_id, iLcoupon_code, iLcoupon_name, iLcoupon_description, 
+          iLamount, to_date('2011-06-29','yyyy-mm-dd'), 'N', 'N', 1, 
+          cPsite_id, iLthreshold, 'ys_survey', SYSDATE, iLcurrency);
+  
+  
+        INSERT INTO ya_coupon_site (coupon_code, site_id)
+        VALUES (iLcoupon_code, cPsite_id);
+    
+        -- For YS, all ys sites will be applied the coupon code
+        IF cPsite_id=10 THEN
+          INSERT INTO ya_coupon_site (coupon_code, site_id) VALUES (iLcoupon_code, 13);
+          INSERT INTO ya_coupon_site (coupon_code, site_id) VALUES (iLcoupon_code, 14);
+          INSERT INTO ya_coupon_site (coupon_code, site_id) VALUES (iLcoupon_code, 15);
+        END IF;
+        
+        COMMIT;
+  
+        -- Return Result
+        OPEN curPresult FOR
+    SELECT iLcoupon_code as coupon_code FROM dual;
+    RETURN;
+  END CreateYSSurveyCoupon2011;
 
 END Pkg_fe_MyAccountPrefAccess;
 /
+
