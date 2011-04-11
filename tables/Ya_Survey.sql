@@ -2,19 +2,18 @@ DROP TABLE Ya_Survey
 /
 
 CREATE TABLE Ya_Survey (
-	survey_id                    int                        NOT NULL ,
-	created_datetime             date                       DEFAULT SYSDATE NOT NULL ,
-	rowguid                      varchar2(50)               DEFAULT SYS_GUID() NOT NULL
-)	
+    id           int             NOT NULL ,
+    site_id      int             NOT NULL ,
+    name         varchar2(400)   ,
+    start_dt     date            NOT NULL , 
+    end_dt       date            NOT NULL , 
+    year         int
+)
 /
 
 ALTER TABLE Ya_Survey
-ADD CONSTRAINT PK_Survey PRIMARY KEY (survey_id)
+ADD CONSTRAINT PK_Survey PRIMARY KEY(id)
 USING INDEX TABLESPACE SSCommerceserver_Index
-/
-
-
-CREATE INDEX IX_Survey_01 ON Ya_Survey(rowguid) TABLESPACE SSCommerceserver_Index
 /
 
 

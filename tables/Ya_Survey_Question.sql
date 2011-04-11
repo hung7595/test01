@@ -2,20 +2,16 @@ DROP TABLE Ya_Survey_Question
 /
 
 CREATE TABLE Ya_Survey_Question (
-	survey_id                    int                        NOT NULL ,
-	question_id                  int                        NOT NULL ,
-	type_id                      int                        NOT NULL ,
-	rowguid                      varchar2(50)               DEFAULT SYS_GUID() NOT NULL
-)	
+    id            int              NOT NULL , 
+    survey_id     int              NOT NULL , 
+    priority      int              NOT NULL , 
+    asset_key     varchar2(100)    NOT NULL 
+)
 /
 
 ALTER TABLE Ya_Survey_Question
-ADD CONSTRAINT PK_Survey_Question PRIMARY KEY (survey_id, question_id)
+ADD CONSTRAINT PK_Survey_Question PRIMARY KEY(id)
 USING INDEX TABLESPACE SSCommerceserver_Index
-/
-
-
-CREATE UNIQUE INDEX UN_Survey_Question ON Ya_Survey_Question(rowguid) TABLESPACE SSCommerceserver_Index
 /
 
 
