@@ -440,25 +440,25 @@ IS
   BEGIN
     OPEN curPresult1 FOR
     SELECT
-      s.survey_id,
-      ql.question_id,
+      0,
+      0,
       ql.lang_id,
-      ql.question,
-      q.type_id
+      0,
+      0
     FROM
       ya_survey s,
       ya_survey_question q,
       ya_survey_question_lang ql
     WHERE
-      s.survey_id = q.survey_id
-      AND s.survey_id = ql.survey_id
-      AND q.question_id = ql.question_id
-      AND s.survey_id = iPsurveyId
-    ORDER BY ql.question_id, ql.lang_id;
+      1=0;
+--      AND s.survey_id = ql.survey_id
+--      AND q.question_id = ql.question_id
+--      AND s.survey_id = iPsurveyId
+--    ORDER BY ql.question_id, ql.lang_id
 
     OPEN curPresult2 FOR
     SELECT
-      s.survey_id,
+      0,
       sc.question_id,
       sc.code,
       cl.lang_id,
@@ -469,10 +469,11 @@ IS
       ya_survey_choice sc,
       ya_survey_choice_lang cl
     WHERE
-      s.survey_id = sc.survey_id
-      AND s.survey_id = cl.survey_id
+      1=0
+--      AND s.survey_id = sc.survey_id
+--      AND s.survey_id = cl.survey_id
       AND sc.code = cl.code
-      AND s.survey_id = iPsurveyId
+--      AND s.survey_id = iPsurveyId
     ORDER BY sc.code, cl.lang_id;
     RETURN;
   END GetSurveyInformation;
