@@ -214,11 +214,17 @@ AS
   
   PROCEDURE GetOrderCountBySiteId (
     cPshopper_id IN CHAR,
-	iPsite_id IN INT,
+	  iPsite_id IN INT,
     iPcount OUT INT
   );
 
-  /* proc_fe_GetPreCheckoutData_encrypted */
+  PROCEDURE GetAffiliateOrderCountBySiteId (
+    cPshopper_id IN CHAR,
+	  iPsite_id IN INT,
+	  iPaffiliate_id IN INT,
+    iPcount OUT INT
+  );
+
   PROCEDURE GetPreCheckoutDataEncrypted (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
@@ -2640,7 +2646,7 @@ AS
   
   PROCEDURE GetOrderCountBySiteId (
     cPshopper_id IN CHAR,
-	iPsite_id IN INT,
+	  iPsite_id IN INT,
     iPcount OUT INT
   )
   AS
@@ -2670,6 +2676,43 @@ AS
     iPcount := iLFE_count + iLBE_count;
     RETURN;
   END GetOrderCountBySiteId;
+
+  PROCEDURE GetAffiliateOrderCountBySiteId (
+    cPshopper_id IN CHAR,
+	  iPsite_id IN INT,
+	  iPaffiliate_id IN INT,
+    iPcount OUT INT
+  )
+  AS
+    iLBE_count INT;
+    iLFE_count INT;
+  BEGIN
+    SELECT COUNT(origin_order_id)
+    INTO iLBE_count
+    FROM Backend_adm.order_info
+    WHERE cust_id = cPshopper_id
+	    AND origin_id = iPsite_id
+	    AND sales_id = iPaffiliate_id
+	    AND sts NOT IN (8,9);
+
+    SELECT COUNT(order_num)
+    INTO iLFE_count
+    FROM ya_order
+    WHERE
+      shopper_id = cPshopper_id
+	    AND site_id = iPsite_id
+      AND order_num NOT IN
+        (
+          SELECT origin_order_id
+          FROM Backend_adm.order_info
+          WHERE cust_id = cPshopper_id
+					AND length(trim(origin_order_id)) > 1
+        )
+      AND order_xml like '%<saleId>' || iPaffiliate_id || '</saleId>%';
+
+    iPcount := iLFE_count + iLBE_count;
+    RETURN;
+  END GetAffiliateOrderCountBySiteId;
 
   PROCEDURE GetPreCheckoutDataEncrypted (
     cPshopper_id IN CHAR,
