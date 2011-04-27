@@ -329,7 +329,6 @@ AS
     cPcurrency IN CHAR DEFAULT 'USD'
   );
 
-  /* proc_fe_UpdateBillingAddress */
   PROCEDURE UpdateBillAddress (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
@@ -344,6 +343,7 @@ AS
     nvcPbill_to_zip IN NVARCHAR2,
     iPbill_to_country_id IN INT,
     nvcPbill_to_email IN NVARCHAR2,
+    nvcPbill_to_phone IN NVARCHAR2,
     iPaddress_id IN INT,
     cPcurrency IN CHAR DEFAULT 'USD'
   );
@@ -3606,6 +3606,7 @@ AS
     nvcPbill_to_zip IN NVARCHAR2,
     iPbill_to_country_id IN INT,
     nvcPbill_to_email IN NVARCHAR2,
+    nvcPbill_to_phone IN NVARCHAR2,
     iPaddress_id IN INT,
     cPcurrency IN CHAR DEFAULT 'USD'
   )
@@ -3637,6 +3638,7 @@ AS
         bill_to_zip = nvcPbill_to_zip,
         bill_to_country_id = iPbill_to_country_id,
         bill_to_email = nvcPbill_to_email,
+        bill_to_phone = nvcPbill_to_phone,
         bill_profile_id = iPaddress_id,
         last_updated_datetime = SYSDATE()
       WHERE
@@ -3659,6 +3661,7 @@ AS
           bill_to_zip,
           bill_to_country_id,
           bill_to_email,
+          bill_to_phone,
           bill_profile_id,
           currency
         )
@@ -3678,6 +3681,7 @@ AS
           nvcPbill_to_zip,
           iPbill_to_country_id,
           nvcPbill_to_email,
+          nvcPbill_to_phone,
           iPaddress_id,
           cPcurrency
         );
@@ -4014,6 +4018,7 @@ AS
 				bill_to_zip,
 				bill_to_country_id,
 				bill_to_email,
+				bill_to_phone,
 				bill_profile_id,
 				last_updated_datetime
 				)
@@ -4026,8 +4031,9 @@ AS
 					state_id,
 					state,
 					zip,
-					country_id,
+					country_id,					
 					email,
+					day_phone,
 					address_id,
 					SYSDATE
 				FROM
@@ -4059,6 +4065,7 @@ AS
           bill_to_zip,
           bill_to_country_id,
           bill_to_email,
+          bill_to_phone,
           bill_profile_id
         )
       SELECT
@@ -4076,6 +4083,7 @@ AS
         a.zip,
         a.country_id,
         a.email,
+        a.day_phone,
         iPaddress_id
       FROM
         YA_SHOPPER s,
