@@ -372,8 +372,8 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
           ON (o.id = ol.order_info_id)
         INNER JOIN ya_associate_prod_commission apc
           ON (apc.sku = ol.prod_id)
-      WHERE
-        o.origin_order_id IN (1,7,10)
+      WHERE 1=1
+        --o.origin_order_id IN (1,7,10)
         AND o.sales_id > -1
         AND o.parent_id = -1;
 
@@ -425,8 +425,8 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
           ON (p.sku = ol.prod_id)
         LEFT OUTER JOIN ya_associate_prod_commission apc
           ON (apc.sku = p.sku)
-      WHERE
-        o.origin_id IN (1,7,10,11,12,13,14)
+      WHERE 1=1
+        --o.origin_id IN (1,7,10,11,12,13,14)
         AND o.sales_id > -1
         AND o.parent_id = -1
         AND apc.sku IS NULL
@@ -537,8 +537,8 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
           ON (p.sku = ol.prod_id)
         LEFT OUTER JOIN ya_associate_prod_commission apc
           ON (apc.sku = p.sku)
-      WHERE
-        o.origin_id IN (1,7,10,11,12,13,14)
+      WHERE 1=1
+        --o.origin_id IN (1,7,10,11,12,13,14)
         AND sales_id > -1
         AND o.parent_id = -1
         AND apc.sku IS NULL
@@ -1181,8 +1181,8 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
           ON (o.id = ol.order_info_id)
         INNER JOIN ya_associate_prod_commission apc
           ON (apc.sku = ol.prod_id)
-      WHERE
-        o.origin_id IN (1,7,10)
+      WHERE 1=1
+        --o.origin_id IN (1,7,10)
         AND o.sales_id > -1
         AND o.parent_id = -1;
 
@@ -1234,8 +1234,8 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
           ON (p.sku = ol.prod_id)
         LEFT OUTER JOIN ya_associate_prod_commission apc
           ON (apc.sku = p.sku)
-      WHERE
-        o.origin_id IN (1,7,10,11)
+      WHERE 1=1
+        --o.origin_id IN (1,7,10,11)
         AND o.sales_id > -1
         AND o.parent_id = -1
         AND apc.sku IS NULL
@@ -1345,8 +1345,8 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
           ON (p.sku = ol.prod_id)
         LEFT OUTER JOIN ya_associate_prod_commission apc
           ON (apc.sku = p.sku)
-      WHERE
-        o.origin_id IN (1,7,10,11)
+      WHERE 1=1
+        --o.origin_id IN (1,7,10,11)
         AND o.sales_id > -1
         AND o.parent_id = -1
         AND apc.sku IS NULL
