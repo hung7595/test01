@@ -60,6 +60,12 @@ AS
   PROCEDURE RegisterMarketingNewShopper (
     cPemail IN VARCHAR2
   );
+  
+  PROCEDURE IsCompleteCustomerSurvey (
+    cPshopper_id IN VARCHAR2,
+    iPsurvey_year IN INT,
+    curPresult OUT refCur
+  );
 END Pkg_FE_ShopperAccess;
 /
 CREATE OR REPLACE PACKAGE BODY "PKG_FE_SHOPPERACCESS" 
@@ -424,5 +430,21 @@ AS
     Pkg_FE_CouponAccess.CreateMarketingCoupon(cLshopper_id);
     
   END RegisterMarketingNewShopper;
+  
+  PROCEDURE IsCompleteCustomerSurvey (
+    cPshopper_id IN VARCHAR2,
+    iPsurvey_year IN INT,
+    curPresult OUT refCur
+  )
+  AS
+  BEGIN
+    OPEN curPresult FOR
+    SELECT 1 
+    FROM ya_survey s, ya_survey_customer c 
+    WHERE s.year = iPsurvey_year 
+      AND s.id = c.survey_id
+      AND c.shopper_id = cPshopper_id
+      AND c.answer_dt IS NOT NULL;
+  END IsCompleteCustomerSurvey;  
 END Pkg_FE_ShopperAccess;
 /
