@@ -61,11 +61,11 @@ PROCEDURE CreateYsukPayPalNPCoupon (
 	INSERT INTO ya_next_purchase_coupon (coupon_code, order_id, type)
 	VALUES (cLcoupon_code, iPorderInfoId, 2);
 	
-	iPreturn := 1;
-	
 	IF sqlcode = 0 THEN
+	  iPreturn := 1;
       COMMIT;
     ELSE
+	  iPreturn := 0;
       ROLLBACK;
     END IF;
 	
