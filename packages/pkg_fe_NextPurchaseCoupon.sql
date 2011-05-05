@@ -1,10 +1,10 @@
---========================fe_create_nextpurchasecoupon======================================
--- input site id cannot be 10 YesStyle
--- Output iPreturn must be 2 = insert 2 coupons in ya_coupon
--- One coupon for YA, One coupon for YS
---==========================================================================================
 CREATE OR REPLACE PACKAGE Pkg_FE_NextPurchaseCoupon
 AS
+
+  PROCEDURE CreateYsukPayPalNPCoupon (
+	iPorderInfoId IN INT,
+	iPreturn OUT INT
+  );
   
   PROCEDURE CreateNextPurchaseCoupon (
 	cPshopper_id IN CHAR,
@@ -19,6 +19,57 @@ AS
 create or replace
 PACKAGE BODY Pkg_FE_NextPurchaseCoupon
 IS
+
+PROCEDURE CreateYsukPayPalNPCoupon (
+	iPorderInfoId IN INT,
+	iPreturn OUT INT
+  )
+  AS
+	iLcount INT;
+	iLcountCouponCode INT;
+	cLshopperId VARCHAR2(100);
+	cLcoupon_code VARCHAR2(8);
+	iLfrontendOrderNum INT;
+	cLCouponDescription VARCHAR2(150);
+	
+  BEGIN
+  select cust_id into cLshopperId from order_info where id = iPorderInfoId;
+  select count(n.coupon_code) into iLcountCouponCode from ya_next_purchase_coupon n, order_info o where o.cust_id = cLshopperId and n.order_id = o.id and n.type =2;
+	IF (iLcountCouponCode > 0) THEN
+	    iPreturn := 0;
+	    RETURN;
+	END IF;
+	
+	select cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO cLcoupon_code FROM dual;
+	select count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = cLcoupon_code;
+		WHILE (iLcount = 1)
+			LOOP
+				SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO cLcoupon_code FROM dual;
+				SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = cLcoupon_code;
+			END LOOP;
+			
+	select origin_order_id into iLfrontendOrderNum from order_info where id = iPorderInfoId;
+	cLCouponDescription := 'YesStyle.co.uk ¢G20 Next Purchase Coupon (OrderNum:' || iLfrontendOrderNum || ')';
+	select cust_id into cLshopperId from order_info where id = iPorderInfoId;
+			
+	insert into ya_coupon (coupon_code, campaign_name, coupon_description, dollar_coupon_value, order_amount_trigger, expiration_date, SHOPPER_ID, COUPON_TYPE_ID, SITE_ID, CREATE_ID, CREATE_DATE, CURRENCY)
+	values (cLcoupon_code, 'YSUK PayPal next purchase coupon', cLCouponDescription, 20, 80, add_months(SYSDATE, 3), cLshopperId, 1, 15, 'next_purchase', SYSDATE, 'GBP');
+	
+	INSERT INTO ya_coupon_site (coupon_code, site_id)
+	VALUES (cLcoupon_code, 15);
+	
+	INSERT INTO ya_next_purchase_coupon (coupon_code, order_id, type)
+	VALUES (cLcoupon_code, iPorderInfoId, 2);
+	
+	iPreturn := 1;
+	
+	IF sqlcode = 0 THEN
+      COMMIT;
+    ELSE
+      ROLLBACK;
+    END IF;
+	
+  END CreateYsukPayPalNPCoupon;
 
 PROCEDURE CreateNextPurchaseCoupon (
 	cPshopper_id IN CHAR,
@@ -102,10 +153,10 @@ PROCEDURE CreateNextPurchaseCoupon (
 			VALUES (cLcoupon_code_YS, 13);
 
 			--============================ Keep record for sending email===============================
-			INSERT INTO ya_next_purchase_coupon (coupon_code, order_id)
-				VALUES (cLcoupon_code_YS, iPorder_id);
-			INSERT INTO ya_next_purchase_coupon (coupon_code, order_id)
-				VALUES (cLcoupon_code_YA, iPorder_id);
+			INSERT INTO ya_next_purchase_coupon (coupon_code, order_id, type)
+				VALUES (cLcoupon_code_YS, iPorder_id, 1);
+			INSERT INTO ya_next_purchase_coupon (coupon_code, order_id, type)
+				VALUES (cLcoupon_code_YA, iPorder_id, 1);
 
 			SELECT count(*) INTO iPreturn FROM ya_coupon WHERE coupon_code = cLcoupon_code_YS OR coupon_code = cLcoupon_code_YA;
 		ELSE
