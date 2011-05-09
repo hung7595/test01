@@ -49,7 +49,7 @@ PROCEDURE CreateYsukPayPalNPCoupon (
 			END LOOP;
 			
 	select origin_order_id into iLfrontendOrderNum from order_info where id = iPorderInfoId;
-	cLCouponDescription := 'YesStyle.co.uk ¢G20 Next Purchase Coupon (OrderNum:' || iLfrontendOrderNum || ')';
+	cLCouponDescription := 'YesStyle.co.uk GBP20 Next Purchase Coupon (OrderNum:' || iLfrontendOrderNum || ')';
 	select cust_id into cLshopperId from order_info where id = iPorderInfoId;
 			
 	insert into ya_coupon (coupon_code, campaign_name, coupon_description, dollar_coupon_value, order_amount_trigger, expiration_date, SHOPPER_ID, COUPON_TYPE_ID, SITE_ID, CREATE_ID, CREATE_DATE, CURRENCY)
