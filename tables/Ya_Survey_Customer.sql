@@ -6,9 +6,9 @@ CREATE TABLE Ya_Survey_Customer (
     survey_id        int               NOT NULL , 
     shopper_id       varchar2(32)      , 
     email            varchar2(255)     ,
-    create_dt        date NOT NULL     ,
-    mod_dt           date NOT NULL     ,
-    answer_dt        date NOT NULL
+    create_dt        date              NOT NULL ,
+    mod_dt           date              NOT NULL ,
+    answer_dt        date
 )
 /
 
