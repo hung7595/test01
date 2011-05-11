@@ -58,6 +58,8 @@ AS
   );
   
   PROCEDURE RegisterMarketingNewShopper (
+    cPfirst_name IN VARCHAR2,
+    cPlast_name IN VARCHAR2,
     cPemail IN VARCHAR2
   );
   
@@ -401,6 +403,8 @@ AS
   END AddShopperRegisterSiteId;
   
   PROCEDURE RegisterMarketingNewShopper (
+    cPfirst_name IN VARCHAR2,
+    cPlast_name IN VARCHAR2,
     cPemail IN VARCHAR2
   )
   AS
@@ -421,9 +425,9 @@ AS
       SELECT sys_guid() INTO cLshopper_id FROM dual;
       SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO cLpassword FROM dual;
       
-      Pkg_FE_ShopperAccess.RegisterNewShopper(cLshopper_id, '', cPemail, cPemail
+      Pkg_FE_ShopperAccess.RegisterNewShopper(cLshopper_id, cPfirst_name, cPlast_name, cPemail
         , cLpassword, cLresult, 1);
-      Pkg_FE_ShopperAccess.AddShopperRegisterSiteId(cLshopper_id, 13);
+      Pkg_FE_ShopperAccess.AddShopperRegisterSiteId(cLshopper_id, 10);
     END;
     END IF;
     
