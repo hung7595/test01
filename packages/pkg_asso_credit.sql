@@ -73,7 +73,7 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
       from order_info o
       left join ya_associate_link_orders alo on o.origin_order_id = alo.origin_order_id
       inner join ya_associate_link al on o.sales_id = al.link_id
-      inner join ya_associate ass on al.associate_id = ass.associate_id and ass.type_id <> 1-- exclude regular type associate
+      inner join ya_associate asso on al.associate_id = asso.associate_id and asso.type_id <> 1-- exclude regular type associate
       where
          alo.origin_order_id is null
          and o.order_dt>to_date('11/09/2006', 'dd/mm/yyyy')
