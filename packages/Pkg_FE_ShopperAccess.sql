@@ -431,7 +431,7 @@ AS
     END;
     END IF;
     
-    Pkg_FE_CouponAccess.CreateMarketingCoupon(cLshopper_id);
+    Pkg_FE_CouponAccess2.CreateMarketingCoupon(cLshopper_id);
     
   END RegisterMarketingNewShopper;
   

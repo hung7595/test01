@@ -1,22 +1,27 @@
-CREATE OR REPLACE PACKAGE "CRON_FE_POPCORNCAMPAIGN" 
+CREATE OR REPLACE PACKAGE "CRON_FE_POPCORNCAMPAIGN"
 AS
   PROCEDURE CronJobUpdateCampaign;
+  
+  PROCEDURE CronJobUpdateBlurayCampaign;
+  
 END Cron_fe_PopcornCampaign;
 /
+
+
 CREATE OR REPLACE PACKAGE BODY "CRON_FE_POPCORNCAMPAIGN" AS
 
   PROCEDURE CronJobUpdateCampaign AS
   BEGIN
-    
+
 	  -- Empty temp table
 	  EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_popcorn_campaign';
-	  
+
 	insert into temp_popcorn_campaign (sku)
 	select a.sku from
 	(
-		select prod.sku as sku, case when sysdate between region.sale_price_start and region.sale_price_end and nvl(region.sale_price, 0) > 0 then region.sale_price else region.list_price end as sell_price 
+		select prod.sku as sku, case when sysdate between region.sale_price_start and region.sale_price_end and nvl(region.sale_price, 0) > 0 then region.sale_price else region.list_price end as sell_price
 		from ya_product prod, prod_region region, exchange_rate rate, exchange_rate_version version, ya_prod_attr p_attr
-		where rate.EXCHANGE_RATE_VERSION_ID = version.id 
+		where rate.EXCHANGE_RATE_VERSION_ID = version.id
 			and version.EFFECTIVE_START_DT < sysdate and version.EFFECTIVE_END_DT > sysdate and version.id != 0
 			and region.cost_currency = rate.currency
 			and prod.sku = region.prod_id
@@ -30,9 +35,9 @@ CREATE OR REPLACE PACKAGE BODY "CRON_FE_POPCORNCAMPAIGN" AS
 			and prod.account_id in (104,14,41,7,132,33,9,103,10,34,90,11,12,156,150,13,4,133,394,32,396,120,155,134,24,25,64,63,26)
 	) a,
 	(
-		select prod.sku as sku, case when sysdate between region.sale_price_start and region.sale_price_end and nvl(region.sale_price, 0) > 0 then region.sale_price else region.list_price end as sell_price 
+		select prod.sku as sku, case when sysdate between region.sale_price_start and region.sale_price_end and nvl(region.sale_price, 0) > 0 then region.sale_price else region.list_price end as sell_price
 		from ya_product prod, prod_region region, exchange_rate rate, exchange_rate_version version, ya_prod_attr p_attr
-		where rate.EXCHANGE_RATE_VERSION_ID = version.id 
+		where rate.EXCHANGE_RATE_VERSION_ID = version.id
 			and version.EFFECTIVE_START_DT < sysdate and version.EFFECTIVE_END_DT > sysdate and version.id != 0
 			and region.cost_currency = rate.currency
 			and prod.sku = region.prod_id
@@ -48,15 +53,15 @@ CREATE OR REPLACE PACKAGE BODY "CRON_FE_POPCORNCAMPAIGN" AS
 	where a.sell_price > 9.99
 	and b.sell_price > 9.99
 	and a.sku = b.sku;
-	
-	-- sku must be includeed in the campaigninsert into temp_popcorn_campaign 
+
+	-- sku must be includeed in the campaigninsert into temp_popcorn_campaign
 	INSERT INTO temp_popcorn_campaign
 		SELECT a.sku FROM (select sku from ya_product where sku in (1021222460,1021222369,1021162198,1020582671,1014032771,
 			1005118924,1012950057,1010746556,1003947238,1013867193,1014045401,1019892169,1020253253,1014027276,1004777750,
 			1014446135,1020518903,1004624361,1004027612,1004412015,1021566152,1003535332,1001821648,1011134003,1003845394,
 			1014025985,1002951605,1020418112,1021174932,1020506171,1014412920,1014419454,1014455186,1014402658,1014032737,
 			1021882026,1014454809,1014297249,1021972368,1022091332,1022168371
-			) ) a 
+			) ) a
 			left join temp_popcorn_campaign c on c.sku = a.sku where c.sku is null;
 	INSERT INTO temp_popcorn_campaign
 		SELECT a.sku FROM (select sku from ya_product where sku in (
@@ -67,7 +72,7 @@ CREATE OR REPLACE PACKAGE BODY "CRON_FE_POPCORNCAMPAIGN" AS
 			1003333462,1002951521,4872,1000000598,1000000604,1000000605,1000000606,1000000976,1000000977,1014455193,1002744846,
 			1014404665,1001811895,1001803274,1000030191,1000030193,1000030196,1001803924,1004315429,1004583064,1004600286,1001816469,
 			1004095427,1003977873,1001833617,1003175463,1002870572,1001858055,1004099487,1001830269,1001830698,1001831557,1004103940
-			) ) a 
+			) ) a
 			left join temp_popcorn_campaign c on c.sku = a.sku where c.sku is null;
 	INSERT INTO temp_popcorn_campaign
 		SELECT a.sku FROM (select sku from ya_product where sku in (
@@ -78,7 +83,7 @@ CREATE OR REPLACE PACKAGE BODY "CRON_FE_POPCORNCAMPAIGN" AS
 			1000026040,1001803560,1001821242,1003947232,1003831088,1002492152,1003399871,1010096984,1004482687,1004482688,
 			1002904684,1002857340,1002853399,1002912538,1002916513,1001851423,1003973291,1001834161,1001834292,1001834299,
 			1002951433,1001815595,1003267917,1003327681,1003327682,1003327684,1002846399,1002732980,1000042912,1000013305,1001801810
-			) ) a 
+			) ) a
 			left join temp_popcorn_campaign c on c.sku = a.sku where c.sku is null;
 	INSERT INTO temp_popcorn_campaign
 		SELECT a.sku FROM (select sku from ya_product where sku in (
@@ -89,7 +94,7 @@ CREATE OR REPLACE PACKAGE BODY "CRON_FE_POPCORNCAMPAIGN" AS
 			1001827655,1021412792,1014454836,1004541216,1011078447,1003675274,1001825310,1010917058,1010917073,1010724002,1000023085,
 			1010019030,1004895219,1004659457,1003269674,1002156262,1004547015,1004513813,1004513888,1004482693,1004475861,1001804891,
 			1003795241,1004439057,1000004192,1003365913,1003365927,3030,3931,1004163425,1004163326,1004306570,1004280517,1004306615
-			) ) a 
+			) ) a
 			left join temp_popcorn_campaign c on c.sku = a.sku where c.sku is null;
 	INSERT INTO temp_popcorn_campaign
 		SELECT a.sku FROM (select sku from ya_product where sku in (
@@ -101,7 +106,7 @@ CREATE OR REPLACE PACKAGE BODY "CRON_FE_POPCORNCAMPAIGN" AS
 			1001813868,1003323984,1001812257,1001803259,1001803020,1000030211,1002844951,1002491366,1002339260,1000022296,1000022293,
 			1000015807,1000015803,1001844854,1000007732,1000007735,1000005520,1000005521,1000005522,1000005523,1000002896,1000003530,
 			1000000956,1000000957,1000000984,1000028689,1000001961,1000000595,1000000596,1003542800,1001831391,1000005003,1000005005
-			) ) a 
+			) ) a
 			left join temp_popcorn_campaign c on c.sku = a.sku where c.sku is null;
 	INSERT INTO temp_popcorn_campaign
 		SELECT a.sku FROM (select sku from ya_product where sku in (
@@ -110,7 +115,7 @@ CREATE OR REPLACE PACKAGE BODY "CRON_FE_POPCORNCAMPAIGN" AS
 			1004104417,1001853402,1001821241,1003947420,1003947479,1003845974,1003744309,1003248863,1002854256,1002912533,1002916506,
 			1002525790,1002469184,1000015808,1000023901,1003201521,1000004262,1001823770,1003613028,1003908612,1002392705,1002444411,
 			1000030603,1001845066,1003795249,1002523729,1002266444,1001906058,1001836409,1000006142,7948,6183,6633,3511,3022,3027
-			) ) a 
+			) ) a
 			left join temp_popcorn_campaign c on c.sku = a.sku where c.sku is null;
 	INSERT INTO temp_popcorn_campaign
 		SELECT a.sku FROM (select sku from ya_product where sku in (
@@ -118,16 +123,16 @@ CREATE OR REPLACE PACKAGE BODY "CRON_FE_POPCORNCAMPAIGN" AS
 			1004007070,1003914818,1003789189,1003183256,1003119205,1003022097,1002984756,1002857297,1002851520,1002840005,1002522722,
 			1002446064,1002467698,1002444376,1001859699,1001859713,1001845067,1004101015,1001837424,1001833471,1003800684,1003323306,
 			1002995236,1001808666,1001806588,1000034563,1002885867,1002491348,1002527088,1000015804,1001836174,1001841843,1001835729,
-			1000010221,1000007720,1000005010,1000002631,1000003529,1000003531,1001805142,1000007321,1022498660,1022500636			
-			) ) a 
+			1000010221,1000007720,1000005010,1000002631,1000003529,1000003531,1001805142,1000007321,1022498660,1022500636
+			) ) a
 			left join temp_popcorn_campaign c on c.sku = a.sku where c.sku is null;
-			
+
 	delete from temp_popcorn_campaign where sku = 1020582831;
 
 	delete from ya_campaign where campaign_code = 216 and sku not in (select sku from temp_popcorn_campaign);
-	
-	insert into ya_campaign (campaign_code, sku, campaign_datetime, created_datetime) 
-	select 216, sku, sysdate, sysdate from temp_popcorn_campaign 
+
+	insert into ya_campaign (campaign_code, sku, campaign_datetime, created_datetime)
+	select 216, sku, sysdate, sysdate from temp_popcorn_campaign
 	where sku not in (select sku from ya_campaign where campaign_code = 216);
 
 
@@ -138,6 +143,65 @@ CREATE OR REPLACE PACKAGE BODY "CRON_FE_POPCORNCAMPAIGN" AS
 	END IF;
   END CronJobUpdateCampaign;
 
+  PROCEDURE CronJobUpdateBlurayCampaign AS
+  BEGIN
+
+	  -- Empty temp table
+	  EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_popcorn_campaign';
+
+	insert into temp_popcorn_campaign (sku)
+	select a.sku from
+	(
+		select prod.sku as sku, case when sysdate between region.sale_price_start and region.sale_price_end and nvl(region.sale_price, 0) > 0 then region.sale_price else region.list_price end as sell_price
+		from ya_product prod, prod_region region, exchange_rate rate, exchange_rate_version version, ya_prod_attr p_attr
+		where rate.EXCHANGE_RATE_VERSION_ID = version.id
+			and version.EFFECTIVE_START_DT < sysdate and version.EFFECTIVE_END_DT > sysdate and version.id != 0
+			and region.cost_currency = rate.currency
+			and prod.sku = region.prod_id
+			and p_attr.sku = prod.sku
+			and p_attr.ATTRIBUTE_ID = 81682
+			and prod.weight < 201
+			and region.is_can_sell = 'Y'
+			and region.is_enabled = 'Y'
+			and region.unit_cost / nvl(rate.exchange_rate, 1) < 13
+			and region.region_id = 1
+			and prod.account_id in (14, 81, 10, 85, 11, 87, 12, 89, 13, 91, 134, 24, 25, 64, 63, 26)
+	) a,
+	(
+		select prod.sku as sku, case when sysdate between region.sale_price_start and region.sale_price_end and nvl(region.sale_price, 0) > 0 then region.sale_price else region.list_price end as sell_price
+		from ya_product prod, prod_region region, exchange_rate rate, exchange_rate_version version, ya_prod_attr p_attr
+		where rate.EXCHANGE_RATE_VERSION_ID = version.id
+			and version.EFFECTIVE_START_DT < sysdate and version.EFFECTIVE_END_DT > sysdate and version.id != 0
+			and region.cost_currency = rate.currency
+			and prod.sku = region.prod_id
+			and p_attr.sku = prod.sku
+			and p_attr.ATTRIBUTE_ID = 81682
+			and prod.weight < 201
+			and region.is_can_sell = 'Y'
+			and region.is_enabled = 'Y'
+			and region.unit_cost / nvl(rate.exchange_rate, 1) < 13
+			and region.region_id = 7
+			and prod.account_id in (14, 81, 10, 85, 11, 87, 12, 89, 13, 91, 134, 24, 25, 64, 63, 26)
+	) b
+	where a.sell_price >= 20.49
+	and b.sell_price >= 20.49
+	and a.sell_price <= 25
+	and b.sell_price <= 25
+	and a.sku = b.sku;
+
+	delete from ya_campaign where campaign_code = 294 and sku not in (select sku from temp_popcorn_campaign);
+
+	insert into ya_campaign (campaign_code, sku, campaign_datetime, created_datetime)
+	select 294, sku, sysdate, sysdate from temp_popcorn_campaign
+	where sku not in (select sku from ya_campaign where campaign_code = 294);
+
+
+	IF (SQLCODE = 0) THEN
+		COMMIT;
+	ELSE
+		ROLLBACK;
+	END IF;
+  END CronJobUpdateBlurayCampaign;
+
 END CRON_FE_POPCORNCAMPAIGN;
 /
- 

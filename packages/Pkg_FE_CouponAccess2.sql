@@ -643,27 +643,63 @@ AS
 		iLcount INT;
 		iLcoupon_code VARCHAR2(9);
   BEGIN
-    -- Generate Coupon
-		SELECT 'ASIA_' || cast(dbms_random.string('U', 4) AS VARCHAR2(4)) INTO iLcoupon_code FROM dual;
-
-		-- Make sure unique coupon code
+    -- Generate Coupon 1
+		SELECT cast(dbms_random.string('U', 7) AS VARCHAR2(7)) INTO iLcoupon_code FROM dual;
 		SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
 		WHILE (iLcount = 1)
 			LOOP
-					SELECT 'ASIA_' || cast(dbms_random.string('U', 4) AS VARCHAR2(4)) INTO iLcoupon_code FROM dual;
+					SELECT cast(dbms_random.string('U', 7) AS VARCHAR2(7)) INTO iLcoupon_code FROM dual;
+					SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
+			END LOOP;
+
+		INSERT INTO ya_coupon
+      (shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value, expiration_date
+      , all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, CREATE_DATE, currency)
+	  SELECT cPshopper_id, iLcoupon_code, 'Coupons for Puricute Members', 'Coupons for Puricute Members', 10, to_date('31/05/2012', 'dd/mm/yyyy')
+	    , 'P', 'N', 1, 10, 0, 'marketing', SYSDATE, 'USD'
+		FROM dual;
+		
+		INSERT INTO ya_coupon_site (coupon_code, site_id)
+		VALUES (iLcoupon_code, 10);		
+		
+    -- Generate Coupon 2
+		SELECT cast(dbms_random.string('U', 7) AS VARCHAR2(7)) INTO iLcoupon_code FROM dual;
+		SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
+		WHILE (iLcount = 1)
+			LOOP
+					SELECT cast(dbms_random.string('U', 7) AS VARCHAR2(7)) INTO iLcoupon_code FROM dual;
+					SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
+			END LOOP;
+
+		INSERT INTO ya_coupon
+      (shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value, expiration_date
+      , all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, CREATE_DATE, currency)
+	  SELECT cPshopper_id, iLcoupon_code, 'Coupons for Puricute Members', 'Coupons for Puricute Members', 10, to_date('31/05/2012', 'dd/mm/yyyy')
+	    , 'P', 'N', 1, 10, 0, 'marketing', SYSDATE, 'USD'
+		FROM dual;
+		
+		INSERT INTO ya_coupon_site (coupon_code, site_id)
+		VALUES (iLcoupon_code, 10);		
+		
+		-- Generate Coupon 3
+		SELECT cast(dbms_random.string('U', 7) AS VARCHAR2(7)) INTO iLcoupon_code FROM dual;
+		SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
+		WHILE (iLcount = 1)
+			LOOP
+					SELECT cast(dbms_random.string('U', 7) AS VARCHAR2(7)) INTO iLcoupon_code FROM dual;
 					SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
 			END LOOP;
 
 		INSERT INTO ya_coupon
       (shopper_id, coupon_code, campaign_name, coupon_description, percentage_coupon_value, expiration_date
       , all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, CREATE_DATE, currency)
-	  SELECT cPshopper_id, iLcoupon_code, 'ASIA5', 'ASIA5', 0.05, to_date('30/04/2011', 'dd/mm/yyyy')
-	    , 'P', 'N', 2, 13, 0, 'marketing', SYSDATE, 'AUD'
+	  SELECT cPshopper_id, iLcoupon_code, 'Coupons for Puricute Members', 'Coupons for Puricute Members', 0.05, to_date('31/05/2012', 'dd/mm/yyyy')
+	    , 'P', 'N', 2, 10, 0, 'marketing', SYSDATE, 'USD'
 		FROM dual;
 		
 		INSERT INTO ya_coupon_site (coupon_code, site_id)
-		VALUES (iLcoupon_code, 13);
-		
+		VALUES (iLcoupon_code, 10);
+				
 	  COMMIT;
 
 		RETURN;  
