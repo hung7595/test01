@@ -49,6 +49,7 @@ BEGIN
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,14,12,null,isold_out_status,vsuggestedSystem);
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,14,13,null,isold_out_status,vsuggestedSystem);
  	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,14,14,null,isold_out_status,vsuggestedSystem);
+ 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,14,15,null,isold_out_status,vsuggestedSystem);
 	ELSE
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,14,:new.site_id,null,isold_out_status,vsuggestedSystem);
 	END IF;
@@ -82,6 +83,9 @@ BEGIN
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,2,14,null,null,vsuggestedSystem);
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,3,14,null,null,vsuggestedSystem);
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,4,14,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,2,15,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,3,15,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,4,15,null,null,vsuggestedSystem);
 	ELSE
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,2,:new.site_id,null,null,vsuggestedSystem);
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,3,:new.site_id,null,null,vsuggestedSystem);
@@ -99,6 +103,7 @@ BEGIN
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,12,null,'N',vsuggestedSystem);
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,13,null,'N',vsuggestedSystem);
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,14,null,'N',vsuggestedSystem);	  
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,15,null,'N',vsuggestedSystem);
 	ELSE
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,:new.site_id,null,'N',vsuggestedSystem);
 	END IF;
@@ -106,4 +111,6 @@ BEGIN
   END IF;
 
 END;
+/
+
 
