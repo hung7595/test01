@@ -189,12 +189,20 @@ CREATE OR REPLACE PACKAGE BODY "CRON_FE_POPCORNCAMPAIGN" AS
 	and b.sell_price <= 25
 	and a.sku = b.sku;
 
+	-- sku must be includeed in the campaigninsert into temp_popcorn_campaign
+	-- bugzilla 12210
+	INSERT INTO temp_popcorn_campaign
+		SELECT a.sku FROM (select sku from ya_product where sku in (1023974978, 1024136639, 1024215456, 1023684688, 1024208490, 1024381694
+			) ) a
+			left join temp_popcorn_campaign c on c.sku = a.sku where c.sku is null;
+	-- end bugzilla 12210
+	
 	delete from ya_campaign where campaign_code = 294 and sku not in (select sku from temp_popcorn_campaign);
 
 	insert into ya_campaign (campaign_code, sku, campaign_datetime, created_datetime)
 	select 294, sku, sysdate, sysdate from temp_popcorn_campaign
 	where sku not in (select sku from ya_campaign where campaign_code = 294);
-
+    
 
 	IF (SQLCODE = 0) THEN
 		COMMIT;
