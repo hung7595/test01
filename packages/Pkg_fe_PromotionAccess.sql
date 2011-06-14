@@ -595,7 +595,7 @@ IS
   AS
   BEGIN
     OPEN rcPresult1 FOR
-      SELECT yp.campaign_code, yp.type 
+      SELECT iPpromotion_id, yp.type 
       FROM ya_promotion yp
       WHERE yp.id = iPpromotion_id;
       

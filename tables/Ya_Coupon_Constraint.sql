@@ -2,10 +2,10 @@ DROP TABLE Ya_Coupon_Constraint
 /
 
 CREATE TABLE Ya_Coupon_Constraint (
-	coupon_code                     varchar2(32)                 NOT NULL ,
-	constraint_type                 varchar2(50)                 NOT NULL ,        
-	constraint_value                varchar2(255)                NOT NULL ,        
-	created_datetime                number(18,2)                 NOT NULL
+	coupon_code                varchar2(32)        NOT NULL ,
+	constraint_type            int                 NOT NULL ,        
+	constraint_value           int                 NOT NULL ,        
+	created_datetime           date                NOT NULL
 )
 /
 
