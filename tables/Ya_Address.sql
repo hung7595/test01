@@ -23,9 +23,10 @@ CREATE TABLE Ya_Address (
 	mobile_phone                         varchar2(80)             ,
 	email                                varchar2(255)            ,
 	site_id                              int                      ,
-	rowguid                              varchar2(50)             DEFAULT sys_guid() NOT NULL ,
+	rowguid                              varchar2(50)             DEFAULT sys_guid() ,
 	lang_id                              int                      NOT NULL ,
 	city_id                              int                      DEFAULT (-1)
+	created_by_checkout_session          char(1)                  DEFAULT 'N'
 )
 /
 
