@@ -535,6 +535,7 @@ AS
 		INNER JOIN ya_coupon_site cs ON c.coupon_code = cs.coupon_code
 		WHERE coupon_used <> 'Y'
 		AND c.expiration_date >= SYSDATE
+		AND not exists (SELECT 1 FROM ya_coupon_exclude_display ced WHERE ced.shopper_id = cPshopper_id AND ced.coupon_code = c.coupon_code)
 		AND (
 			c.shopper_id = cPshopper_id
 			OR

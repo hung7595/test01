@@ -26,7 +26,7 @@ CREATE TABLE Ya_Address (
 	rowguid                              varchar2(50)             DEFAULT sys_guid() ,
 	lang_id                              int                      NOT NULL ,
 	city_id                              int                      DEFAULT (-1)
-	created_by_checkout_session          char(1)                  DEFAULT 'N'
+	created_by_checkout_session          char(1)                  DEFAULT 'N' NOT NULL
 )
 /
 
