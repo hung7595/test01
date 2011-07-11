@@ -29,6 +29,15 @@ CREATE INDEX IX_Associate_Link_Orders_01 ON Ya_Associate_Link_Orders(rowguid) TA
 CREATE INDEX IX_Associate_Link_Orders_02 ON Ya_Associate_Link_Orders(TO_CHAR(ORDER_NUM)) TABLESPACE SSCommerceserver_Index
 /
 
+CREATE INDEX IX_Associate_Link_Orders_03 ON Ya_Associate_Link_Orders(order_date, credit_status) TABLESPACE SSCommerceserver_Index
+/
+
+CREATE INDEX IX_Associate_Link_Orders_04 ON Ya_Associate_Link_Orders(origin_order_id) TABLESPACE SSCommerceserver_Index
+/
+
+CREATE INDEX IX_Associate_Link_Orders_05 ON Ya_Associate_Link_Orders(CASE WHEN credit_status =1 THEN 'Y' ELSE NULL END) TABLESPACE SSCommerceserver_Index
+/
+
 
 CREATE PUBLIC SYNONYM Ya_Associate_Link_Orders FOR Ya_Associate_Link_Orders
 /
