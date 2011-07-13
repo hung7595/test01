@@ -18,6 +18,13 @@ ALTER TABLE Ya_Frontend_Content_Site
 ADD CONSTRAINT FK_Frontend_Content_Site_01 FOREIGN KEY (frontend_content_id) REFERENCES Ya_Frontend_Content(id)
 /
 
+CREATE UNIQUE INDEX UN_Frontend_Content_Site_01 ON Ya_Frontend_Content_Site
+    (
+      frontend_content_id, 
+      site_id
+    ) TABLESPACE SSCommerceserver_Index
+/
+
 
 CREATE PUBLIC SYNONYM Ya_Frontend_Content_Site FOR Ya_Frontend_Content_Site
 /

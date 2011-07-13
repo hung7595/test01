@@ -20,6 +20,14 @@ ALTER TABLE Ya_Frontend_Content_Lang
 ADD CONSTRAINT FK_Frontend_Content_Lang_01 FOREIGN KEY (frontend_content_id) REFERENCES Ya_Frontend_Content(id)
 /
 
+CREATE UNIQUE INDEX UN_Frontend_Content_Lang_01 ON Ya_Frontend_Content_Lang
+    (
+      frontend_content_id, 
+      lang_id, 
+      site_id
+    ) TABLESPACE SSCommerceserver_Index
+/
+
 
 CREATE PUBLIC SYNONYM Ya_Frontend_Content_Lang FOR Ya_Frontend_Content_Lang
 /
