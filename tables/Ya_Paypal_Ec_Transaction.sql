@@ -6,13 +6,13 @@ CREATE TABLE Ya_Paypal_Ec_Transaction (
     site_id                           int               NOT NULL ,
     shopper_id                        char(32)          NOT NULL ,
     ya_ref_id                         char(32)          ,
-    ec_token                          nvarchar2(100)    ,
-    ec_payer_id                       nvarchar2(100)    ,
-    ec_transaction_id                 nvarchar2(100)    ,
+    ec_token                          nvarchar2(20)     ,
+    ec_payer_id                       nvarchar2(13)     ,
+    ec_transaction_id                 nvarchar2(19)     ,
     set_express_checkout_completed    CHAR(1)           NOT NULL ,
     order_num                         int               ,
     create_dt                         date              NOT NULL ,
-    mod_dt                            date              NOT NULL
+    mod_dt                            date              DEFAULT sysdate NOT NULL
 )
 /
 ALTER TABLE Ya_Paypal_Ec_Transaction
