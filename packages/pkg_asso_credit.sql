@@ -75,7 +75,8 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
       inner join ya_associate_link al on o.sales_id = al.link_id
       inner join ya_associate asso on al.associate_id = asso.associate_id and asso.type_id <> 1-- exclude regular type associate
       where
-         alo.origin_order_id is null
+         1=1
+--         alo.origin_order_id is null
          and o.order_dt>to_date('11/09/2006', 'dd/mm/yyyy')
          and o.origin_order_id is not null
          and o.category in
@@ -511,7 +512,7 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
         o.sales_id,
         (
           CASE
-            WHEN Isnumber(origin_order_id) = 1 THEN origin_order_id
+            WHEN Isnumber(o.origin_order_id) = 1 THEN o.origin_order_id
             ELSE NULL
           END
         ),
@@ -898,7 +899,8 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
           inner join billing_info bi on (bi.order_info_id = o.id and bi.method <> 13)
           inner join ya_associate_link al on 1=1
           inner join ya_associate a on al.associate_id = a.associate_id and a.type_id <> 1
-      where alo.credit_status = 1
+      --where alo.credit_status = 1
+      where (CASE WHEN (alo.credit_status=1) THEN 'Y' ELSE NULL END) = 'Y'
         and (a.shopper_id <> o.cust_id
         or a.associate_id in (7176, 7312, 5672, 6638, 8673, 8491))
         and a.associate_id <> 2779
