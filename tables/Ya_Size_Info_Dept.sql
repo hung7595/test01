@@ -10,7 +10,7 @@ CREATE TABLE Ya_Size_Info_Dept (
 /
 
 ALTER TABLE Ya_Size_Info_Dept
-ADD CONSTRAINT PK_Survey PRIMARY KEY(iregion_id, lang_id, size_info, dept_id)
+ADD CONSTRAINT PK_Size_Info_Dept PRIMARY KEY(region_id, lang_id, size_info, dept_id)
 USING INDEX TABLESPACE SSCommerceserver_Index
 /
 

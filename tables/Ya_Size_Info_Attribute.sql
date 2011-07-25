@@ -10,7 +10,7 @@ CREATE TABLE Ya_Size_Info_Attribute (
 /
 
 ALTER TABLE Ya_Size_Info_Attribute
-ADD CONSTRAINT PK_Survey PRIMARY KEY(iregion_id, lang_id, size_info, attribute_id)
+ADD CONSTRAINT PK_Size_Info_Attribute PRIMARY KEY(attribute_id, region_id, lang_id, size_info)
 USING INDEX TABLESPACE SSCommerceserver_Index
 /
 
