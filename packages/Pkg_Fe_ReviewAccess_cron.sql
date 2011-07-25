@@ -1,21 +1,15 @@
-
-REM START SS_ADM PKG_FE_REVIEWACCESS_CRON
-
   CREATE OR REPLACE PACKAGE "PKG_FE_REVIEWACCESS_CRON" 
 AS
   TYPE refCur IS REF CURSOR;
 
-	PROCEDURE GetEditorReviewNumBySku (
-		iProwAffect OUT INT
-  );
+	PROCEDURE GetEditorReviewNumBySku;
 
 END Pkg_Fe_ReviewAccess_cron;
 /
+
 CREATE OR REPLACE PACKAGE BODY PKG_FE_REVIEWACCESS_CRON
 IS
-	PROCEDURE GetEditorReviewNumBySku (
-		iProwAffect OUT INT
-	)
+	PROCEDURE GetEditorReviewNumBySku
   AS
   BEGIN
 		INSERT INTO ya_emag_editor_review_prod(sku, site_id, lang_id)
@@ -43,7 +37,6 @@ IS
 		)
 		group by prodRat.sku, prodReg.originId, prodRatLang.lang_id;
 
-		iProwAffect := sql%rowcount;
 
 		COMMIT;
     RETURN;
@@ -51,5 +44,4 @@ IS
 
 END Pkg_Fe_ReviewAccess_cron;
 /
- 
-REM END SS_ADM PKG_FE_REVIEWACCESS_CRON
+

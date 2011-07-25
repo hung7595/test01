@@ -12,6 +12,10 @@ CREATE TABLE Ya_Artist_Deleted (
 )
 /
 
+ALTER TABLE Ya_Artist_Deleted
+ADD CONSTRAINT PK_Artist_Deleted PRIMARY KEY (artist_id)
+USING INDEX TABLESPACE SSCommerceserver_Index
+/
 
 CREATE PUBLIC SYNONYM Ya_Artist_Deleted FOR Ya_Artist_Deleted
 /
