@@ -197,6 +197,8 @@ CREATE OR REPLACE PACKAGE BODY "CRON_FE_POPCORNCAMPAIGN" AS
 			left join temp_popcorn_campaign c on c.sku = a.sku where c.sku is null;
 	-- end bugzilla 12210
 	
+	delete from temp_popcorn_campaign where sku = 1024208490;
+	
 	delete from ya_campaign where campaign_code = 294 and sku not in (select sku from temp_popcorn_campaign);
 
 	insert into ya_campaign (campaign_code, sku, campaign_datetime, created_datetime)
