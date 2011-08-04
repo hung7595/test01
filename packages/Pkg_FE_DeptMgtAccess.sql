@@ -10,7 +10,7 @@ AS
   iPattrType in int,
   iPattributeId out int
   );
-  
+
   PROCEDURE AddDeptStep1 (
     iPdispSeq IN INT,
     cPuser IN VARCHAR2,
@@ -33,51 +33,52 @@ AS
     cPysauEnabled IN CHAR,
     cPyshkEnabled IN CHAR,
     cPysukEnabled IN CHAR,
+    cPyscaEnabled IN CHAR,
     cPhmEnabled IN CHAR,
     iPdeptId out int
   );
-  
-  PROCEDURE AddDeptStep2 (  
+
+  PROCEDURE AddDeptStep2 (
   iPdeptId IN INT,
   iPattributeId IN INT,
   iProw_affacted OUT INT
   );
-    
-  PROCEDURE GetAttributeName (  
+
+  PROCEDURE GetAttributeName (
   iPattributeId IN INT,
   curPresult1 out refCur
   );
-  
-  PROCEDURE GetDeptAttr (  
-  iPdeptId IN INT,
-  curPresult1 out refCur
-  );
-  
-  PROCEDURE GetDeptNameByDeptID (  
+
+  PROCEDURE GetDeptAttr (
   iPdeptId IN INT,
   curPresult1 out refCur
   );
 
-  PROCEDURE GetOverrideDeptNameByDeptID (  
+  PROCEDURE GetDeptNameByDeptID (
   iPdeptId IN INT,
   curPresult1 out refCur
   );
-  
-  PROCEDURE GetPagedDeptList (  
+
+  PROCEDURE GetOverrideDeptNameByDeptID (
+  iPdeptId IN INT,
+  curPresult1 out refCur
+  );
+
+  PROCEDURE GetPagedDeptList (
   iPdeptId IN INT,
   cPdeptName IN VARCHAR2,
   iPpageNo IN INT,
   iPpageSize IN INT,
   curPresult1 out refCur
   );
-  PROCEDURE GetRecordCount (  
+  PROCEDURE GetRecordCount (
   iPdeptId IN INT,
   cPdeptName IN VARCHAR2,
   iPpageNo IN INT,
   iPpageSize IN INT,
   iPrecordCount OUT INT
   );
-  PROCEDURE UpdateAttribute (  
+  PROCEDURE UpdateAttribute (
   iPattributeId IN INT,
   cPattrNameEn IN VARCHAR2,
   cPattrNameB5 IN VARCHAR2,
@@ -86,7 +87,7 @@ AS
   cPattrNameGb IN VARCHAR2,
   iProw_affacted OUT INT
   );
-  
+
   PROCEDURE UpdateDeptName (
   iPdeptId IN INT,
   cPdeptNameEn IN VARCHAR2,
@@ -101,14 +102,14 @@ AS
   cPdeptNameGbU IN NVARCHAR2,
   iProw_affacted OUT INT
   );
-  
+
   PROCEDURE InsertOverrideDeptName (
     iPdeptId IN INT,
     iPsiteId IN INT,
     iPlangId IN INT,
     cPdeptName IN VARCHAR2,
     iProw_affacted OUT INT
-  );  
+  );
 
   PROCEDURE UpdateOverrideDeptName (
     iPid IN INT,
@@ -117,23 +118,23 @@ AS
     iPlangId IN INT,
     cPdeptName IN VARCHAR2,
     iProw_affacted OUT INT
-  );  
+  );
 
   PROCEDURE DeleteOverrideDeptName (
     iPid IN INT,
     iProw_affacted OUT INT
   );
       	
-  PROCEDURE GetBrowsePath (  
+  PROCEDURE GetBrowsePath (
   iPdeptId IN INT,
   iPlangId IN INT,
   curPresult1 out refCur
   );
-    
-  PROCEDURE GetAttributeType ( 
+
+  PROCEDURE GetAttributeType (
   curPresult1 out refCur
   );
-  
+
    END Pkg_FE_DeptMgtAccess;
 
 /
@@ -149,14 +150,14 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
   cPattrNameGb IN VARCHAR2,
   iPattrType in int,
   iPattributeId out int
-  ) 
-  AS  
+  )
+  AS
     iLAttrId int;
     iLexistValue int;
   BEGIN	
 	--select seq_dept_id from DB
         iLexistValue := 1;
-        
+
 	WHILE (iLexistValue > 0)
 	LOOP
             iLexistValue := 0;
@@ -164,10 +165,10 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
                 select count(*) into iLexistValue from ya_attribute where ATTRIBUTE_ID = iLAttrId;
 	END LOOP;
 	
-	INSERT INTO ya_attribute(ATTRIBUTE_ID, attribute_type_id) values (iLAttrId,iPattrType); 
+	INSERT INTO ya_attribute(ATTRIBUTE_ID, attribute_type_id) values (iLAttrId,iPattrType);
 	iPattributeId := iLAttrId;
 
-	--insert into ya_attribute lang  
+	--insert into ya_attribute lang
 	INSERT INTO ya_attribute_lang(attribute_id,lang_id,attribute_name) values (iLAttrId,1,cPattrNameEn);
 	INSERT INTO ya_attribute_lang(attribute_id,lang_id,attribute_name) values (iLAttrId,2,cPattrNameB5);
 	INSERT INTO ya_attribute_lang(attribute_id,lang_id,attribute_name) values (iLAttrId,3,cPattrNameJp);
@@ -175,7 +176,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	INSERT INTO ya_attribute_lang(attribute_id,lang_id,attribute_name) values (iLAttrId,5,cPattrNameGb);
 	INSERT INTO ya_attribute_lang(attribute_id,lang_id,attribute_name) values (iLAttrId,6,cPattrNameEn);
 
-	--add to preferred attribute list 
+	--add to preferred attribute list
 	--no this table in oracle problem
 	INSERT INTO ya_preferred_attr_list(prod_line_id,attribute_id) values (1,iLAttrId);
 	
@@ -209,16 +210,17 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
     cPysauEnabled IN CHAR,
     cPyshkEnabled IN CHAR,
     cPysukEnabled IN CHAR,
+    cPyscaEnabled IN CHAR,
     cPhmEnabled IN CHAR,
     iPdeptId out int
-  ) 
+  )
   AS
     iLDeptId int;
     iLexistValue int;
   BEGIN
     --select seq_dept_id from DB
     iLexistValue := 1;
-        
+
 	  WHILE (iLexistValue > 0)
 	  LOOP
               iLexistValue := 0;
@@ -226,10 +228,10 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
                   select count(*) into iLexistValue from ya_dept where dept_id = iLDeptId;
 	  END LOOP;
 		
-    --/****STEP 2 : CREATE DEPARTMENT*****/  
+    --/****STEP 2 : CREATE DEPARTMENT*****/
     INSERT INTO ya_dept(dept_id, created_date, updated_date, created_user, updated_user)
 	  VALUES(iLDeptId, sysdate, sysdate, cPuser, cPuser);
-	  
+	
 	  /* update department-site setting */
 	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
 	  VALUES (iLDeptId, 1, cPusEnabled, iPdispSeq);
@@ -238,15 +240,17 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
 	  VALUES (iLDeptId, 10, cPysEnabled, iPdispSeq);
 	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
-	  VALUES (iLDeptId, 11, cPyscnEnabled, iPdispSeq);	  
+	  VALUES (iLDeptId, 11, cPyscnEnabled, iPdispSeq);	
 	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
-	  VALUES (iLDeptId, 12, cPhmEnabled, iPdispSeq);	  
+	  VALUES (iLDeptId, 12, cPhmEnabled, iPdispSeq);	
 	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
-	  VALUES (iLDeptId, 13, cPysauEnabled, iPdispSeq);	  
+	  VALUES (iLDeptId, 13, cPysauEnabled, iPdispSeq);	
 	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
-	  VALUES (iLDeptId, 14, cPyshkEnabled, iPdispSeq);	  
+	  VALUES (iLDeptId, 14, cPyshkEnabled, iPdispSeq);	
 	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
-	  VALUES (iLDeptId, 15, cPysukEnabled, iPdispSeq);	  
+	  VALUES (iLDeptId, 15, cPysukEnabled, iPdispSeq);	
+	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
+	  VALUES (iLDeptId, 18, cPyscaEnabled, iPdispSeq);	
 
     iPdeptId :=iLDeptId;
     --/****STEP 3 : DEPARTMENT LANGUAGE, NEED TO MODIFY THIS PART*****/
@@ -269,7 +273,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 		  VALUES(iLDeptId, iPparentDeptId);
     --/****STEP 5 : ADD PARENT DEPARTMENT ATTRIBUTE*****/
 		  INSERT INTO ya_dept_attr(dept_id, attribute_id)
-		  SELECT iLDeptId, attribute_id 
+		  SELECT iLDeptId, attribute_id
 			  FROM ya_dept_attr WHERE dept_id = iPparentDeptId;
 	  END IF;
 
@@ -281,7 +285,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 
   END AddDeptStep1;
 
-  PROCEDURE AddDeptStep2 (  
+  PROCEDURE AddDeptStep2 (
   iPdeptId IN INT,
   iPattributeId IN INT,
   iProw_affacted OUT INT
@@ -306,7 +310,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	DELETE ya_browse_dept_path
 	  WHERE terminal_dept_id = iLterminalDeptId;
       END IF;
-          
+
       SELECT count(*) INTO iLexistValue FROM ya_dept_rel WHERE dept_id = iLtempNodeId;
 
 	WHILE (iLexistValue>0) LOOP
@@ -314,11 +318,11 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	    (terminal_dept_id, node_sequence_id, dept_id, last_updated_datetime)
 	    SELECT iLterminalDeptId, iLnodeSequenceId, dl.dept_id, sysdate
 	    FROM ya_dept_lang dl
-	    WHERE dept_id = iLtempNodeId 
+	    WHERE dept_id = iLtempNodeId
 	    AND dl.site_id is null
 	    AND dl.lang_id = 1;
 
-	    SELECT parent_dept_id into iLtempNodeId 
+	    SELECT parent_dept_id into iLtempNodeId
 	    FROM ya_dept_rel
 	    WHERE dept_id = iLtempNodeId and rownum<2;
 
@@ -331,7 +335,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	(terminal_dept_id, node_sequence_id, dept_id, last_updated_datetime)
 	SELECT iLterminalDeptId, iLnodeSequenceId, dl.dept_id, sysdate
 	FROM ya_dept_lang dl
-	WHERE dept_id = iLtempNodeId 
+	WHERE dept_id = iLtempNodeId
 	AND dl.site_id is null
 	AND dl.lang_id = 1 AND dept_id not in (0);
 
@@ -346,10 +350,10 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 
   END AddDeptStep2;
 
-  PROCEDURE GetAttributeName (  
+  PROCEDURE GetAttributeName (
   iPattributeId IN INT,
   curPresult1 out refCur
-  ) 
+  )
   AS
   BEGIN
     OPEN curPresult1 FOR
@@ -358,41 +362,41 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 
   END GetAttributeName;
 
-  PROCEDURE GetDeptAttr (  
+  PROCEDURE GetDeptAttr (
   iPdeptId IN INT,
   curPresult1 out refCur
   )AS
   BEGIN
     OPEN curPresult1 FOR
 	  select da.dept_id,al.attribute_id,lang_id,attribute_name
-	from ya_dept_attr da 
-	inner join ya_attribute_lang al on da.attribute_id=al.attribute_id 
+	from ya_dept_attr da
+	inner join ya_attribute_lang al on da.attribute_id=al.attribute_id
 	where dept_id=iPdeptId and al.lang_id=1;
 	RETURN;
 
   END GetDeptAttr;
 
-  PROCEDURE GetDeptNameByDeptID (  
+  PROCEDURE GetDeptNameByDeptID (
   iPdeptId IN INT,
   curPresult1 out refCur
   )  AS
   BEGIN
-    OPEN curPresult1 FOR	  
+    OPEN curPresult1 FOR	
 		select lang_id,dept_name_u
-		from ya_dept_lang al 
+		from ya_dept_lang al
 		where dept_id=iPdeptId
 		and site_id is null;
 	RETURN;
 
   END GetDeptNameByDeptID;
 
-  PROCEDURE GetOverrideDeptNameByDeptID (  
+  PROCEDURE GetOverrideDeptNameByDeptID (
   iPdeptId IN INT,
   curPresult1 out refCur
   )  AS
   BEGIN
-    OPEN curPresult1 FOR	  
-		select id,lang_id,dept_name_u,site_id, 
+    OPEN curPresult1 FOR	
+		select id,lang_id,dept_name_u,site_id,
 		case when site_id = 1 then 'YA US'
 		     when site_id = 7 then 'YA Global'
 		     when site_id = 10 then 'YS Global'
@@ -405,14 +409,14 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 		     when lang_id = 3 then 'Japanese'
 		     when lang_id = 5 then 'Simplified Chinese'
 		     else cast(lang_id as varchar2(2)) end lang_name
-		from ya_dept_lang al 
+		from ya_dept_lang al
 		where dept_id=iPdeptId
 		and site_id is not null;
 	RETURN;
 
   END GetOverrideDeptNameByDeptID;
 
-  PROCEDURE GetPagedDeptList (  
+  PROCEDURE GetPagedDeptList (
   iPdeptId IN INT,
   cPdeptName IN VARCHAR2,
   iPpageNo IN INT,
@@ -424,16 +428,16 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
     iLlastLangId int;
     cLword VARCHAR2(100);
   BEGIN
-   -- OPEN curPresult1 FOR	  
+   -- OPEN curPresult1 FOR	
 	--	select lang_id,dept_name_u
-	--	from ya_dept_lang al 
+	--	from ya_dept_lang al
 	--	where dept_id=iPdeptId;
 	--RETURN;
 	cLword :='%'||cPdeptName||'%';
 	IF iPdeptId >0 THEN
     OPEN curPresult1 FOR	
 		-- search by dept ID
-		SELECT dept_id, lang_id,dept_name,dept_name_u 
+		SELECT dept_id, lang_id,dept_name,dept_name_u
 		FROM ya_dept_lang
 	     WHERE
 		     dept_id = iPdeptId and lang_id=1 and site_id is null
@@ -441,17 +445,17 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	ELSE
 		--search by keyword
 		iLStartRow:=(iPpageNo -1) * iPpageSize +1;
-	--	SELECT count(d.dept_id) From ya_dept d 
-	--		inner join ya_dept_lang dl on d.dept_id=dl.dept_id 
+	--	SELECT count(d.dept_id) From ya_dept d
+	--		inner join ya_dept_lang dl on d.dept_id=dl.dept_id
 	--		where dept_name_u like '%' + cPdeptName + '%';
 
 --SELECT iLlastDeptId = dept_id,iLlastLangId=lang_id FROM ya_dept_lang where dept_name_u like '%' + cPdeptName + '%' ORDER BY dept_id,lang_id
 
             OPEN curPresult1 FOR	
-                SELECT dept_id, lang_id,dept_name,dept_name_u 
-		FROM 
-                (select dept_id, lang_id,dept_name,dept_name_u,rownum as rnum 
-                  from ya_dept_lang 
+                SELECT dept_id, lang_id,dept_name,dept_name_u
+		FROM
+                (select dept_id, lang_id,dept_name,dept_name_u,rownum as rnum
+                  from ya_dept_lang
                   WHERE dept_name_u like cLword and rownum < iLStartRow+iPpageSize and site_id is null)
                   WHERE rnum >= iLStartRow
 		ORDER BY dept_id,lang_id;
@@ -461,7 +465,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
   END GetPagedDeptList;
 
 
-  PROCEDURE GetRecordCount (  
+  PROCEDURE GetRecordCount (
   iPdeptId IN INT,
   cPdeptName IN VARCHAR2,
   iPpageNo IN INT,
@@ -485,7 +489,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 
 
                 SELECT count(*) INTO  iPrecordCount
-		FROM ya_dept_lang 
+		FROM ya_dept_lang
 		WHERE dept_name_u like cLword
 		AND site_id is null
 		ORDER BY dept_id,lang_id;
@@ -494,7 +498,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 
   END GetRecordCount;
 
-  PROCEDURE UpdateAttribute (  
+  PROCEDURE UpdateAttribute (
   iPattributeId IN INT,
   cPattrNameEn IN VARCHAR2,
   cPattrNameB5 IN VARCHAR2,
@@ -504,7 +508,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
   iProw_affacted OUT INT
   ) AS
   BEGIN
-   
+
 	UPDATE ya_attribute_lang
 	SET attribute_name = cPattrNameEn
 	WHERE attribute_id = iPattributeId and lang_id = 1;
@@ -608,7 +612,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	  ELSE
 		  ROLLBACK;
 	  END IF;
-	  RETURN;  
+	  RETURN;
   END InsertOverrideDeptName;
 
   PROCEDURE UpdateOverrideDeptName (
@@ -626,7 +630,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	  dept_name_u=cPdeptName,
     dept_id=iPdeptId,
 	  lang_id=iPlangId,
-	  site_id=iPsiteId	  
+	  site_id=iPsiteId	
 	  WHERE
 	    id=iPid;
   	
@@ -636,7 +640,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	  ELSE
 		  ROLLBACK;
 	  END IF;
-	  RETURN;  
+	  RETURN;
   END UpdateOverrideDeptName;
 
   PROCEDURE DeleteOverrideDeptName (
@@ -645,7 +649,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
   )
   AS
   BEGIN
-	  DELETE FROM ya_dept_lang	  
+	  DELETE FROM ya_dept_lang	
 	  WHERE id=iPid;
   	
     IF sqlcode = 0 THEN
@@ -654,20 +658,20 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	  ELSE
 		  ROLLBACK;
 	  END IF;
-	  RETURN;  
+	  RETURN;
   END DeleteOverrideDeptName;
-  
-  PROCEDURE GetBrowsePath (  
+
+  PROCEDURE GetBrowsePath (
   iPdeptId IN INT,
   iPlangId IN INT,
   curPresult1 out refCur
   ) AS
   BEGIN
-    
-    OPEN curPresult1 FOR	  
-		 SELECT dp.dept_id, CASE 
-		                      WHEN dl.dept_name IS NULL THEN dle.dept_name 
-		                      WHEN dl.dept_name IS NOT NULL THEN dl.dept_name 
+
+    OPEN curPresult1 FOR	
+		 SELECT dp.dept_id, CASE
+		                      WHEN dl.dept_name IS NULL THEN dle.dept_name
+		                      WHEN dl.dept_name IS NOT NULL THEN dl.dept_name
 		                    END as dept_name, null as page_location
       FROM ya_browse_dept_path dp,
            ya_dept dpt,
@@ -676,7 +680,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
      WHERE dp.terminal_dept_id = iPdeptId
        AND dl.lang_id = iPlangId
        AND dl.site_id is null
-       AND dle.lang_id = 1 
+       AND dle.lang_id = 1
        AND dle.site_id is null
        AND dp.dept_id = dle.dept_id
        AND dp.dept_id = dl.dept_id
@@ -685,13 +689,13 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	RETURN;
 
   END GetBrowsePath;
-  
-  PROCEDURE GetAttributeType (  
+
+  PROCEDURE GetAttributeType (
   curPresult1 out refCur
   ) AS
   BEGIN
-    
-    OPEN curPresult1 FOR	  
+
+    OPEN curPresult1 FOR	
 		 select attribute_type_id, attribute_type_name from ya_attribute_type where lang_id = 1;
 	RETURN;
 

@@ -62,32 +62,36 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
     cron_dm_procedure_log ('Insert', iLjob_id, iLPackage, iLProcedure, 'N');
     
       /*truncate table(s)*/
-      EXECUTE IMMEDIATE 'TRUNCATE TABLE ya_asso_link_orders_process';
+      EXECUTE IMMEDIATE 'TRUNCATE TABLE Temp_Asso_Link_Orders_Process';
 
 
-      insert into ya_asso_link_orders_process (origin_order_Id)
-      select distinct a.origin_order_id
-      from
+      insert into Temp_Asso_Link_Orders_Process (origin_order_Id)
+      Select Distinct A.Origin_Order_Id
+      From
       (
-      select o.origin_order_id, o.cmt
-      from order_info o
-      left join ya_associate_link_orders alo on o.origin_order_id = alo.origin_order_id
+      Select o.Origin_Order_Id, O.cmt   
+      from order_info o  
+      left join ya_associate_link_orders alo on o.Origin_Order_Id = alo.origin_order_id
       inner join ya_associate_link al on o.sales_id = al.link_id
-      inner join ya_associate asso on al.associate_id = asso.associate_id and asso.type_id <> 1-- exclude regular type associate
-      where
-         1=1
---         alo.origin_order_id is null
-         and o.order_dt>to_date('11/09/2006', 'dd/mm/yyyy')
-         and o.origin_order_id is not null
-         and o.category in
-         (
-            1  --B2C relationship
-            ,4  --eBay
+      inner join ya_associate ass on al.associate_id = ass.associate_id and ass.type_id <> 1 -- exclude regular type associate
+      where   
+         Alo.Origin_Order_Id Is Null   
+         And O.Sales_Id Is Not Null And o.Order_Dt>To_Date('2006-09-11','yyyy-mm-dd') And O.Origin_Order_Id Is Not Null And Length(o.Origin_Order_Id)>0
+         and o.category in   
+         (  
+            1 --B2C relationship  
+            ,4 --eBay  
          )
-         and o.order_dt >= to_date('01/01/2008', 'dd/mm/yyyy')
-      ) a ;
+         and o.order_dt >= to_date('2008-01-01','yyyy-mm-dd')
+      ) a  
+      Where  
+         Sysdate >= To_Date('2008-01-01','yyyy-mm-dd')
+         And (A.cmt Is Null   
+         Or Length(A.cmt)>0  
+         or lower(a.cmt) not like 'staff purchase%');
 
       COMMIT;
+
     /*END package*/
     cron_dm_procedure_log ('Update', iLjob_id, iLPackage, iLProcedure, 'Y');
     
@@ -365,7 +369,7 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
       FROM order_info o
         INNER JOIN ya_associate_link al
           ON (al.link_id = o.sales_id)
-        INNER JOIN ya_asso_link_orders_process alop
+        INNER JOIN Temp_Asso_Link_Orders_Process alop
           ON (alop.origin_order_id = o.origin_order_id)
         INNER JOIN billing_info bi
           ON (bi.order_info_id = o.id AND bi.method <> 13)
@@ -416,7 +420,7 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
       FROM order_info o
         INNER JOIN ya_associate_link al
           ON (al.link_id = o.sales_id)
-        INNER JOIN ya_asso_link_orders_process alop
+        INNER JOIN Temp_Asso_Link_Orders_Process alop
           ON (alop.origin_order_id = o.origin_order_id)
         INNER JOIN billing_info bi
           ON (bi.order_info_id = o.id AND bi.method <> 13)
@@ -528,7 +532,7 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
       FROM order_info o
         INNER JOIN ya_associate_link al
           ON (al.link_id = o.sales_id)
-        INNER JOIN ya_asso_link_orders_process alop
+        INNER JOIN Temp_Asso_Link_Orders_Process alop
           ON (alop.origin_order_id = o.origin_order_id)
         INNER JOIN billing_info bi
           ON (bi.order_info_id = o.id AND bi.method <> 13)
@@ -667,7 +671,7 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
         ),
         o.origin_order_id--//origin_order_id
       FROM order_info o
-        INNER JOIN ya_asso_link_orders_process alop
+        INNER JOIN Temp_Asso_Link_Orders_Process alop
           ON (alop.origin_order_id = o.origin_order_id)
         INNER JOIN order_line ol
           ON (o.id = ol.order_info_id)
@@ -744,7 +748,7 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
         ),
         o.origin_order_id--//origin_order_id
       FROM order_info o
-        INNER JOIN ya_asso_link_orders_process alop
+        INNER JOIN Temp_Asso_Link_Orders_Process alop
           ON (alop.origin_order_Id = o.origin_order_id)
         INNER JOIN order_line ol
           ON (o.id = ol.order_info_id)
@@ -821,7 +825,7 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
           inner join ya_associate_link al on alo.link_id = al.link_id
           inner join ya_associate a on al.associate_id = a.associate_id and a.type_id <> 1
             where old.sts = 6
-             and alo.credit_status = 1
+             and (CASE WHEN (alo.credit_status=1) THEN 'Y' ELSE NULL END) = 'Y'
              and (a.shopper_id <> o.cust_id
              or a.associate_id in (7176, 7312, 5672, 6638, 8673, 8491))
              and a.associate_id <> 2779
@@ -855,65 +859,37 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
     iLProcedure := 'approve_credit_02';
     cron_dm_procedure_log ('Insert', iLjob_id, iLPackage, iLProcedure, 'N');
 
-/*
-      insert into Temp_Approve_Credit02 
-      select  ol.id, o.cust_id, alo.link_id, alo.origin_order_id, alo.row_id, 
-              case
-                when (alo.sku in (1004059979, 1004076030) and alo.credit_amount=5) then 5
-                    else null
-                end as credit_amount,
-              ol.qnty, ol.unit_price from order_info o
-          inner join order_line ol on (o.id=ol.order_info_id)
-          inner join ya_associate_link_orders alo on (alo.origin_order_id = o.origin_order_id and alo.sku = ol.prod_id)
-          inner join billing_info bi on (bi.order_info_id = o.id and bi.method <> 13)
-          inner join ya_associate_link al on 1=1
-          inner join ya_associate a on al.associate_id = a.associate_id and a.type_id <> 1
-      where alo.credit_status = 1
-        and (a.shopper_id <> o.cust_id
-        or a.associate_id in (7176, 7312, 5672, 6638, 8673, 8491))
-        and a.associate_id <> 2779
-        and alo.link_id = al.link_id
-        and o.cust_id <> 'M7GA5HTKWSET9LVQN9A9BBXUAD4Q4QU9'
-        and exists(select 1 from order_line ol2 where ol.id=ol2.parent_line_id and ol.id=ol2.id);
 
-        
-      update ya_associate_link_orders alo set (credit_status, last_change_date, credit_amount, quantity, unit_price)=
-      (select 2, sysdate, tmp.credit_amount, tmp.qnty, tmp.unit_price from Temp_Approve_Credit02 tmp
-      where (alo.link_id = tmp.link_id and alo.origin_order_id = tmp.origin_order_id and alo.row_id = tmp.row_id)
-        and exists (select 1 from order_line ol2 inner join order_line_dtl old2 on ol2.id = old2.order_line_id where ol2.parent_line_id = tmp.id and old2.sts = 6 and ol2.parent_line_id <> ol2.id)
-      ) where exists
-      (select 1 from Temp_Approve_Credit02 tmp
-      where (alo.link_id = tmp.link_id and alo.origin_order_id = tmp.origin_order_id and alo.row_id = tmp.row_id)
-        and exists (select 1 from order_line ol2 inner join order_line_dtl old2 on ol2.id = old2.order_line_id where ol2.parent_line_id = tmp.id and old2.sts = 6 and ol2.parent_line_id <> ol2.id)
-      );
-*/
-      insert into temp_approve_credit02 
-      select  ol.id, o.cust_id, alo.link_id, alo.origin_order_id, alo.row_id, 
+      insert into temp_approve_credit02_01
+      select o.id, o.cust_id, alo.link_id, alo.origin_order_id, alo.row_id, alo.sku,
               case
                 when (alo.sku in (1004059979, 1004076030) and alo.credit_amount=5) then 5
                     else null
-                end as credit_amount,
-              ol.qnty, ol.unit_price from order_info o
-          inner join order_line ol on (o.id=ol.order_info_id)
-          inner join ya_associate_link_orders alo on (alo.origin_order_id = o.origin_order_id and alo.sku = ol.prod_id)
+                end as credit_amount from order_info o
+          inner join ya_associate_link_orders alo on (alo.origin_order_id = o.origin_order_id)
           inner join billing_info bi on (bi.order_info_id = o.id and bi.method <> 13)
-          inner join ya_associate_link al on 1=1
-          inner join ya_associate a on al.associate_id = a.associate_id and a.type_id <> 1
-      --where alo.credit_status = 1
       where (CASE WHEN (alo.credit_status=1) THEN 'Y' ELSE NULL END) = 'Y'
-        and (a.shopper_id <> o.cust_id
+        and o.cust_id <> 'm7ga5htkwset9lvqn9a9bbxuad4q4qu9';
+
+
+      insert into temp_approve_credit02
+      select ol.id, tac.cust_id, tac.link_id, tac.origin_order_id, tac.row_id, tac.credit_amount, 
+             ol.qnty, ol.unit_price from temp_approve_credit02_01 tac
+          inner join order_line ol on (tac.id=ol.order_info_id) and (tac.sku = ol.prod_id)
+          inner join ya_associate_link al on tac.link_id = al.link_id
+          inner join ya_associate a on al.associate_id = a.associate_id and a.type_id <> 1
+      where (a.shopper_id <> tac.cust_id
         or a.associate_id in (7176, 7312, 5672, 6638, 8673, 8491))
         and a.associate_id <> 2779
-        and alo.link_id = al.link_id
-        and o.cust_id <> 'm7ga5htkwset9lvqn9a9bbxuad4q4qu9'
         and exists(select 1 from order_line ol2 inner join order_line_dtl old2 on ol2.id = old2.order_line_id where ol.id=ol2.parent_line_id and ol.id=ol2.id and old2.sts = 6 and ol2.parent_line_id <> ol2.id);
 
+      
       update ya_associate_link_orders alo set (credit_status, last_change_date, credit_amount, quantity, unit_price)=
       (select 2, sysdate, tmp.credit_amount, tmp.qnty, tmp.unit_price from temp_approve_credit02 tmp
       where (alo.link_id = tmp.link_id and alo.origin_order_id = tmp.origin_order_id and alo.row_id = tmp.row_id)
       ) where exists
       (select 1 from temp_approve_credit02 tmp
-      where (alo.link_id = tmp.link_id and alo.origin_order_id = tmp.origin_order_id and alo.row_id = tmp.row_id)        
+      where (alo.link_id = tmp.link_id and alo.origin_order_id = tmp.origin_order_id and alo.row_id = tmp.row_id)
       );
       
       COMMIT;
@@ -1175,7 +1151,7 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
       FROM order_info o
         INNER JOIN ya_associate_link al
           ON (al.link_id = o.sales_id)
-        INNER JOIN ya_asso_link_orders_process alop
+        INNER JOIN Temp_Asso_Link_Orders_Process alop
           ON (alop.origin_order_id = o.origin_order_id)
         INNER JOIN billing_info bi
           ON (bi.order_info_id = o.id AND bi.method = 13)
@@ -1226,7 +1202,7 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
       FROM order_info o
         INNER JOIN ya_associate_link al
           ON (al.link_id = o.sales_id)
-        INNER JOIN ya_asso_link_orders_process alop
+        INNER JOIN Temp_Asso_Link_Orders_Process alop
           ON (alop.origin_order_id = o.origin_order_id)
         INNER JOIN billing_info bi
           ON (bi.order_info_id = o.id AND bi.method = 13)
@@ -1337,7 +1313,7 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
       FROM order_info o
         INNER JOIN ya_associate_link al
           ON (al.link_id = o.sales_id)
-        INNER JOIN ya_asso_link_orders_process alop
+        INNER JOIN Temp_Asso_Link_Orders_Process alop
           ON (alop.origin_order_id = o.origin_order_id)
         INNER JOIN billing_info bi
           ON (bi.order_info_id = o.id AND bi.method = 13)
@@ -1533,7 +1509,7 @@ PACKAGE BODY PKG_ASSO_CREDIT AS
          RAISE;
       END;
 
-      EXECUTE IMMEDIATE 'TRUNCATE TABLE ya_asso_link_orders_process';
+      EXECUTE IMMEDIATE 'TRUNCATE TABLE Temp_Asso_Link_Orders_Process';
 
   END approve_credit_rmb_payment;
 
