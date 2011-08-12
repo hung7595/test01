@@ -1,13 +1,15 @@
+DROP TABLE Ya_Asiapay_Alipay_Transaction
+/
+
 CREATE TABLE Ya_Asiapay_Alipay_Transaction (
-	id                     number          NOT NULL,
-	shopper_id             char(32)        NOT NULL,
-	payment_uid            char(32)        NOT NULL,
-	order_num              number          ,
-	paydollar_ref          number          ,
-	payment_txn_id         char(32)        ,
-	created_datetime       date            NOT NULL,
-	updated_datetime       date            NOT NULL,
-	status                 number          NOT NULL
+	id                   number         NOT NULL,
+	shopper_id           char(32)       NOT NULL,
+	ya_ref_id            char(32)       NOT NULL,
+	order_num            number         ,
+	pay_dollar_ref       number         ,
+	create_dt            date           NOT NULL,
+	mod_dt               date           NOT NULL,
+	sts                  number         NOT NULL
 )
 /
 
