@@ -28,7 +28,8 @@ CREATE TABLE Ya_Credit_Card_Profile (
 	site_id                             int                           ,
 	rowguid                             varchar2(50)                  DEFAULT SYS_GUID() NOT NULL ,
 	card_numberencrypted                varchar2(128)                 DEFAULT 0 ,
-	encryptionkey                       int
+	encryptionkey                       int                           ,
+	created_by_checkout_session         char(1)                       DEFAULT 'N' NOT NULL
 )
 /
 
