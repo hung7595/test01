@@ -64,7 +64,7 @@ PACKAGE BODY PKG_FE_HALLMARKPROMOTIONCOUPON AS
 			INSERT INTO ya_coupon
 			(shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value, expiration_date, 
 			all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, create_date, currency)
-	        SELECT cLshopperId, iLcoupon_code, 'Get RMB50 E-shop coupon with purchase of RMB488 or more', 'Hallmak Babies RMB50 E-shop Coupon', 50, add_months(SYSDATE, 2), 'N', 'N', 1, 12, 250, 'hallmark_promotion', SYSDATE, 'RMB' FROM dual;
+	        SELECT cLshopperId, iLcoupon_code, 'Get RMB50 E-shop coupon with purchase of RMB400 or more', 'Hallmak Babies RMB50 E-shop Coupon', 50, add_months(SYSDATE, 2), 'N', 'N', 1, 12, 250, 'hallmark_promotion', SYSDATE, 'RMB' FROM dual;
 			
 		    INSERT INTO ya_coupon_site (coupon_code, site_id) VALUES (iLcoupon_code, 12);
 			

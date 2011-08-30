@@ -3724,29 +3724,12 @@ AS
   )
   AS
   BEGIN
+    
     UPDATE ya_checkout_data
     SET
       payment_method_id = iPmethod_id,
       coupon_code = vcPcoupon_code,
       credit_amount = nPcredit_amount,
-      bill_to_phone = nvcPphone,
-      bill_profile_id = -1,
-      bill_to_firstname = '',
-      bill_to_lastname = '',
-      bill_to_address_one = '',
-      bill_to_address_two = '',
-      bill_to_city = '',
-      bill_to_country_id = -1,
-      bill_to_email = '',
-      bill_to_state = '',
-      bill_to_state_id = -1,
-      bill_to_zip = '',
-      cc_expiration_month = NULL,
-      cc_expiration_year = NULL,
-      cc_type_id = NULL,
-      cc_profile_id = NULL,
-      cc_numberencrypted = NULL,
-      encryptionkey = NULL,
       last_updated_datetime = SYSDATE()
     WHERE
       shopper_id = cPshopper_id
