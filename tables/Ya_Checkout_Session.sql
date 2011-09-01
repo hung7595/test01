@@ -6,7 +6,7 @@ CREATE TABLE Ya_Checkout_Session (
 	shopper_id                         char(32)              NOT NULL ,
 	site_id                            int                   NOT NULL ,
 	associate_code                     nvarchar2(100)        ,
-	split_shipment                     char(1)               NOT NULL ,
+	split_shipment                     char(1)               DEFAULT 'N' NOT NULL ,
 	shipping_address_id                int                   ,
 	preferred_shipping_address_id      int                   ,
 	shipping_method_id                 int                   NOT NULL ,
