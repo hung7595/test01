@@ -2749,7 +2749,7 @@ AS
       iLbill_profile := NULL;
     END;
 
-    IF iPsite_id in (1,7,10,13,14,15,18) THEN
+    IF iPsite_id in (1,7,10,13,14,15) THEN
     BEGIN
       SELECT cc.profile_id
       INTO iLcc_profile
@@ -2761,6 +2761,19 @@ AS
         AND ROWNUM = 1;
     EXCEPTION WHEN NO_DATA_FOUND THEN
       iLcc_profile := NULL;
+    END;
+    ELSIF iPsite_id = 18 THEN
+    BEGIN
+      SELECT cc.profile_id
+      INTO iLcc_profile
+      FROM YA_CREDIT_CARD_PROFILE cc
+      WHERE
+        cc.preferred = 'Y'
+        AND cc.shopper_id = cPshopper_id
+        AND cc.card_type_id IN (1,2)
+        AND ROWNUM = 1;
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+      iLcc_profile := NULL;    
     END;
     ELSE
       iLcc_profile := NULL;
@@ -3731,28 +3744,38 @@ AS
       coupon_code = vcPcoupon_code,
       credit_amount = nPcredit_amount,
       bill_to_phone = nvcPphone,
-      bill_profile_id = -1,
-      bill_to_firstname = '',
-      bill_to_lastname = '',
-      bill_to_address_one = '',
-      bill_to_address_two = '',
-      bill_to_city = '',
-      bill_to_country_id = -1,
-      bill_to_email = '',
-      bill_to_state = '',
-      bill_to_state_id = -1,
-      bill_to_zip = '',
-      cc_expiration_month = NULL,
-      cc_expiration_year = NULL,
-      cc_type_id = NULL,
-      cc_profile_id = NULL,
-      cc_numberencrypted = NULL,
-      encryptionkey = NULL,
       last_updated_datetime = SYSDATE()
     WHERE
       shopper_id = cPshopper_id
       AND site_id = iPsite_id;
-
+      
+    IF iPmethod_id <> 8 THEN
+    BEGIN
+      UPDATE ya_checkout_data
+      SET
+        bill_profile_id = -1,
+        bill_to_firstname = '',
+        bill_to_lastname = '',
+        bill_to_address_one = '',
+        bill_to_address_two = '',
+        bill_to_city = '',
+        bill_to_country_id = -1,
+        bill_to_email = '',
+        bill_to_state = '',
+        bill_to_state_id = -1,
+        bill_to_zip = '',
+        cc_expiration_month = NULL,
+        cc_expiration_year = NULL,
+        cc_type_id = NULL,
+        cc_profile_id = NULL,
+        cc_numberencrypted = NULL,
+        encryptionkey = NULL,
+        last_updated_datetime = SYSDATE()
+      WHERE
+        shopper_id = cPshopper_id
+        AND site_id = iPsite_id;
+    END;
+    END IF;
   END UpdatePaymentInfoPhone;
 
 

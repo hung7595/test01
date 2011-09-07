@@ -46,7 +46,7 @@ IS
           AND card_type_id IN (1,2,3)
         ORDER BY preferred DESC nulls last;
       END;
-    ELSIF iPsiteId = 13 THEN
+    ELSIF iPsiteId = 18 THEN
       BEGIN
         OPEN curPresult FOR
         SELECT profile_id, card_type_id, null,
