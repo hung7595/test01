@@ -15,7 +15,6 @@ CREATE TABLE Ya_Checkout_Session (
 	preferred_billing_address_id       int                   ,
 	cc_profile_id                      int                   ,
 	preferred_cc_profile_id            int                   ,
-	cvv_code                           nvarchar2(100)        ,
 	coupon_code                        nvarchar2(100)        ,
 	credit_amount                      number(18,2)          ,
 	credit_currency                    char(3)               ,
