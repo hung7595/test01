@@ -43,7 +43,7 @@ IS
           expiration_month, expiration_year, firstname_on_card, lastname_on_card, card_numberencrypted, encryptionkey
         FROM YA_CREDIT_CARD_PROFILE
         WHERE shopper_id = cPshopperId
-          AND card_type_id IN (1,2,3)
+          AND card_type_id IN (1,2,3,6)
         ORDER BY preferred DESC nulls last;
       END;
     ELSIF iPsiteId = 18 THEN

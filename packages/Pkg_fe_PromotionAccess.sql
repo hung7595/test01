@@ -433,22 +433,35 @@ IS
   AS
   BEGIN
     OPEN rcPresult FOR
-      select gp1.sku, gp1.promotion_id from (
+	  select gp1.sku, gp1.promotion_id from (
         select sku, promotion_id, count(*) match from (
         select distinct nb.sku, pd.promotion_id
         from ya_new_basket_shadow nb
           inner join ya_product yp on nb.sku = yp.sku
           inner join ya_group yg on yp.account_id = yg.account_id and yg.division_id = 12 and yg.enabled = 'Y'
-          inner join ya_promotion_def pd on 
-          (pd.type = 115 and nb.sku = pd.value) 
-          or (pd.type = 116 and yp.brand_id = pd.value) 
-          or (pd.type = 120 and yp.account_id = pd.value)
-          or (pd.type = 121 and yg.group_id = pd.value)
+          inner join ya_promotion_def pd on pd.type = 121 and yg.group_id = pd.value
         where nb.shopper_id = cPshopper_id
           and nb.site_id = iPsite_id
           and nb.type = 0
-          and nb.paypal_uid = cPpayment_uid
-        union
+		  and nb.paypal_uid = cPpayment_uid
+        union all
+        select distinct nb.sku, pd.promotion_id
+        from ya_new_basket_shadow nb
+          inner join ya_promotion_def pd on pd.type = 115 and nb.sku = pd.value
+        where nb.shopper_id = cPshopper_id
+          and nb.site_id = iPsite_id
+          and nb.type = 0
+		  and nb.paypal_uid = cPpayment_uid
+        union all
+        select distinct nb.sku, pd.promotion_id
+        from ya_new_basket_shadow nb
+		  inner join ya_product yp on nb.sku = yp.sku
+          inner join ya_promotion_def pd on pd.type = 116 and yp.brand_id = pd.value
+        where nb.shopper_id = cPshopper_id
+          and nb.site_id = iPsite_id
+          and nb.type = 0
+		  and nb.paypal_uid = cPpayment_uid
+        union all
         select distinct nb.sku, pd.promotion_id
         from ya_new_basket_shadow nb
           inner join ya_campaign yc on nb.sku = yc.sku
@@ -456,26 +469,26 @@ IS
         where nb.shopper_id = cPshopper_id
           and nb.site_id = iPsite_id
           and nb.type = 0
-          and nb.paypal_uid = cPpayment_uid
-        union
+		  and nb.paypal_uid = cPpayment_uid
+        union all
         select distinct nb.sku, pd.promotion_id
         from ya_new_basket_shadow nb
           inner join ya_prod_attr pa on nb.sku = pa.sku
-          inner join ya_promotion_def pd on pd.type = 118 and pa.attribute_id = pd.value 
+          inner join ya_promotion_def pd on pd.type = 119 and pa.attribute_id = pd.value 
         where nb.shopper_id = cPshopper_id
           and nb.site_id = iPsite_id
           and nb.type = 0
-          and nb.paypal_uid = cPpayment_uid
-        union
-        select distinct nb.sku, pd.promotion_id
+		  and nb.paypal_uid = cPpayment_uid
+        union all
+		select distinct nb.sku, pd.promotion_id
         from ya_new_basket_shadow nb
-          inner join ya_prod_attr pa on nb.sku = pa.sku
-          inner join ya_promotion_def pd on pd.type = 118 and pa.attribute_id = pd.value 
+          inner join ya_product yp on nb.sku = yp.sku
+          inner join ya_promotion_def pd on pd.type = 120 and yp.account_id = pd.value
         where nb.shopper_id = cPshopper_id
           and nb.site_id = iPsite_id
           and nb.type = 0
-          and nb.paypal_uid = cPpayment_uid
-        union
+		  and nb.paypal_uid = cPpayment_uid
+		union all
         select distinct nb.sku, pd.promotion_id
         from ya_new_basket_shadow nb
           inner join ya_prod_dept pdt on nb.sku = pdt.sku
@@ -483,8 +496,8 @@ IS
         where nb.shopper_id = cPshopper_id
           and nb.site_id = iPsite_id
           and nb.type = 0
-          and nb.paypal_uid = cPpayment_uid
-        union
+		  and nb.paypal_uid = cPpayment_uid
+        union all
         select distinct nb.sku, pd.promotion_id
         from ya_new_basket_shadow nb
           inner join ya_prod_attr pa on nb.sku = pa.sku
@@ -492,7 +505,7 @@ IS
         where nb.shopper_id = cPshopper_id
           and nb.site_id = iPsite_id
           and nb.type = 0
-          and nb.paypal_uid = cPpayment_uid
+		  and nb.paypal_uid = cPpayment_uid
         ) group by sku, promotion_id
       ) gp1 inner join 
       (
@@ -523,15 +536,26 @@ IS
         from ya_new_basket nb
           inner join ya_product yp on nb.sku = yp.sku
           inner join ya_group yg on yp.account_id = yg.account_id and yg.division_id = 12 and yg.enabled = 'Y'
-          inner join ya_promotion_def pd on 
-          (pd.type = 115 and nb.sku = pd.value) 
-          or (pd.type = 116 and yp.brand_id = pd.value) 
-          or (pd.type = 120 and yp.account_id = pd.value)
-          or (pd.type = 121 and yg.group_id = pd.value)
+          inner join ya_promotion_def pd on pd.type = 121 and yg.group_id = pd.value
         where nb.shopper_id = cPshopper_id
           and nb.site_id = iPsite_id
           and nb.type = 0
-        union
+        union all
+        select distinct nb.sku, pd.promotion_id
+        from ya_new_basket nb
+          inner join ya_promotion_def pd on pd.type = 115 and nb.sku = pd.value
+        where nb.shopper_id = cPshopper_id
+          and nb.site_id = iPsite_id
+          and nb.type = 0
+        union all
+        select distinct nb.sku, pd.promotion_id
+        from ya_new_basket nb
+		  inner join ya_product yp on nb.sku = yp.sku
+          inner join ya_promotion_def pd on pd.type = 116 and yp.brand_id = pd.value
+        where nb.shopper_id = cPshopper_id
+          and nb.site_id = iPsite_id
+          and nb.type = 0
+        union all
         select distinct nb.sku, pd.promotion_id
         from ya_new_basket nb
           inner join ya_campaign yc on nb.sku = yc.sku
@@ -539,23 +563,23 @@ IS
         where nb.shopper_id = cPshopper_id
           and nb.site_id = iPsite_id
           and nb.type = 0
-        union
+        union all
         select distinct nb.sku, pd.promotion_id
         from ya_new_basket nb
           inner join ya_prod_attr pa on nb.sku = pa.sku
-          inner join ya_promotion_def pd on pd.type = 118 and pa.attribute_id = pd.value 
+          inner join ya_promotion_def pd on pd.type = 119 and pa.attribute_id = pd.value 
         where nb.shopper_id = cPshopper_id
           and nb.site_id = iPsite_id
           and nb.type = 0
-        union
-        select distinct nb.sku, pd.promotion_id
+        union all
+		select distinct nb.sku, pd.promotion_id
         from ya_new_basket nb
-          inner join ya_prod_attr pa on nb.sku = pa.sku
-          inner join ya_promotion_def pd on pd.type = 118 and pa.attribute_id = pd.value 
+          inner join ya_product yp on nb.sku = yp.sku
+          inner join ya_promotion_def pd on pd.type = 120 and yp.account_id = pd.value
         where nb.shopper_id = cPshopper_id
           and nb.site_id = iPsite_id
           and nb.type = 0
-        union
+		union all
         select distinct nb.sku, pd.promotion_id
         from ya_new_basket nb
           inner join ya_prod_dept pdt on nb.sku = pdt.sku
@@ -563,7 +587,7 @@ IS
         where nb.shopper_id = cPshopper_id
           and nb.site_id = iPsite_id
           and nb.type = 0
-        union
+        union all
         select distinct nb.sku, pd.promotion_id
         from ya_new_basket nb
           inner join ya_prod_attr pa on nb.sku = pa.sku
