@@ -151,6 +151,15 @@ PROCEDURE CreateNextPurchaseCoupon (
 
 			INSERT INTO ya_coupon_site (coupon_code, site_id)
 			VALUES (cLcoupon_code_YS, 13);
+			
+			INSERT INTO ya_coupon_site (coupon_code, site_id)
+			VALUES (cLcoupon_code_YS, 14);
+
+			INSERT INTO ya_coupon_site (coupon_code, site_id)
+			VALUES (cLcoupon_code_YS, 15);
+			
+			INSERT INTO ya_coupon_site (coupon_code, site_id)
+			VALUES (cLcoupon_code_YS, 18);
 
 			--============================ Keep record for sending email===============================
 			INSERT INTO ya_next_purchase_coupon (coupon_code, order_id, type)
