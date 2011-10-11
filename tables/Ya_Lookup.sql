@@ -20,13 +20,13 @@ ADD CONSTRAINT PK_Lookup PRIMARY KEY (id)
 USING INDEX TABLESPACE SSCommerceserver_Index
 /
 
-ALTER TABLE ya_lookup
-ADD CONSTRAINT Un_Lookup_01 UNIQUE (type_id, code_id)
-USING INDEX TABLESPACE SSCommerceserver_Index
-/
 
 CREATE INDEX IX_Lookup_01 ON Ya_Lookup(type, code) TABLESPACE SSCommerceserver_Index
 /
+
+CREATE UNIQUE INDEX UN_Lookup_01 ON Ya_Lookup(type_id, code_id) TABLESPACE SSCommerceserver_Index
+/
+
 
 
 CREATE PUBLIC SYNONYM Ya_Lookup FOR Ya_Lookup

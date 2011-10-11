@@ -38,14 +38,22 @@ USING INDEX TABLESPACE SSCommerceserver_Index
 /
 
 
-CREATE INDEX IX_Associate_Link_01 ON Ya_Associate_Link(associate_id, link_id) TABLESPACE SSCommerceserver_Index
+CREATE INDEX IX_Associate_Link_01 ON Ya_Associate_Link(associate_id, link_id)
+TABLESPACE SSCommerceserver_Index
 /
 
-CREATE INDEX IX_Associate_Link_02 ON Ya_Associate_Link(rowguid) TABLESPACE SSCommerceserver_Index
+CREATE INDEX IX_Associate_Link_02 ON Ya_Associate_Link(rowguid)
+TABLESPACE SSCommerceserver_Index
 /
 
-CREATE INDEX IX_Associate_Link_03 ON Ya_Associate_Link(link_code, link_id) TABLESPACE SSCommerceserver_Index
+CREATE INDEX IX_Associate_Link_03 ON Ya_Associate_Link(link_code, link_id)
+TABLESPACE SSCommerceserver_Index
 /
+
+CREATE UNIQUE INDEX UN_Associate_Link_01 ON Ya_Associate_Link(link_code)
+TABLESPACE SSCommerceserver_Index
+/
+
 
 CREATE PUBLIC SYNONYM Ya_Associate_Link FOR Ya_Associate_Link
 /
@@ -58,6 +66,7 @@ FOR EACH ROW
 BEGIN
 	:NEW.is_english := UPPER(:NEW.is_english);
 END;
+/
 
 create or replace TRIGGER TRI_associate_link_02
 BEFORE INSERT OR UPDATE OF is_chinese
@@ -66,6 +75,7 @@ FOR EACH ROW
 BEGIN
 	:NEW.is_chinese := UPPER(:NEW.is_chinese);
 END;
+/
 
 create or replace TRIGGER TRI_associate_link_03
 BEFORE INSERT OR UPDATE OF is_japanese
@@ -74,6 +84,7 @@ FOR EACH ROW
 BEGIN
 	:NEW.is_japanese := UPPER(:NEW.is_japanese);
 END;
+/
 
 create or replace TRIGGER TRI_associate_link_04
 BEFORE INSERT OR UPDATE OF is_korean
@@ -82,6 +93,7 @@ FOR EACH ROW
 BEGIN
 	:NEW.is_korean := UPPER(:NEW.is_korean);
 END;
+/
 
 create or replace TRIGGER TRI_associate_link_05
 BEFORE INSERT OR UPDATE OF is_other
@@ -90,6 +102,7 @@ FOR EACH ROW
 BEGIN
 	:NEW.is_other := UPPER(:NEW.is_other);
 END;
+/
 
 create or replace TRIGGER TRI_associate_link_06
 BEFORE INSERT OR UPDATE OF is_music
@@ -98,6 +111,7 @@ FOR EACH ROW
 BEGIN
 	:NEW.is_music := UPPER(:NEW.is_music);
 END;
+/
 
 create or replace TRIGGER TRI_associate_link_07
 BEFORE INSERT OR UPDATE OF is_karaoke
@@ -106,6 +120,7 @@ FOR EACH ROW
 BEGIN
 	:NEW.is_karaoke := UPPER(:NEW.is_karaoke);
 END;
+/
 
 create or replace TRIGGER TRI_associate_link_08
 BEFORE INSERT OR UPDATE OF is_movies
@@ -114,6 +129,7 @@ FOR EACH ROW
 BEGIN
 	:NEW.is_movies := UPPER(:NEW.is_movies);
 END;
+/
 
 create or replace TRIGGER TRI_associate_link_09
 BEFORE INSERT OR UPDATE OF is_anime
@@ -122,6 +138,7 @@ FOR EACH ROW
 BEGIN
 	:NEW.is_anime := UPPER(:NEW.is_anime);
 END;
+/
 
 create or replace TRIGGER TRI_associate_link_10
 BEFORE INSERT OR UPDATE OF is_comics
@@ -130,6 +147,7 @@ FOR EACH ROW
 BEGIN
 	:NEW.is_comics := UPPER(:NEW.is_comics);
 END;
+/
 
 create or replace TRIGGER TRI_associate_link_11
 BEFORE INSERT OR UPDATE OF is_books
@@ -138,6 +156,7 @@ FOR EACH ROW
 BEGIN
 	:NEW.is_books := UPPER(:NEW.is_books);
 END;
+/
 
 create or replace TRIGGER TRI_associate_link_12
 BEFORE INSERT OR UPDATE OF is_video_games
@@ -146,6 +165,7 @@ FOR EACH ROW
 BEGIN
 	:NEW.is_video_games := UPPER(:NEW.is_video_games);
 END;
+/
 
 create or replace TRIGGER TRI_associate_link_13
 BEFORE INSERT OR UPDATE OF is_electronics
@@ -154,3 +174,4 @@ FOR EACH ROW
 BEGIN
 	:NEW.is_electronics := UPPER(:NEW.is_electronics);
 END;
+/
