@@ -44,6 +44,7 @@ IS
         FROM YA_CREDIT_CARD_PROFILE
         WHERE shopper_id = cPshopperId
           AND card_type_id IN (1,2,3,6)
+          AND created_by_checkout_session = 'N'
         ORDER BY preferred DESC nulls last;
       END;
     ELSIF iPsiteId = 18 THEN
@@ -54,6 +55,7 @@ IS
         FROM YA_CREDIT_CARD_PROFILE
         WHERE shopper_id = cPshopperId
           AND card_type_id IN (1,2)
+          AND created_by_checkout_session = 'N'
         ORDER BY preferred DESC nulls last;
       END;
     ELSE
@@ -64,6 +66,7 @@ IS
         FROM YA_CREDIT_CARD_PROFILE
         WHERE shopper_id = cPshopperId
           AND card_type_id IN (1,2,3,6)
+          AND created_by_checkout_session = 'N'
         ORDER BY preferred DESC nulls last;
       END;
     END IF;
@@ -110,7 +113,8 @@ IS
       firstname_on_card,
       lastname_on_card, 
       card_numberencrypted, 
-      encryptionkey
+      encryptionkey,
+      created_by_checkout_session
       )
     VALUES
       (
@@ -123,7 +127,8 @@ IS
       cPfirstname,
       cPlastname,
       cPcardNumberEncrypted,
-      cPencryptionKey
+      cPencryptionKey,
+      'N'
       );
     COMMIT;
   RETURN;

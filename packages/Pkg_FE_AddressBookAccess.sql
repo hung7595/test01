@@ -150,6 +150,7 @@ AS
       state_id,city_id
     FROM ya_address
     WHERE shopper_id = cPshopper_id
+      AND created_by_checkout_session = 'N'
     ORDER BY address_id;
 
     RETURN;
@@ -204,13 +205,14 @@ AS
       INTO ya_address
         (
           address_id , shopper_id, firstname, lastname, address1, address2, city, state, state_id,
-          zip, country_id, day_phone, eve_phone, fax_number, mobile_phone, email, site_id, lang_id
+          zip, country_id, day_phone, eve_phone, fax_number, mobile_phone, email, site_id, lang_id, 
+          created_by_checkout_session
         )
       VALUES
         (
           iPaddress_Id , cPshopper_id, cPfirst_name, cPlast_name, cPaddress1, cPaddress2, cPcity,
           cPstate, iPstate_id, cPzip, iPcountry_id, cPday_phone, cPeve_phone, cPfax_number,
-          cPmobile_phone, cPemail, iPsite_id, -1
+          cPmobile_phone, cPemail, iPsite_id, -1, 'N'
         );
 
       COMMIT;
@@ -300,13 +302,14 @@ AS
       INTO ya_address
         (
           address_id , shopper_id, firstname, lastname, address1, address2, city, state, state_id,
-          zip, country_id, day_phone, eve_phone, fax_number, mobile_phone, email, site_id, lang_id, city_id
+          zip, country_id, day_phone, eve_phone, fax_number, mobile_phone, email, site_id, lang_id, city_id,
+          created_by_checkout_session
         )
       VALUES
         (
           iPaddress_Id , cPshopper_id, cPfirst_name, cPlast_name, cPaddress1, cPaddress2, cPcity,
           cPstate, iPstate_id, cPzip, iPcountry_id, cPday_phone, cPeve_phone, cPfax_number,
-          cPmobile_phone, cPemail, iPsite_id, -1, iPcity_id
+          cPmobile_phone, cPemail, iPsite_id, -1, iPcity_id, 'N'
         );
 
       COMMIT;

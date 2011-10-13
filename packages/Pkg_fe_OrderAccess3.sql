@@ -1000,13 +1000,15 @@ AS
         SET preferred_bill = 'N'
         WHERE
           shopper_id = cPshopper_id
-          AND preferred_bill = 'Y';
+          AND preferred_bill = 'Y'
+          AND created_by_checkout_session = 'N';
 
         UPDATE YA_ADDRESS
         SET preferred_bill = 'Y'
         WHERE
           address_id = iPbill_profile_id
-          AND shopper_id = cPshopper_id;
+          AND shopper_id = cPshopper_id
+          AND created_by_checkout_session = 'N';
       END;
     END IF;
 
@@ -1017,7 +1019,8 @@ AS
         WHERE
           shopper_id = cPshopper_id
           AND preferred_ship = 'Y'
-          AND site_id = iPsite_id;
+          AND site_id = iPsite_id
+          AND created_by_checkout_session = 'N';
 
         UPDATE YA_ADDRESS
         SET preferred_ship = 'Y'
@@ -1033,7 +1036,8 @@ AS
         SET preferred = 'N'
         WHERE
           preferred = 'Y'
-          AND shopper_id = cPshopper_id;
+          AND shopper_id = cPshopper_id
+          AND created_by_checkout_session = 'N';
 
         UPDATE YA_CREDIT_CARD_PROFILE
         SET preferred = 'Y'
@@ -1244,7 +1248,8 @@ AS
             WHERE
               shopper_id = cPshopper_id
               AND preferred_ship = 'Y'
-              AND site_id = iPsite_id;
+              AND site_id = iPsite_id
+              AND created_by_checkout_session = 'N';
 
             UPDATE YA_ADDRESS
             SET preferred_ship = 'Y'
@@ -1467,7 +1472,8 @@ AS
             WHERE
               shopper_id = cPshopper_id
               AND preferred_ship = 'Y'
-              AND site_id = iPsite_id;
+              AND site_id = iPsite_id
+              AND created_by_checkout_session = 'N';
 
             UPDATE YA_ADDRESS
             SET preferred_ship = 'Y'
@@ -1676,7 +1682,8 @@ AS
             SET preferred_bill = 'N'
             WHERE
               shopper_id = cPshopper_id
-              AND preferred_bill = 'Y';
+              AND preferred_bill = 'Y'
+              AND created_by_checkout_session = 'N';
 
             UPDATE YA_ADDRESS
             SET preferred_bill = 'Y'
@@ -1693,7 +1700,8 @@ AS
             WHERE
               shopper_id = cPshopper_id
               AND preferred_ship = 'Y'
-              AND site_id = iPsite_id;
+              AND site_id = iPsite_id
+              AND created_by_checkout_session = 'N';
 
             UPDATE YA_ADDRESS
             SET preferred_ship = 'Y'
@@ -1908,7 +1916,8 @@ AS
             WHERE
               shopper_id = cPshopper_id
               AND preferred_ship = 'Y'
-              AND site_id = iPsite_id;
+              AND site_id = iPsite_id
+              AND created_by_checkout_session = 'N';
 
             UPDATE YA_ADDRESS
             SET preferred_ship = 'Y'
@@ -2732,6 +2741,7 @@ AS
         sa.preferred_ship = 'Y'
         AND sa.shopper_id = cPshopper_id
         AND sa.country_id IN (SELECT c1.country_id FROM YA_SITE_CANSHIP_COUNTRY c1 WHERE site_id = iPsite_id)
+        AND sa.created_by_checkout_session = 'N'
         AND ROWNUM = 1;
       EXCEPTION WHEN NO_DATA_FOUND THEN
         iLship_profile := NULL;
@@ -2744,6 +2754,7 @@ AS
       WHERE
         ba.preferred_bill = 'Y'
         AND ba.shopper_id = cPshopper_id
+        AND ba.created_by_checkout_session = 'N'
         AND ROWNUM = 1;
     EXCEPTION WHEN NO_DATA_FOUND THEN
       iLbill_profile := NULL;
@@ -2758,6 +2769,7 @@ AS
         cc.preferred = 'Y'
         AND cc.shopper_id = cPshopper_id
         AND cc.card_type_id IN (1,2,3,6)
+        AND cc.created_by_checkout_session = 'N'
         AND ROWNUM = 1;
     EXCEPTION WHEN NO_DATA_FOUND THEN
       iLcc_profile := NULL;
@@ -2771,6 +2783,7 @@ AS
         cc.preferred = 'Y'
         AND cc.shopper_id = cPshopper_id
         AND cc.card_type_id IN (1,2)
+        AND cc.created_by_checkout_session = 'N'
         AND ROWNUM = 1;
     EXCEPTION WHEN NO_DATA_FOUND THEN
       iLcc_profile := NULL;    
