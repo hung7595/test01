@@ -1,6 +1,12 @@
-CREATE OR REPLACE PACKAGE "PKG_FE_ORDERACCESS3" 
+CREATE OR REPLACE PACKAGE "PKG_FE_ORDERACCESS3"
 AS
   TYPE refCur IS REF CURSOR;
+
+  PROCEDURE UpdateShopperSiteLanguage (
+    cPshopper_id IN VARCHAR2,
+    iPsite_id IN INT,
+    iPlang_id IN INT
+  );
 
   PROCEDURE UpdateOrderXml (
     iPorder_num IN INT,
@@ -60,7 +66,7 @@ AS
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   );
-  
+
   PROCEDURE InsertPaypalECOrderXml (
     cPguid IN CHAR,
     cPshopper_id IN CHAR,
@@ -96,7 +102,7 @@ AS
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   );
-  
+
   PROCEDURE InsertPPECOrderXmlEncrypted (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
@@ -113,7 +119,7 @@ AS
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   );
-  
+
   PROCEDURE InsertPDOrderXmlEncrypted (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
@@ -130,7 +136,7 @@ AS
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   );
-  
+
   PROCEDURE GetShadowOrderWithWarrantyYS (
 	  cPguid IN CHAR,
     cPshopper_id IN CHAR,
@@ -147,7 +153,7 @@ AS
     curPresult8 OUT refCur, -- GetCoupon refCur1
     curPresult9 OUT refCur, -- GetCoupon refCur2
     curPresult10 OUT refCur
-  );  
+  );
 
   /* proc_fe_GetOrder_encrypted */
   PROCEDURE GetOrderWithWarrantyEncrypted (
@@ -211,7 +217,7 @@ AS
     cPshopper_id IN CHAR,
     iPcount OUT INT
   );
-  
+
   PROCEDURE GetOrderCountBySiteId (
     cPshopper_id IN CHAR,
 	  iPsite_id IN INT,
@@ -306,7 +312,7 @@ AS
     iPaddress_id IN INT,
     cPcurrency IN CHAR DEFAULT 'USD'
   );
-  
+
   PROCEDURE UpdateShippingAddressYS (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
@@ -443,11 +449,42 @@ AS
     cPshopper_id OUT CHAR,
     cPcc_uid IN CHAR
   );
-  
+
 END Pkg_Fe_Orderaccess3;
 /
 CREATE OR REPLACE PACKAGE BODY PKG_FE_ORDERACCESS3
 AS
+  PROCEDURE UpdateShopperSiteLanguage (
+    cPshopper_id IN VARCHAR2,
+    iPsite_id IN INT,
+    iPlang_id IN INT
+  )
+  AS
+    iLexist INT;
+  BEGIN
+    BEGIN
+      SELECT 1
+      INTO iLexist
+      FROM ya_shopper_site_preference
+      WHERE shopper_id = cPshopper_id
+        AND site_id = iPsite_id;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        BEGIN
+          iLexist := 0;
+        END;
+    END;
+    
+    IF iLexist = 0 THEN
+      BEGIN
+        INSERT INTO ya_shopper_site_preference (id, shopper_id, site_id, prefer_lang_id)
+        VALUES (SEQ_SHOPPER_SITE_PREFERENCE.nextval, cPshopper_id, iPsite_id, iPlang_id);
+        
+        COMMIT;
+      END;
+    END IF;
+  END UpdateShopperSiteLanguage;
+
   PROCEDURE UpdateOrderXml (
     iPorder_num IN INT,
     clobPorder_xml IN CLOB
@@ -456,12 +493,12 @@ AS
   BEGIN
     UPDATE ya_order SET order_xml = clobPorder_xml
     WHERE order_num = iPorder_num;
-    
+
     COMMIT;
 
-    RETURN;    
+    RETURN;
   END UpdateOrderXml;
-  
+
   PROCEDURE InsertSaleCode (
     iPorder_num IN INT,
     vcPsales_code IN VARCHAR2
@@ -539,7 +576,7 @@ AS
     IF ( iLtemp < deciLdebit_amount) THEN
       BEGIN
         -- Raiseerror otherwise
-        insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS3','DEBITCREDITBYSITE',sysdate,'SS_ADM','1 - iLtemp >= deciPdebit_amount (' || to_char(iPorder_num) || ',' || to_char(iLtemp) || ',' || to_char(deciPdebit_amount) || ',' || to_char(deciLdebit_amount) || ')' );                
+        insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS3','DEBITCREDITBYSITE',sysdate,'SS_ADM','1 - iLtemp >= deciPdebit_amount (' || to_char(iPorder_num) || ',' || to_char(iLtemp) || ',' || to_char(deciPdebit_amount) || ',' || to_char(deciLdebit_amount) || ')' );
         iPreturn := -1;
       END;
     ELSE
@@ -760,7 +797,7 @@ AS
       iPreturn := -1;
     END;
   END DebitCredit;
-  
+
   PROCEDURE UpdateLimitedQuantity (
     vcPsku_csv IN VARCHAR2,
     vcPqty_csv IN VARCHAR2,
@@ -811,21 +848,21 @@ AS
             action_id,
             action_datetime
           )
-        SELECT sku, site_id, action_id, SYSDATE 
-        FROM ya_limited_quantity 
-        WHERE 
+        SELECT sku, site_id, action_id, SYSDATE
+        FROM ya_limited_quantity
+        WHERE
           site_id = (
             select max(lq2.site_id)
             from ya_limited_quantity lq2
             where lq2.frontend_quantity > 0
               and lq2.site_id in (iPsite_id, 99)
               and lq2.sku = iLcurrent_sku
-          )        
+          )
         --site_id IN (99, iPsite_id)
         --AND frontend_quantity > 0
         AND frontend_quantity - iLcurrent_qty <= 0
         AND sku = iLcurrent_sku;
-        
+
         UPDATE YA_LIMITED_QUANTITY
         SET
           frontend_quantity = frontend_quantity - iLcurrent_qty,
@@ -896,7 +933,7 @@ AS
     cLcredit_currency CHAR(3);
   BEGIN
     SELECT SEQ_order.NEXTVAL INTO iPorder_num FROM DUAL;
-    
+
     SELECT credit_amount, credit_currency INTO nLcredit_amount, cLcredit_currency
     FROM ya_checkout_data WHERE shopper_id = cPshopper_id AND site_id = iPsite_id;
 
@@ -921,7 +958,7 @@ AS
 
     -- update buffer campaign
     -- 60001: US, 60002: Global
-/*    
+/*
     IF iPsite_id = 1 THEN
       iLbuffer_code := 60001;
     ELSIF iPsite_id = 7 THEN
@@ -969,7 +1006,7 @@ AS
         AND nb.type = 0
         AND nb.site_id = iPsite_id;
     END IF;
-        
+
     -- remove basket's items
     DELETE FROM YA_NEW_BASKET
     WHERE
@@ -1069,7 +1106,7 @@ AS
         Pkg_Fe_Orderaccess3.DebitCreditBySite(cPshopper_id, nLcredit_amount, iPorder_num, cLcredit_currency, iPsite_id, iLdebit_credit_return, cPtransaction_id);
       END;
     END IF;
-    
+
     IF (LENGTH(vcPlimited_sku_csv) > 0) THEN
       BEGIN
         UpdateLimitedQuantity(vcPlimited_sku_csv, vcPlimited_qty_csv, iPsite_id);
@@ -1085,9 +1122,9 @@ AS
         iPorder_num := -1;
         ROLLBACK;
       END;
-*/      
+*/
   END InsertOrderXmlEncrypted;
-  
+
   PROCEDURE InsertPaypalECOrderXml (
 	  cPguid IN CHAR,
     cPshopper_id IN CHAR,
@@ -1141,7 +1178,7 @@ AS
 			-- Safe guard unless the currency cannot be fetched in the ya_checkout_data by paypal_uid
 			SELECT currency_code
 			INTO cLcurrency
-			FROM ya_paypal_ec_get_details 
+			FROM ya_paypal_ec_get_details
 			WHERE order_mapping_id IN (select id from ya_paypal_ec_order_mapping where payment_txn_id = cPguid);
 		  END;
 	  END;
@@ -1330,7 +1367,7 @@ AS
     iLdebit_credit_return INT;
     iLseq_currval INT;
     iLseq_diff INT;
-    iLbuffer_code INT;    
+    iLbuffer_code INT;
   BEGIN
     BEGIN
       SELECT status, alipay_status
@@ -1392,7 +1429,7 @@ AS
             AND lq.frontend_quantity > 0
           );
         */
-        
+
         -- for automatic clearance tool buffering
         -- 50001: US, 50002: Global, 50003: YS
         IF iPsite_id = 1 THEN
@@ -1529,7 +1566,7 @@ AS
     COMMIT;
     RETURN;
   END InsertPDOrderXml;
-  
+
   PROCEDURE InsertPPECOrderXmlEncrypted (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
@@ -1598,7 +1635,7 @@ AS
 			-- Safe guard unless the currency cannot be fetched in the ya_checkout_data by paypal_uid
 			SELECT currency_code
 			INTO cLcurrency
-			FROM ya_paypal_ec_get_details 
+			FROM ya_paypal_ec_get_details
 			WHERE order_mapping_id IN (select id from ya_paypal_ec_order_mapping where payment_txn_id = cLguid);
 		  END;
 	  END;
@@ -1835,7 +1872,7 @@ AS
             clobPorder_xml,
             iPencryptionKey_id
           );
-          
+
         -- update buffer campaign
         -- 60001: US, 60002: Global
         /*
@@ -1973,7 +2010,7 @@ AS
     COMMIT;
     RETURN;
   END InsertPDOrderXmlEncrypted;
-  
+
   PROCEDURE GetShadowOrderWithWarrantyYS (
 	  cPguid IN CHAR,
     cPshopper_id IN CHAR,
@@ -2119,7 +2156,7 @@ AS
 
     RETURN;
   END GetShadowOrderWithWarrantyYS;
-  
+
   PROCEDURE GetOrderWithWarrantyEncrypted (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
@@ -2455,7 +2492,7 @@ AS
     ORDER BY ol.id;
 
     OPEN curPresult3 FOR
-    SELECT 
+    SELECT
       oi.origin_order_id,
       oi.sales_id,
       oi.origin_id,
@@ -2518,10 +2555,10 @@ AS
       bi.encryption_key,
       bi.cc_num_encrypted
     FROM
-      backend_adm.order_info oi, 
+      backend_adm.order_info oi,
       (select * from billing_info where order_info_id = iLorder_id) bi,
       (select * from shipping_info where order_info_id = iLorder_id) si
---      backend_adm.shipping_info si, 
+--      backend_adm.shipping_info si,
 --      backend_adm.billing_info bi
     WHERE 1=1
     AND oi.id = iLorder_id
@@ -2607,7 +2644,7 @@ AS
     iPcount := iLFE_count + iLBE_count;
     RETURN;
   END GetOrderCount;
-  
+
   PROCEDURE GetOrderCountBySiteId (
     cPshopper_id IN CHAR,
 	  iPsite_id IN INT,
@@ -2786,7 +2823,7 @@ AS
         AND cc.created_by_checkout_session = 'N'
         AND ROWNUM = 1;
     EXCEPTION WHEN NO_DATA_FOUND THEN
-      iLcc_profile := NULL;    
+      iLcc_profile := NULL;
     END;
     ELSE
       iLcc_profile := NULL;
@@ -2795,7 +2832,7 @@ AS
     IF iPsite_id = 12 THEN
       iLtype_id := 2;
     END IF;
-    
+
     Pkg_Fe_Shopperaccess.GetShopperDataByShopperId(cPshopper_id, curPresult1);
 
     IF iLship_profile IS NOT NULL AND iLbill_profile IS NOT NULL AND iLcc_profile IS NOT NULL THEN
@@ -2906,10 +2943,10 @@ AS
   AS
     iLship_method INT;
     deciLcredit_amount DECIMAL(18,2);
-  BEGIN    
+  BEGIN
     IF iPsite_id = 1 THEN -- US site
       iLship_method := 16; -- Standard
-    ELSIF iPsite_id = 7 THEN -- Global Site      
+    ELSIF iPsite_id = 7 THEN -- Global Site
       IF iPship_to_country_id = 98 THEN -- Hong Kong
         iLship_method := 15; -- Express
       ELSE
@@ -2917,9 +2954,9 @@ AS
       END IF;
     ELSIF iPsite_id in (10,13,14,15,18) THEN -- YesStyle Site(s)
       iLship_method := 49; -- Standard
-	  ELSIF iPsite_id = 11 THEN -- YesStyle China      
+	  ELSIF iPsite_id = 11 THEN -- YesStyle China
       iLship_method := 53; -- Standard
-	  ELSIF iPsite_id = 12 THEN -- Hallmark      
+	  ELSIF iPsite_id = 12 THEN -- Hallmark
       iLship_method := 53; -- Standard
     ELSE
       iLship_method := -1;
@@ -3230,7 +3267,7 @@ AS
               iLshipping_method_id := 11; -- Canadian
             WHEN 98 THEN -- Hong Kong
               iLshipping_method_id := 15; -- Express
-            ELSE 
+            ELSE
               iLshipping_method_id := 12;
           END CASE;
         END IF;
@@ -3471,7 +3508,7 @@ AS
               iLshipping_method_id := 11; -- Canadian
             WHEN 98 THEN -- Hong Kong
               iLshipping_method_id := 15; -- Express
-            ELSE 
+            ELSE
               iLshipping_method_id := 12;
           END CASE;
         END IF;
@@ -3750,7 +3787,7 @@ AS
   )
   AS
   BEGIN
-    
+
     UPDATE ya_checkout_data
     SET
       payment_method_id = iPmethod_id,
@@ -3761,7 +3798,7 @@ AS
     WHERE
       shopper_id = cPshopper_id
       AND site_id = iPsite_id;
-      
+
     IF iPmethod_id <> 8 THEN
     BEGIN
       UPDATE ya_checkout_data
@@ -4111,7 +4148,7 @@ AS
 
     RETURN;
   END UpdateCheckOutCurrency;
-  
+
   PROCEDURE UpdatePaymentInfo (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
@@ -4133,7 +4170,7 @@ AS
       shopper_id = cPshopper_id
       AND site_id = iPsite_id;
 
-  END UpdatePaymentInfo;  
+  END UpdatePaymentInfo;
 
   PROCEDURE GetShopperIdByCcUId (
     cPshopper_id OUT CHAR,
@@ -4153,8 +4190,7 @@ AS
         WHEN NO_DATA_FOUND THEN
           cPshopper_id := null;
     END;
-  END GetShopperIdByCcUId;    
+  END GetShopperIdByCcUId;
 
   END Pkg_Fe_Orderaccess3;
 /
- 
