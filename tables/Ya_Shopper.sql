@@ -44,7 +44,7 @@ CREATE INDEX IX_Shopper_02 ON Ya_Shopper(rowguid) TABLESPACE SSCommerceserver_In
 CREATE INDEX IX_Shopper_03 ON Ya_Shopper(created_date, anonymous) TABLESPACE SSCommerceserver_Index
 /
 
-CREATE UNIQUE INDEX IX_Shopper_04 ON Ya_Shopper(LOWER(email)) TABLESPACE SSCommerceserver_Index
+CREATE INDEX IX_Shopper_04 ON Ya_Shopper(LOWER(email)) TABLESPACE SSCommerceserver_Index
 /
 
 CREATE INDEX IX_Shopper_05 ON Ya_Shopper(LOWER(username)) TABLESPACE SSCommerceserver_Index
@@ -56,10 +56,13 @@ CREATE INDEX IX_Shopper_06 ON Ya_Shopper(UPPER(email)) TABLESPACE SSCommerceserv
 CREATE INDEX IX_Shopper_07 ON Ya_Shopper(email) TABLESPACE SSCommerceserver_Index
 /
 
-CREATE INDEX ix_shopper_08 on ya_shopper (
+CREATE INDEX IX_Shopper_08 on Ya_Shopper (
 case when anonymous = 'N' and member_type = 1 
 and created_date >= TO_DATE('21-01-2002 15:42:34', 'DD-MM-YYYY HH24:MI:SS') then shopper_id else null end, shopper_id)
 /
+
+CREATE UNIQUE INDEX UN_Shopper_04 ON Ya_Shopper(LOWER(email), type_id) TABLESPACE SSCommerceserver_Index
+/ 
 
 
 CREATE PUBLIC SYNONYM Ya_Shopper FOR Ya_Shopper
@@ -73,3 +76,4 @@ FOR EACH ROW
 BEGIN
 	:NEW.anonymous := UPPER(:NEW.anonymous);
 END;
+/

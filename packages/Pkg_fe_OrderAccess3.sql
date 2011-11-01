@@ -47,6 +47,12 @@ AS
     vcPqty_csv IN VARCHAR2,
     iPsite_id IN INT
   );
+  
+  PROCEDURE UpdateLimitedQuantity_Java (
+    vcPsku_csv IN VARCHAR2,
+    vcPqty_csv IN VARCHAR2,
+    iPsite_id IN INT
+  );
 
   /* proc_fe_InsertOrderXml_encrypted */
   PROCEDURE InsertOrderXmlEncrypted (
@@ -906,6 +912,114 @@ AS
 
   END UpdateLimitedQuantity;
 
+  PROCEDURE UpdateLimitedQuantity_Java (
+    vcPsku_csv IN VARCHAR2,
+    vcPqty_csv IN VARCHAR2,
+    iPsite_id IN INT
+  )
+  AS
+    vcLsku_csv VARCHAR2(1000);
+    vcLqty_csv VARCHAR2(300);
+    iLsku_pointer INT;
+    iLqty_pointer INT;
+    iLcurrent_sku INT;
+    iLcurrent_qty INT;
+    iLlast_record INT;
+    iLaction INT;
+    iLapply_site_id INT;
+  BEGIN
+    SELECT INSTR(vcPsku_csv, ',') INTO iLsku_pointer FROM DUAL;
+    SELECT INSTR(vcPqty_csv, ',') INTO iLqty_pointer FROM DUAL;
+    vcLsku_csv := vcPsku_csv;
+    vcLqty_csv := vcPqty_csv;
+
+    iLlast_record := 0;
+
+    IF (iLsku_pointer = 0) THEN
+        iLlast_record := 1;
+    END IF;
+
+    WHILE (iLsku_pointer > 0 OR iLlast_record = 1) LOOP
+      BEGIN
+        IF (iLsku_pointer = 0 AND iLlast_record = 1) THEN
+          BEGIN
+            SELECT CAST(vcLsku_csv AS INT) INTO iLcurrent_sku FROM DUAL;
+            SELECT CAST(vcLqty_csv AS INT) INTO iLcurrent_qty FROM DUAL;
+            iLlast_record := 0;
+          END;
+        ELSE
+          BEGIN
+            SELECT CAST(SUBSTR(vcLsku_csv, 1, iLsku_pointer-1) AS INT) INTO iLcurrent_sku FROM DUAL;
+            SELECT CAST(SUBSTR(vcLqty_csv, 1, iLqty_pointer-1) AS INT) INTO iLcurrent_qty FROM DUAL;
+          END;
+        END IF;
+
+        -- UPDATE frontend quantity
+        INSERT INTO YA_LIMITED_QUANTITY_ACTION
+          (
+            sku,
+            site_id,
+            action_id,
+            action_datetime
+          )
+        SELECT sku, site_id, action_id, SYSDATE 
+        FROM ya_limited_quantity 
+        WHERE 
+          site_id = (
+            select max(lq2.site_id)
+            from ya_limited_quantity lq2
+            where lq2.frontend_quantity > 0
+              and lq2.site_id in (iPsite_id, 99)
+              and lq2.sku = iLcurrent_sku
+          )        
+        --site_id IN (99, iPsite_id)
+        --AND frontend_quantity > 0
+        AND frontend_quantity - iLcurrent_qty <= 0
+        AND sku = iLcurrent_sku;
+        
+        UPDATE YA_LIMITED_QUANTITY
+        SET
+          frontend_quantity = frontend_quantity - iLcurrent_qty,
+          FE_last_change_datetime = SYSDATE
+        WHERE
+          sku = iLcurrent_sku
+          --AND site_id IN (99, iPsite_id)
+          AND site_id = (
+            select max(lq2.site_id)
+            from ya_limited_quantity lq2
+            where lq2.frontend_quantity > 0
+              and lq2.site_id in (iPsite_id, 99)
+              and lq2.sku = iLcurrent_sku
+          );
+
+        IF (iLsku_pointer > 0) THEN
+          BEGIN
+            SELECT SUBSTR(vcLsku_csv, iLsku_pointer+1) INTO vcLsku_csv FROM DUAL;
+            SELECT SUBSTR(vcLqty_csv, iLqty_pointer+1) INTO vcLqty_csv FROM DUAL;
+            SELECT INSTR(vcLsku_csv, ',') INTO iLsku_pointer FROM DUAL;
+            SELECT INSTR(vcLqty_csv, ',') INTO iLqty_pointer FROM DUAL;
+            IF (iLsku_pointer = 0) THEN
+              BEGIN
+                iLlast_record := 1;
+              END;
+            END IF;
+          END;
+        END IF;
+      END;
+    END LOOP;
+
+    -- COMMIT; commit by java
+    RETURN;
+
+    EXCEPTION
+      WHEN OTHERS THEN
+        BEGIN
+          -- ROLLBACK; rollback by java
+          RAISE;
+        END;
+
+  END UpdateLimitedQuantity_Java;
+  
   PROCEDURE InsertOrderXmlEncrypted (
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
