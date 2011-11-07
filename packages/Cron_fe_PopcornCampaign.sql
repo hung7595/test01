@@ -30,7 +30,7 @@ CREATE OR REPLACE PACKAGE BODY "CRON_FE_POPCORNCAMPAIGN" AS
 			and prod.weight < 201
 			and region.is_can_sell = 'Y'
 			and region.is_enabled = 'Y'
-			and region.unit_cost / nvl(rate.exchange_rate, 1) < 6.2
+			and region.unit_cost / nvl(rate.exchange_rate, 1) < 5.56
 			and region.region_id = 1
 			and prod.account_id in (104,14,41,7,132,33,9,103,10,34,90,11,12,156,150,13,4,133,394,32,396,120,155,134,24,25,64,63,26)
 	) a,
@@ -46,7 +46,7 @@ CREATE OR REPLACE PACKAGE BODY "CRON_FE_POPCORNCAMPAIGN" AS
 			and prod.weight < 201
 			and region.is_can_sell = 'Y'
 			and region.is_enabled = 'Y'
-			and region.unit_cost / nvl(rate.exchange_rate, 1) < 6.2
+			and region.unit_cost / nvl(rate.exchange_rate, 1) < 5.56
 			and region.region_id = 7
 			and prod.account_id in (104,14,41,7,132,33,9,103,10,34,90,11,12,156,150,13,4,133,394,32,396,120,155,134,24,25,64,63,26)
 	) b

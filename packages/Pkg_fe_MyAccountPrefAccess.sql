@@ -261,7 +261,7 @@ IS
 	        )
       );
     ELSE
-        IF (iPlang_id = 5) THEN
+        IF (iPlang_id = 5) AND (iPsite_id = 14) THEN
 	      OPEN curPresult FOR
             SELECT distinct email from (
 		        SELECT email, shopper_id from (

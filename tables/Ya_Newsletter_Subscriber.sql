@@ -40,6 +40,13 @@ create index IX_NEWSLETTER_SUBSCRIBER_05 on ya_NEWSLETTER_SUBSCRIBER
 CREATE INDEX IX_Newsletter_Subscriber_06 ON Ya_Newsletter_Subscriber(shopper_id) TABLESPACE SSCommerceserver_Index
 /
 
+CREATE INDEX IX_Newsletter_Subscriber_06 ON Ya_Newsletter_Subscriber(newsletter_id, status) TABLESPACE SSCommerceserver_Index
+/
+
+CREATE INDEX IX_Newsletter_Subscriber_08 ON Ya_Newsletter_Subscriber(CASE status WHEN 'A' THEN newsletter_id ELSE NULL END) TABLESPACE SSCommerceserver_Index
+/
+
+
 CREATE PUBLIC SYNONYM Ya_Newsletter_Subscriber FOR Ya_Newsletter_Subscriber
 /
 

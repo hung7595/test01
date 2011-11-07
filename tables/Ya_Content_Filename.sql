@@ -12,10 +12,9 @@ ADD CONSTRAINT PK_Content_Filename PRIMARY KEY (id)
 USING INDEX TABLESPACE SSCommerceserver_Index
 /
 
-
-CREATE PUBLIC SYNONYM Ya_Content_Filename FOR Ya_Content_Filename
+CREATE INDEX IX_CONTENT_FILENAME_01 ON Ya_Content_Filename(LOWER(path)) TABLESPACE SSCommerceserver_Index
 /
 
 
-CREATE INDEX IX_CONTENT_FILENAME_01 ON Ya_Content_Filename(LOWER(path)) TABLESPACE SSCommerceserver_Index
+CREATE PUBLIC SYNONYM Ya_Content_Filename FOR Ya_Content_Filename
 /

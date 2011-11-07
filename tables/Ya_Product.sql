@@ -76,9 +76,11 @@ CREATE INDEX IX_Product_11 ON Ya_Product(created_date, sku, bar_code) TABLESPACE
 CREATE INDEX IX_Product_12 ON Ya_Product(sku, key_code, key_code_type) TABLESPACE SSCommerceserver_Index
 /
 
-CREATE INDEX IX_Product_13 ON Ya_Product(brand_id) TABLESPACE SSCommerceserver_Index
+CREATE INDEX IX_Product_14 ON Ya_Product(brand_id, sku) TABLESPACE SSCommerceserver_Index
 /
 
+CREATE INDEX IX_Product_15 ON Ya_Product(REGEXP_REPLACE ("BAR_CODE",' ','')) TABLESPACE SSCommerceserver_Index
+/
 
 CREATE PUBLIC SYNONYM Ya_Product FOR Ya_Product
 /

@@ -24,6 +24,14 @@ ADD CONSTRAINT PK_Backend_Email_Job PRIMARY KEY (id)
 USING INDEX TABLESPACE SSCommerceserver_Index
 /
 
+CREATE INDEX IX_Backend_Email_Job_01 ON Ya_Backend_Email_Job(CASE sts WHEN 1 THEN 'Y' ELSE NULL END)
+TABLESPACE SSCommerceserver_Index
+/
+
+CREATE INDEX IX_Backend_Email_Job_02 ON Ya_Backend_Email_Job(origin_order_id)
+TABLESPACE SSCommerceserver_Index
+/
+
 
 CREATE PUBLIC SYNONYM Ya_Backend_Email_Job FOR Ya_Backend_Email_Job
 /
