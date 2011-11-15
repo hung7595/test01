@@ -17,15 +17,16 @@ USING INDEX TABLESPACE SSCommerceserver_Index
 /
 
 
-ALTER TABLE Ya_Description
-ADD CONSTRAINT Un_Description_01 UNIQUE (sku, lang_id, site_id)
-USING INDEX TABLESPACE SSCommerceserver_Index
+CREATE UNIQUE INDEX UN_Description_01 on Ya_Description (sku, lang_id, site_id)
+TABLESPACE SSCommerceserver_Index
 /
 
-CREATE INDEX IX_Description_01 on Ya_Description (sku, lang_id) TABLESPACE SSCommerceserver_Index
+CREATE INDEX IX_Description_01 on Ya_Description (sku, lang_id)
+TABLESPACE SSCommerceserver_Index
 /
 
-CREATE INDEX IX_Description_02 on Ya_Description (sku, site_id, lang_id) TABLESPACE SSCommerceserver_Index
+CREATE INDEX IX_Description_02 on Ya_Description (sku, site_id, lang_id)
+TABLESPACE SSCommerceserver_Index
 /
 
 
