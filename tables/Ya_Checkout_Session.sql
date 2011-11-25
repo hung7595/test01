@@ -32,6 +32,9 @@ ADD CONSTRAINT PK_Ya_Checkout_Session PRIMARY KEY (id)
 USING INDEX TABLESPACE SSCommerceserver_Index
 /
 
+CREATE UNIQUE INDEX UN_Ya_Checkout_Session_01 ON Ya_Checkout_Session (shopper_id, site_id)
+TABLESPACE  SSCommerceserver_Index
+/
 
 CREATE PUBLIC SYNONYM Ya_Checkout_Session FOR Ya_Checkout_Session
 /
