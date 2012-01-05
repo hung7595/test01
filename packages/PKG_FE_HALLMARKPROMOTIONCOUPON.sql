@@ -1,5 +1,5 @@
-create or replace
-PACKAGE PKG_FE_HALLMARKPROMOTIONCOUPON AS
+
+  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_HALLMARKPROMOTIONCOUPON" AS
   TYPE refCur IS REF CURSOR;
 
   PROCEDURE CreateHallmarkPromotionCoupon (
@@ -10,10 +10,10 @@ PACKAGE PKG_FE_HALLMARKPROMOTIONCOUPON AS
   );
 
 END PKG_FE_HALLMARKPROMOTIONCOUPON;
+
 /
 
-create or replace
-PACKAGE BODY PKG_FE_HALLMARKPROMOTIONCOUPON AS
+  CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_HALLMARKPROMOTIONCOUPON" AS
 
   PROCEDURE CreateHallmarkPromotionCoupon (
     iPorderAmount IN INT,
@@ -22,7 +22,7 @@ PACKAGE BODY PKG_FE_HALLMARKPROMOTIONCOUPON AS
     iPreturn OUT INT
   )
   AS
-  
+
   iLmaxCoupon INT;
   iLcouponCount INT;
   curLorderInfo refCur;
@@ -30,7 +30,7 @@ PACKAGE BODY PKG_FE_HALLMARKPROMOTIONCOUPON AS
   cLshopperId VARCHAR2(32);
   iLcoupon_code VARCHAR2(8);
   iLcount INT;
-  
+
   BEGIN
   	OPEN curLorderInfo FOR
 	  select oi.id, round(sum(ol.unit_price * old.qnty)/iPorderAmount, 0) as couponCount
@@ -42,8 +42,8 @@ PACKAGE BODY PKG_FE_HALLMARKPROMOTIONCOUPON AS
 			   and oi.sts = 11
 			   and old.sts < 8
 		 group by oi.id
-		having sum(ol.unit_price * old.qnty) >= iPorderAmount; 
-		  
+		having sum(ol.unit_price * old.qnty) >= iPorderAmount;
+
 	FETCH curLorderInfo INTO iLorderInfoId, iLcouponCount;
 	  WHILE curLorderInfo%FOUND LOOP
 	    BEGIN
@@ -52,7 +52,7 @@ PACKAGE BODY PKG_FE_HALLMARKPROMOTIONCOUPON AS
 		  FOR i in 1..iLcouponCount LOOP
 		    -- Create coupon code
 		    SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO iLcoupon_code FROM dual;
-			
+
 		    -- Make sure unique coupon code
 		    SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
 		    WHILE (iLcount = 1)
@@ -60,14 +60,14 @@ PACKAGE BODY PKG_FE_HALLMARKPROMOTIONCOUPON AS
 				SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO iLcoupon_code FROM dual;
 				SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
 			  END LOOP;
-			  
+
 			INSERT INTO ya_coupon
-			(shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value, expiration_date, 
+			(shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value, expiration_date,
 			all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, create_date, currency)
-	        SELECT cLshopperId, iLcoupon_code, 'Get RMB50 E-shop coupon with purchase of RMB400 or more', 'Hallmak Babies RMB50 E-shop Coupon', 50, add_months(SYSDATE, 2), 'N', 'N', 1, 12, 250, 'hallmark_promotion', SYSDATE, 'RMB' FROM dual;
-			
+	        SELECT cLshopperId, iLcoupon_code, 'Hallmark - Get RMB50 coupon with purchase of RMB538 or more 2012', 'Hallmak Babies RMB50 E-shop Coupon', 50, add_months(SYSDATE, 2), 'N', 'N', 1, 12, 250, 'hallmark_promotion', SYSDATE, 'RMB' FROM dual;
+
 		    INSERT INTO ya_coupon_site (coupon_code, site_id) VALUES (iLcoupon_code, 12);
-			
+
           END LOOP;
 		END;
 	    FETCH curLorderInfo INTO iLorderInfoId, iLcouponCount;
@@ -79,8 +79,10 @@ PACKAGE BODY PKG_FE_HALLMARKPROMOTIONCOUPON AS
 	  iPreturn := 0;
       ROLLBACK;
     END IF;
-  
+
   END CreateHallmarkPromotionCoupon;
 
 END PKG_FE_HALLMARKPROMOTIONCOUPON;
+
 /
+
