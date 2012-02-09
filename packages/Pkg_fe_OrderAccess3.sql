@@ -575,6 +575,7 @@ AS
     FROM YA_FRONTEND_CREDIT_SYSTEM
     WHERE
       shopper_id = cPshopper_id
+      AND bogus = 'N'
       AND currency = cPcurrency
       AND ((site_id = iPsite_id AND site_id NOT IN (1,7)) OR (site_id IN (1,7) AND (iPsite_id = 1 OR iPsite_id = 7)));
 
@@ -596,6 +597,7 @@ AS
           YA_FRONTEND_CREDIT_SYSTEM fcs
         WHERE
           fcs.current_balance > 0
+          AND fcs.bogus = 'N'
           AND fcs.shopper_id = cPshopper_id
           AND fcs.currency = cPcurrency
           AND ((fcs.site_id = iPsite_id AND fcs.site_id NOT IN (1,7)) OR (fcs.site_id IN (1,7) AND (iPsite_id = 1 OR iPsite_id = 7)))
@@ -711,6 +713,7 @@ AS
     FROM YA_FRONTEND_CREDIT_SYSTEM
     WHERE
       shopper_id = cPshopper_id
+      AND bogus = 'N'
       AND currency = cPcurrency;
 
     deciLdebit_amount := deciPdebit_amount;
@@ -730,6 +733,7 @@ AS
           YA_FRONTEND_CREDIT_SYSTEM fcs
         WHERE
           fcs.current_balance > 0
+          AND fcs.bogus = 'N'
           AND fcs.shopper_id = cPshopper_id
           AND fcs.currency = cPcurrency
         ORDER BY fcs.transaction_datetime ASC;

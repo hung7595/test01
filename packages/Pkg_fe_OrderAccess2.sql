@@ -509,6 +509,7 @@ AS
     FROM YA_FRONTEND_CREDIT_SYSTEM
     WHERE
       shopper_id = cPshopper_id
+      AND bogus = 'N'
       AND currency = cPcurrency
       AND ((site_id = iPsite_id AND site_id NOT IN (1,7)) OR (site_id IN (1,7) AND (iPsite_id = 1 OR iPsite_id = 7)));
 
@@ -516,7 +517,7 @@ AS
     IF ( iLtemp < deciLdebit_amount) THEN
       BEGIN
         -- Raiseerror otherwise
-insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',sysdate,'SS_ADM','1 - iLtemp >= deciPdebit_amount (' || to_char(iLtemp) || ',' || to_char(deciPdebit_amount) || ',' || to_char(deciLdebit_amount) || ')' );                
+        insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',sysdate,'SS_ADM','1 - iLtemp >= deciPdebit_amount (' || to_char(iLtemp) || ',' || to_char(deciPdebit_amount) || ',' || to_char(deciLdebit_amount) || ')' );                
         iPreturn := -1;
       END;
     ELSE
@@ -530,6 +531,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
           YA_FRONTEND_CREDIT_SYSTEM fcs
         WHERE
           fcs.current_balance > 0
+          AND fcs.bogus = 'N'
           AND fcs.shopper_id = cPshopper_id
           AND fcs.currency = cPcurrency
           AND ((fcs.site_id = iPsite_id AND fcs.site_id NOT IN (1,7)) OR (fcs.site_id IN (1,7) AND (iPsite_id = 1 OR iPsite_id = 7)))
@@ -645,6 +647,7 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
     FROM YA_FRONTEND_CREDIT_SYSTEM
     WHERE
       shopper_id = cPshopper_id
+      AND bogus = 'N'
       AND currency = cPcurrency;
 
     deciLdebit_amount := deciPdebit_amount;
@@ -662,8 +665,9 @@ insert into ss_adm.package_log values ('PKG_FE_ORDERACCESS','DEBITCREDITBYSITE',
           fcs.current_balance
         FROM
           YA_FRONTEND_CREDIT_SYSTEM fcs
-        WHERE
+        WHERE        
           fcs.current_balance > 0
+          AND fcs.bogus = 'N'
           AND fcs.shopper_id = cPshopper_id
           AND fcs.currency = cPcurrency
         ORDER BY fcs.transaction_datetime ASC;
