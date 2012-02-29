@@ -69,6 +69,7 @@ AS
     iPlang_type IN INT DEFAULT 1,
     cPcurrency IN CHAR,
     iPencryptionKey_id IN INT,
+    iPsale_id IN INT,
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   );
@@ -87,12 +88,13 @@ AS
     vcPlimited_qty_csv IN VARCHAR2,
     iPlang_type IN INT,
     iPencryptionKey_id IN INT,
+    iPsale_id IN INT,    
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   );
 
   PROCEDURE InsertPDOrderXml (
-	cPguid IN CHAR,
+	  cPguid IN CHAR,
     cPshopper_id IN CHAR,
     iPsite_id IN INT,
     vcPcoupon_code IN VARCHAR2,
@@ -105,6 +107,7 @@ AS
     vcPlimited_qty_csv IN VARCHAR2,
     iPlang_type IN INT,
     iPencryptionKey_id IN INT,
+    iPsale_id IN INT,    
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   );
@@ -122,6 +125,7 @@ AS
     vcPlimited_qty_csv IN VARCHAR2,
     iPlang_type IN INT,
     iPencryptionKey_id IN INT,
+    iPsale_id IN INT,    
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   );
@@ -139,6 +143,7 @@ AS
     vcPlimited_qty_csv IN VARCHAR2,
     iPlang_type IN INT,
     iPencryptionKey_id IN INT,
+    iPsale_id IN INT,
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   );
@@ -1038,6 +1043,7 @@ AS
     iPlang_type IN INT DEFAULT 1,
     cPcurrency IN CHAR,
     iPencryptionKey_id IN INT,
+    iPsale_id IN INT,
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   )
@@ -1062,7 +1068,8 @@ AS
         site_id,
         coupon_code,
         order_xml,
-        encryptionKey
+        encryptionKey,
+        sale_id
       )
     VALUES
       (
@@ -1071,7 +1078,8 @@ AS
         iPsite_id,
         vcPcoupon_code,
         clobPorder_xml,
-        iPencryptionKey_id
+        iPencryptionKey_id,
+        iPsale_id
       );
 
     -- update buffer campaign
@@ -1257,6 +1265,7 @@ AS
     vcPlimited_qty_csv IN VARCHAR2,
     iPlang_type IN INT,
     iPencryptionKey_id IN INT,
+    iPsale_id IN INT,
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   )
@@ -1313,7 +1322,8 @@ AS
             site_id,
             coupon_code,
             order_xml,
-            encryptionKey
+            encryptionKey,
+            sale_id
           )
         VALUES
           (
@@ -1322,7 +1332,8 @@ AS
             iPsite_id,
             vcPcoupon_code,
             clobPorder_xml,
-            iPencryptionKey_id
+            iPencryptionKey_id,
+            iPsale_id
           );
 
         -- for automatic clearance tool buffering
@@ -1475,6 +1486,7 @@ AS
     vcPlimited_qty_csv IN VARCHAR2,
     iPlang_type IN INT,
     iPencryptionKey_id IN INT,
+    iPsale_id IN INT,
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   )
@@ -1512,7 +1524,8 @@ AS
             site_id,
             coupon_code,
             order_xml,
-            encryptionKey
+            encryptionKey,
+            sale_id
           )
         VALUES
           (
@@ -1521,7 +1534,8 @@ AS
             iPsite_id,
             vcPcoupon_code,
             clobPorder_xml,
-            iPencryptionKey_id
+            iPencryptionKey_id,
+            iPsale_id
           );
 
         -- update buffer campaign
@@ -1698,6 +1712,7 @@ AS
     vcPlimited_qty_csv IN VARCHAR2,
     iPlang_type IN INT,
     iPencryptionKey_id IN INT,
+    iPsale_id IN INT,
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   )
@@ -1770,7 +1785,8 @@ AS
             site_id,
             coupon_code,
             order_xml,
-            encryptionKey
+            encryptionKey,
+            sale_id
           )
         VALUES
           (
@@ -1779,7 +1795,8 @@ AS
             iPsite_id,
             vcPcoupon_code,
             clobPorder_xml,
-            iPencryptionKey_id
+            iPencryptionKey_id,
+            iPsale_id
           );
 
         -- for automatic clearance tool buffering
@@ -1926,6 +1943,7 @@ AS
     vcPlimited_qty_csv IN VARCHAR2,
     iPlang_type IN INT,
     iPencryptionKey_id IN INT,
+    iPsale_id IN INT,
     iPorder_num IN OUT INT,
     cPtransaction_id IN VARCHAR2 DEFAULT NULL
   )
@@ -1979,7 +1997,8 @@ AS
             site_id,
             coupon_code,
             order_xml,
-            encryptionKey
+            encryptionKey,
+            sale_id
           )
         VALUES
           (
@@ -1988,7 +2007,8 @@ AS
             iPsite_id,
             vcPcoupon_code,
             clobPorder_xml,
-            iPencryptionKey_id
+            iPencryptionKey_id,
+            iPsale_id
           );
 
         -- update buffer campaign
