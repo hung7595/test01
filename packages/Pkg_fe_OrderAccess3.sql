@@ -1227,9 +1227,9 @@ AS
       END;
     END IF;
 
-    IF (nLcredit_amount > 0) THEN
+    IF (nPcredit_amount > 0) THEN
       BEGIN
-        Pkg_Fe_Orderaccess3.DebitCreditBySite(cPshopper_id, nLcredit_amount, iPorder_num, cLcredit_currency, iPsite_id, iLdebit_credit_return, cPtransaction_id);
+        Pkg_Fe_Orderaccess3.DebitCreditBySite(cPshopper_id, nPcredit_amount, iPorder_num, cPcurrency, iPsite_id, iLdebit_credit_return, cPtransaction_id);
       END;
     END IF;
 
@@ -1444,7 +1444,7 @@ AS
 
         IF nPcredit_amount > 0 THEN
           BEGIN
-            Pkg_Fe_Orderaccess3.DebitCreditBySite(cPshopper_id, nPcredit_amount, iPorder_num, cLcurrency, iPsite_id, iLdebit_credit_return, cPtransaction_id, iPsite_id);
+            Pkg_Fe_Orderaccess3.DebitCreditBySite(cPshopper_id, nPcredit_amount, iPorder_num, 'USD', iPsite_id, iLdebit_credit_return, cPtransaction_id, iPsite_id);
           END;
         END IF;
 
@@ -1902,7 +1902,7 @@ AS
 
         IF nPcredit_amount > 0 THEN
           BEGIN
-            Pkg_Fe_Orderaccess3.DebitCreditBySite(cPshopper_id, nPcredit_amount, iPorder_num, cLcurrency, iPsite_id, iLdebit_credit_return, cPtransaction_id, iPsite_id);
+            Pkg_Fe_Orderaccess3.DebitCreditBySite(cPshopper_id, nPcredit_amount, iPorder_num, 'USD', iPsite_id, iLdebit_credit_return, cPtransaction_id, iPsite_id);
           END;
         END IF;
 
