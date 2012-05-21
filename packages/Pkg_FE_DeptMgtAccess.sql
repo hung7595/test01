@@ -35,6 +35,8 @@ AS
     cPysukEnabled IN CHAR,
     cPyscaEnabled IN CHAR,
     cPhmEnabled IN CHAR,
+    cPywEnabled IN CHAR,
+    cPywkEnabled IN CHAR,
     iPdeptId out int
   );
 
@@ -212,6 +214,8 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
     cPysukEnabled IN CHAR,
     cPyscaEnabled IN CHAR,
     cPhmEnabled IN CHAR,
+    cPywEnabled IN CHAR,
+    cPywkEnabled IN CHAR,
     iPdeptId out int
   )
   AS
@@ -251,6 +255,10 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	  VALUES (iLDeptId, 15, cPysukEnabled, iPdispSeq);	
 	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
 	  VALUES (iLDeptId, 18, cPyscaEnabled, iPdispSeq);	
+	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
+	  VALUES (iLDeptId, 20, cPywEnabled, iPdispSeq);	
+	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
+	  VALUES (iLDeptId, 22, cPywkEnabled, iPdispSeq);	
 
     iPdeptId :=iLDeptId;
     --/****STEP 3 : DEPARTMENT LANGUAGE, NEED TO MODIFY THIS PART*****/
