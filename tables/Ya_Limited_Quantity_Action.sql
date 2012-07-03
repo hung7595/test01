@@ -19,7 +19,8 @@ CREATE PUBLIC SYNONYM Ya_Limited_Quantity_Action FOR Ya_Limited_Quantity_Action
 /
 
 
-CREATE OR REPLACE TRIGGER TrIn_limited_quantity_action
+create or replace
+TRIGGER "SS_ADM".TrIn_limited_quantity_action
   AFTER INSERT ON ya_limited_quantity_action
   FOR EACH ROW
 DECLARE
@@ -30,8 +31,18 @@ DECLARE
   isold_out_status       NUMBER;
   vsuggestedSystem       varchar2(100) := 'FE_LimitedQuantity';
   inormal_availability   NUMBER := 1;
-
+  iYsDesignerBag INT;
 BEGIN
+
+  SELECT COUNT(1)
+  INTO iYsDesignerBag
+  FROM ya_product
+  WHERE sku=:new.sku and account_id=689;
+  
+  -- insert attr YS_BEAUTY_DESIGNER_BAG_LIMITED_QUANTITY_USED_UP(84900) for ys designer bag
+  IF (iYsDesignerBag = 1) THEN
+      PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,17,null,null,84900,vsuggestedSystem);
+  END IF;
 
   IF :new.action_id = 1 OR :new.action_id = 4 OR :new.action_id = 5 OR :new.action_id = 6/* mark soldout */ THEN
 	SELECT (CASE WHEN :new.action_id = 1 THEN 60
@@ -51,6 +62,8 @@ BEGIN
  	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,14,14,null,isold_out_status,vsuggestedSystem);
  	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,14,15,null,isold_out_status,vsuggestedSystem);
  	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,14,18,null,isold_out_status,vsuggestedSystem);
+ 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,14,20,null,isold_out_status,vsuggestedSystem);
+ 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,14,22,null,isold_out_status,vsuggestedSystem);
 	ELSE
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,14,:new.site_id,null,isold_out_status,vsuggestedSystem);
 	END IF;
@@ -90,6 +103,12 @@ BEGIN
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,2,18,null,null,vsuggestedSystem);
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,3,18,null,null,vsuggestedSystem);
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,4,18,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,2,20,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,3,20,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,4,20,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,2,22,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,3,22,null,null,vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,4,22,null,null,vsuggestedSystem);
 	ELSE
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,2,:new.site_id,null,null,vsuggestedSystem);
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,3,:new.site_id,null,null,vsuggestedSystem);
@@ -106,9 +125,11 @@ BEGIN
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,11,null,'N',vsuggestedSystem);
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,12,null,'N',vsuggestedSystem);
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,13,null,'N',vsuggestedSystem);
-	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,14,null,'N',vsuggestedSystem);	  
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,14,null,'N',vsuggestedSystem);
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,15,null,'N',vsuggestedSystem);
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,18,null,'N',vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,20,null,'N',vsuggestedSystem);
+	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,22,null,'N',vsuggestedSystem);
 	ELSE
 	  PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,11,:new.site_id,null,'N',vsuggestedSystem);
 	END IF;
@@ -116,6 +137,4 @@ BEGIN
   END IF;
 
 END;
-/
-
 
