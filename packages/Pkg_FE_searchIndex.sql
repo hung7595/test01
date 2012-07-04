@@ -24,7 +24,12 @@ PROCEDURE InsertSearchIndexProductId (
     (
       select sku from  ya_product where sku = iPprodId and is_prod_grp_parent = 'N'
 	);
-  
+	
+    EXCEPTION WHEN OTHERS THEN
+    BEGIN
+      DBMS_OUTPUT.PUT_LINE(iPprodId);
+    END;
+     
   END InsertSearchIndexProductId;
 
 END Pkg_FE_searchIndex;
