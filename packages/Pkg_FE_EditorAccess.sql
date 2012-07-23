@@ -12,7 +12,35 @@ AS
     iPlang_id IN INT,
     iPresult OUT INT
   );
-
+  
+  PROCEDURE GetEditors (
+    curPresult OUT refCur
+  );
+  
+  PROCEDURE AddEditor (
+    cPemail IN VARCHAR2,
+    cPenable_en IN CHAR,
+    cPenable_b5 IN CHAR,
+    cPenable_jp IN CHAR,
+    cPenable_kr IN CHAR,
+    cPenable_gb IN CHAR,
+    iPresult OUT INT
+  );
+  
+  PROCEDURE DelEditor (
+    cPshopper_id IN VARCHAR2,
+    iPresult OUT INT
+  );
+  
+  PROCEDURE UpdateEditor (
+    cPshopper_id IN VARCHAR2,
+    cPenable_en IN CHAR,
+    cPenable_b5 IN CHAR,
+    cPenable_jp IN CHAR,
+    cPenable_kr IN CHAR,
+    cPenable_gb IN CHAR,
+    iPresult OUT INT
+  );  
 END Pkg_FE_EditorAccess;
 /
 
@@ -205,5 +233,93 @@ AS
     RETURN;
   END IsEditor;
 
+  PROCEDURE GetEditors (
+    curPresult OUT refCur
+  )
+  AS
+  BEGIN
+    OPEN curPresult FOR    
+    SELECT ys.email, ye.shopper_id, ye.enable_en, ye.enable_b5, ye.enable_jp, ye.enable_kr, ye.enable_gb
+    FROM ya_shopper ys
+      INNER JOIN ya_emag_editor ye ON ys.shopper_id = ye.shopper_id
+    ORDER BY ys.email;
+    
+    RETURN;
+  END GetEditors;
+  
+  PROCEDURE AddEditor (
+    cPemail IN VARCHAR2,
+    cPenable_en IN CHAR,
+    cPenable_b5 IN CHAR,
+    cPenable_jp IN CHAR,
+    cPenable_kr IN CHAR,
+    cPenable_gb IN CHAR,
+    iPresult OUT INT
+  )
+  AS
+  BEGIN
+    BEGIN
+      SELECT 2 INTO iPresult FROM ya_emag_editor
+      WHERE shopper_id = (select shopper_id from ya_shopper where email =  cPemail and type_id = 1);
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        BEGIN
+          iPresult := 3;
+        END;
+    END;
+    
+    IF iPresult = 2 THEN
+      BEGIN
+        RETURN;
+      END;
+    END IF;
+      
+    INSERT INTO ya_emag_editor (shopper_id, enable_en, enable_b5, enable_jp, enable_kr, enable_gb)
+    SELECT shopper_id, cPenable_en, cPenable_b5, cPenable_jp, cPenable_kr, cPenable_gb
+    FROM ya_shopper WHERE email = cPemail AND type_id = 1;
+
+    IF sql%rowcount = 0 THEN
+      BEGIN
+        iPresult := 1;
+      END;
+    ELSE
+      BEGIN
+        iPresult := 0;
+      END;
+    END IF;
+  END AddEditor;
+
+  PROCEDURE DelEditor (
+    cPshopper_id IN VARCHAR2,
+    iPresult OUT INT
+  )
+  AS
+  BEGIN
+    DELETE FROM ya_emag_editor WHERE shopper_id = cPshopper_id;
+
+    iPresult := sql%rowcount;
+  END DelEditor;
+  
+  PROCEDURE UpdateEditor (
+    cPshopper_id IN VARCHAR2,
+    cPenable_en IN CHAR,
+    cPenable_b5 IN CHAR,
+    cPenable_jp IN CHAR,
+    cPenable_kr IN CHAR,
+    cPenable_gb IN CHAR,
+    iPresult OUT INT
+  )
+  AS
+  BEGIN
+    UPDATE ya_emag_editor 
+      SET enable_en = cPenable_en, 
+          enable_b5 = cPenable_b5,
+          enable_jp = cPenable_jp, 
+          enable_kr = cPenable_kr,
+          enable_gb = cPenable_gb
+    WHERE shopper_id = cPshopper_id;
+    
+    iPresult := sql%rowcount;
+  END UpdateEditor;  
 END Pkg_FE_EditorAccess;
 /
