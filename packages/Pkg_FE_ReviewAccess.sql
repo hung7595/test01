@@ -18,6 +18,7 @@ AS
 		iPreport_count IN INT,
 		iPpage_number IN INT,
 		iPpage_size IN INT,
+		iPsite_id IN INT,
 		iPnum_record OUT INT,
 		curPresult OUT refCur
   );
@@ -36,6 +37,7 @@ AS
 		dPend_date IN DATE,
 		iPpage_number IN INT,
 		iPpage_size IN INT,
+		iPsite_id IN INT,
 		iPnum_record OUT INT,
     curPresult OUT refCur
   );
@@ -268,6 +270,7 @@ IS
 		iPreport_count IN INT,
 		iPpage_number IN INT,
 		iPpage_size IN INT,
+		iPsite_id IN INT,		
 		iPnum_record OUT INT,
 		curPresult OUT refCur
   )
@@ -325,6 +328,7 @@ IS
 			  left join ya_shopper s ON (s.shopper_id=r.shopper_id)
 			  inner join ya_prod_lang pn ON pn.sku=r.sku and pn.lang_id=r.lang_id
 			WHERE	r.review_approved='Y'
+			  and ((iPsite_id in (1,7) and r.site_id in (1,7)) or r.site_id = iPsite_id)
 			  and r.id in (select review_id from ya_review_report group by review_id having count(review_id) >= iPreport_count)
 			order by date_posted desc
 		) inner_table;
@@ -446,6 +450,7 @@ IS
 		dPend_date IN DATE,
 		iPpage_number IN INT,
 		iPpage_size IN INT,
+		iPsite_id IN INT,
 		iPnum_record OUT INT,
     curPresult OUT refCur
   )
@@ -503,6 +508,7 @@ IS
 			  left join ya_shopper s ON (s.shopper_id=cr.shopper_id)
 			  inner join ya_prod_lang pn ON pn.sku=cr.sku and pn.lang_id=cr.lang_id
 			WHERE	cr.review_approved='Y'
+        and ((iPsite_id in (1,7) and cr.site_id in (1,7)) or cr.site_id = iPsite_id)			
 			  and (pn.lang_id=iPlang_id OR iPlang_id = 0)
 			  and cr.id in (
 				  select distinct review_id from ya_review_report rr
@@ -1186,10 +1192,10 @@ IS
           FROM ya_review_share_group
           WHERE sku = iPgroup_member_sku
             AND rownum = 1;
-            
+
           SELECT group_id INTO iPgroup_id
           FROM ya_review_share_group
-          WHERE sku = iPsku;            
+          WHERE sku = iPsku;
         END;
     END;
 
@@ -1212,9 +1218,9 @@ IS
 	)
 	AS
 	BEGIN
-    DELETE FROM ya_review_share_proReview 
-    WHERE parent_sku in (SELECT sku FROM ya_review_share_group where group_id = iPgroup_id) 
-      OR parent_sku in (SELECT sku FROM ya_review_share_group where group_id = iPgroup_id);      
+    DELETE FROM ya_review_share_proReview
+    WHERE parent_sku in (SELECT sku FROM ya_review_share_group where group_id = iPgroup_id)
+      OR parent_sku in (SELECT sku FROM ya_review_share_group where group_id = iPgroup_id);
     COMMIT;
 	END DeleteProReviewShareByGroupId;
 	
@@ -1224,7 +1230,7 @@ IS
 	)
 	AS
 	BEGIN
-    INSERT INTO ya_review_share_proReview (parent_sku, child_sku) 
+    INSERT INTO ya_review_share_proReview (parent_sku, child_sku)
     VALUES (iPparent_sku, iPchild_sku);
     COMMIT;
 	END AddShareProReview;
@@ -1234,7 +1240,7 @@ IS
 	)
 	AS
 	BEGIN
-    DELETE FROM ya_review_share_customerReview 
+    DELETE FROM ya_review_share_customerReview
     WHERE sku in (SELECT sku FROM ya_review_share_group where group_id = iPgroup_id);
     COMMIT;
 	END DeleteCustReviewShareByGroupId;
