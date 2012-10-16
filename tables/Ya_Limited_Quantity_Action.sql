@@ -31,18 +31,8 @@ DECLARE
   isold_out_status       NUMBER;
   vsuggestedSystem       varchar2(100) := 'FE_LimitedQuantity';
   inormal_availability   NUMBER := 1;
-  iYsDesignerBag INT;
-BEGIN
 
-  SELECT COUNT(1)
-  INTO iYsDesignerBag
-  FROM ya_product
-  WHERE sku=:new.sku and account_id=689;
-  
-  -- insert attr YS_BEAUTY_DESIGNER_BAG_LIMITED_QUANTITY_USED_UP(84900) for ys designer bag
-  IF (iYsDesignerBag = 1) THEN
-      PKG_CATALOG_PROD_UPDT_QUEUE.sp_enqueue_prod_updt_queue(:new.sku,17,null,null,84900,vsuggestedSystem);
-  END IF;
+BEGIN
 
   IF :new.action_id = 1 OR :new.action_id = 4 OR :new.action_id = 5 OR :new.action_id = 6/* mark soldout */ THEN
 	SELECT (CASE WHEN :new.action_id = 1 THEN 60
