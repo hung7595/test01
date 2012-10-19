@@ -29,7 +29,9 @@ CREATE INDEX IX_Description_02 on Ya_Description (sku, site_id, lang_id)
 TABLESPACE SSCommerceserver_Index
 /
 
-
+CREATE INDEX IX_DESCRIPTION_03 on ya_description (updated_date) 
+TABLESPACE sscommerceserver_index
+/
 
 CREATE PUBLIC SYNONYM Ya_Description FOR Ya_Description
 /
