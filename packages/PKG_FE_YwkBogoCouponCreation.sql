@@ -30,7 +30,7 @@ AS
   AS
   BEGIN
 
-    INSERT INTO ya_coupon VALUES (iPcouponCode, iPcampaignName, iPcouponDescription, iPcouponAmount, null, 0, null, null, null, iPexpiredDate, iPshopperId, 'N', 'N', 4, 99, sys_guid(), 'Backend BOGO promotion coupon', sysdate, ipcouponcurrency, null, null);
+    INSERT INTO ya_coupon VALUES (iPcouponCode, iPcampaignName, iPcouponDescription, iPcouponAmount, null, 0, null, null, null, iPexpiredDate, iPshopperId, 'N', 'N', 1, 22, sys_guid(), 'Backend BOGO promotion coupon', sysdate, ipcouponcurrency, null, null);
 
     insert into ya_coupon_site values (iPcouponCode, 22);
 
