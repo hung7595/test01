@@ -176,7 +176,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	INSERT INTO ya_attribute_lang(attribute_id,lang_id,attribute_name) values (iLAttrId,3,cPattrNameJp);
 	INSERT INTO ya_attribute_lang(attribute_id,lang_id,attribute_name) values (iLAttrId,4,cPattrNameKr);
 	INSERT INTO ya_attribute_lang(attribute_id,lang_id,attribute_name) values (iLAttrId,5,cPattrNameGb);
-	INSERT INTO ya_attribute_lang(attribute_id,lang_id,attribute_name) values (iLAttrId,6,cPattrNameEn);
+--	INSERT INTO ya_attribute_lang(attribute_id,lang_id,attribute_name) values (iLAttrId,6,cPattrNameEn);
 
 	--add to preferred attribute list
 	--no this table in oracle problem
