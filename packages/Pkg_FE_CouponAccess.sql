@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE          "PKG_FE_COUPONACCESS"
+CREATE OR REPLACE PACKAGE "PKG_FE_COUPONACCESS"
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -653,7 +653,7 @@ AS
 		INSERT INTO ya_coupon
       (shopper_id, coupon_code, campaign_name, coupon_description
       , percentage_coupon_value,expiration_date, all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, CREATE_DATE)
-	  SELECT cPshopper_id, iLcoupon_code, 'Birthday Coupon', '&#20061;&#20116;&#25240;&#29983;&#26085;&#20248;&#24800;&#21048;(&#21487;&#29992;&#20110;&#36141;&#20080;&#27491;&#20215;&#21450;&#29305;&#20215;&#20135;&#21697;&#65289;'
+	  SELECT cPshopper_id, iLcoupon_code, 'Birthday Coupon', '九五折生日优惠券(可用于购买正价及特价产品）'
 	    , 0.05, add_months(SYSDATE, 2), 'N', 'N', 2, 12, 0, 'hallmark_cron', SYSDATE
 		FROM dual;
 		
