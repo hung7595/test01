@@ -3,6 +3,14 @@ AS
   TYPE refCur IS REF CURSOR;
 
 	PROCEDURE GetEditorReviewNumBySku;
+	
+	PROCEDURE ReviewShareByYwkFamilyCode (
+		iPsku IN INT
+	);
+	
+	PROCEDURE CronReviewShareByYwkFamilyCode (
+		iPupdateDate IN DATE
+	);
 
 END Pkg_Fe_ReviewAccess_cron;
 /
@@ -37,10 +45,112 @@ IS
 		)
 		group by prodRat.sku, prodReg.originId, prodRatLang.lang_id;
 
-
 		COMMIT;
     RETURN;
   END GetEditorReviewNumBySku;
+  
+	PROCEDURE ReviewShareByYwkFamilyCode
+		(iPsku IN INT) 
+	AS
+ 
+	iLgroupId INT;
+	iLcountProductFamilyCode INT;
+	iLcountCustomerReview INT;
+	cPupdatedUser NVARCHAR2(100);
+	iLcountReviewShareCust INT;
+	iLcountReviewShareGroup INT;
+	curLgroupId refCur;
+ 
+	BEGIN
+		cPupdatedUser := 'frontend review share cron';
+		
+		-- check ywk family code exist
+		SELECT count(DISTINCT prod_id) into iLcountProductFamilyCode
+		FROM prod_mapper 
+		WHERE source_type_id = 3 
+		AND source_id = 0 
+		AND source_prod_id IN (
+			SELECT source_prod_id 
+			FROM prod_mapper 
+			WHERE source_type_id = 3 
+			AND source_id = 0 
+			AND prod_id = iPsku);
+
+		IF (iLcountProductFamilyCode > 0) THEN
+			select count(*) into iLcountCustomerReview 
+			from ya_review_share_customerReview 
+			where sku = iPsku;
+			
+			IF (iLcountReviewShareCust = 0) THEN
+			insert into ya_review_share_customerReview (sku) values (iPsku);
+		END IF;
+		
+		select count(*) into iLcountReviewShareGroup from ya_review_share_group where sku = iPsku;
+		IF (iLcountReviewShareGroup = 0) THEN
+		
+			OPEN curLgroupId FOR
+				-- assume there is one group id in ya_review_share_group
+				select distinct(rsg.GROUP_ID) from ya_review_share_group rsg, ya_review_share_customerReview rsc
+				where rsg.sku = rsc.sku
+				and rsg.sku in (select DISTINCT prod_id
+				from prod_mapper where source_type_id = 3 and source_id = 0 and source_prod_id in (
+					select source_prod_id 
+					from prod_mapper 
+					where source_type_id = 3 
+					and source_id = 0 
+					and prod_id = iPsku));
+			
+			FETCH curLgroupId INTO iLgroupId;
+				IF curLgroupId%NOTFOUND THEN
+					 SELECT SEQ_ya_review_share_group.nextval into iLgroupId FROM dual;
+				END IF;
+				
+			CLOSE curLgroupId;
+			
+			insert into ya_review_share_group (group_id, sku, updated_dt, updated_user) values (iLgroupId, iPsku, sysdate, cPupdatedUser);
+		END IF;
+	
+	ELSE		
+		select count(*) into iLcountReviewShareGroup
+		from ya_review_share_group 
+		where sku = iPsku 
+		and updated_user = cPupdatedUser;
+	  
+		IF (iLcountReviewShareGroup > 0) THEN
+			delete from ya_review_share_group where sku = iPsku and updated_user = cPupdatedUser;
+			
+			delete from ya_review_share_customerReview where sku = iPsku;
+		END IF;  
+	END IF;
+	
+	IF (SQLCODE = 0) THEN
+		COMMIT;
+	ELSE
+		ROLLBACK;
+	END IF;
+ 
+	END ReviewShareByYwkFamilyCode;
+  
+	PROCEDURE CronReviewShareByYwkFamilyCode 
+		(iPupdateDate IN DATE)
+	AS
+	
+	curLupdatedProduct refCur;
+	iLproductId INT;
+	
+	BEGIN
+		OPEN curLupdatedProduct FOR
+			select distinct(sku) from ya_product where UPDATED_DATE >= iPupdateDate order by sku;
+		
+		FETCH curLupdatedProduct INTO iLproductId;
+			WHILE curLupdatedProduct%FOUND LOOP
+			BEGIN
+				PKG_FE_REVIEWACCESS_CRON.ReviewShareByYwkFamilyCode(iLproductId);
+			END;
+		FETCH curLupdatedProduct INTO iLproductId;
+		END LOOP;
+	
+	END CronReviewShareByYwkFamilyCode;
 
 END Pkg_Fe_ReviewAccess_cron;
 /
