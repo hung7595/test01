@@ -508,7 +508,9 @@ IS
 			  left join ya_shopper s ON (s.shopper_id=cr.shopper_id)
 			  inner join ya_prod_lang pn ON pn.sku=cr.sku and pn.lang_id=cr.lang_id
 			WHERE	cr.review_approved='Y'
-        and ((iPsite_id in (1,7) and cr.site_id in (1,7)) or cr.site_id = iPsite_id)			
+        and ((iPsite_id in (1,7) and cr.site_id in (1,7)) 
+              or cr.site_id = iPsite_id
+              or (iPsite_id in (10,11,13,14,15,18) and cr.site_id in (10,11,13,14,15,18)))
 			  and (pn.lang_id=iPlang_id OR iPlang_id = 0)
 			  and cr.id in (
 				  select distinct review_id from ya_review_report rr
@@ -560,7 +562,7 @@ IS
 	BEGIN
 	
 		UPDATE ya_customer_review
-		  SET reviewer_type = 2, mod_dt = sysdate, mod_user = 'fe_review_mgt'
+		  SET reviewer_type = 2
 		WHERE id = iPreview_id;
 
 		iProwAffect := sql%rowcount;
@@ -930,7 +932,7 @@ IS
 	AS
 		iLrating_count INT;
 	BEGIN
-    UPDATE ya_customer_review SET review_approved = cPapprove, mod_dt = sysdate, mod_user = 'fe_review_mgt'
+    UPDATE ya_customer_review SET review_approved = cPapprove
     WHERE id = iPreview_id;
 
 		COMMIT;
@@ -1033,7 +1035,7 @@ IS
 	AS
 	BEGIN
     OPEN curPresult FOR
-    SELECT rsg.sku, tp.lang_id, tp.review, tp.reviewer, tp.us_review_id, tp.tw_review_id, tp.reviewer_type, rsg.updated_user, rsg.updated_dt
+    SELECT rsg.sku, tp.lang_id, tp.review, tp.reviewer, tp.us_review_id, tp.tw_review_id, tp.reviewer_type
     FROM ya_review_share_group rsg
     LEFT OUTER JOIN (
       select a.sku, b.lang_id, b.review, '' reviewer, a.id us_review_id, a.id tw_review_id, 'EDITORIAL' reviewer_type
@@ -1053,10 +1055,11 @@ IS
 	AS
 	BEGIN
 	  OPEN curPresult FOR
-	  SELECT rsg.sku, rsc.sku, rsg.updated_user, rsg.updated_dt
-    FROM ya_review_share_group rsg
-      LEFT OUTER JOIN ya_review_share_customerReview rsc ON rsc.sku = rsg.sku
-    WHERE rsg.group_id = iPgroup_id;
+	  SELECT rsc.sku
+    FROM ya_review_share_customerReview rsc
+      INNER JOIN ya_review_share_group rsg ON rsc.sku = rsg.sku
+    WHERE rsc.sku = rsg.sku
+      AND rsg.group_id = iPgroup_id;
 	END GetProdCustomerReview;
 	
 	PROCEDURE GetProdRelByGroupId (
@@ -1118,8 +1121,8 @@ IS
         BEGIN
 	        SELECT SEQ_ya_review_share_group.nextval INTO iPgroup_id FROM dual;
 	        	
-          INSERT INTO ya_review_share_group (group_id, sku, updated_dt, updated_user)
-          VALUES (iPgroup_id, iPsku, sysdate, 'system');
+          INSERT INTO ya_review_share_group (group_id, sku, updated_dt)
+          VALUES (iPgroup_id, iPsku, sysdate);
 
           INSERT INTO ya_review_share_customerreview (sku) VALUES (iPsku);
           COMMIT;
@@ -1132,24 +1135,22 @@ IS
 	  iPsku IN INT
 	)
 	AS
-	  iLexist INT;
 	BEGIN
+    DELETE FROM ya_review_share_group where sku = iPsku;
+    IF SQLCODE <> 0 THEN
+      BEGIN
+        ROLLBACK;
+      END;
+    END IF;
+
+    DELETE FROM ya_review_share_customerReview where sku = iPsku;
+    IF SQLCODE <> 0 THEN
+      BEGIN
+        ROLLBACK;
+      END;
+    END IF;
+
     DELETE FROM ya_review_share_proReview where parent_sku = iPsku or child_sku = iPsku;
-    IF SQLCODE <> 0 THEN
-      BEGIN
-        ROLLBACK;
-      END;
-    END IF;
-
-    DELETE FROM ya_review_share_group where sku = iPsku AND updated_user = 'system';
-    IF SQLCODE <> 0 THEN
-      BEGIN
-        ROLLBACK;
-      END;
-    END IF;
-
-    DELETE FROM ya_review_share_customerReview WHERE sku = iPsku 
-      AND NOT EXISTS (SELECT 1 FROM ya_review_share_group WHERE sku = iPsku);
     IF SQLCODE <> 0 THEN
       BEGIN
         ROLLBACK;
@@ -1188,8 +1189,8 @@ IS
     EXCEPTION
       WHEN NO_DATA_FOUND THEN
         BEGIN
-          INSERT INTO ya_review_share_group (group_id, sku, updated_dt, updated_user)
-          SELECT group_id, iPsku, sysdate, 'system'
+          INSERT INTO ya_review_share_group (group_id, sku, updated_dt)
+          SELECT group_id, iPsku, sysdate
           FROM ya_review_share_group
           WHERE sku = iPgroup_member_sku
             AND rownum = 1;
@@ -1220,8 +1221,8 @@ IS
 	AS
 	BEGIN
     DELETE FROM ya_review_share_proReview
-    WHERE parent_sku in (SELECT sku FROM ya_review_share_group where group_id = iPgroup_id and updated_user = 'system')
-      OR parent_sku in (SELECT sku FROM ya_review_share_group where group_id = iPgroup_id and updated_user = 'system');
+    WHERE parent_sku in (SELECT sku FROM ya_review_share_group where group_id = iPgroup_id)
+      OR parent_sku in (SELECT sku FROM ya_review_share_group where group_id = iPgroup_id);
     COMMIT;
 	END DeleteProReviewShareByGroupId;
 	
@@ -1242,7 +1243,7 @@ IS
 	AS
 	BEGIN
     DELETE FROM ya_review_share_customerReview
-    WHERE sku in (SELECT sku FROM ya_review_share_group where group_id = iPgroup_id and updated_user = 'system');
+    WHERE sku in (SELECT sku FROM ya_review_share_group where group_id = iPgroup_id);
     COMMIT;
 	END DeleteCustReviewShareByGroupId;
 
