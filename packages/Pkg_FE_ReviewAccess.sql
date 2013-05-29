@@ -508,7 +508,9 @@ IS
 			  left join ya_shopper s ON (s.shopper_id=cr.shopper_id)
 			  inner join ya_prod_lang pn ON pn.sku=cr.sku and pn.lang_id=cr.lang_id
 			WHERE	cr.review_approved='Y'
-        and ((iPsite_id in (1,7) and cr.site_id in (1,7)) or cr.site_id = iPsite_id)			
+        and ((iPsite_id in (1,7) and cr.site_id in (1,7)) 
+              or cr.site_id = iPsite_id
+              or (iPsite_id in (10,11,13,14,15,18) and cr.site_id in (10,11,13,14,15,18)))		
 			  and (pn.lang_id=iPlang_id OR iPlang_id = 0)
 			  and cr.id in (
 				  select distinct review_id from ya_review_report rr
