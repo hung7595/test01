@@ -333,11 +333,12 @@ IS
 			lang_id,
 			product_rating,
 			mod_user,
-			mod_dt
+			mod_dt,
+			total
     )
 		SELECT ROWNUM,
     sku, prod_name, date_posted, review_id, review,
-		reivewer, shopper_id, email, rating_id, title, status, lang_id, product_rating, mod_user, mod_dt
+		reivewer, shopper_id, email, rating_id, title, status, lang_id, product_rating, mod_user, mod_dt, report_count
 		FROM
 		(
 			select
@@ -362,10 +363,11 @@ IS
 			) as reivewer,
 			r.shopper_id, s.email, -1 as rating_id, r.title,
 			(case review_approved when 'Y' then 'Approved' when 'N' then 'Rejected' when 'R' then 'Rejected' else 'Undetermined' end) as status,
-			r.lang_id, r.product_rating, r.mod_user, r.mod_dt
+			r.lang_id, r.product_rating, r.mod_user, r.mod_dt, nvl(rr.report_count, 0) report_count
 			FROM ya_customer_review r
 			  left join ya_shopper s ON (s.shopper_id=r.shopper_id)
 			  inner join ya_prod_lang pn ON pn.sku=r.sku and pn.lang_id=r.lang_id
+			  left outer join (select count(*) report_count, sku from ya_review_report group by sku) rr on r.sku = rr.sku
 			WHERE	((iPsite_id in (1,7) and r.site_id in (1,7))
               or r.site_id = iPsite_id
               or (iPsite_id in (10,11,13,14,15,18) and r.site_id in (10,11,13,14,15,18)))					
@@ -434,11 +436,12 @@ IS
 			lang_id,
 			product_rating,
 			mod_user,
-			mod_dt
+			mod_dt,
+			total
 		)
 		SELECT ROWNUM,
     sku, prod_name, date_posted, review_id, review,
-		reivewer, shopper_id, email, rating_id, title, status, lang_id, product_rating, mod_user, mod_dt
+		reivewer, shopper_id, email, rating_id, title, status, lang_id, product_rating, mod_user, mod_dt, report_count
 		FROM
 		(
 			select
@@ -463,10 +466,11 @@ IS
 			) as reivewer,
 			r.shopper_id,s.email,-1 as rating_id,r.title,			
 			(case review_approved when 'Y' then 'Approved' when 'N' then 'Rejected' when 'R' then 'Rejected' else 'Undetermined' end) as status,
-			r.lang_id,r.product_rating,r.mod_user,r.mod_dt
+			r.lang_id,r.product_rating,r.mod_user,r.mod_dt, nvl(rr.report_count, 0) report_count
 			FROM ya_customer_review r
 			  left join ya_shopper s ON (s.shopper_id=r.shopper_id)
 			  inner join ya_prod_lang pn ON pn.sku=r.sku and pn.lang_id=r.lang_id
+			  left outer join (select count(*) report_count, sku from ya_review_report group by sku) rr on r.sku = rr.sku
 			WHERE	r.sku = iPsku
 			  and ((iPsite_id in (1,7) and r.site_id in (1,7))
           or r.site_id = iPsite_id
@@ -537,11 +541,12 @@ IS
 			lang_id,
 			product_rating,
 			mod_user,
-			mod_dt
+			mod_dt,
+			total
     )
 		SELECT ROWNUM,
     sku, prod_name, date_posted, review_id, review,
-		reivewer, shopper_id, email, rating_id, title, status, lang_id, product_rating, mod_user, mod_dt
+		reivewer, shopper_id, email, rating_id, title, status, lang_id, product_rating, mod_user, mod_dt, report_count
 		FROM
 		(
 			select
@@ -566,10 +571,11 @@ IS
 			) as reivewer,
 			cr.shopper_id,s.email,-1 as rating_id,cr.title,
 			(case review_approved when 'Y' then 'Approved' when 'N' then 'Rejected' when 'R' then 'Rejected' else 'Undetermined' end) as status,
-			cr.lang_id,cr.product_rating,cr.mod_user,cr.mod_dt
+			cr.lang_id,cr.product_rating,cr.mod_user,cr.mod_dt, nvl(rr.report_count, 0) report_count
 			FROM ya_customer_review cr
 			  left join ya_shopper s ON (s.shopper_id=cr.shopper_id)
 			  inner join ya_prod_lang pn ON pn.sku=cr.sku and pn.lang_id=cr.lang_id
+			  left outer join (select count(*) report_count, sku from ya_review_report group by sku) rr on cr.sku = rr.sku
 			WHERE	((iPsite_id in (1,7) and cr.site_id in (1,7))
               or cr.site_id = iPsite_id
               or (iPsite_id in (10,11,13,14,15,18) and cr.site_id in (10,11,13,14,15,18)))		
