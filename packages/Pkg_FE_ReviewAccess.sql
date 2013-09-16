@@ -19,6 +19,7 @@ AS
 		iPpage_number IN INT,
 		iPpage_size IN INT,
 		iPsite_id IN INT,
+		cPquery_type IN VARCHAR2,	
 		iPnum_record OUT INT,
 		curPresult OUT refCur
   );
@@ -27,6 +28,8 @@ AS
 		iPsku IN INT,
 		iPpage_number IN INT,
 		iPpage_size IN INT,
+		iPsite_id IN INT,				
+		cPquery_type IN VARCHAR2,
 		iPnum_record OUT INT,
     curPresult OUT refCur
   );
@@ -38,6 +41,7 @@ AS
 		iPpage_number IN INT,
 		iPpage_size IN INT,
 		iPsite_id IN INT,
+		cPquery_type IN VARCHAR2,
 		iPnum_record OUT INT,
     curPresult OUT refCur
   );
@@ -177,6 +181,35 @@ AS
 	PROCEDURE AddShareCustomerReview (
 	  iPsku IN INT
 	);
+	
+	PROCEDURE UpdateReviewRating (
+	  iPreview_id IN INT,
+	  iPrating IN INT,
+	  cPupdated_user IN VARCHAR2
+	);
+	
+	PROCEDURE UpdateReviewTitle (
+	  iPreview_id IN INT,
+	  cPtitle IN VARCHAR2,
+	  cPupdated_user IN VARCHAR2
+	);
+	
+	PROCEDURE UpdateReviewContent (
+	  iPreview_id IN INT,
+	  cPreview IN VARCHAR2,
+	  cPupdated_user IN VARCHAR2
+	);
+	
+	PROCEDURE UpdateCustomerReviewStatus (
+		iPreview_id IN INT,
+		cPstatus IN CHAR,
+		cPupdated_user IN VARCHAR2
+  );
+  
+	PROCEDURE GetRejectedBannedWordList (
+	  iPreview_id IN INT,
+	  curPresult OUT refCur
+	);  
 END Pkg_FE_ReviewAccess;
 /
 CREATE OR REPLACE PACKAGE BODY "PKG_FE_REVIEWACCESS"
@@ -271,6 +304,7 @@ IS
 		iPpage_number IN INT,
 		iPpage_size IN INT,
 		iPsite_id IN INT,		
+		cPquery_type IN VARCHAR2,
 		iPnum_record OUT INT,
 		curPresult OUT refCur
   )
@@ -296,11 +330,14 @@ IS
 			rating_id,
 			title,
 			status,
-			lang_id
+			lang_id,
+			product_rating,
+			mod_user,
+			mod_dt
     )
 		SELECT ROWNUM,
     sku, prod_name, date_posted, review_id, review,
-		reivewer, shopper_id, email, rating_id, title, status, lang_id--, reviewer_type
+		reivewer, shopper_id, email, rating_id, title, status, lang_id, product_rating, mod_user, mod_dt
 		FROM
 		(
 			select
@@ -323,13 +360,20 @@ IS
 					ltrim(nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname))
 				), 'Anonymous'
 			) as reivewer,
-			r.shopper_id, s.email, -1 as rating_id, r.title,(case review_approved when 'Y' then 'Approved' end) as status, r.lang_id
+			r.shopper_id, s.email, -1 as rating_id, r.title,
+			(case review_approved when 'Y' then 'Approved' when 'N' then 'Rejected' when 'R' then 'Rejected' else 'Undetermined' end) as status,
+			r.lang_id, r.product_rating, r.mod_user, r.mod_dt
 			FROM ya_customer_review r
 			  left join ya_shopper s ON (s.shopper_id=r.shopper_id)
 			  inner join ya_prod_lang pn ON pn.sku=r.sku and pn.lang_id=r.lang_id
-			WHERE	r.review_approved='Y'
-			  and ((iPsite_id in (1,7) and r.site_id in (1,7)) or r.site_id = iPsite_id)
-			  and r.id in (select review_id from ya_review_report group by review_id having count(review_id) >= iPreport_count)
+			WHERE	((iPsite_id in (1,7) and r.site_id in (1,7))
+              or r.site_id = iPsite_id
+              or (iPsite_id in (10,11,13,14,15,18) and r.site_id in (10,11,13,14,15,18)))					
+			  and (cPquery_type in ('ALL', 'RT')
+			        or (cPquery_type in ('Y', 'N') 
+  			      and ((cPquery_type = 'Y' and r.review_approved = 'Y') or (cPquery_type = 'N' and r.review_approved in ('N','R')))
+			        ))
+        and r.id in (select review_id from ya_review_report group by review_id having count(review_id) >= iPreport_count)
 			order by date_posted desc
 		) inner_table;
 
@@ -360,6 +404,8 @@ IS
 		iPsku IN INT,
 		iPpage_number IN INT,
 		iPpage_size IN INT,
+		iPsite_id IN INT,		
+		cPquery_type IN VARCHAR2,
 		iPnum_record OUT INT,
     curPresult OUT refCur
   )
@@ -385,11 +431,14 @@ IS
 			rating_id,
 			title,
 			status,
-			lang_id
+			lang_id,
+			product_rating,
+			mod_user,
+			mod_dt
 		)
 		SELECT ROWNUM,
     sku, prod_name, date_posted, review_id, review,
-		reivewer, shopper_id, email, rating_id, title, status, lang_id--, reviewer_type
+		reivewer, shopper_id, email, rating_id, title, status, lang_id, product_rating, mod_user, mod_dt
 		FROM
 		(
 			select
@@ -412,12 +461,20 @@ IS
 					ltrim(nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname))
 				), 'Anonymous'
 			) as reivewer,
-			r.shopper_id,s.email,-1 as rating_id,r.title,(case review_approved when 'Y' then 'Approved' end) as status,r.lang_id
+			r.shopper_id,s.email,-1 as rating_id,r.title,			
+			(case review_approved when 'Y' then 'Approved' when 'N' then 'Rejected' when 'R' then 'Rejected' else 'Undetermined' end) as status,
+			r.lang_id,r.product_rating,r.mod_user,r.mod_dt
 			FROM ya_customer_review r
 			  left join ya_shopper s ON (s.shopper_id=r.shopper_id)
 			  inner join ya_prod_lang pn ON pn.sku=r.sku and pn.lang_id=r.lang_id
-			WHERE	r.review_approved='Y'
-			  and r.sku = iPsku
+			WHERE	r.sku = iPsku
+			  and ((iPsite_id in (1,7) and r.site_id in (1,7))
+          or r.site_id = iPsite_id
+          or (iPsite_id in (10,11,13,14,15,18) and r.site_id in (10,11,13,14,15,18)))		
+				and (cPquery_type = 'ALL'
+  			  or (cPquery_type in ('Y','N') 
+  			    and ((cPquery_type = 'Y' and r.review_approved = 'Y') or (cPquery_type = 'N' and r.review_approved in ('N','R'))))
+  			  or (cPquery_type = 'RT' and exists (select 1 from ya_review_report rr where r.id = rr.review_id)))
 			order by r.date_posted desc
 		) inner_table;
 
@@ -451,6 +508,7 @@ IS
 		iPpage_number IN INT,
 		iPpage_size IN INT,
 		iPsite_id IN INT,
+		cPquery_type IN VARCHAR2,
 		iPnum_record OUT INT,
     curPresult OUT refCur
   )
@@ -476,11 +534,14 @@ IS
 			rating_id,
 			title,
 			status,
-			lang_id
+			lang_id,
+			product_rating,
+			mod_user,
+			mod_dt
     )
 		SELECT ROWNUM,
     sku, prod_name, date_posted, review_id, review,
-		reivewer, shopper_id, email, rating_id, title, status, lang_id--, reviewer_type
+		reivewer, shopper_id, email, rating_id, title, status, lang_id, product_rating, mod_user, mod_dt
 		FROM
 		(
 			select
@@ -503,19 +564,27 @@ IS
 					ltrim(nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname))
 				), 'Anonymous'
 			) as reivewer,
-			cr.shopper_id,s.email,-1 as rating_id,cr.title,(case review_approved when 'Y' then 'Approved' end) as status,cr.lang_id
+			cr.shopper_id,s.email,-1 as rating_id,cr.title,
+			(case review_approved when 'Y' then 'Approved' when 'N' then 'Rejected' when 'R' then 'Rejected' else 'Undetermined' end) as status,
+			cr.lang_id,cr.product_rating,cr.mod_user,cr.mod_dt
 			FROM ya_customer_review cr
 			  left join ya_shopper s ON (s.shopper_id=cr.shopper_id)
 			  inner join ya_prod_lang pn ON pn.sku=cr.sku and pn.lang_id=cr.lang_id
-			WHERE	cr.review_approved='Y'
-        and ((iPsite_id in (1,7) and cr.site_id in (1,7)) 
+			WHERE	((iPsite_id in (1,7) and cr.site_id in (1,7))
               or cr.site_id = iPsite_id
               or (iPsite_id in (10,11,13,14,15,18) and cr.site_id in (10,11,13,14,15,18)))		
-			  and (pn.lang_id=iPlang_id OR iPlang_id = 0)
-			  and cr.id in (
-				  select distinct review_id from ya_review_report rr
-				  where (rr.created_datetime >= dPstart_date AND rr.created_datetime <= dPend_date)
-			  )
+			  and (pn.lang_id = iPlang_id OR iPlang_id = 0)
+				and (
+				    (
+				      (
+				        cPquery_type = 'ALL'
+				        or (cPquery_type in ('Y','N') and ((cPquery_type = 'Y' and cr.review_approved = 'Y') or (cPquery_type = 'N' and cr.review_approved in ('N','R'))))
+				      )
+  			    and cr.date_posted >= dPstart_date and cr.date_posted <= dPend_date)
+  			  or (cPquery_type = 'RT' and exists (select 1 from ya_review_report rr
+  			                                                where cr.id = rr.review_id
+  			                                                  and rr.created_datetime >= dPstart_date
+  			                                                  and rr.created_datetime <= dPend_date)))			
 			order by cr.date_posted desc
 		) inner_table;
 
@@ -929,11 +998,20 @@ IS
 		cPapprove IN CHAR,
 		iProwAffect OUT INT
   )
-	AS
+  AS
+    iLsb_action INT;
 		iLrating_count INT;
 	BEGIN
-    UPDATE ya_customer_review SET review_approved = cPapprove, mod_dt = sysdate, mod_user = 'fe_review_mgt'
-    WHERE id = iPreview_id;
+    -- update the review sb_action when
+    IF cPapprove = 'Y' THEN
+      -- update to "WAITING_TO_MANUAL_ADD" for the review approved each time
+      iLsb_action := 4;
+    ELSE
+      -- update to "WAITING_TO_MANUAL_REMOVE" for the review approved each time
+      iLsb_action := 6;
+    END IF;
+
+    UPDATE ya_customer_review SET review_approved = cPapprove, sb_action = iLsb_action, mod_dt = sysdate, mod_user = 'fe_review_mgt' WHERE id = iPreview_id;
 
 		COMMIT;
 		RETURN;
@@ -1150,7 +1228,7 @@ IS
       END;
     END IF;
 
-    DELETE FROM ya_review_share_customerReview WHERE sku = iPsku 
+    DELETE FROM ya_review_share_customerReview WHERE sku = iPsku
       AND NOT EXISTS (SELECT 1 FROM ya_review_share_group WHERE sku = iPsku);
     IF SQLCODE <> 0 THEN
       BEGIN
@@ -1266,6 +1344,95 @@ IS
           RETURN;
         END;
     END;	
-	END AddShareCustomerReview;	
+	END AddShareCustomerReview;
+	
+	PROCEDURE UpdateReviewRating (
+	  iPreview_id IN INT,
+	  iPrating IN INT,
+	  cPupdated_user IN VARCHAR2
+	)
+	AS
+	BEGIN
+	  UPDATE ya_customer_review
+	    SET product_rating = iPrating, mod_user = cPupdated_user, mod_dt = sysdate
+	  WHERE id = iPreview_id;
+	
+	  COMMIT;
+	END UpdateReviewRating;
+
+	PROCEDURE UpdateReviewTitle (
+	  iPreview_id IN INT,
+	  cPtitle IN VARCHAR2,
+	  cPupdated_user IN VARCHAR2
+	)
+	AS
+	BEGIN
+	  UPDATE ya_customer_review
+	    SET title = cPtitle, mod_user = cPupdated_user, mod_dt = sysdate
+	  WHERE id = iPreview_id;
+	
+	  COMMIT;
+	END UpdateReviewTitle;
+
+	PROCEDURE UpdateReviewContent (
+	  iPreview_id IN INT,
+	  cPreview IN VARCHAR2,
+	  cPupdated_user IN VARCHAR2
+	)
+	AS
+	BEGIN
+	  UPDATE ya_customer_review
+	    SET review = cPreview, mod_user = cPupdated_user, mod_dt = sysdate
+	  WHERE id = iPreview_id;
+	
+	  COMMIT;
+	END UpdateReviewContent;
+	
+	PROCEDURE UpdateCustomerReviewStatus (
+		iPreview_id IN INT,
+		cPstatus IN CHAR,
+		cPupdated_user IN VARCHAR2
+  )
+  AS
+    iLsb_action INT;
+	BEGIN
+    -- update the review sb_action when
+    IF cPstatus = 'Y' THEN
+      -- update to "WAITING_TO_MANUAL_ADD" for the review approved each time
+      iLsb_action := 4;
+    ELSE
+      -- update to "WAITING_TO_MANUAL_REMOVE" for the review approved each time
+      iLsb_action := 6;
+    END IF;
+
+    UPDATE ya_customer_review 
+      SET review_approved = cPstatus, sb_action = iLsb_action, mod_user = cPupdated_user, mod_dt = sysdate
+    WHERE id = iPreview_id;
+
+		COMMIT;
+	END UpdateCustomerReviewStatus;
+	
+	PROCEDURE GetRejectedBannedWordList (
+	  iPreview_id IN INT,
+	  curPresult OUT refCur
+	)
+	AS
+	BEGIN
+    OPEN curPresult FOR
+    SELECT bp.id, bp.phrase 
+    FROM ya_review_banned_phrase bp
+    WHERE EXISTS (SELECT 1 
+            FROM ya_customer_review cr 
+            WHERE cr.id = iPreview_id
+          	  AND (
+          	       (bp.site_id in (1,7) and cr.site_id in (1,7))
+                   OR bp.site_id = cr.site_id
+                   OR (bp.site_id in (10,11,13,14,15,18) and cr.site_id in (10,11,13,14,15,18))
+                  )
+              AND ((bp.lang_id = 1 AND REGEXP_INSTR(cr.review, '([ ]+|\W+|^)'||bp.phrase||'([ ]+|\W+|$)', 1, 1) > 0)
+               OR (bp.lang_id <> 1 AND REGEXP_INSTR(cr.review, bp.phrase, 1, 1) > 0)))
+    ORDER BY bp.id;
+	END GetRejectedBannedWordList;	
+		
 END Pkg_FE_ReviewAccess;
 /
