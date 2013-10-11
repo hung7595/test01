@@ -1,23 +1,22 @@
-CREATE OR REPLACE PACKAGE Pkg_FE_NextPurchaseCoupon
+
+  CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_NEXTPURCHASECOUPON" 
 AS
 
   PROCEDURE CreateYsukPayPalNPCoupon (
 	iPorderInfoId IN INT,
 	iPreturn OUT INT
   );
-  
+
   PROCEDURE CreateNextPurchaseCoupon (
 	cPshopper_id IN CHAR,
 	iPorder_id IN INT,
 	iPsiteId IN INT,
     iPreturn OUT INT
   );
-  
+
   END Pkg_FE_NextPurchaseCoupon;
 /
-
-create or replace
-PACKAGE BODY Pkg_FE_NextPurchaseCoupon
+CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_NEXTPURCHASECOUPON" 
 IS
 
 PROCEDURE CreateYsukPayPalNPCoupon (
@@ -31,7 +30,7 @@ PROCEDURE CreateYsukPayPalNPCoupon (
 	cLcoupon_code VARCHAR2(8);
 	iLfrontendOrderNum INT;
 	cLCouponDescription VARCHAR2(150);
-	
+
   BEGIN
   select cust_id into cLshopperId from order_info where id = iPorderInfoId;
   select count(n.coupon_code) into iLcountCouponCode from ya_next_purchase_coupon n, order_info o where o.cust_id = cLshopperId and n.order_id = o.id and n.type =2;
@@ -39,7 +38,7 @@ PROCEDURE CreateYsukPayPalNPCoupon (
 	    iPreturn := 0;
 	    RETURN;
 	END IF;
-	
+
 	select cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO cLcoupon_code FROM dual;
 	select count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = cLcoupon_code;
 		WHILE (iLcount = 1)
@@ -47,20 +46,20 @@ PROCEDURE CreateYsukPayPalNPCoupon (
 				SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO cLcoupon_code FROM dual;
 				SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = cLcoupon_code;
 			END LOOP;
-			
+
 	select origin_order_id into iLfrontendOrderNum from order_info where id = iPorderInfoId;
 	cLCouponDescription := 'YesStyle.co.uk GBP20 Next Purchase Coupon (OrderNum:' || iLfrontendOrderNum || ')';
 	select cust_id into cLshopperId from order_info where id = iPorderInfoId;
-			
+
 	insert into ya_coupon (coupon_code, campaign_name, coupon_description, dollar_coupon_value, order_amount_trigger, expiration_date, SHOPPER_ID, COUPON_TYPE_ID, SITE_ID, CREATE_ID, CREATE_DATE, CURRENCY)
 	values (cLcoupon_code, 'YSUK PayPal next purchase coupon', cLCouponDescription, 20, 80, add_months(SYSDATE, 3), cLshopperId, 1, 15, 'next_purchase', SYSDATE, 'GBP');
-	
+
 	INSERT INTO ya_coupon_site (coupon_code, site_id)
 	VALUES (cLcoupon_code, 15);
-	
+
 	INSERT INTO ya_next_purchase_coupon (coupon_code, order_id, type)
 	VALUES (cLcoupon_code, iPorderInfoId, 2);
-	
+
 	IF sqlcode = 0 THEN
 	  iPreturn := 1;
       COMMIT;
@@ -68,7 +67,7 @@ PROCEDURE CreateYsukPayPalNPCoupon (
 	  iPreturn := 0;
       ROLLBACK;
     END IF;
-	
+
   END CreateYsukPayPalNPCoupon;
 
 PROCEDURE CreateNextPurchaseCoupon (
@@ -132,7 +131,7 @@ PROCEDURE CreateNextPurchaseCoupon (
 		  coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, CREATE_DATE)
 				SELECT cPshopper_id, cLcoupon_code_YA, cLyaCampaignName, cLyaCouponDescription, 5, add_months(SYSDATE, 2), 'N', 'N', 1, 99, NULL, 'next_purchase', SYSDATE
 			FROM dual;
-			
+
 			INSERT INTO ya_coupon_site (coupon_code, site_id)
 			VALUES (cLcoupon_code_YA, 1);
 
@@ -143,7 +142,7 @@ PROCEDURE CreateNextPurchaseCoupon (
 			INSERT INTO ya_coupon
 				(shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value,expiration_date, all_shoppers,
 		  coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, CREATE_DATE)
-				SELECT cPshopper_id, cLcoupon_code_YS, cLysCampaignName, cLysCouponDescription, 5, add_months(SYSDATE, 2), 'N', 'N', 1, 10, NULL, 'next_purchase', SYSDATE
+				SELECT cPshopper_id, cLcoupon_code_YS, cLysCampaignName, cLysCouponDescription, 5, add_months(SYSDATE, 2), 'N', 'N', 1, 10, 50, 'next_purchase', SYSDATE
 			FROM dual;
 
 			INSERT INTO ya_coupon_site (coupon_code, site_id)
@@ -151,13 +150,13 @@ PROCEDURE CreateNextPurchaseCoupon (
 
 			INSERT INTO ya_coupon_site (coupon_code, site_id)
 			VALUES (cLcoupon_code_YS, 13);
-			
+
 			INSERT INTO ya_coupon_site (coupon_code, site_id)
 			VALUES (cLcoupon_code_YS, 14);
 
 			INSERT INTO ya_coupon_site (coupon_code, site_id)
 			VALUES (cLcoupon_code_YS, 15);
-			
+
 			INSERT INTO ya_coupon_site (coupon_code, site_id)
 			VALUES (cLcoupon_code_YS, 18);
 
