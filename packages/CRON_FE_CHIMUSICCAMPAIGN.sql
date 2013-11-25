@@ -37,8 +37,8 @@ CREATE OR REPLACE PACKAGE BODY "CRON_FE_CHIMUSICGROUPCAMPAIGN" AS
 			and region.region_id = 7
 			and prod.account_id in (1,9,30,33,394,407,4,27,31,61,395,408,7,28,32,393,396,116)
 	) b
-	where a.sell_price > 9.99
-	and b.sell_price > 9.99
+	where a.sell_price > 11.99
+	and b.sell_price > 11.99
 	and a.sku = b.sku
   and a.sku not in (select sku from ya_campaign where campaign_code in (50001, 50002));
 
