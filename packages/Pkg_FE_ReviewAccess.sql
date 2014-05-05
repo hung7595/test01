@@ -34,7 +34,7 @@ AS
     curPresult OUT refCur
   );
 
-	PROCEDURE GetAllReviewReportByDateRange (
+	PROCEDURE GetReviewsByDateRange (
 		iPlang_id IN INT,
 		dPstart_date IN DATE,
 		dPend_date IN DATE,
@@ -46,6 +46,42 @@ AS
     curPresult OUT refCur
   );
 
+	PROCEDURE GetApprovedReviewsByDateRange (
+		iPlang_id IN INT,
+		dPstart_date IN DATE,
+		dPend_date IN DATE,
+		iPpage_number IN INT,
+		iPpage_size IN INT,
+		iPsite_id IN INT,
+		cPquery_type IN VARCHAR2,
+		iPnum_record OUT INT,
+    curPresult OUT refCur
+  );
+
+	PROCEDURE GetRejectedReviewsByDateRange (
+		iPlang_id IN INT,
+		dPstart_date IN DATE,
+		dPend_date IN DATE,
+		iPpage_number IN INT,
+		iPpage_size IN INT,
+		iPsite_id IN INT,
+		cPquery_type IN VARCHAR2,
+		iPnum_record OUT INT,
+    curPresult OUT refCur
+  );
+
+	PROCEDURE GetReportsByDateRange (
+		iPlang_id IN INT,
+		dPstart_date IN DATE,
+		dPend_date IN DATE,
+		iPpage_number IN INT,
+		iPpage_size IN INT,
+		iPsite_id IN INT,
+		cPquery_type IN VARCHAR2,
+		iPnum_record OUT INT,
+    curPresult OUT refCur
+  );  
+  
 	PROCEDURE GetReviewReportByDateRange (
 		iPlang_id IN INT,
 		dPstart_date IN DATE,
@@ -517,7 +553,7 @@ IS
 		RETURN;
 	END GetReviewReportBySKU;
 
-	PROCEDURE GetAllReviewReportByDateRange (
+	PROCEDURE GetReviewsByDateRange (
 		iPlang_id IN INT,
 		dPstart_date IN DATE,
 		dPend_date IN DATE,
@@ -617,7 +653,318 @@ IS
 
     COMMIT;
 		RETURN;
-	END GetAllReviewReportByDateRange;
+	END GetReviewsByDateRange;
+
+	PROCEDURE GetApprovedReviewsByDateRange (
+		iPlang_id IN INT,
+		dPstart_date IN DATE,
+		dPend_date IN DATE,
+		iPpage_number IN INT,
+		iPpage_size IN INT,
+		iPsite_id IN INT,
+		cPquery_type IN VARCHAR2,
+		iPnum_record OUT INT,
+    curPresult OUT refCur
+  )
+	AS
+    -- range of records to extract for the specified page
+    iLfrom_id INT;
+    iLto_id INT;
+	BEGIN
+		-- Empty temp table
+		EXECUTE IMMEDIATE 'TRUNCATE TABLE ss_adm.temp_spotlight_review_report';
+
+    INSERT INTO ss_adm.temp_spotlight_review_report
+    (
+			id,
+			sku,
+			prod_name_u,
+			date_posted,
+			review_id,
+			review,
+			reviewer,
+			shopper_id,
+			email,
+			rating_id,
+			title,
+			status,
+			lang_id,
+			product_rating,
+			mod_user,
+			mod_dt,
+			total
+    )
+		SELECT ROWNUM,
+    sku, prod_name, date_posted, review_id, review,
+		reivewer, shopper_id, email, rating_id, title, status, lang_id, product_rating, mod_user, mod_dt, report_count
+		FROM
+		(
+			select
+			cr.sku, pn.prod_name, cr.date_posted, cr.id as review_id, cr.review,
+			nvl(
+				nvl(
+					LTrim(
+						(
+						SELECT
+							CASE rn.display_mode
+								WHEN 0 THEN s.nickname
+								WHEN 1 THEN s.firstname
+								WHEN 2 THEN s.firstname || ' ' || s.lastname
+								WHEN 3 THEN s.lastname || ' ' || s.firstname
+							end
+						FROM ya_review_reviewerName rn
+						inner join ya_shopper s on rn.shopper_id=s.shopper_id
+						WHERE rn.shopper_id=cr.shopper_id)
+					),
+					ltrim(nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname))
+				), 'Anonymous'
+			) as reivewer,
+			cr.shopper_id,s.email,-1 as rating_id,cr.title,
+			(case review_approved when 'Y' then 'Approved' when 'N' then 'Rejected' when 'R' then 'Rejected' else 'Undetermined' end) as status,
+			cr.lang_id,cr.product_rating,cr.mod_user,cr.mod_dt, nvl(rr.report_count, 0) report_count
+			FROM ya_customer_review cr
+			  left join ya_shopper s ON (s.shopper_id=cr.shopper_id)
+			  inner join ya_prod_lang pn ON pn.sku=cr.sku and pn.lang_id=cr.lang_id
+			  left outer join (select count(*) report_count, sku from ya_review_report group by sku) rr on cr.sku = rr.sku
+			WHERE	((iPsite_id in (1,7) and cr.site_id in (1,7))
+              or cr.site_id = iPsite_id
+              or (iPsite_id in (10,11,13,14,15,18) and cr.site_id in (10,11,13,14,15,18)))		
+			  and (pn.lang_id = iPlang_id OR iPlang_id = 0)
+				and cr.review_approved = 'Y'
+  		  and cr.date_posted >= dPstart_date and cr.date_posted <= dPend_date
+			order by cr.date_posted desc
+		) inner_table;
+
+	  --Return Total Record count
+    SELECT count(1) INTO iPnum_record From ss_adm.temp_spotlight_review_report;
+
+    -- calculate the first and last ID of the range of topics we need
+		iLfrom_id := ((iPpage_number - 1) * iPpage_size) + 1;
+    iLto_id := iPpage_number * iPpage_size;
+
+		-- select the page of records
+		OPEN curPresult	FOR
+			SELECT * FROM
+			(
+				SELECT innerQuery.*, rownum AS rnum
+				from(
+					SELECT * FROM ss_adm.temp_spotlight_review_report order by ID
+				) innerQuery
+				WHERE ROWNUM <= iLto_id
+			)
+			WHERE rnum >= iLfrom_id;
+
+    COMMIT;
+		RETURN;
+	END GetApprovedReviewsByDateRange;
+
+	PROCEDURE GetRejectedReviewsByDateRange (
+		iPlang_id IN INT,
+		dPstart_date IN DATE,
+		dPend_date IN DATE,
+		iPpage_number IN INT,
+		iPpage_size IN INT,
+		iPsite_id IN INT,
+		cPquery_type IN VARCHAR2,
+		iPnum_record OUT INT,
+    curPresult OUT refCur
+  )
+	AS
+    -- range of records to extract for the specified page
+    iLfrom_id INT;
+    iLto_id INT;
+	BEGIN
+		-- Empty temp table
+		EXECUTE IMMEDIATE 'TRUNCATE TABLE ss_adm.temp_spotlight_review_report';
+
+    INSERT INTO ss_adm.temp_spotlight_review_report
+    (
+			id,
+			sku,
+			prod_name_u,
+			date_posted,
+			review_id,
+			review,
+			reviewer,
+			shopper_id,
+			email,
+			rating_id,
+			title,
+			status,
+			lang_id,
+			product_rating,
+			mod_user,
+			mod_dt,
+			total
+    )
+		SELECT ROWNUM,
+    sku, prod_name, date_posted, review_id, review,
+		reivewer, shopper_id, email, rating_id, title, status, lang_id, product_rating, mod_user, mod_dt, report_count
+		FROM
+		(
+			select
+			cr.sku, pn.prod_name, cr.date_posted, cr.id as review_id, cr.review,
+			nvl(
+				nvl(
+					LTrim(
+						(
+						SELECT
+							CASE rn.display_mode
+								WHEN 0 THEN s.nickname
+								WHEN 1 THEN s.firstname
+								WHEN 2 THEN s.firstname || ' ' || s.lastname
+								WHEN 3 THEN s.lastname || ' ' || s.firstname
+							end
+						FROM ya_review_reviewerName rn
+						inner join ya_shopper s on rn.shopper_id=s.shopper_id
+						WHERE rn.shopper_id=cr.shopper_id)
+					),
+					ltrim(nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname))
+				), 'Anonymous'
+			) as reivewer,
+			cr.shopper_id,s.email,-1 as rating_id,cr.title,
+			(case review_approved when 'Y' then 'Approved' when 'N' then 'Rejected' when 'R' then 'Rejected' else 'Undetermined' end) as status,
+			cr.lang_id,cr.product_rating,cr.mod_user,cr.mod_dt, nvl(rr.report_count, 0) report_count
+			FROM ya_customer_review cr
+			  left join ya_shopper s ON (s.shopper_id=cr.shopper_id)
+			  inner join ya_prod_lang pn ON pn.sku=cr.sku and pn.lang_id=cr.lang_id
+			  left outer join (select count(*) report_count, sku from ya_review_report group by sku) rr on cr.sku = rr.sku
+			WHERE	((iPsite_id in (1,7) and cr.site_id in (1,7))
+              or cr.site_id = iPsite_id
+              or (iPsite_id in (10,11,13,14,15,18) and cr.site_id in (10,11,13,14,15,18)))		
+			  and (pn.lang_id = iPlang_id OR iPlang_id = 0)
+				and cr.review_approved in ('N','R')
+  			and cr.date_posted >= dPstart_date and cr.date_posted <= dPend_date
+			order by cr.date_posted desc
+		) inner_table;
+
+	  --Return Total Record count
+    SELECT count(1) INTO iPnum_record From ss_adm.temp_spotlight_review_report;
+
+    -- calculate the first and last ID of the range of topics we need
+		iLfrom_id := ((iPpage_number - 1) * iPpage_size) + 1;
+    iLto_id := iPpage_number * iPpage_size;
+
+		-- select the page of records
+		OPEN curPresult	FOR
+			SELECT * FROM
+			(
+				SELECT innerQuery.*, rownum AS rnum
+				from(
+					SELECT * FROM ss_adm.temp_spotlight_review_report order by ID
+				) innerQuery
+				WHERE ROWNUM <= iLto_id
+			)
+			WHERE rnum >= iLfrom_id;
+
+    COMMIT;
+		RETURN;
+	END GetRejectedReviewsByDateRange;
+
+	PROCEDURE GetReportsByDateRange (
+		iPlang_id IN INT,
+		dPstart_date IN DATE,
+		dPend_date IN DATE,
+		iPpage_number IN INT,
+		iPpage_size IN INT,
+		iPsite_id IN INT,
+		cPquery_type IN VARCHAR2,
+		iPnum_record OUT INT,
+    curPresult OUT refCur
+  )
+	AS
+    -- range of records to extract for the specified page
+    iLfrom_id INT;
+    iLto_id INT;
+	BEGIN
+		-- Empty temp table
+		EXECUTE IMMEDIATE 'TRUNCATE TABLE ss_adm.temp_spotlight_review_report';
+
+    INSERT INTO ss_adm.temp_spotlight_review_report
+    (
+			id,
+			sku,
+			prod_name_u,
+			date_posted,
+			review_id,
+			review,
+			reviewer,
+			shopper_id,
+			email,
+			rating_id,
+			title,
+			status,
+			lang_id,
+			product_rating,
+			mod_user,
+			mod_dt,
+			total
+    )
+		SELECT ROWNUM,
+    sku, prod_name, date_posted, review_id, review,
+		reivewer, shopper_id, email, rating_id, title, status, lang_id, product_rating, mod_user, mod_dt, report_count
+		FROM
+		(
+			select
+			cr.sku, pn.prod_name, cr.date_posted, cr.id as review_id, cr.review,
+			nvl(
+				nvl(
+					LTrim(
+						(
+						SELECT
+							CASE rn.display_mode
+								WHEN 0 THEN s.nickname
+								WHEN 1 THEN s.firstname
+								WHEN 2 THEN s.firstname || ' ' || s.lastname
+								WHEN 3 THEN s.lastname || ' ' || s.firstname
+							end
+						FROM ya_review_reviewerName rn
+						inner join ya_shopper s on rn.shopper_id=s.shopper_id
+						WHERE rn.shopper_id=cr.shopper_id)
+					),
+					ltrim(nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname))
+				), 'Anonymous'
+			) as reivewer,
+			cr.shopper_id,s.email,-1 as rating_id,cr.title,
+			(case review_approved when 'Y' then 'Approved' when 'N' then 'Rejected' when 'R' then 'Rejected' else 'Undetermined' end) as status,
+			cr.lang_id,cr.product_rating,cr.mod_user,cr.mod_dt, nvl(rr.report_count, 0) report_count
+			FROM ya_customer_review cr
+			  left join ya_shopper s ON (s.shopper_id=cr.shopper_id)
+			  inner join ya_prod_lang pn ON pn.sku=cr.sku and pn.lang_id=cr.lang_id
+			  left outer join (select count(*) report_count, sku from ya_review_report group by sku) rr on cr.sku = rr.sku
+			WHERE	((iPsite_id in (1,7) and cr.site_id in (1,7))
+              or cr.site_id = iPsite_id
+              or (iPsite_id in (10,11,13,14,15,18) and cr.site_id in (10,11,13,14,15,18)))		
+			  and (pn.lang_id = iPlang_id OR iPlang_id = 0)
+				and exists (select 1 from ya_review_report rr
+  			            where cr.id = rr.review_id
+  			              and rr.created_datetime >= dPstart_date
+  			              and rr.created_datetime <= dPend_date)
+			order by cr.date_posted desc
+		) inner_table;
+
+	  --Return Total Record count
+    SELECT count(1) INTO iPnum_record From ss_adm.temp_spotlight_review_report;
+
+    -- calculate the first and last ID of the range of topics we need
+		iLfrom_id := ((iPpage_number - 1) * iPpage_size) + 1;
+    iLto_id := iPpage_number * iPpage_size;
+
+		-- select the page of records
+		OPEN curPresult	FOR
+			SELECT * FROM
+			(
+				SELECT innerQuery.*, rownum AS rnum
+				from(
+					SELECT * FROM ss_adm.temp_spotlight_review_report order by ID
+				) innerQuery
+				WHERE ROWNUM <= iLto_id
+			)
+			WHERE rnum >= iLfrom_id;
+
+    COMMIT;
+		RETURN;
+	END GetReportsByDateRange;
 
 	PROCEDURE GetReviewReportByDateRange (
 		iPlang_id IN INT,
