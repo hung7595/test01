@@ -34,7 +34,7 @@ IS
     dtLcreateDate DATE;
     iLaccountType INT;
     iLcountCount INT;
-    cLcodePrefix VARCHAR2(200);
+    cLcodePrefix VARCHAR2(15);
   BEGIN
     /*
       preload coupon setting from order
