@@ -7,7 +7,7 @@ CREATE OR REPLACE PACKAGE "PKG_FE_HALLMARKPROMOTIONCOUPON" AS
     iPorderEndDate IN DATE,
     iPreturn OUT INT
   );
-  
+
   PROCEDURE CreateHmCouponForBug2921 (
     iPorderAmount IN INT,
     iPorderStartDate IN DATE,
@@ -15,7 +15,7 @@ CREATE OR REPLACE PACKAGE "PKG_FE_HALLMARKPROMOTIONCOUPON" AS
     iPfreeGiftSku IN INT,
     iPreturn OUT INT
   );
-	
+
 	PROCEDURE CreateHm50CouponForBug10604 (
 		iMinPorderAmount IN INT,
 		iMaxPorderAmount IN INT,
@@ -23,17 +23,24 @@ CREATE OR REPLACE PACKAGE "PKG_FE_HALLMARKPROMOTIONCOUPON" AS
     iPorderEndDate IN DATE,
     iPreturn OUT INT
   );
-	
+
 	PROCEDURE CreateHm80CouponForBug10604 (
     iPorderAmount IN INT,
     iPorderStartDate IN DATE,
     iPorderEndDate IN DATE,
     iPreturn OUT INT
   );
-	
-END PKG_FE_HALLMARKPROMOTIONCOUPON;
+  
+  PROCEDURE CreateCouponForBug15092 (
+    iPorderAmount IN INT,
+    iPorderStartDate IN DATE,
+    iPorderEndDate IN DATE,
+    iPreturn OUT INT
+  );
 
+END PKG_FE_HALLMARKPROMOTIONCOUPON;
 /
+
 
 CREATE OR REPLACE PACKAGE BODY "PKG_FE_HALLMARKPROMOTIONCOUPON" AS
 
@@ -44,15 +51,13 @@ CREATE OR REPLACE PACKAGE BODY "PKG_FE_HALLMARKPROMOTIONCOUPON" AS
     iPreturn OUT INT
   )
   AS
-
-  iLmaxCoupon INT;
-  iLcouponCount INT;
-  curLorderInfo refCur;
-  iLorderInfoId INT;
-  cLshopperId VARCHAR2(32);
-  iLcoupon_code VARCHAR2(8);
-  iLcount INT;
-
+	iLmaxCoupon INT;
+	iLcouponCount INT;
+	curLorderInfo refCur;
+	iLorderInfoId INT;
+	cLshopperId VARCHAR2(32);
+	iLcoupon_code VARCHAR2(8);
+	iLcount INT;
   BEGIN
   	OPEN curLorderInfo FOR
 	  select oi.id, floor(sum(ol.unit_price * old.qnty)/iPorderAmount) as couponCount
@@ -103,7 +108,7 @@ CREATE OR REPLACE PACKAGE BODY "PKG_FE_HALLMARKPROMOTIONCOUPON" AS
     END IF;
 
   END CreateHallmarkPromotionCoupon;
-  
+
   PROCEDURE CreateHmCouponForBug2921 (
     iPorderAmount IN INT,
     iPorderStartDate IN DATE,
@@ -123,7 +128,7 @@ CREATE OR REPLACE PACKAGE BODY "PKG_FE_HALLMARKPROMOTIONCOUPON" AS
 
   BEGIN
   	OPEN curLorderInfo FOR
-    select * from 
+    select * from
       (select oi.id, floor(sum(ol.unit_price * old.qnty)/iPorderAmount) as couponCount
         from order_info oi, order_line ol, order_line_dtl old
        where oi.origin_id = 12 and oi.category = 1
@@ -202,7 +207,7 @@ CREATE OR REPLACE PACKAGE BODY "PKG_FE_HALLMARKPROMOTIONCOUPON" AS
   cLshopperId VARCHAR2(32);
   iLcoupon_code VARCHAR2(8);
   iLcount INT;
-	
+
 	BEGIN
   	OPEN curLorderInfo FOR
 	  select oi.id, 1 as couponCount
@@ -253,7 +258,7 @@ CREATE OR REPLACE PACKAGE BODY "PKG_FE_HALLMARKPROMOTIONCOUPON" AS
     END IF;
 
   END CreateHm50CouponForBug10604;
-  
+
   PROCEDURE CreateHm80CouponForBug10604 (
     iPorderAmount IN INT,
     iPorderStartDate IN DATE,
@@ -261,7 +266,7 @@ CREATE OR REPLACE PACKAGE BODY "PKG_FE_HALLMARKPROMOTIONCOUPON" AS
     iPreturn OUT INT
   )
 	AS
-	
+
 	iLmaxCoupon INT;
   iLcouponCount INT;
   curLorderInfo refCur;
@@ -269,7 +274,7 @@ CREATE OR REPLACE PACKAGE BODY "PKG_FE_HALLMARKPROMOTIONCOUPON" AS
   cLshopperId VARCHAR2(32);
   iLcoupon_code VARCHAR2(8);
   iLcount INT;
-	
+
 	BEGIN
   	OPEN curLorderInfo FOR
 	  select oi.id, 1 as couponCount
@@ -320,7 +325,71 @@ CREATE OR REPLACE PACKAGE BODY "PKG_FE_HALLMARKPROMOTIONCOUPON" AS
     END IF;
 
   END CreateHm80CouponForBug10604;
-  
-END PKG_FE_HALLMARKPROMOTIONCOUPON;
 
+  PROCEDURE CreateCouponForBug15092 (
+    iPorderAmount IN INT,
+    iPorderStartDate IN DATE,
+    iPorderEndDate IN DATE,
+    iPreturn OUT INT
+  )
+  AS
+	iLcouponCount INT;
+	curLorderInfo refCur;
+	iLorderInfoId INT;
+	cLshopperId VARCHAR2(32);
+	iLcoupon_code VARCHAR2(8);
+	iLcount INT;
+  BEGIN
+  	OPEN curLorderInfo FOR
+	  select oi.id, floor(sum(ol.unit_price * old.qnty)/iPorderAmount) as couponCount
+		 from order_info oi, order_line ol, order_line_dtl old
+		 where oi.origin_id = 12 and oi.category = 1
+			and oi.order_dt between iPorderStartDate and iPorderEndDate
+			and oi.id = ol.order_info_id and ol.id = old.order_line_id and oi.id = old.order_info_id
+			and ol.prod_id <> 1020665700
+			and oi.sts = 11
+			and old.sts < 8
+		 group by oi.id
+		 having sum(ol.unit_price * old.qnty) >= iPorderAmount;
+
+	FETCH curLorderInfo INTO iLorderInfoId, iLcouponCount;
+	  WHILE curLorderInfo%FOUND LOOP
+	    BEGIN
+		  select cust_id into cLshopperId from order_info where id = iLorderInfoId;
+		  -- Generate the number of coupon
+		  FOR i in 1..iLcouponCount LOOP
+		    -- Create coupon code
+		    SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO iLcoupon_code FROM dual;
+
+		    -- Make sure unique coupon code
+		    SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
+		    WHILE (iLcount = 1) LOOP
+				SELECT cast(dbms_random.string('U', 8) AS VARCHAR2(8)) INTO iLcoupon_code FROM dual;
+				SELECT count(1) INTO iLcount FROM ya_coupon WHERE coupon_code = iLcoupon_code;
+			END LOOP;
+
+			INSERT INTO ya_coupon
+			  (shopper_id, coupon_code, campaign_name, coupon_description, dollar_coupon_value, expiration_date,
+			  all_shoppers, coupon_used, coupon_type_id, site_id, order_amount_trigger, create_id, create_date, currency)
+				SELECT cLshopperId, iLcoupon_code, 'RMB50 coupon with purchase RMB479 more 2014Jul', 'Hallmak Babies RMB50 E-shop Coupon', 50, add_months(SYSDATE, 2), 'N', 'N', 1, 12, 250, 'hallmark_promotion', SYSDATE, 'RMB' FROM dual;
+
+		    INSERT INTO ya_coupon_site (coupon_code, site_id) VALUES (iLcoupon_code, 12);
+			-- Set constraint
+			INSERT INTO ya_coupon_constraint (coupon_code, constraint_type, constraint_value, created_datetime) values (iLcoupon_code, 11, 86059, sysdate);
+
+          END LOOP;
+		END;
+	    FETCH curLorderInfo INTO iLorderInfoId, iLcouponCount;
+	 END LOOP;
+  	IF sqlcode = 0 THEN
+	  iPreturn := 1;
+      COMMIT;
+    ELSE
+	  iPreturn := 0;
+      ROLLBACK;
+    END IF;
+
+  END CreateCouponForBug15092;
+
+END PKG_FE_HALLMARKPROMOTIONCOUPON;
 /
