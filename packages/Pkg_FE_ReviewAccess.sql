@@ -9,6 +9,11 @@ AS
     curPresult OUT refCur
   );
 
+  PROCEDURE GetReviewOrder (
+    iPreview_id IN INT,
+    curPresult OUT refCur
+  );
+
 	PROCEDURE DeleteReviewReport (
 		iPreport_id IN INT,
 		iProwAffect OUT INT
@@ -23,7 +28,7 @@ AS
 		iPnum_record OUT INT,
 		curPresult OUT refCur
   );
-
+  
 	PROCEDURE GetReviewReportBySKU (
 		iPsku IN INT,
 		iPpage_number IN INT,
@@ -328,6 +333,36 @@ IS
 
 		RETURN;
 	END GetReviewReportByReviewId;
+
+	PROCEDURE GetReviewOrder (
+		iPreview_id IN INT,
+    curPresult OUT refCur
+  )
+	AS
+	  sLshopper_id VARCHAR2(32);
+	  iLsku INT;
+	BEGIN
+    BEGIN
+	    SELECT shopper_id, sku INTO sLshopper_id, iLsku 
+	    FROM ya_customer_review 
+	    WHERE id = iPreview_id;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        BEGIN
+          RETURN;
+        END;
+    END;	
+	  
+		OPEN curPresult	FOR
+			SELECT origin_order_id 
+			FROM order_info oi
+			  INNER JOIN order_line ol ON oi.id = ol.order_info_id
+			WHERE oi.cust_id = sLshopper_id
+			  AND (ol.prod_id = iLsku or ol.prod_id in (select product_title_parent_sku from ya_product_title_rel where product_title_child_sku = iLsku))
+			  AND oi.parent_id = -1
+			ORDER BY oi.id DESC;
+		RETURN;
+	END GetReviewOrder;		
 
 	PROCEDURE DeleteReviewReport (
 		iPreport_id IN INT,
