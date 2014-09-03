@@ -358,7 +358,7 @@ IS
 			FROM order_info oi
 			  INNER JOIN order_line ol ON oi.id = ol.order_info_id
 			WHERE oi.cust_id = sLshopper_id
-			  AND (ol.prod_id = iLsku or ol.prod_id in (select product_title_parent_sku from ya_product_title_rel where product_title_child_sku = iLsku))
+			  AND (ol.prod_id = iLsku or ol.prod_id in (select product_title_child_sku from ya_product_title_rel where product_title_parent_sku = iLsku))
 			  AND oi.parent_id = -1
 			ORDER BY oi.id DESC;
 		RETURN;
