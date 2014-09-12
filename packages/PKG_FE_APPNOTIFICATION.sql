@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE PKG_FE_APPNOTIFICATION
+CREATE OR REPLACE PACKAGE "SS_ADM"."PKG_FE_APPNOTIFICATION" 
 AS
   TYPE refCur IS REF CURSOR;
 
@@ -17,8 +17,7 @@ AS
 
 END PKG_FE_APPNOTIFICATION;
 /
-
-CREATE OR REPLACE PACKAGE BODY PKG_FE_APPNOTIFICATION AS
+CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_APPNOTIFICATION" AS
 
   PROCEDURE IsShopperSubscribeOrderRelated (
     iPshopperId IN VARCHAR2,
@@ -53,7 +52,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_APPNOTIFICATION AS
     FETCH curLSubscriptionInfo INTO iLsubscriptionId;
     WHILE curLSubscriptionInfo%FOUND LOOP
       BEGIN
-        insert into ya_app_subscription_message values (SEQ_YA_APP_SUBSCRIPT_MSG.nextval, iLsubscriptionId, null, iPmessage, 1, 'N', sysdate, 3);
+        insert into ya_app_subscription_message values (SEQ_YA_APP_SUBSCRIPT_MSG.nextval, iLsubscriptionId, null, iPmessage, 2, 'N', sysdate, 3);
         FETCH curLSubscriptionInfo INTO iLsubscriptionId;
       END;
     END LOOP;
