@@ -77,7 +77,7 @@ IS
 
 		INSERT INTO ya_coupon_site (coupon_code, site_id)
 		                    VALUES (cPcouponCode, iLsiteId);
-		COMMIT;
+
   END CreateGoodwillCoupon;
 END Pkg_FE_GoodwillCoupon;
 /
