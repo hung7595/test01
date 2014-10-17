@@ -12,7 +12,7 @@ CREATE OR REPLACE PACKAGE BODY "CRON_FE_CHIMUSICGROUPCAMPAIGN" AS
 	  EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_chimusicgroup_campaign';
 	  
 	insert into temp_chimusicgroup_campaign (sku)
-	select a.sku from
+	select distinct a.sku from
 	(
 		select prod.sku as sku, case when sysdate between region.sale_price_start and region.sale_price_end and nvl(region.sale_price, 0) > 0 then region.sale_price else region.list_price end as sell_price 
 		from ya_product prod, prod_region region, exchange_rate rate, exchange_rate_version version
