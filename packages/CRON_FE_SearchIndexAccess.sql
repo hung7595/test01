@@ -108,6 +108,41 @@ CREATE OR REPLACE PACKAGE BODY CRON_FE_SearchIndexAccess AS
         and pr.is_enabled='Y'
         and ao.end_date >= trunc(sysdate) - 1
         and ao.end_date <= trunc(sysdate) + 1
+    union
+
+select sku from (
+select distinct r_10.prod_id as sku from prod_region r_10
+left outer join prod_region r_13 on r_13.prod_id = r_10.prod_id and r_13.region_id = 13
+where r_13.prod_id is null and r_10.region_id = 10 and r_10.is_enabled = 'Y' 
+and r_10.prod_id in (
+select prod_id from prod_avlb, ya_product p where prod_avlb.origin_id=10 and p.sku = prod_avlb.prod_id and p.is_prod_grp_parent = 'N' and prod_avlb.avlb < 60)
+
+union
+
+select distinct r_10.prod_id as sku from prod_region r_10
+left outer join prod_region r_14 on r_14.prod_id = r_10.prod_id and r_14.region_id = 14
+where r_14.prod_id is null and r_10.region_id = 10 and r_10.is_enabled = 'Y' 
+and r_10.prod_id in (
+select prod_id from prod_avlb, ya_product p where prod_avlb.origin_id=10 and p.sku = prod_avlb.prod_id and p.is_prod_grp_parent = 'N' and prod_avlb.avlb < 60)
+
+union
+
+select distinct r_10.prod_id as sku from prod_region r_10
+left outer join prod_region r_15 on r_15.prod_id = r_10.prod_id and r_15.region_id = 15
+where r_15.prod_id is null and r_10.region_id = 10 and r_10.is_enabled = 'Y' 
+and r_10.prod_id in (
+select prod_id from prod_avlb, ya_product p where prod_avlb.origin_id=10 and p.sku = prod_avlb.prod_id and p.is_prod_grp_parent = 'N' and prod_avlb.avlb < 60)
+
+union
+
+select distinct r_10.prod_id as sku from prod_region r_10
+left outer join prod_region r_18 on r_18.prod_id = r_10.prod_id and r_18.region_id = 18
+where r_18.prod_id is null and r_10.region_id = 10 and r_10.is_enabled = 'Y' 
+and r_10.prod_id in (
+select prod_id from prod_avlb, ya_product p where prod_avlb.origin_id=10 and p.sku = prod_avlb.prod_id and p.is_prod_grp_parent = 'N' and prod_avlb.avlb < 60)
+) 
+WHERE EXISTS (select rownum from exchange_rate_version where sysdate > effective_start_dt and sysdate < effective_end_dt and trunc(sysdate) = trunc(effective_start_dt) and type = 2)
+
 	)
   where sku not in (select sku from ya_se_reindex_duplicate);
 
@@ -121,4 +156,3 @@ CREATE OR REPLACE PACKAGE BODY CRON_FE_SearchIndexAccess AS
 
 END CRON_FE_SearchIndexAccess;
 /
-
