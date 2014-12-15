@@ -39,6 +39,11 @@ AS
     curPresult OUT refCur
   );
 
+	PROCEDURE GetReviewReportById (
+		iPreview_id IN INT,
+    curPresult OUT refCur
+  );
+
 	PROCEDURE GetReviewsByDateRange (
 		iPlang_id IN INT,
 		dPstart_date IN DATE,
@@ -354,7 +359,7 @@ IS
     END;	
 	  
 		OPEN curPresult	FOR
-			SELECT origin_order_id 
+			SELECT origin_order_id, ol.prod_id 
 			FROM order_info oi
 			  INNER JOIN order_line ol ON oi.id = ol.order_info_id
 			WHERE oi.cust_id = sLshopper_id
@@ -589,6 +594,58 @@ IS
     COMMIT;
 		RETURN;
 	END GetReviewReportBySKU;
+
+	PROCEDURE GetReviewReportById (
+		iPreview_id IN INT,
+    curPresult OUT refCur
+  )
+	AS
+	BEGIN
+		EXECUTE IMMEDIATE 'TRUNCATE TABLE ss_adm.temp_spotlight_review_report';
+
+    INSERT INTO ss_adm.temp_spotlight_review_report
+    (
+			id, sku, prod_name_u, date_posted, review_id,
+			review, reviewer, shopper_id, email, rating_id,
+			title, status, lang_id, product_rating, mod_user,
+			mod_dt, total
+		)
+		select
+		  0, r.sku, nvl(pn.prod_name, pe.prod_name) as prod_name, r.date_posted, r.id as review_id, 
+		  r.review,
+		  nvl(
+			  nvl(
+				  LTrim(
+					  (
+					  SELECT
+						  CASE rn.display_mode
+							  WHEN 0 THEN s.nickname
+							  WHEN 1 THEN s.firstname
+							  WHEN 2 THEN s.firstname || ' ' || s.lastname
+							  WHEN 3 THEN s.lastname || ' ' || s.firstname
+						  end
+					  FROM ya_review_reviewerName rn
+					  inner join ya_shopper s on rn.shopper_id=s.shopper_id
+					  WHERE rn.shopper_id=r.shopper_id)
+				  ),
+				  ltrim(nvl((case nickname when '' then firstname || ' ' || lastname else nickname end), firstname || ' ' || lastname))
+			  ), 'Anonymous'
+		  ) as reivewer, r.shopper_id,s.email,-1 as rating_id,
+		  r.title, (case review_approved when 'Y' then 'Approved' when 'N' then 'Rejected' when 'R' then 'Rejected' else 'Undetermined' end) as status, r.lang_id,r.product_rating,r.mod_user,
+		  r.mod_dt, nvl(rr.report_count, 0) report_count
+		FROM ya_customer_review r
+			LEFT OUTER JOIN ya_shopper s ON (s.shopper_id=r.shopper_id)
+			INNER JOIN ya_prod_lang pe ON pe.sku=r.sku and pe.lang_id = 1
+			LEFT OUTER JOIN ya_prod_lang pn ON pn.sku=r.sku and pn.lang_id=r.lang_id
+			LEFT OUTER JOIN (select count(*) report_count, sku from ya_review_report group by sku) rr ON r.sku = rr.sku
+		WHERE	r.id = iPreview_id;
+
+		OPEN curPresult	FOR
+      SELECT * FROM ss_adm.temp_spotlight_review_report;
+
+    COMMIT;
+		RETURN;
+	END GetReviewReportById;
 
 	PROCEDURE GetReviewsByDateRange (
 		iPlang_id IN INT,
