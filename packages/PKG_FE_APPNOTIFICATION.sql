@@ -53,7 +53,7 @@ CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_APPNOTIFICATION" AS
     FETCH curLSubscriptionInfo INTO iLsubscriptionId;
     WHILE curLSubscriptionInfo%FOUND LOOP
       BEGIN
-        insert into ya_app_subscription_message values (SEQ_YA_APP_SUBSCRIPT_MSG.nextval, iLsubscriptionId, null, iPmessage, 2, 'N', sysdate, 3, null, null);
+        insert into ya_app_subscription_message (id, subscription_id, message, status, read, create_dt, type) values (SEQ_YA_APP_SUBSCRIPT_MSG.nextval, iLsubscriptionId, iPmessage, 2, 'N', sysdate, 3);
         FETCH curLSubscriptionInfo INTO iLsubscriptionId;
       END;
     END LOOP;
