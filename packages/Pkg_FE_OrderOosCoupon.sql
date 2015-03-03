@@ -11,6 +11,7 @@ IS
   /*
     generate backend order oos coupon
     ref: http://hk-system-s01/content_bugzilla/show_bug.cgi?id=14700
+    ref: http://hk-system-s01/content_bugzilla/show_bug.cgi?id=21874
   */
   PROCEDURE CreateOrderOosCoupon (
 	  iPorderInfoId IN INT,
@@ -47,18 +48,23 @@ IS
     CASE iLsiteId
       WHEN 10 THEN  --YSGB 
         nLcouponAmt := 5;
+        nLtrigger := 50;
         cLcurrency := 'USD';
       WHEN 13 THEN  --YSAU 
         nLcouponAmt := 5;
+        nLtrigger := 50;
         cLcurrency := 'AUD';
       WHEN 14 THEN  --YSHK 
         nLcouponAmt := 30;
+        nLtrigger := 300;
         cLcurrency := 'HKD';
       WHEN 15 THEN  --YSUK 
         nLcouponAmt := 3;
+        nLtrigger := 30;
         cLcurrency := 'GBP';
       WHEN 18 THEN  --YSCA 
         nLcouponAmt := 5;
+        nLtrigger := 50;
         cLcurrency := 'CAD';
     END CASE;
 
@@ -69,7 +75,6 @@ IS
     dtLcreateDate := SYSDATE;
     cLcampaignName := 'HKCS Compensation';
     cLdescription := 'Goodwill coupon OOS items';
-    nLtrigger := 0;
     dtLexpire := add_months(dtLcreateDate, 2);
     cLallShoppers := 'N';
     cLused := 'N';
