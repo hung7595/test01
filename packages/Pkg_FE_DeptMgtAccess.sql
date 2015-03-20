@@ -171,12 +171,12 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	iPattributeId := iLAttrId;
 
 	--insert into ya_attribute lang
-	INSERT INTO ya_attribute_lang(attribute_id,lang_id,attribute_name) values (iLAttrId,1,cPattrNameEn);
-	INSERT INTO ya_attribute_lang(attribute_id,lang_id,attribute_name) values (iLAttrId,2,cPattrNameB5);
-	INSERT INTO ya_attribute_lang(attribute_id,lang_id,attribute_name) values (iLAttrId,3,cPattrNameJp);
-	INSERT INTO ya_attribute_lang(attribute_id,lang_id,attribute_name) values (iLAttrId,4,cPattrNameKr);
-	INSERT INTO ya_attribute_lang(attribute_id,lang_id,attribute_name) values (iLAttrId,5,cPattrNameGb);
---	INSERT INTO ya_attribute_lang(attribute_id,lang_id,attribute_name) values (iLAttrId,6,cPattrNameEn);
+	INSERT INTO ya_attribute_lang(id, attribute_id,lang_id,attribute_name) values (SEQ_YA_ATTRIBUTE_LANG_ID.nextval, iLAttrId,1,cPattrNameEn);
+	INSERT INTO ya_attribute_lang(id, attribute_id,lang_id,attribute_name) values (SEQ_YA_ATTRIBUTE_LANG_ID.nextval, iLAttrId,2,cPattrNameB5);
+	INSERT INTO ya_attribute_lang(id, attribute_id,lang_id,attribute_name) values (SEQ_YA_ATTRIBUTE_LANG_ID.nextval, iLAttrId,3,cPattrNameJp);
+	INSERT INTO ya_attribute_lang(id, attribute_id,lang_id,attribute_name) values (SEQ_YA_ATTRIBUTE_LANG_ID.nextval, iLAttrId,4,cPattrNameKr);
+	INSERT INTO ya_attribute_lang(id, attribute_id,lang_id,attribute_name) values (SEQ_YA_ATTRIBUTE_LANG_ID.nextval, iLAttrId,5,cPattrNameGb);
+--	INSERT INTO ya_attribute_lang(id, attribute_id,lang_id,attribute_name) values (iLAttrId,6,cPattrNameEn);
 
 	--add to preferred attribute list
 	--no this table in oracle problem
@@ -237,28 +237,28 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	  VALUES(iLDeptId, sysdate, sysdate, cPuser, cPuser);
 	
 	  /* update department-site setting */
-	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
-	  VALUES (iLDeptId, 1, cPusEnabled, iPdispSeq);
-	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
-	  VALUES (iLDeptId, 7, cPtwEnabled, iPdispSeq);
-	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
-	  VALUES (iLDeptId, 10, cPysEnabled, iPdispSeq);
-	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
-	  VALUES (iLDeptId, 11, cPyscnEnabled, iPdispSeq);	
-	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
-	  VALUES (iLDeptId, 12, cPhmEnabled, iPdispSeq);	
-	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
-	  VALUES (iLDeptId, 13, cPysauEnabled, iPdispSeq);	
-	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
-	  VALUES (iLDeptId, 14, cPyshkEnabled, iPdispSeq);	
-	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
-	  VALUES (iLDeptId, 15, cPysukEnabled, iPdispSeq);	
-	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
-	  VALUES (iLDeptId, 18, cPyscaEnabled, iPdispSeq);	
-	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
-	  VALUES (iLDeptId, 20, cPywEnabled, iPdispSeq);	
-	  INSERT INTO ya_dept_site (dept_id, site_id, is_enabled, disp_seq)
-	  VALUES (iLDeptId, 22, cPywkEnabled, iPdispSeq);	
+	  INSERT INTO ya_dept_site (id, dept_id, site_id, is_enabled, disp_seq)
+	  VALUES (SEQ_YA_DEPT_SITE_ID.nextval, iLDeptId, 1, cPusEnabled, iPdispSeq);
+	  INSERT INTO ya_dept_site (id, dept_id, site_id, is_enabled, disp_seq)
+	  VALUES (SEQ_YA_DEPT_SITE_ID.nextval, iLDeptId, 7, cPtwEnabled, iPdispSeq);
+	  INSERT INTO ya_dept_site (id, dept_id, site_id, is_enabled, disp_seq)
+	  VALUES (SEQ_YA_DEPT_SITE_ID.nextval, iLDeptId, 10, cPysEnabled, iPdispSeq);
+	  INSERT INTO ya_dept_site (id, dept_id, site_id, is_enabled, disp_seq)
+	  VALUES (SEQ_YA_DEPT_SITE_ID.nextval, iLDeptId, 11, cPyscnEnabled, iPdispSeq);	
+	  INSERT INTO ya_dept_site (id, dept_id, site_id, is_enabled, disp_seq)
+	  VALUES (SEQ_YA_DEPT_SITE_ID.nextval, iLDeptId, 12, cPhmEnabled, iPdispSeq);	
+	  INSERT INTO ya_dept_site (id, dept_id, site_id, is_enabled, disp_seq)
+	  VALUES (SEQ_YA_DEPT_SITE_ID.nextval, iLDeptId, 13, cPysauEnabled, iPdispSeq);	
+	  INSERT INTO ya_dept_site (id, dept_id, site_id, is_enabled, disp_seq)
+	  VALUES (SEQ_YA_DEPT_SITE_ID.nextval, iLDeptId, 14, cPyshkEnabled, iPdispSeq);	
+	  INSERT INTO ya_dept_site (id, dept_id, site_id, is_enabled, disp_seq)
+	  VALUES (SEQ_YA_DEPT_SITE_ID.nextval, iLDeptId, 15, cPysukEnabled, iPdispSeq);	
+	  INSERT INTO ya_dept_site (id, dept_id, site_id, is_enabled, disp_seq)
+	  VALUES (SEQ_YA_DEPT_SITE_ID.nextval, iLDeptId, 18, cPyscaEnabled, iPdispSeq);	
+	  INSERT INTO ya_dept_site (id, dept_id, site_id, is_enabled, disp_seq)
+	  VALUES (SEQ_YA_DEPT_SITE_ID.nextval, iLDeptId, 20, cPywEnabled, iPdispSeq);	
+	  INSERT INTO ya_dept_site (id, dept_id, site_id, is_enabled, disp_seq)
+	  VALUES (SEQ_YA_DEPT_SITE_ID.nextval, iLDeptId, 22, cPywkEnabled, iPdispSeq);	
 
     iPdeptId :=iLDeptId;
     --/****STEP 3 : DEPARTMENT LANGUAGE, NEED TO MODIFY THIS PART*****/
