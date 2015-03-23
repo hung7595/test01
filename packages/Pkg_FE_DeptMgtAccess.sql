@@ -277,11 +277,11 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 
     --/****STEP 4 : CREATE DEPARTMENT RELATIONSHIP*****/
 	  IF iPparentDeptId>0 THEN
-		  INSERT INTO ya_dept_rel(dept_id, parent_dept_id)
-		  VALUES(iLDeptId, iPparentDeptId);
+		  INSERT INTO ya_dept_rel(id, dept_id, parent_dept_id)
+		  VALUES(SEQ_YA_DEPT_REL_ID.nextval, iLDeptId, iPparentDeptId);
     --/****STEP 5 : ADD PARENT DEPARTMENT ATTRIBUTE*****/
 		  INSERT INTO ya_dept_attr(id, dept_id, attribute_id)
-		  SELECT SEQ_YA_DPET_ATTR_ID.nextval, iLDeptId, attribute_id
+		  SELECT SEQ_YA_DEPT_ATTR_ID.nextval, iLDeptId, attribute_id
 			  FROM ya_dept_attr WHERE dept_id = iPparentDeptId;
 	  END IF;
 
