@@ -280,8 +280,8 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 		  INSERT INTO ya_dept_rel(dept_id, parent_dept_id)
 		  VALUES(iLDeptId, iPparentDeptId);
     --/****STEP 5 : ADD PARENT DEPARTMENT ATTRIBUTE*****/
-		  INSERT INTO ya_dept_attr(dept_id, attribute_id)
-		  SELECT iLDeptId, attribute_id
+		  INSERT INTO ya_dept_attr(id, dept_id, attribute_id)
+		  SELECT SEQ_YA_DPET_ATTR_ID.nextval, iLDeptId, attribute_id
 			  FROM ya_dept_attr WHERE dept_id = iPparentDeptId;
 	  END IF;
 
@@ -323,8 +323,8 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 
 	WHILE (iLexistValue>0) LOOP
 	  INSERT INTO ya_browse_dept_path
-	    (terminal_dept_id, node_sequence_id, dept_id, last_updated_datetime)
-	    SELECT iLterminalDeptId, iLnodeSequenceId, dl.dept_id, sysdate
+	    (id, terminal_dept_id, node_sequence_id, dept_id, last_updated_datetime)
+	    SELECT SEQ_YA_BROWSE_DEPT_PATH_ID.nextval, iLterminalDeptId, iLnodeSequenceId, dl.dept_id, sysdate
 	    FROM ya_dept_lang dl
 	    WHERE dept_id = iLtempNodeId
 	    AND dl.site_id is null
@@ -340,8 +340,8 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
 	END LOOP;
 
 	INSERT INTO ya_browse_dept_path
-	(terminal_dept_id, node_sequence_id, dept_id, last_updated_datetime)
-	SELECT iLterminalDeptId, iLnodeSequenceId, dl.dept_id, sysdate
+	(id, terminal_dept_id, node_sequence_id, dept_id, last_updated_datetime)
+	SELECT SEQ_YA_BROWSE_DEPT_PATH_ID.nextval, iLterminalDeptId, iLnodeSequenceId, dl.dept_id, sysdate
 	FROM ya_dept_lang dl
 	WHERE dept_id = iLtempNodeId
 	AND dl.site_id is null
