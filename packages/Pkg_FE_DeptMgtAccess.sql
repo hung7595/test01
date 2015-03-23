@@ -304,8 +304,8 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_DEPTMGTACCESS AS
     iLterminalDeptId int;
   BEGIN
 	--/****STEP 6 : ADD DEPARTMENT ATTRIBUTE, NEED TO MODIFY THIS PART*****/
-	INSERT INTO ya_dept_attr(dept_id, attribute_id)
-	VALUES(iPdeptId,iPattributeId);
+	INSERT INTO ya_dept_attr(id, dept_id, attribute_id)
+	VALUES(SEQ_YA_DEPT_ATTR_ID.nextval, iPdeptId,iPattributeId);
 
 --/****STEP 7 : GENERATE BROWSING TREE*****/
 
