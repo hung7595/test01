@@ -48,7 +48,7 @@ IS
     CASE iLsiteId
       WHEN 10 THEN  --YSGB 
         nLcouponAmt := 5;
-        nLtrigger := 50;
+        nLtrigger := 39;
         cLcurrency := 'USD';
       WHEN 13 THEN  --YSAU 
         nLcouponAmt := 5;
