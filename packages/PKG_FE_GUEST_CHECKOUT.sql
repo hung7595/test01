@@ -19,9 +19,9 @@ CREATE OR REPLACE PACKAGE BODY PKG_FE_GUEST_CHECKOUT AS
   ) AS
   BEGIN
     INSERT INTO ya_new_visitor_subscription (
-        ID, EMAIL, SITE_ID, LANG_ID, IS_SENT, CREATED_DT, UPDATED_DT, JOB_STS, TEMPLATE_TYPE_ID
+        ID, EMAIL, SITE_ID, LANG_ID, IS_SENT, CREATED_DT, UPDATED_DT, JOB_STS, TEMPLATE_TYPE_ID, SHOPPER_ID, NEW_VISITOR_TYPE_ID
     ) VALUES (
-        SEQ_NEW_VISITOR_SUBSCRIPTION.NEXTVAL, cPemail, npsiteid, nplangid, 'N', sysdate, sysdate, 1, 524
+        SEQ_NEW_VISITOR_SUBSCRIPTION.NEXTVAL, cPemail, npsiteid, nplangid, 'N', sysdate, sysdate, 1, 524, null, 2 
     );
   END Sp_send_gco_order_fulfill_edm;
 
