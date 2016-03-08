@@ -105,6 +105,14 @@ IS
 
 		INSERT INTO ya_coupon_site (coupon_code, site_id)
 		                    VALUES (cPcouponCode, iLsiteId);
+		                    
+		IF (iLsiteId <> 10) THEN
+		BEGIN
+		  INSERT INTO ya_coupon_site (coupon_code, site_id)
+                            VALUES (cPcouponCode, 10);
+        END;
+		END IF;
+		                    
 		COMMIT;
   END CreateOrderOosCoupon;
 END Pkg_FE_OrderOosCoupon;
