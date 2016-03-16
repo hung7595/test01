@@ -48,23 +48,23 @@ IS
     CASE iLsiteId
       WHEN 10 THEN  --YSGB 
         nLcouponAmt := 5;
-        nLtrigger := 39;
+        nLtrigger := 35;
         cLcurrency := 'USD';
       WHEN 13 THEN  --YSAU 
         nLcouponAmt := 5;
-        nLtrigger := 50;
+        nLtrigger := 35;
         cLcurrency := 'AUD';
       WHEN 14 THEN  --YSHK 
         nLcouponAmt := 30;
-        nLtrigger := 300;
+        nLtrigger := 250;
         cLcurrency := 'HKD';
       WHEN 15 THEN  --YSUK 
         nLcouponAmt := 3;
-        nLtrigger := 30;
+        nLtrigger := 25;
         cLcurrency := 'GBP';
       WHEN 18 THEN  --YSCA 
         nLcouponAmt := 5;
-        nLtrigger := 50;
+        nLtrigger := 35;
         cLcurrency := 'CAD';
     END CASE;
 
