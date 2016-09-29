@@ -10,7 +10,9 @@ AS
 	cPshopper_id IN CHAR,
 	iPorder_id IN INT,
 	iPsiteId IN INT,
-    iPreturn OUT INT
+    iPreturn OUT INT,
+    cPyaCouponCode OUT CHAR,
+    cPysCouponCode OUT CHAR
   );
 
   END Pkg_FE_NextPurchaseCoupon;
@@ -74,7 +76,9 @@ PROCEDURE CreateNextPurchaseCoupon (
 	cPshopper_id IN CHAR,
 	iPorder_id IN INT,
 	iPsiteId IN INT,
-    iPreturn OUT INT
+    iPreturn OUT INT,
+    cPyaCouponCode OUT CHAR,
+    cPysCouponCode OUT CHAR
   )
   AS
     iLcount INT;
@@ -167,6 +171,10 @@ PROCEDURE CreateNextPurchaseCoupon (
 				VALUES (cLcoupon_code_YA, iPorder_id, 1);
 
 			SELECT count(*) INTO iPreturn FROM ya_coupon WHERE coupon_code = cLcoupon_code_YS OR coupon_code = cLcoupon_code_YA;
+			
+			cPyaCouponCode := cLcoupon_code_YA;
+			cPysCouponCode := cLcoupon_code_YS;
+			
 		ELSE
 			SELECT 0 INTO iPreturn FROM dual;
 		END IF;
