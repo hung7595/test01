@@ -213,7 +213,7 @@ IS
             OR validation.bounce_count > 0 
             OR validation.complaint_count > 0)
         );
-         
+
   END GetSimpleEmailList;
 
   PROCEDURE GetLangPreferenceEmailList (
@@ -252,8 +252,8 @@ IS
 	                yssp.prefer_lang_id = iPlang_id
 	            )
 
-		) a 
-		WHERE 
+		) a
+		WHERE
             NOT EXISTS
             (
                 SELECT 1 FROM ya_newsletter_subscriber WHERE a.email = email and site_id = 11
@@ -266,6 +266,14 @@ IS
 	        (
 	            SELECT 1 FROM ya_reminder_exclude_list yrel WHERE yrel.site_id = iPsite_id AND yrel.shopper_id = a.shopper_id
 	        )
+	        AND NOT EXISTS
+            (
+                SELECT 1 FROM email_validation validation WHERE lower(a.email) = lower(validation.email)
+                AND (validation.syntax_error = 'Y'
+                OR validation.domain_error = 'Y'
+                OR validation.bounce_count > 0
+                OR validation.complaint_count > 0)
+            )
       );
     ELSE
         IF (iPlang_id = 5) AND (iPsite_id = 14) THEN
@@ -288,8 +296,8 @@ IS
 	                  FROM ya_newsletter_subscriber yns, ya_newsletter_subscriber yns_cn
 	                  WHERE yns.site_id = iPsite_id AND (case when yns.status = 'A' then yns.newsletter_id else null end) = iPnewsletter_id
 	                  AND yns.email = yns_cn.email and yns_cn.site_id = 11
-		        ) a 
-		        WHERE 
+		        ) a
+		        WHERE
 		            NOT EXISTS
 		            (
 		                SELECT 1 FROM dm_hardbounce hardbounce WHERE lower(a.email) = lower(hardbounce.email)
@@ -298,6 +306,14 @@ IS
 		            (
 		                SELECT 1 FROM ya_reminder_exclude_list yrel WHERE yrel.site_id = iPsite_id AND yrel.shopper_id = a.shopper_id
 		            )
+		            AND NOT EXISTS
+                    (
+                        SELECT 1 FROM email_validation validation WHERE lower(a.email) = lower(validation.email)
+                        AND (validation.syntax_error = 'Y'
+                        OR validation.domain_error = 'Y'
+                        OR validation.bounce_count > 0
+                        OR validation.complaint_count > 0)
+                    )
 		      );
         ELSE
 	      OPEN curPresult FOR
@@ -316,7 +332,15 @@ IS
             )
             AND NOT EXISTS (
 	            SELECT 1 FROM ya_reminder_exclude_list yrel WHERE yrel.site_id = yns.site_id AND yrel.shopper_id = yns.shopper_id
-	        );
+	        )
+	        AND NOT EXISTS
+            (
+                SELECT 1 FROM email_validation validation WHERE lower(yns.email) = lower(validation.email)
+                AND (validation.syntax_error = 'Y'
+                OR validation.domain_error = 'Y'
+                OR validation.bounce_count > 0
+                OR validation.complaint_count > 0)
+            );
         END IF;
       
     END IF;
