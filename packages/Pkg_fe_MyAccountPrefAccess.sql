@@ -238,7 +238,7 @@ IS
 		        WHERE yns.site_id = iPsite_id AND (case when yns.status = 'A' then yns.newsletter_id else null end) = iPnewsletter_id
 		        AND NOT EXISTS
 	            (
-	                SELECT 1 FROM ya_shopper_site_preference yssp WHERE yssp.site_id = iPsite_id and yns.shopper_id = yssp.shopper_id
+	                SELECT 1 FROM ya_shopper_site_preference yssp WHERE yssp.site_id = iPsite_id and yns.shopper_id = yssp.shopper_id and yssp.prefer_lang_id is not null
 	            )
             UNION
               -- shopper who have site preference record and equal to select lang
