@@ -12,6 +12,7 @@ IS
     generate backend order oos coupon
     ref: http://hk-system-s01/content_bugzilla/show_bug.cgi?id=14700
     ref: http://hk-system-s01/content_bugzilla/show_bug.cgi?id=21874
+    http://hk-system-s01/content_bugzilla/show_bug.cgi?id=57633
   */
   PROCEDURE CreateOrderOosCoupon (
 	  iPorderInfoId IN INT,
@@ -75,7 +76,7 @@ IS
     dtLcreateDate := SYSDATE;
     cLcampaignName := 'HKCS Compensation';
     cLdescription := 'Goodwill coupon OOS items';
-    dtLexpire := add_months(dtLcreateDate, 2);
+    dtLexpire := add_months(dtLcreateDate, 3);
     cLallShoppers := 'N';
     cLused := 'N';
     iLtype := 1;
