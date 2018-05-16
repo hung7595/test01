@@ -85,7 +85,7 @@ IS
     cLcampaignName := 'HKCS Goodwill';
     cLdescription := 'Goodwill coupon';
     nLtrigger := 0;
-    dtLexpire := add_months(dtLcreateDate, 2);
+    dtLexpire := add_months(dtLcreateDate, 3);
     cLallShoppers := 'N';
     cLused := 'N';
     iLtype := 1;
@@ -152,7 +152,7 @@ IS
     cLcampaignName := 'HKCS Goodwill';
     cLdescription := 'Goodwill coupon';
     nLtrigger := 0;
-    dtLexpire := add_months(dtLcreateDate, 2);
+    dtLexpire := add_months(dtLcreateDate, 3);
     cLallShoppers := 'N';
     cLused := 'N';
     iLtype := 1;
@@ -219,7 +219,7 @@ IS
     cLcampaignName := 'HKCS Goodwill';
     cLdescription := 'Goodwill coupon';
     nLtrigger := 0;
-    dtLexpire := add_months(dtLcreateDate, 2);
+    dtLexpire := add_months(dtLcreateDate, 3);
     cLallShoppers := 'N';
     cLused := 'N';
     iLtype := 1;
@@ -355,7 +355,7 @@ IS
     dtLcreateDate := SYSDATE;
     cLcampaignName := 'HKCS Inferior Goodwill';
     cLdescription := 'Inferior Goodwill coupon';
-    dtLexpire := add_months(dtLcreateDate, 2);
+    dtLexpire := add_months(dtLcreateDate, 3);
     cLallShoppers := 'N';
     cLused := 'N';
     iLtype := 1;
