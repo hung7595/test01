@@ -517,7 +517,7 @@ IS
     sLSQL2 := 'SELECT sum(cs.current_balance) FROM ya_frontend_credit_system cs WHERE cs.shopper_id = ''' || cPshopper_id || '''';
     EXECUTE IMMEDIATE sLSQL2 INTO nLavail_amount;
 
-	IF nLavail_amount >= 0 THEN
+	IF nLavail_amount > 0 THEN
       iPresult := 1;
       RETURN;
 	ELSE
