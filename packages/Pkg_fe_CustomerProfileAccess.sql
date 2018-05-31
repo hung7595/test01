@@ -141,7 +141,8 @@ IS
 	  username = 'USERNAME_REMOVED',
 	  nickname = 'NICKNAME_REMOVED',
 	  email = cLmasked_email,
-	  correspondence_email = cLmasked_correspondence_email
+	  correspondence_email = cLmasked_correspondence_email,
+	  updated_date = sysdate
 	where shopper_id = cPshopper_id;
 
     -- log should be updated just after the update of the ya_shopper because of the trigger
@@ -150,7 +151,8 @@ IS
     where column_name = 'email' and shopper_id = cPshopper_id;
 
 	-- "masks" other guest's shopper email as well with the same email address value
-	update ya_shopper set email = cLmasked_email where shopper_id in (select shopper_id from ya_shopper where type_id = 3 and email = cLemail);
+	-- NOT valid to update instantly, may affect the current guest shopper with the same email value
+	--update ya_shopper set email = cLmasked_email where shopper_id in (select shopper_id from ya_shopper where type_id = 3 and email = cLemail);
 
 	-- unsubscribe notification subscription
 	update ya_app_subscription_type set subscribed = 'N',
@@ -158,10 +160,14 @@ IS
 	where subscription_id in (select id from ya_app_subscription where shopper_id = cPshopper_id);
 
 	-- unsubscribe newsletter subscription, remove email address
-	update ya_newsletter_subscriber set email = cLmasked_email,
-	  status = 'R',
-	  last_modified_datetime = sysdate
-	where shopper_id = cPshopper_id;
+	-- NOT update because of the newsletter data problem with the UNIQUE constraint, delete directly
+	--update ya_newsletter_subscriber set email = cLmasked_email,
+	--  status = 'R',
+	--  last_modified_datetime = sysdate
+	--where shopper_id = cPshopper_id;
+	delete ya_newsletter_subscriber where shopper_id = cPshopper_id;
+	-- delete the newsletter with the SAME email address as well WHEN shopper is null
+	delete ya_newsletter_subscriber where email = cLemail and shopper_id is null;
 
 	-- mark the customer review as rejected
 	update ya_customer_review set review_approved = 'R',
