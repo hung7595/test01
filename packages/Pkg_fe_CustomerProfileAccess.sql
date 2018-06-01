@@ -197,7 +197,9 @@ IS
 	delete ya_new_basket where shopper_id = cPshopper_id;
 
 	-- unbind social network login
-	update ya_shopper_social_login set user_id = 'USED_ID_REMOVED', mod_dt = sysdate where shopper_id = cPshopper_id;
+	-- MUST delete the relation ya_shopper_social_login because of the constraint
+	--update ya_shopper_social_login set user_id = 'USED_ID_REMOVED', mod_dt = sysdate where shopper_id = cPshopper_id;
+	delete ya_shopper_social_login where shopper_id = cPshopper_id;
 	update ya_shopper_social_login_log set user_id = 'USED_ID_REMOVED' where shopper_id = cPshopper_id;
 	update ya_oauth_request set redirect_url = 'REDIRECT_URL_REMOVED' where id in (select oauth_request_id from ya_oauth where id in (select oauth_id from ya_shopper_social_login_log where shopper_id = cPshopper_id));
 	update ya_oauth_response set user_id = 'USER_ID_REMOVED',
