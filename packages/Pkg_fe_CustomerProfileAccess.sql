@@ -97,35 +97,41 @@ IS
 	iPreturn_value OUT INT
   )
   AS
+    SHOPPER_NOT_FOUND exception;
+    SHOPPER_DELETED_ALREADY exception;
     iLcheck INT;
 	cLemail VARCHAR2(255);
 	cLcorrespondence_email VARCHAR2(255);
 	cLmasked_email VARCHAR2(255);
 	cLmasked_correspondence_email VARCHAR2(255);
   BEGIN
-	SELECT email, correspondence_email INTO cLemail,  cLcorrespondence_email FROM ya_shopper WHERE shopper_id = cPshopper_Id and member_type <> 11;
+    BEGIN
+      SELECT email, correspondence_email INTO cLemail,  cLcorrespondence_email FROM ya_shopper WHERE shopper_id = cPshopper_Id;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        RAISE SHOPPER_NOT_FOUND;
+    END;
 
-	IF (cLemail IS NULL) THEN
-	  iPreturn_value := -2;
-	  RETURN;
-	ELSE
-	  iLcheck := 1;
+    BEGIN
+	    SELECT email, correspondence_email INTO cLemail,  cLcorrespondence_email FROM ya_shopper WHERE shopper_id = cPshopper_Id and member_type <> 11;
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        RAISE SHOPPER_DELETED_ALREADY;
+    END;
 
-      WHILE (iLcheck > 0)
-      LOOP
-	    -- masked policy:
-		-- 1. From the 4th character until the last character before @, we will change them into *, all the email domain character, we will change them into *
-		-- 2. append timestamp
-		-- 3. append 10 digit random string
-		-- e.g.: thomas.kwok@yesasia.com --> thom*******@*************_20180523144544QWDJQEAQOB
-        select Pkg_fe_CustomerProfileAccess.MaskEmail(cLemail) || '_' || TO_CHAR(sysdate, 'YYYYMMDDHH24MISS') || dbms_random.string('U', 10) into cLmasked_email from dual;
-
-		-- email field length is 255, make sure not excess the 255
-		cLmasked_email := substr(cLmasked_email, 0, 255);
-
-        SELECT COUNT(1) INTO iLcheck FROM ya_shopper WHERE email = cLmasked_email;
-      END LOOP;
-	END IF;
+	iLcheck := 1;
+    WHILE (iLcheck > 0)
+    LOOP
+     -- masked policy:
+     -- 1. From the 4th character until the last character before @, we will change them into *, all the email domain character, we will change them into *
+     -- 2. append timestamp
+     -- 3. append 10 digit random string
+     -- e.g.: thomas.kwok@yesasia.com --> thom*******@*************_20180523144544QWDJQEAQOB
+     select Pkg_fe_CustomerProfileAccess.MaskEmail(cLemail) || '_' || TO_CHAR(sysdate, 'YYYYMMDDHH24MISS') || dbms_random.string('U', 10) into cLmasked_email from dual;
+	 -- email field length is 255, make sure not excess the 255
+     cLmasked_email := substr(cLmasked_email, 0, 255);
+     SELECT COUNT(1) INTO iLcheck FROM ya_shopper WHERE email = cLmasked_email;
+    END LOOP;
 
 	if (cLcorrespondence_email IS NULL) THEN
 	  cLmasked_correspondence_email := '';
@@ -207,16 +213,19 @@ IS
 	  COMMIT;
 	END IF;
 
-	EXCEPTION WHEN OTHERS THEN
-      BEGIN
-	    IF (cPcommit = 'Y') THEN
-		  BEGIN
+	EXCEPTION
+      WHEN SHOPPER_NOT_FOUND THEN
+        iPreturn_value := -3;
+      WHEN SHOPPER_DELETED_ALREADY THEN
+        iPreturn_value := -2;
+	  WHEN OTHERS THEN
+        BEGIN
+	      IF (cPcommit = 'Y') THEN
 		    ROLLBACK;
-		  END;
-	    END IF;
+	      END IF;
 
-	    iPreturn_value := -1;
-      END;
+	      iPreturn_value := -1;
+        END;
   END DeleteShopper;
 
   FUNCTION MaskEmail(email IN VARCHAR2) RETURN VARCHAR2
