@@ -15,6 +15,12 @@ AS
 	iPreturn_value OUT INT
   );
 
+ PROCEDURE UnsubscribeNewsletters (
+    cEmail IN  VARCHAR2,
+    cPcommit IN CHAR DEFAULT 'Y',
+    iPreturn_value OUT INT
+  );
+
   FUNCTION MaskEmail(email IN VARCHAR2) RETURN VARCHAR2;
 
 END Pkg_fe_CustomerProfileAccess;
@@ -229,6 +235,78 @@ IS
 	      iPreturn_value := -1;
         END;
   END DeleteShopper;
+
+  PROCEDURE UnsubscribeNewsletters (
+    cEmail IN  VARCHAR2,
+    cPcommit IN CHAR DEFAULT 'Y',
+    iPreturn_value OUT INT
+  ) AS
+    NO_NEWSLETTERS_UNSUBSCRIBE exception;
+    TYPE t_char_array IS TABLE OF char(35) INDEX BY BINARY_INTEGER;
+    aLshopperIds t_char_array;
+    iLcountByEmail INT;
+    iLcountByShopperId INT;
+    cLemail INT;
+  BEGIN
+
+  SELECT COUNT(*) INTO cLemail
+    FROM ya_newsletter_subscriber
+    WHERE email = cEmail;
+  IF (cLemail = 0) THEN
+    RAISE NO_NEWSLETTERS_UNSUBSCRIBE;
+  END IF;
+
+  -- unsubscribe newseltters with input email
+  SELECT COUNT(*) INTO iLcountByEmail
+    FROM YA_NEWSLETTER_SUBSCRIBER
+    WHERE email = cEmail AND STATUS ='A';
+   IF (iLcountByEmail > 0) THEN
+   UPDATE ya_newsletter_subscriber
+    SET status = 'R',
+      last_modified_datetime = SYSDATE
+    WHERE email = cEmail
+      AND STATUS ='A';
+   END IF;
+
+  -- unsubscribe newsletters with shopper id
+  SELECT shopper_id BULK COLLECT INTO aLshopperIds
+    FROM ya_shopper WHERE ya_shopper.email = cEmail;
+
+  SELECT count(*) INTO iLcountByShopperId
+    FROM YA_NEWSLETTER_SUBSCRIBER
+    WHERE shopper_id in
+        (SELECT shopper_id FROM ya_shopper WHERE ya_shopper.email = cEmail)
+        AND STATUS ='A';
+  IF (iLcountByShopperId > 0) THEN
+   UPDATE ya_newsletter_subscriber
+    SET status = 'R',
+        last_modified_datetime = SYSDATE
+    WHERE STATUS ='A'
+        AND SHOPPER_ID in
+        (SELECT shopper_id FROM ya_shopper WHERE ya_shopper.email = cEmail);
+    END IF;
+
+  IF (iLcountByEmail + iLcountByShopperId = 0) THEN
+    RAISE NO_NEWSLETTERS_UNSUBSCRIBE;
+  END IF;
+
+  IF cPcommit = 'Y' THEN
+    COMMIT;
+  END IF;
+
+  iPreturn_value := 0;
+
+  EXCEPTION
+    WHEN NO_NEWSLETTERS_UNSUBSCRIBE THEN
+        iPreturn_value := -2;
+    WHEN OTHERS THEN
+        BEGIN
+            IF (cPcommit = 'Y') THEN
+              ROLLBACK;
+            END IF;
+        iPreturn_value := -1;
+        END;
+  END UnsubscribeNewsletters;
 
   FUNCTION MaskEmail(email IN VARCHAR2) RETURN VARCHAR2
   IS
