@@ -18,6 +18,7 @@ AS
         nPamount IN NUMBER,
         deciPdiscount IN DECIMAL,
         cPremark IN VARCHAR2,
+        iPshipment_id IN INT,
         iPexpiryDate IN DATE,
         cPupdatedUser IN VARCHAR2,
         iPerror_code OUT INT
@@ -95,6 +96,7 @@ IS
         nPamount IN NUMBER,
         deciPdiscount IN DECIMAL,
         cPremark IN VARCHAR2,
+        iPshipment_id IN INT,
         iPexpiryDate IN DATE,
         cPupdatedUser IN VARCHAR2,
         iPerror_code OUT INT
@@ -110,13 +112,6 @@ IS
             RETURN;
         END IF;
 
-        SELECT COUNT(1) INTO iLrecord_found FROM YA_ORDER WHERE order_num = iPorder_num;
-        IF iLrecord_found = 0 THEN
-            iPerror_code := -2;
-            RETURN;
-        END IF;
-
-        --
         CASE iPcredit_type_id
             WHEN 1 THEN iLaction_id := 1;
             WHEN 2 THEN iLaction_id := 3;
@@ -125,8 +120,8 @@ IS
 
         SELECT seq_rewards_credit.NEXTVAL INTO iLcredit_id FROM DUAL;
 
-        INSERT INTO ya_rewards_credit(id, site_id, shopper_id, credit_type_id, credit_discount, initial_balance, current_balance, transaction_datetime, bogus, remark, currency, expiry_date, create_user, create_dt, mod_user, mod_dt)
-        VALUES (iLcredit_id, iPsite_id, sPshopper_id, iPcredit_type_id, deciPdiscount, nPamount, nPamount, SYSDATE, 'N', cPremark, cPcurrency, iPexpiryDate, cPupdatedUser, SYSDATE, null, null);
+        INSERT INTO ya_rewards_credit(id, site_id, shopper_id, credit_type_id, credit_discount, initial_balance, current_balance, transaction_datetime, bogus, remark, currency, expiry_date, create_user, create_dt, mod_user, mod_dt, shipment_id)
+        VALUES (iLcredit_id, iPsite_id, sPshopper_id, iPcredit_type_id, deciPdiscount, nPamount, nPamount, SYSDATE, 'N', cPremark, cPcurrency, iPexpiryDate, cPupdatedUser, SYSDATE, null, null, iPshipment_id);
 
         INSERT INTO ya_rewards_credit_txn(transaction_id, credit_id, credit_amount, credit_ordernum, debit_amount, debit_ordernum, snapshot_balance, transaction_datetime, transaction_remark, action_id, create_user, create_dt, mod_user, mod_dt)
         VALUES (SYS_GUID(), iLcredit_id, nPamount, iPorder_num, null, null, nPamount, SYSDATE, cPremark, iLaction_id, cPupdatedUser, SYSDATE, null, null);
