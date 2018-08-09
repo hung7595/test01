@@ -210,7 +210,7 @@ IS
             SELECT 1 FROM email_validation validation WHERE lower(yns.email) = lower(validation.email) 
             AND (validation.syntax_error = 'Y' 
             OR validation.domain_error = 'Y' 
-            OR validation.bounce_count > 0 
+            OR (validation.bounce_count > 0 AND validation.BOUNCE_TYPE = 'Permanent')
             OR validation.complaint_count > 0)
         );
 
@@ -271,7 +271,7 @@ IS
                 SELECT 1 FROM email_validation validation WHERE lower(a.email) = lower(validation.email)
                 AND (validation.syntax_error = 'Y'
                 OR validation.domain_error = 'Y'
-                OR validation.bounce_count > 0
+                OR (validation.bounce_count > 0 AND validation.BOUNCE_TYPE = 'Permanent')
                 OR validation.complaint_count > 0)
             )
       );
