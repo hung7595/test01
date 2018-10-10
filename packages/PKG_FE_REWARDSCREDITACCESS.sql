@@ -35,6 +35,28 @@ AS
       iPerror_code OUT INT
     );
 
+    PROCEDURE SetExpireRewardsCredits(
+        iPexpiryDate IN DATE,
+        cPshopper_id IN CHAR,
+        cPcommit IN CHAR DEFAULT 'Y',
+        iPexpiredRewardsCredit OUT INT
+    );
+
+    PROCEDURE RecreateRewardsCredit (
+        iPorder_num IN INT,
+        sPshopper_id IN VARCHAR2,
+        iPsite_id IN INT,
+        iPcredit_type_id IN INT,
+        cPcurrency IN VARCHAR2,
+        nPamount IN NUMBER,
+        deciPdiscount IN DECIMAL,
+        cPremark IN VARCHAR2,
+        iPshipment_id IN INT,
+        iPexpiryDate IN DATE,
+        cPupdatedUser IN VARCHAR2,
+        iPexpiredCreditId INT,
+        iPerror_code OUT INT
+    );
 END Pkg_fe_RewardsCreditAccess;
 /
 
@@ -123,8 +145,8 @@ IS
         INSERT INTO ya_rewards_credit(id, site_id, shopper_id, credit_type_id, credit_discount, initial_balance, current_balance, transaction_datetime, bogus, remark, currency, expiry_date, create_user, create_dt, mod_user, mod_dt, shipment_id)
         VALUES (iLcredit_id, iPsite_id, sPshopper_id, iPcredit_type_id, deciPdiscount, nPamount, nPamount, SYSDATE, 'N', cPremark, cPcurrency, iPexpiryDate, cPupdatedUser, SYSDATE, null, null, iPshipment_id);
 
-        INSERT INTO ya_rewards_credit_txn(transaction_id, credit_id, credit_amount, credit_ordernum, debit_amount, debit_ordernum, snapshot_balance, transaction_datetime, transaction_remark, action_id, create_user, create_dt, mod_user, mod_dt)
-        VALUES (SYS_GUID(), iLcredit_id, nPamount, iPorder_num, null, null, nPamount, SYSDATE, cPremark, iLaction_id, cPupdatedUser, SYSDATE, null, null);
+        INSERT INTO ya_rewards_credit_txn(transaction_id, credit_id, credit_amount, credit_ordernum, debit_amount, debit_ordernum, snapshot_balance, transaction_datetime, transaction_remark, action_id, create_user, create_dt, mod_user, mod_dt, credit_credit_id)
+        VALUES (SYS_GUID(), iLcredit_id, nPamount, iPorder_num, null, null, nPamount, SYSDATE, cPremark, iLaction_id, cPupdatedUser, SYSDATE, null, null, iLcredit_id);
 
         iPerror_code := 0;
         COMMIT;
@@ -172,7 +194,6 @@ IS
                     AND current_balance > 0
                 ORDER BY expiry_date ASC;
 
-
                 FETCH curLdeduct_cursor INTO iLcredit_id, deciLcurrent_balance;
                 WHILE (curLdeduct_cursor%FOUND) AND (deciLdebit_amount > 0) LOOP
                 BEGIN
@@ -204,7 +225,8 @@ IS
                         create_user,
                         create_dt,
                         mod_user,
-                        mod_dt
+                        mod_dt,
+                        debit_credit_id
                     )
                     VALUES (
                         SYS_GUID(),
@@ -220,7 +242,8 @@ IS
                         cPupdatedUser,
                         SYSDATE,
                         null, -- modCreate
-                        null -- modDate
+                        null, -- modDate
+                        iLcredit_id  -- debit_credit_id
                     );
 
                     UPDATE YA_REWARDS_CREDIT
@@ -256,5 +279,128 @@ IS
         END;
     END DebitRewardsCredit;
 
+    PROCEDURE SetExpireRewardsCredits (
+        iPexpiryDate IN DATE,
+        cPshopper_id IN CHAR,
+        cPcommit IN CHAR DEFAULT 'Y',
+        iPexpiredRewardsCredit OUT INT   -- count how many rewards credit was expired
+    )
+    AS
+        curRewardsCredit_cursor refCur;
+        iLcredit_id INT;
+        deciLdebit_amount DECIMAL(18,2);
+        iLexpireDate DATE;
+        iLexpiredRewardsCredit INT;     -- local variable to count how many rewards credit was expired
+    BEGIN
+        iLexpiredRewardsCredit := 0;    -- init counter
+
+        OPEN curRewardsCredit_cursor FOR
+        SELECT id, current_balance
+        FROM ya_rewards_credit
+        WHERE expiry_date < iPexpiryDate and shopper_id = cPshopper_id;
+
+        FETCH curRewardsCredit_cursor INTO iLcredit_id, deciLdebit_amount;
+        WHILE (curRewardsCredit_cursor%FOUND) AND (deciLdebit_amount > 0) LOOP
+        BEGIN
+            INSERT INTO YA_REWARDS_CREDIT_TXN (
+                transaction_id,
+                credit_id,
+                credit_amount,
+                credit_ordernum,
+                debit_amount,
+                debit_ordernum,
+                snapshot_balance,
+                transaction_datetime,
+                transaction_remark,
+                action_id,
+                create_user,
+                create_dt,
+                mod_user,
+                mod_dt,
+                debit_credit_id
+            )
+            VALUES (
+                SYS_GUID(),
+                iLcredit_id,
+                null,   -- creditAmount
+                null,   -- creditOrderNum
+                deciLdebit_amount,
+                null,   -- debitOrderNum
+                0,
+                SYSDATE,
+                null,   -- remark
+                4,    -- EXPIRE
+                'frontend',   -- createUser
+                SYSDATE,    -- createDate
+                null,   -- modCreate
+                null,    -- modDate
+                iLcredit_id   -- debit_credit_id
+            );
+
+            UPDATE ya_rewards_credit
+            SET current_balance = 0, mod_dt = SYSDATE
+            WHERE id = iLcredit_id;
+
+            iLexpiredRewardsCredit := iLexpiredRewardsCredit + 1;  -- expired success, update counter
+            FETCH curRewardsCredit_cursor INTO iLcredit_id, deciLdebit_amount;
+        END;
+        END LOOP;
+        CLOSE curRewardsCredit_cursor;
+
+        iPexpiredRewardsCredit := iLexpiredRewardsCredit;
+
+        IF (cPcommit = 'Y') THEN
+            BEGIN
+                COMMIT;
+            END;
+        END IF;
+    EXCEPTION WHEN OTHERS THEN
+        IF (cPcommit = 'Y') THEN
+            BEGIN
+                ROLLBACK;
+            END;
+        END IF;
+
+        iPexpiredRewardsCredit := -1;
+    END SetExpireRewardsCredits;
+
+    PROCEDURE RecreateRewardsCredit (
+        iPorder_num IN INT,
+        sPshopper_id IN VARCHAR2,
+        iPsite_id IN INT,
+        iPcredit_type_id IN INT,
+        cPcurrency IN VARCHAR2,
+        nPamount IN NUMBER,
+        deciPdiscount IN DECIMAL,
+        cPremark IN VARCHAR2,
+        iPshipment_id IN INT,
+        iPexpiryDate IN DATE,
+        cPupdatedUser IN VARCHAR2,
+        iPexpiredCreditId INT,
+        iPerror_code OUT INT
+    )
+    AS
+        iLaction_id INT;
+        iLrecord_found INT;
+        iLcredit_id INT;
+    BEGIN
+        SELECT COUNT(1) INTO iLrecord_found FROM YA_SHOPPER WHERE shopper_id = sPshopper_id;
+        IF iLrecord_found = 0 THEN
+            iPerror_code := -1;
+            RETURN;
+        END IF;
+
+        SELECT seq_rewards_credit.NEXTVAL INTO iLcredit_id FROM DUAL;
+
+        INSERT INTO ya_rewards_credit(id, site_id, shopper_id, credit_type_id, credit_discount, initial_balance, current_balance, transaction_datetime, bogus, remark, currency, expiry_date, create_user, create_dt, mod_user, mod_dt, shipment_id)
+        VALUES (iLcredit_id, iPsite_id, sPshopper_id, iPcredit_type_id, deciPdiscount, nPamount, nPamount, SYSDATE, 'N', cPremark, cPcurrency, iPexpiryDate, cPupdatedUser, SYSDATE, null, null, iPshipment_id);
+
+        -- Add rewards credit transaction to recreate rewards credit (action_id := 5)
+        INSERT INTO ya_rewards_credit_txn(transaction_id, credit_id, credit_amount, credit_ordernum, debit_amount, debit_ordernum, snapshot_balance, transaction_datetime, transaction_remark, action_id, create_user, create_dt, mod_user, mod_dt, credit_credit_id)
+        VALUES (SYS_GUID(), iLcredit_id, nPamount, iPorder_num, null, null, nPamount, SYSDATE, cPremark, 5, cPupdatedUser, SYSDATE, null, null, iPexpiredCreditId);
+
+        iPerror_code := 0;
+        COMMIT;
+    END RecreateRewardsCredit;
 END Pkg_fe_RewardsCreditAccess;
 /
