@@ -91,12 +91,12 @@ IS
         iLrecord_found := 1;
 
         WHILE iLrecord_found = 1 LOOP
-            cPrewardsCode := iArray(dbms_random.value(0,32)) ||
-                             iArray(dbms_random.value(0,32)) ||
-                             iArray(dbms_random.value(0,32)) ||
-                             iArray(dbms_random.value(0,32)) ||
-                             iArray(dbms_random.value(0,32)) ||
-                             iArray(dbms_random.value(0,32));
+            cPrewardsCode := iArray(trunc(dbms_random.value(1,33))) ||
+                             iArray(trunc(dbms_random.value(1,33))) ||
+                             iArray(trunc(dbms_random.value(1,33))) ||
+                             iArray(trunc(dbms_random.value(1,33))) ||
+                             iArray(trunc(dbms_random.value(1,33))) ||
+                             iArray(trunc(dbms_random.value(1,33)));
 
             SELECT COUNT(*) INTO iLrecord_found FROM YA_SHOPPER WHERE rewards_code = cPrewardsCode;
         END LOOP;
@@ -297,10 +297,10 @@ IS
         OPEN curRewardsCredit_cursor FOR
         SELECT id, current_balance
         FROM ya_rewards_credit
-        WHERE expiry_date < iPexpiryDate and shopper_id = cPshopper_id;
+        WHERE expiry_date < iPexpiryDate and shopper_id = cPshopper_id and current_balance > 0;
 
         FETCH curRewardsCredit_cursor INTO iLcredit_id, deciLdebit_amount;
-        WHILE (curRewardsCredit_cursor%FOUND) AND (deciLdebit_amount > 0) LOOP
+        WHILE (curRewardsCredit_cursor%FOUND) LOOP
         BEGIN
             INSERT INTO YA_REWARDS_CREDIT_TXN (
                 transaction_id,
