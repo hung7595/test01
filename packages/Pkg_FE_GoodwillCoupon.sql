@@ -461,7 +461,6 @@ IS
 
     cPcouponCode := cLcouponCode;
 
-    COMMIT;
   END CreateAbwFirstPurchaseCoupon;
 
 END Pkg_FE_GoodwillCoupon;
