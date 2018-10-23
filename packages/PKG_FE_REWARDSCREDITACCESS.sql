@@ -106,7 +106,6 @@ IS
         WHERE shopper_id = cPshopper_id;
 
         iPerror_code := 0;
-        COMMIT;
     END CreateRewardsCode;
 
     PROCEDURE CreateRewardsCredit (
