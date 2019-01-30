@@ -27,7 +27,7 @@ CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_APPNOTIFICATION" AS
   AS
     iLsubscriptionCount INT;
   BEGIN
-    select count(rownum) into iLsubscriptionCount from ya_app_subscription yas , ya_app_subscription_type yast where yas.id = yast.subscription_id and yast.type = 3 and yast.subscribed = 'Y' and yas.shopper_id = iPshopperId;
+    select count(rownum) into iLsubscriptionCount from ya_app_subscription yas , ya_app_subscription_type yast where yas.id = yast.subscription_id and yast.type = 3 and yast.subscribed = 'Y' and yas.shopper_id = iPshopperId and yas.is_from_fcm = 'Y';
 
     IF iLsubscriptionCount > 0 THEN
       iPreturn := 1;
@@ -49,7 +49,7 @@ CREATE OR REPLACE PACKAGE BODY "SS_ADM"."PKG_FE_APPNOTIFICATION" AS
 
   BEGIN
     OPEN curLSubscriptionInfo FOR
-      select distinct(yast.subscription_id) as subscription_id from ya_app_subscription yas , ya_app_subscription_type yast where yas.id = yast.subscription_id and yast.type = 3 and yast.subscribed = 'Y' and yas.shopper_id = iPshopperId;
+      select distinct(yast.subscription_id) as subscription_id from ya_app_subscription yas , ya_app_subscription_type yast where yas.id = yast.subscription_id and yast.type = 3 and yast.subscribed = 'Y' and yas.shopper_id = iPshopperId and yas.is_from_fcm = 'Y';
     FETCH curLSubscriptionInfo INTO iLsubscriptionId;
     WHILE curLSubscriptionInfo%FOUND LOOP
       BEGIN
