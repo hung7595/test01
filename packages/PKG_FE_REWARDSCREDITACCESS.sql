@@ -74,6 +74,17 @@ AS
       iPerror_code OUT INT
     );
 
+    PROCEDURE DebitRewardsCreditCashOutNew (
+      cPshopper_id IN CHAR,
+      deciPdebit_amount IN DECIMAL,
+      iPcash_out_info_id IN INT,
+      cPcurrency IN CHAR DEFAULT 'USD',
+      iPsite_id IN INT,
+      cPupdatedUser IN VARCHAR2,
+      cPcommit IN CHAR DEFAULT 'Y',
+      iPerror_code OUT INT
+    );
+
     PROCEDURE SetExpireRewardsCredits(
         iPexpiryDate IN DATE,
         cPshopper_id IN CHAR,
@@ -707,18 +718,20 @@ IS
 
     				IF (iLfirstCreditEnough = 1 AND iLfirstCreditNotEnough = 0) THEN
     					BEGIN
-    			            iLTxnActionId := 2;
+    			            iLTxnActionId := 2; -- REDEEM
     			            iLDebitCreditId := iLcredit_id;
     				    END;
     			    ELSE
     			        BEGIN
-    			            iLTxnActionId := 8;
+    			            iLTxnActionId := 8; -- GROUPED
                             iLDebitCreditId := iLGroupedCreditId;
     			        END;
     			    END IF;
 
                     -- deduction
                     deciLdebit_amount := deciLdebit_amount - deciLcurrent_balance;
+
+                    -- add to the sum of the grouped credit
                     deciLsum_of_credit := deciLsum_of_credit + deciLdeduct_amount;
 
                     -- add grouped transaction record
@@ -873,6 +886,252 @@ IS
     		iPerror_code := -1;
     	END;
     END DebitRewardsCreditNew;
+
+    PROCEDURE DebitRewardsCreditCashOutNew (
+        cPshopper_id IN CHAR,
+        deciPdebit_amount IN DECIMAL,
+        iPcash_out_info_id IN INT,
+        cPcurrency IN CHAR DEFAULT 'USD',
+        iPsite_id IN INT,
+        cPupdatedUser IN VARCHAR2,
+        cPcommit IN CHAR DEFAULT 'Y',
+        iPerror_code OUT INT
+    )
+    AS
+        iLtemp_balance DECIMAL(18,2);
+        iLcredit_id INT;
+        deciLdebit_amount DECIMAL(18,2);
+        deciLdeduct_amount DECIMAL(18,2);
+        deciLcurrent_balance DECIMAL(18,2);
+        curLdeduct_cursor refCur;
+        deciLsum_of_credit DECIMAL(18,2);
+        iLfirstCreditEnough INT;
+    	iLfirstCreditNotEnough INT;
+    	iLTxnActionId INT;
+    	iLGroupedCreditId INT;
+    	iLDebitCreditId INT;
+    BEGIN
+        deciLsum_of_credit := 0;
+        iLfirstCreditNotEnough := 0;
+        iLfirstCreditEnough := 0;
+
+        -- init groupedCreditId
+        SELECT seq_rewards_credit.NEXTVAL INTO iLGroupedCreditId FROM DUAL;
+
+        -- make sure enough credit
+        SELECT NVL(SUM(current_balance), 0)
+        INTO iLtemp_balance
+        FROM ya_rewards_credit
+        WHERE shopper_id = cPshopper_id AND currency = cPcurrency AND site_id = iPsite_id;
+
+        deciLdebit_amount := round(deciPdebit_amount, 3);
+        IF (iLtemp_balance < deciLdebit_amount) THEN
+            BEGIN
+                -- not enough credits
+                iPerror_code := -1;
+            END;
+        ELSE
+            BEGIN
+                OPEN curLdeduct_cursor FOR
+                SELECT id, current_balance
+                FROM ya_rewards_credit
+                WHERE shopper_id = cPshopper_id
+                    AND currency = cPcurrency
+                    AND site_id = iPsite_id
+                    AND current_balance > 0
+                ORDER BY expiry_date ASC;
+
+                FETCH curLdeduct_cursor INTO iLcredit_id, deciLcurrent_balance;
+                WHILE (curLdeduct_cursor%FOUND) AND (deciLdebit_amount > 0) LOOP
+                BEGIN
+                    IF (deciLdebit_amount > deciLcurrent_balance) THEN
+                        BEGIN
+                            deciLdeduct_amount := deciLcurrent_balance;
+                            iLfirstCreditNotEnough := 1;
+                        END;
+                    ELSE
+                        BEGIN
+                            deciLdeduct_amount := deciLdebit_amount;
+                            iLfirstCreditEnough := 1;
+                        END;
+                    END IF;
+
+                    IF (iLfirstCreditEnough = 1 AND iLfirstCreditNotEnough = 0) THEN
+                        BEGIN
+                            iLTxnActionId := 6; --CASH OUT
+                            iLDebitCreditId := iLcredit_id;
+                        END;
+                    ELSE
+                        BEGIN
+                            iLTxnActionId := 8; --GROUPED
+                            iLDebitCreditId := iLGroupedCreditId;
+                        END;
+                    END IF;
+
+                    -- deduction
+                    deciLdebit_amount := deciLdebit_amount - deciLcurrent_balance;
+
+                    -- add to the sum of the grouped credit
+                    deciLsum_of_credit := deciLsum_of_credit + deciLdeduct_amount;
+
+                    -- add grouped transaction record
+                    INSERT INTO YA_REWARDS_CREDIT_TXN (
+                        transaction_id,
+                        credit_id,
+                        credit_amount,
+                        credit_ordernum,
+                        debit_amount,
+                        debit_ordernum,
+                        snapshot_balance,
+                        transaction_datetime,
+                        transaction_remark,
+                        action_id,
+                        create_user,
+                        create_dt,
+                        mod_user,
+                        mod_dt,
+                        debit_credit_id,
+                        cash_out_info_id
+                    )
+                    VALUES (
+                        SYS_GUID(),
+                        iLcredit_id,
+                        null,
+                        null,
+                        deciLdeduct_amount,
+                        null,
+                        deciLcurrent_balance - deciLdeduct_amount,
+                        SYSDATE,
+                        null,
+                        iLTxnActionId,
+                        cPupdatedUser,
+                        SYSDATE,
+                        null, -- modCreate
+                        null, -- modDate
+                        iLDebitCreditId,  -- debit_credit_id
+                        iPcash_out_info_id
+                    );
+
+                    UPDATE YA_REWARDS_CREDIT
+                    SET current_balance = deciLcurrent_balance - deciLdeduct_amount,
+                        mod_user = cPupdatedUser,
+                        mod_dt = SYSDATE
+                    WHERE id = iLcredit_id;
+
+                    FETCH curLdeduct_cursor INTO iLcredit_id, deciLcurrent_balance;
+                END;
+                END LOOP;
+                CLOSE curLdeduct_cursor;
+
+                IF (iLfirstCreditEnough = 0 OR iLfirstCreditNotEnough = 1) THEN
+                    INSERT INTO ya_rewards_credit(id, site_id, shopper_id, credit_type_id, credit_discount, initial_balance, current_balance, transaction_datetime, bogus, remark, currency, expiry_date, create_user, create_dt, mod_user, mod_dt, shipment_id)
+                    VALUES (iLGroupedCreditId, iPsite_id, cPshopper_id, 5, null, deciLsum_of_credit, deciLsum_of_credit, SYSDATE, 'N', 'Grouping', cPcurrency, SYSDATE + 1, cPupdatedUser, SYSDATE, null, null, null);
+
+                    -- credit grouped credit
+                    INSERT INTO YA_REWARDS_CREDIT_TXN (
+                        transaction_id,
+                        credit_id,
+                        credit_amount,
+                        credit_ordernum,
+                        debit_amount,
+                        debit_ordernum,
+                        snapshot_balance,
+                        transaction_datetime,
+                        transaction_remark,
+                        action_id,
+                        create_user,
+                        create_dt,
+                        mod_user,
+                        mod_dt,
+                        credit_credit_id,
+                        cash_out_info_id
+                        )
+                    VALUES (
+                        SYS_GUID(),
+                        iLGroupedCreditId,
+                        deciLsum_of_credit,
+                        null, -- credit_ordernum
+                        null, -- debit_amount
+                        null, -- debit_ordernum
+                        deciLsum_of_credit,
+                        SYSDATE,
+                        null,
+                        8, -- GROUPED
+                        cPupdatedUser,
+                        SYSDATE,
+                        null, -- modCreate
+                        null, -- modDate
+                        iLGroupedCreditId,  -- credit_credit_id
+                        iPcash_out_info_id
+                    );
+
+                    -- Cashout grouped credit
+                    INSERT INTO YA_REWARDS_CREDIT_TXN (
+                        transaction_id,
+                        credit_id,
+                        credit_amount,
+                        credit_ordernum,
+                        debit_amount,
+                        debit_ordernum,
+                        snapshot_balance,
+                        transaction_datetime,
+                        transaction_remark,
+                        action_id,
+                        create_user,
+                        create_dt,
+                        mod_user,
+                        mod_dt,
+                        debit_credit_id,
+                        cash_out_info_id
+                        )
+                    VALUES (
+                        SYS_GUID(),
+                        iLGroupedCreditId,
+                        null,
+                        null, -- credit_ordernum
+                        deciLsum_of_credit, -- debit_amount
+                        null, -- debit_ordernum
+                        0,
+                        SYSDATE,
+                        null,
+                        6, -- CASH OUT
+                        cPupdatedUser,
+                        SYSDATE,
+                        null, -- modCreate
+                        null, -- modDate
+                        iLGroupedCreditId,  -- debit_credit_id
+                        iPcash_out_info_id
+                    );
+
+                    -- update grouped credit amount to 0
+                    UPDATE YA_REWARDS_CREDIT
+                    SET current_balance = 0,
+                        mod_user = cPupdatedUser,
+                        mod_dt = SYSDATE
+                    WHERE id = iLGroupedCreditId;
+                END IF;
+
+                IF (cPcommit = 'Y') THEN
+                    BEGIN
+                        COMMIT;
+                    END;
+                END IF;
+                iPerror_code := 0;
+            END;
+        END IF;
+        RETURN;
+
+    EXCEPTION WHEN OTHERS THEN
+        BEGIN
+            IF (cPcommit = 'Y') THEN
+                BEGIN
+                    ROLLBACK;
+                END;
+            END IF;
+
+            iPerror_code := -1;
+        END;
+    END DebitRewardsCreditCashOutNew;
 
 END Pkg_fe_RewardsCreditAccess;
 /
